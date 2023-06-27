@@ -1,0 +1,88 @@
+import csv
+import json
+
+class Decisions: # ID	Session ID	Round	Worker Agent ID	Worker Agent Backlog (No. of Tasks)	Worker Agent Backlog (No. of Effort Units)	The Backlog Queue	Worker Agent Reputation
+    def __init__(self, id, sess, round, agid, tback, eback, queue, rep):
+        self.id = id
+        self.session_id = sess
+        self.round = round
+        self.worker_agent_id = agid
+        self.agent_task_backlog = tback
+        self.agent_effort_backlog  = eback
+        self.backlog_queue = queue
+        self.agent_reputation = rep
+
+    def add_task(self, worker_id, tsk):
+        if worker_id in self.backlog_queue:
+            self.backlog_queue[worker_id].append(tsk)
+        else:
+            self.backlog_queue[worker_id] = [tsk]
+
+    def get_tasks(self):
+        return self.backlog_queue
+
+    def set_probe_id(self,id):
+        self.id = id
+
+    def __repr__(self):
+        return repr(self.id + ":" + self.session_id + ":" + self.round + ":" +
+                    self.worker_agent_id + ":" + self.agent_task_backlog + ":" +
+                    self.agent_effort_backlog + ":" + str(self.backlog_queue) + ":" +
+                    self.agent_reputation)
+
+    @staticmethod
+    def read_csv():
+        decisions = []
+        with open('Agile_Manager/Decisions.csv') as csv_file:   # ID	Value	Difficulty	Effort Required	Deadline
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            line_count = 0
+            for row in csv_reader:
+                if line_count == 0:
+                    print(f'Column names are {", ".join(row)}')
+                    line_count += 1
+                else:
+                    # print(f'\t{row[0]} {row[1]} {row[2]} {row[3]} {row[4]} {row[5]} {row[6]} {row[7]}')
+                    queue = row[6].split(";")
+                    t = Decisions(row[0],row[1],row[2],row[3],row[4],row[5],queue,row[7])
+                    decisions.append(t)
+                    line_count += 1
+            print(f'Processed {line_count} lines.')
+        print("# decisions: ",len(decisions))
+        return decisions
+
+    def to_json(self):
+        return json.dumps(self.__dict__)
+
+    @staticmethod
+    def list_to_json_file(l):
+        with open("Agile_Manager/Decisions.json", "w") as file:
+            file.write('[')
+            initial = True;
+            for t in l:
+                if initial:
+                    initial = False
+                else:
+                    file.write(',')
+                file.write(t.to_json())
+            file.write(']')
+
+    @staticmethod
+    def from_json_file():
+        decisions = []
+        with open('Agile_Manager/Decisions.json') as file:
+            parsed_json1 = json.load(file)
+            for j in parsed_json1:
+                decisions.append(j)
+        return decisions
+
+#    def write_csv(self):
+
+    @staticmethod
+    def test():
+        decisions = Decisions.read_csv()
+        for t in decisions:
+            print(t.to_json())
+        Decisions.list_to_json_file(decisions)
+        print("Decisions")
+        print(Decisions.from_json_file())
+

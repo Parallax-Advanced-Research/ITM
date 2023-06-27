@@ -1,0 +1,21 @@
+class Reference_Distribution:
+    def __init__(self, id, n):
+        self._id = id
+        self._attributes = [0 for x in range(n)]
+
+    def set_id(self, id):
+        self.ID = id
+
+    def set_attributes(self, atts):
+        if not len(atts) == len(self.Attributes):
+            print("attribute length mismatch")
+        i = 0
+        for att in atts:
+            self.Attributes[i] = att
+            i += 1
+    
+    def get_id(self):
+        return self._id
+
+    def get_attributes(self):
+        return self._attributes
