@@ -3,7 +3,7 @@ from .case import Case
 
 
 class DecisionSelector:
-    def __init__(self, case_base: list[Case], lambda_scen=.7, lambda_dec=.7, lambda_align=.7):
+    def __init__(self, case_base: list[Case], lambda_scen=.49, lambda_dec=.7, lambda_align=.7):
         self.cb: list[Case] = case_base
         self.lambda_scen: float = lambda_scen
         self.lambda_dec: float = lambda_dec
