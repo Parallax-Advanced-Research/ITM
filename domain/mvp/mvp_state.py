@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 
 class UpdatableDict:
     """ TODO: Finish. The purpose of this class is to handle change-sets as they come in """
+
     def update(self, changes: dict):
         pass
 
@@ -46,6 +47,7 @@ class Vitals(UpdatableDict):
     rr: int
     pain: str
 
+
 # Casualty
 @dataclass
 class Casualty(UpdatableDict):
@@ -60,6 +62,7 @@ class MVPState(UpdatableDict):
     unstructured: str = ''
     time: int = 0
     casualties: list[Casualty] = field(default_factory=list)
+    tot_sim: int = 0
 
     @staticmethod
     def from_dict(data: dict) -> 'MVPState':
@@ -84,9 +87,9 @@ class MVPState(UpdatableDict):
     # for now just check the similarity between the casualties/patients
     def get_similarity(self, other_state: 'MVPState'):
         sim = 0
+        self.tot_sim = len(self.casualties) + 1  # * (5 + 3)  # todo put back in when we get data for how many attrs casualties have
 
         # todo programmatically figure out if the vitals and demographics will always have the same length
-        tot_sim = len(self.casualties) + 1 # * (5 + 3)  # todo put back in when we get data for this
         if self.time == other_state.time:
             sim = 1 + sim
         for cas in self.casualties:
@@ -109,4 +112,4 @@ class MVPState(UpdatableDict):
                     if value == getattr(same_cas.demographics, demographic):
                         sim = 1 + sim
 
-        return sim/tot_sim
+        return sim / self.tot_sim
