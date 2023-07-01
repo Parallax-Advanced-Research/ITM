@@ -17,5 +17,5 @@ class Driver:
     def set_scenario(self, scenario: Scenario):
         self.scenario = scenario
 
-    def decide(self, probe: Probe, aligned: bool):
+    def decide(self, probe: Probe, variant: str):
         raise NotImplementedError

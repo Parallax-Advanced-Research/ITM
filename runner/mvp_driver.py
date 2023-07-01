@@ -15,21 +15,23 @@ class MVPDriver(Driver):
         super().set_scenario(scenario)
         self.time = 0
 
-    def decide(self, probe: domain.Probe, aligned: bool):
+    def decide(self, probe: domain.Probe, variant: str) -> domain.Response:
         state = MVPState.from_dict(probe.state)
         state.time = self.time
         scen = MVPScenario(self.scenario.name, self.scenario.id, probe.prompt, state)
 
         decisions = [
-            MVPDecision(option.id)
+            MVPDecision(option.id, option.value)
             for option in probe.options
         ]
         align_target = self.alignment_tgt
 
-        if aligned:
-            res, sim = self.decision_selector.selector(scen, decisions, align_target)
+        if variant == 'aligned':
+            decision, sim = self.decision_selector.selector(scen, decisions, align_target)
+        elif variant == 'misaligned':
+            decision, sim = self.decision_selector.selector(scen, decisions, align_target, misaligned=True)
         else:
-            res, sim = self.decision_selector.selector(scen, decisions)
+            decision, sim = self.decision_selector.selector(scen, decisions)
 
         self.time += 1
-        return domain.Response(self.scenario.id, probe.id, res.choice, res.justification)
+        return domain.Response(self.scenario.id, probe.id, decision.id, decision.justification)
