@@ -13,11 +13,5 @@ class Case:
         self.alignment = alignment # based on scenario and final decision
         self.id = str(uuid.uuid4())
 
-    def get_scen_sim(self, other_scenario):
-        return self.scenario.get_similarity(other_scenario)
-
-    def get_decision_dist(self, other_decision):
-        return self.final_decision.get_similarity(other_decision)
-
     def __repr__(self):
         return self.id

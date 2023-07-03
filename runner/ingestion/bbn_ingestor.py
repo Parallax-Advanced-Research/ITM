@@ -27,7 +27,7 @@ class BBNIngestor(Ingestor):
             decisions = []
             kdmas = []
             for joption in jprobe['options']:
-                decisions.append(MVPDecision(joption['id'], justification=joption['value']))
+                decisions.append(MVPDecision(joption['id'], joption['value']))
                 dkdmas = []
                 for kdma, value in joption['kdma_association'].items():
                     dkdmas.append({'kdma': kdma, 'value': value})
