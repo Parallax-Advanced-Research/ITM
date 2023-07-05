@@ -9,6 +9,3 @@ class MVPScenario(Scenario):
         self.id: str = id
         self.prompt: str = prompt
         self.state: MVPState = state
-
-    def get_similarity(self, other_scenario: 'MVPScenario') -> float:
-        return self.state.get_similarity(other_scenario.state)

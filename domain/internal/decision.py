@@ -1,10 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
 class Decision(ABC):
-    def __init__(self, name: str):
-        self.name: str = name
-
-    @abstractmethod
-    def get_similarity(self, other_decision: 'Decision') -> float:
-        pass
+    def __init__(self, id: str, value: any):
+        self.id: str = id
+        self.value: any = value

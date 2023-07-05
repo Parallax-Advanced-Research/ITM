@@ -1,6 +1,7 @@
 import os
 import csv
 import typing
+from dataclasses import asdict
 
 from components.decision_selector import Case
 from domain.mvp import MVPScenario, MVPDecision
@@ -38,17 +39,13 @@ class SOARIngestor(Ingestor):
                     for cname in SOARIngestor.CASUALTY_LIST:
                         casualties.append(st.Casualty(cname, None, None))
 
-                    state = st.MVPState('empty', order, casualties)
+                    state = st.MVPState('', order, casualties)
                     scen = MVPScenario('soar-test', 'soar-test', prompt, state)
 
                     decisions = []
                     for cas in casualties:
-                        if SOARIngestor.USE_TREATMENTS:
-                            for treatment in SOARIngestor.TREATMENT_LIST:
-                                decisions.append(MVPDecision(cas.id, treatment))
-                        else:
-                            decisions.append(MVPDecision(cas.id))
-                    fdecision = MVPDecision(patient, treatment)
+                        decisions.append(MVPDecision(cas.id, cas.id))
+                    fdecision = MVPDecision(patient, patient)
 
                     case = Case(scen, fdecision, decisions, alignment=[
                         {'kdma': 'mission', 'value': mission},
@@ -59,6 +56,9 @@ class SOARIngestor(Ingestor):
 
     def ingest_as_domain(self) -> list[Scenario]:
         prompt = 'Who would you treat next and how would you treat them?' if SOARIngestor.USE_TREATMENTS else 'Who would you treat next?'
+        casualties = []
+        for cname in SOARIngestor.CASUALTY_LIST:
+            casualties.append(st.Casualty(cname, None, None))
 
         for raw_csv in os.listdir(self.data_dir):
             with open(f'{self.data_dir}/{raw_csv}', 'r') as data_file:
@@ -69,18 +69,15 @@ class SOARIngestor(Ingestor):
                 probes = []
                 for line in reader:
                     order = int(line[4])
+                    state = asdict(st.MVPState('', order, casualties))
                     if order == 0 and len(probes) > 0:
-                        scenarios.append(Scenario('MVP-Scenario', f'SOARScenario-{len(scenarios)}', state={}, probes=probes))
+                        scenarios.append(Scenario('MVP-Scenario', f'SOARScenario-{len(scenarios)}', state=state, probes=probes))
                         probes = []
-
-                    casualties = []
-                    for cname in SOARIngestor.CASUALTY_LIST:
-                        casualties.append(st.Casualty(cname, None, None))
 
                     choices = []
                     for cas in casualties:
                         choices.append(ProbeChoice(cas.id, cas.id))
-                    probe = Probe(str(order), prompt=prompt, state={}, options=choices)
+                    probe = Probe(str(order), prompt=prompt, state=state, options=choices)
                     probes.append(probe)
 
         return scenarios

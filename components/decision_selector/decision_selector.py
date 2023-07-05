@@ -1,45 +1,54 @@
+import math
 from domain.internal import Decision, Scenario
 from .case import Case
+from .mvp_sim import scen_sim, decision_sim, align_sim
+
+
+SCEN_W = 1
+ALIGN_W = 2
+DECISION_W = 1
 
 
 class DecisionSelector:
-    def __init__(self, case_base: list[Case], lambda_scen=.7, lambda_dec=.7, lambda_align=.7):
+    def __init__(self, case_base: list[Case], lambda_scen=.49, lambda_dec=.7, lambda_align=.7):
         self.cb: list[Case] = case_base
         self.lambda_scen: float = lambda_scen
         self.lambda_dec: float = lambda_dec
         self.lambda_align: float = lambda_align
 
-    def selector(self, scenario: Scenario, possible_decisions: list[Decision], alignment=None) -> (Decision, int):
+    def selector(self, scenario: Scenario, possible_decisions: list[Decision], alignment: list = None, misaligned: bool = False) -> (Decision, int):
         #  probe # a prompt with multiple choice answer (of decisions)
         returning_cases = {}
-        highest_sim_found = -1
+        highest_sim_found = -math.inf
         best_case: Case = None
+        best_decision: Decision = None
         for case in self.cb:
-            sim_scen = case.get_scen_sim(scenario)
+            sim_scen = scen_sim(case.scenario, scenario)
 
-            # check the alignment is above a threshold
+            sim_align = 1
             if alignment is not None:
-                sim_align = 0
-                tot_align = 0
-                for attr in case.alignment:
-                    o_attr = [f for f in alignment if f['kdma'] == f['kdma']][0]
-                    sim_align = sim_align + abs(float(attr['value']) - float(o_attr['value']))
-                    tot_align = tot_align + 10
-                align = sim_align/tot_align
-                if align < self.lambda_align:
-                    continue
+                sim_align = align_sim(alignment, case.alignment)
+                if misaligned:
+                    sim_align = 1 - sim_align
 
-            # is the scenario over a threshold lambda_scen?
-            if sim_scen > self.lambda_scen:
-                # is the decision in the list of possible decisions?
-                for p in possible_decisions:
-                    if case.final_decision.get_similarity(p) >= self.lambda_dec:
-                        # use rules here to trim down more?
-                        returning_cases[case] = sim_scen
-                        if sim_scen > highest_sim_found:
-                            highest_sim_found = sim_scen
-                            best_case = case
-                        continue
+            sim_decision = -math.inf
+            best_local_decision = None
+            for pdec in possible_decisions:
+                temp_sim_decision = decision_sim(pdec, case.final_decision)
+                if temp_sim_decision > sim_decision:
+                    best_local_decision = pdec
+                    sim_decision = temp_sim_decision
 
-        # print("highest similarity found for this case: ", highest_sim_found)
-        return best_case.final_decision, highest_sim_found
+            # Skip if not within lambda
+            if sim_scen < self.lambda_scen or sim_decision < self.lambda_dec or sim_align < self.lambda_align:
+                continue
+
+            sim = SCEN_W * sim_scen + ALIGN_W * sim_align + DECISION_W * sim_decision
+            sim /= SCEN_W + ALIGN_W + DECISION_W
+            returning_cases[case] = (sim, best_local_decision)
+            if sim > highest_sim_found and best_local_decision is not None:
+                highest_sim_found = sim
+                best_case = case
+                best_decision = best_local_decision
+
+        return best_decision, highest_sim_found
