@@ -3,6 +3,7 @@ import pickle
 import argparse
 import dataclasses
 import os
+import uuid
 from pydantic.tools import parse_obj_as
 from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
 from runner import MVPDriver, TA3Client
@@ -64,14 +65,23 @@ def ltest(args):
         for probe in scen.probes:
             logger.info(f"-Running Probe: {probe.id}")
             logger.debug(f"--Choices: {[o.id for o in probe.options]}")
+
+            # Set probe state if not set
+            if probe.state == {} and scen.state != {}:
+                probe.state = scen.state
+
             response = driver.decide(probe, args.variant)
             logger.info(f"--Probe Response: {response.choice}")
             responses.append(response)
         logger.info(f"Finished Scenario: {scen.id}")
 
-    outf = f'{args.model}_results.json' or args.output
+    outf = args.output or f'{args.model}_results_{args.variant}.json'
     responses = [dataclasses.asdict(response) for response in responses]
-    json.dump(responses, open(outf, 'w'))
+    if args.batch:
+        batched_data = {'session_id': str(uuid.uuid4()), 'responses': responses}
+        json.dump(batched_data, open(outf, 'w'))
+    else:
+        json.dump(responses, open(outf, 'w'))
     logger.info(f"Results file output to: {outf}")
 
 
@@ -123,8 +133,9 @@ def generate(args):
     scenarios = ingestor.ingest_as_domain()
     scenarios = [dataclasses.asdict(scen) for scen in scenarios]
 
-    # Only generate a single scenario to test against
-    scenarios = scenarios[0]
+    # Reduce to non-list of only 1
+    if len(scenarios) == 1:
+        scenarios = scenarios[0]
 
     os.makedirs(TEST_DIR, exist_ok=True)
     json.dump(scenarios, open(f'{TEST_DIR}/{expr_name}.json', 'w'))
@@ -158,6 +169,7 @@ def main():
     ltester.add_argument('-variant', type=str, help="The version of TAD to run, default: aligned", choices=["baseline", "aligned", 'misaligned'],
                          default="aligned")
     ltester.add_argument('-output', type=str, help="File to output list ADM responses as json Response objects")
+    ltester.add_argument('--batch', default=False, help="Changes output to batch format", action='store_true')
     ltester.add_argument('--verbose', default=False, help="Turns on logging", action='store_true')
     ltester.set_defaults(func=ltest)
 

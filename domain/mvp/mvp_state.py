@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 
 
 class UpdatableDict:
@@ -9,6 +9,22 @@ class UpdatableDict:
 
     def spawn(self, changes: dict):
         pass
+
+    @classmethod
+    def clean(cls, kwargs: dict) -> dict:
+        fids = {f.name for f in fields(cls)}
+        keys = list(kwargs.keys())
+        for key in keys:
+            if key not in fids:
+                del kwargs[key]
+        return kwargs
+
+    @classmethod
+    def build(cls, kwargs: dict):
+        kwargs = cls.clean(kwargs.copy())
+        obj = cls.__new__(cls)
+        cls.__init__(obj, **kwargs)
+        return obj
 
 
 @dataclass
@@ -56,6 +72,13 @@ class Casualty(UpdatableDict):
     vitals: Vitals
     unstructured: str = ''
 
+    def __post_init__(self):
+        if isinstance(self.demographics, dict):
+            self.demographics = Demographics(**self.demographics)
+        if isinstance(self.vitals, dict):
+            vdict = {k.lower().replace('_', '').replace('%', ''): v for k, v in self.vitals.items()}
+            self.vitals = Vitals(**vdict)
+
 
 @dataclass
 class MVPState(UpdatableDict):
@@ -69,15 +92,5 @@ class MVPState(UpdatableDict):
         stime = data['time'] if 'time' in data else 0
         cdatas = data['casualties'] if 'casualties' in data else []
 
-        casualties = []
-        for cdata in cdatas:
-            cunstr = cdata['unstructured'] if 'unstructured' in cdata else ''
-            ddata = cdata['demographics']
-            vdata = cdata['vitals']
-            vdata = {k.lower().replace('_', '').replace('%', ''): v for k, v in vdata.items()} if vdata else None
-
-            demo = Demographics(**ddata) if ddata else None
-            vitals = Vitals(**vdata) if vdata else None
-
-            casualties.append(Casualty(cdata['id'], demo, vitals, cunstr))
+        casualties = [Casualty.build(c) for c in cdatas]
         return MVPState(unstr, stime, casualties)

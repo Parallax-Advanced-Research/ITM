@@ -11,7 +11,3 @@ Parallax does not guarantee functionality.  Use the code in this repository at y
 ## Contributing
 
 Pull requests or merge requests are not being accepted at this time.
-
-## Issues
-
-Submit issues [here](TODO)
