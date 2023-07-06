@@ -1,8 +1,7 @@
-from enum import StrEnum
 from dataclasses import dataclass, field
 
 
-class ProbeType(StrEnum):
+class ProbeType:
     MC = 'MultipleChoice'
     FR = 'FreeResponse'
     PO = 'PatientOrdering'
@@ -17,7 +16,7 @@ class ProbeChoice:
 @dataclass
 class Probe:
     id: str = ''
-    type: ProbeType = ProbeType.MC
+    type: str = ProbeType.MC
     prompt: str = ''
     state: dict = field(default_factory={})
     options: list[ProbeChoice] = field(default_factory=[])

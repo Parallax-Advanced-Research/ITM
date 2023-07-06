@@ -17,7 +17,6 @@ class MVPDriver(Driver):
 
     def decide(self, probe: domain.Probe, variant: str) -> domain.Response:
         state = MVPState.from_dict(probe.state)
-        state.time = self.time
         scen = MVPScenario(self.scenario.name, self.scenario.id, probe.prompt, state)
 
         decisions = [
@@ -33,5 +32,4 @@ class MVPDriver(Driver):
         else:
             decision, sim = self.decision_selector.selector(scen, decisions)
 
-        self.time += 1
         return domain.Response(self.scenario.id, probe.id, decision.id, decision.justification)

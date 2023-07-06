@@ -2,7 +2,7 @@
 
 ## Installation
 
-TAD is tested on Python 3.11, but should work on anything above Python 3.10.
+TAD is tested to work on Python 3.10 and 3.11.
 TAD is currently setup to run via the commandline via the tad.py script in this projects root directory.
 
 To install the dependencies, we suggest using virtualenv. This can be done by running:
@@ -40,9 +40,12 @@ Which will output soar.json to data/mvp/test
 
 `python tad.py test-local soar data/mvp/test/soar.json -kdma mission=1 denial=2 --verbose`
 
-which will output soar_results.json to the local directory
+which will output soar_results_aligned.json to the local directory
 
-These can be further tweaked with additional options provided by the CLI. e.g., -variant will let you set the ADM to aligned, baseline, or misaligned
+These can be further tweaked with additional options provided by the CLI. e.g.,
+
+* -variant will let you set the ADM to aligned, baseline, or misaligned
+* --batch will tell TAD to use the Batched output style
 
 ## Running TAD with TA3's API
 

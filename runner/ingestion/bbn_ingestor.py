@@ -33,7 +33,7 @@ class BBNIngestor(Ingestor):
                     dkdmas.append({'kdma': kdma, 'value': value})
                 kdmas.append(dkdmas)
 
-            scen = MVPScenario('bbn-test', 'bbn-test', jprobe['prompt'], state)
+            scen = MVPScenario('bbn-test', jscen['id'], jprobe['prompt'], state)
             for i in range(len(decisions)):
                 cases.append(Case(scen, decisions[i], decisions, kdmas[i]))
         return cases
@@ -50,8 +50,8 @@ class BBNIngestor(Ingestor):
             for joption in jprobe['options']:
                 del joption['kdma_association']
                 options.append(ProbeChoice(**joption))
-            probe = Probe(str(len(probes)), prompt=jprobe['prompt'], options=options, state=state)
+            probe = Probe(jprobe['id'], prompt=jprobe['prompt'], options=options, state=state)
             probes.append(probe)
 
-        scen = Scenario('BBNScenario', 'BBNState', state, probes)
+        scen = Scenario('BBNScenario', jscen['id'], state, probes)
         return [scen]
