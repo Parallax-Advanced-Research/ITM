@@ -3,7 +3,7 @@ from components.decision_selector import DecisionSelector
 from domain.mvp import MVPScenario, MVPDecision, MVPState
 from domain import Scenario
 from .driver import Driver
-
+from components.decision_analytics.mvp.RuleBasedAnalyticsWrapper import rule_based_analytics
 
 class MVPDriver(Driver):
     def __init__(self, decision_selector: DecisionSelector):
@@ -24,6 +24,7 @@ class MVPDriver(Driver):
             MVPDecision(option.id, option.value)
             for option in probe.options
         ]
+        analytics = rule_based_analytics()
         align_target = self.alignment_tgt
 
         if variant == 'aligned':
