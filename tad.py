@@ -119,8 +119,8 @@ def api_test(args):
         logger.info(f"--Probe Response: {response.choice}")
         is_complete = client.respond(response)
     logger.info(f"Finished Scenario: {scen.id}")
-
-
+    
+    
 def generate(args):
     if args.verbose:
         logger.setLevel(VERBOSE_LEVEL)
