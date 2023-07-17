@@ -33,6 +33,7 @@ class TA3Client:
         except ApiException:
             return None
 
-    def respond(self, probe_response: Response):
+    def respond(self, probe_response: Response) -> bool:
         dict_response = asdict(probe_response)
-        self._api.respond_to_probe(body=ta3.ProbeResponse(**dict_response))
+        res = self._api.respond_to_probe(body=ta3.ProbeResponse(**dict_response))
+        return res.scenario_complete
