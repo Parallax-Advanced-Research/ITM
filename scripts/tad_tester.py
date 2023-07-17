@@ -3,7 +3,7 @@ import tad
 
 def test_endpoint():
     args = type("Foo", (object,), {})()
-    args.model = 'bbn'
+    args.model = 'soar'
     args.endpoint = '127.0.0.1:8080'
     args.variant = 'aligned'
     args.verbose = True
@@ -15,12 +15,16 @@ def test_local_soar():
     args = type("Foo", (object,), {})()
     args.model = 'soar'
     args.expr = 'data/mvp/test/soar.json'
-    args.kdmas = ['mission=9', 'denial=4']
+    args.kdmas = ['mission=7', 'denial=3']
     args.variant = 'baseline'
     args.output = None
     args.batch = True
     args.verbose = True
 
+    tad.ltest(args)
+    args.variant = 'aligned'
+    tad.ltest(args)
+    args.variant = 'misaligned'
     tad.ltest(args)
 
 
@@ -58,11 +62,11 @@ def test_train_soar():
 
 
 def main():
-    test_endpoint()
+    # test_endpoint()
     # test_local_bbn()
     # test_gen_soar()
     # test_train_soar()
-    # test_local_soar()
+    test_local_soar()
 
 
 if __name__ == '__main__':
