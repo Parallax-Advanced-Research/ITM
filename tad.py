@@ -93,7 +93,7 @@ def api_test(args):
 
     logger.info(f"Loading Case Base: {f'{MODEL_DIR}/{args.model}.p'}")
     cases: list[Case] = pickle.load(open(f'{MODEL_DIR}/{args.model}.p', 'rb'))
-    selector = DecisionSelector(cases, lambda_align=-1, lambda_scen=-1, lambda_dec=-1)
+    selector = DecisionSelector(cases, lambda_align=0, lambda_scen=0, lambda_dec=0)
     driver = MVPDriver(selector)
 
     client = TA3Client(args.endpoint)
@@ -104,10 +104,11 @@ def api_test(args):
     if args.variant == 'baseline':
         logger.info(f"Running Scenario: {scen.id} on baseline")
     else:
-        driver.set_alignment_tgt([{'kdma': 'Knowledge', 'value': 3}])
+        driver.set_alignment_tgt(align_tgt)
         logger.info(f"Running Scenario: {scen.id} with alignment: {align_tgt} on {args.variant}")
 
-    while True:
+    is_complete = False
+    while not is_complete:
         probe = client.get_probe(scen.id)
         if probe is None:
             break
@@ -116,10 +117,10 @@ def api_test(args):
         logger.debug(f"--Choices: {[o.id for o in probe.options]}")
         response = driver.decide(probe, args.variant)
         logger.info(f"--Probe Response: {response.choice}")
-        client.respond(response)
+        is_complete = client.respond(response)
     logger.info(f"Finished Scenario: {scen.id}")
-
-
+    
+    
 def generate(args):
     if args.verbose:
         logger.setLevel(VERBOSE_LEVEL)
