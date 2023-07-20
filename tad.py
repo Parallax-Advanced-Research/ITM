@@ -7,7 +7,9 @@ import uuid
 from pydantic.tools import parse_obj_as
 from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
 from runner import MVPDriver, TA3Client
-from components.decision_selector import DecisionSelector, Case
+from components.elaborator import BaselineElaborator
+from components.decision_selector import BaselineDecisionSelector, Case
+from components.decision_analyzer import BaselineDecisionAnalyzer
 from domain import Scenario
 from util import logger, LogLevel, use_simple_logger
 
@@ -48,8 +50,11 @@ def ltest(args):
     logger.info(f"Loading CaseBase at {MODEL_DIR}/{args.model}.p")
     cases: list[Case] = pickle.load(open(f'{MODEL_DIR}/{args.model}.p', 'rb'))
 
-    selector = DecisionSelector(cases, lambda_align=0, lambda_scen=0, lambda_dec=0)
-    driver = MVPDriver(selector)
+    selector = BaselineDecisionSelector(cases, lambda_align=0, lambda_scen=0, lambda_dec=0)
+    elaborator = BaselineElaborator()
+    analyzer = BaselineDecisionAnalyzer()
+
+    driver = MVPDriver(elaborator, selector, analyzer)
 
     responses = []
     jscens = json.load(open(args.expr, 'r'))
