@@ -1,6 +1,8 @@
-from abc import ABC, abstractmethod
+import typing
+from .state import StateType
 
 
-class Scenario(ABC):
-    def __init__(self, name: str):
-        self.name: str = name
+class Scenario(typing.Generic[StateType]):
+    def __init__(self, id_: str, state: StateType):
+        self.id_: str = id_
+        self.state: StateType = state

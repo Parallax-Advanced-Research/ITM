@@ -1,35 +1,11 @@
-import domain
-from components.decision_selector import DecisionSelector
-from domain.mvp import MVPScenario, MVPDecision, MVPState
-from domain import Scenario
+from domain.mvp import MVPState
+from components.decision_selector import DecisionSelector, Case
 from .driver import Driver
 
 
 class MVPDriver(Driver):
-    def __init__(self, decision_selector: DecisionSelector):
-        super().__init__()
-        self.decision_selector = decision_selector
-        self.time = 0
+    def __init__(self, cases: list[Case], variant: str):
+        super().__init__(DecisionSelector(cases, variant))
 
-    def set_scenario(self, scenario: Scenario):
-        super().set_scenario(scenario)
-        self.time = 0
-
-    def decide(self, probe: domain.Probe, variant: str) -> domain.Response:
-        state = MVPState.from_dict(probe.state)
-        scen = MVPScenario(self.scenario.name, self.scenario.id, probe.prompt, state)
-
-        decisions = [
-            MVPDecision(option.id, option.value)
-            for option in probe.options
-        ]
-        align_target = self.alignment_tgt
-
-        if variant == 'aligned':
-            decision, sim = self.decision_selector.selector(scen, decisions, align_target)
-        elif variant == 'misaligned':
-            decision, sim = self.decision_selector.selector(scen, decisions, align_target, misaligned=True)
-        else:
-            decision, sim = self.decision_selector.selector(scen, decisions)
-
-        return domain.Response(self.scenario.id, probe.id, decision.id, decision.justification)
+    def _extract_state(self, dict_state: dict):
+        return MVPState.from_dict(dict_state)
