@@ -9,5 +9,5 @@ class Ingestor:
     def ingest_as_cases(self) -> list[Case]:
         raise NotImplementedError
 
-    def ingest_as_domain(self) -> list[Scenario]:
+    def ingest_as_domain(self) -> Scenario:
         raise NotImplementedError

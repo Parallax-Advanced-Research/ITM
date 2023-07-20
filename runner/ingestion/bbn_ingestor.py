@@ -1,11 +1,12 @@
 import os
 import json
 import typing
+from pydantic.tools import parse_obj_as
 
+import domain as ext
 from components.decision_selector import Case
-from domain import Scenario, ProbeChoice, Probe
-from domain.mvp import MVPScenario, MVPDecision
-import domain.mvp.mvp_state as st
+from domain.internal import Scenario, Decision, Probe, KDMA, KDMAs
+from domain.mvp import MVPState
 
 from .ingestor import Ingestor
 
@@ -17,41 +18,33 @@ class BBNIngestor(Ingestor):
         self._probe_dir = f'{data_dir}/probes'
 
     def ingest_as_cases(self) -> typing.List[Case]:
-        jscen = json.load(open(self._scen_json, 'r'))
-        state = st.MVPState.from_dict(jscen['state'])
+        ext_scen = parse_obj_as(ext.Scenario, json.load(open(self._scen_json, 'r')))
+        state = MVPState.from_dict(ext_scen.state)
+        scen = Scenario[MVPState](ext_scen.id, state)
 
         cases = []
         for fprobe in os.listdir(self._probe_dir):
-            jprobe = json.load(open(f'{self._probe_dir}/{fprobe}', 'r'))
+            ext_probe = parse_obj_as(ext.Probe, json.load(open(f'{self._probe_dir}/{fprobe}', 'r')))
 
             decisions = []
-            kdmas = []
-            for joption in jprobe['options']:
-                decisions.append(MVPDecision(joption['id'], joption['value']))
-                dkdmas = []
-                for kdma, value in joption['kdma_association'].items():
-                    dkdmas.append({'kdma': kdma, 'value': value})
-                kdmas.append(dkdmas)
+            for pchoice in ext_probe.options:
+                choice_kdmas: list[KDMA] = []
+                for kdma, value in pchoice.kdma_association.items():
+                    choice_kdmas.append(KDMA(kdma, value))
+                decisions.append(Decision(pchoice.id, pchoice.value, kdmas=KDMAs(choice_kdmas)))
 
-            scen = MVPScenario('bbn-test', jscen['id'], jprobe['prompt'], state)
+            probe: Probe[MVPState] = Probe(ext_probe.id, state, ext_probe.prompt, decisions)
             for i in range(len(decisions)):
-                cases.append(Case(scen, decisions[i], decisions, kdmas[i]))
+                cases.append(Case(scen, probe, decisions[i]))
         return cases
 
-    def ingest_as_domain(self) -> list[Scenario]:
-        jscen = json.load(open(self._scen_json, 'r'))
-        state = jscen['state']
+    def ingest_as_domain(self) -> ext.Scenario:
+        scen = parse_obj_as(ext.Scenario, json.load(open(self._scen_json, 'r')))
 
-        probes = []
         for fprobe in os.listdir(self._probe_dir):
-            jprobe = json.load(open(f'{self._probe_dir}/{fprobe}', 'r'))
+            probe = parse_obj_as(ext.Probe, json.load(open(f'{self._probe_dir}/{fprobe}', 'r')))
+            for option in probe.options:
+                option.kdma_association = {}
+            scen.probes.append(probe)
 
-            options = []
-            for joption in jprobe['options']:
-                del joption['kdma_association']
-                options.append(ProbeChoice(**joption))
-            probe = Probe(jprobe['id'], prompt=jprobe['prompt'], options=options, state=state)
-            probes.append(probe)
-
-        scen = Scenario('BBNScenario', jscen['id'], state, probes)
-        return [scen]
+        return scen

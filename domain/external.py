@@ -1,3 +1,4 @@
+from pydantic import validator
 from dataclasses import dataclass, field
 
 
@@ -11,6 +12,13 @@ class ProbeType:
 class ProbeChoice:
     id: str = ''
     value: str = ''
+    kdma_association: dict[str, float] = None
+
+    @validator("kdma_association")
+    def none_probes(cls, kdma_association: dict[str, float] | None):
+        if kdma_association is None:
+            return {}
+        return kdma_association
 
 
 @dataclass
@@ -27,7 +35,13 @@ class Scenario:
     name: str = ''
     id: str = ''
     state: dict = field(default_factory={})
-    probes: list[Probe] = field(default_factory=[])
+    probes: list[Probe] = None
+
+    @validator("probes")
+    def none_probes(cls, probes: list[Probe] | None):
+        if probes is None:
+            return []
+        return probes
 
 
 @dataclass
