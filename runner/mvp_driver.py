@@ -25,10 +25,14 @@ class MVPDriver(Driver):
         ]
         align_target = self.alignment_tgt
 
+        # Decion Analytics
+
+        # Argument case formation (takes as input the output from DA)
+
         if variant == 'aligned':
-            decision, sim = self.decision_selector.selector(scen, decisions, align_target)
+            decision, sim = self.decision_selector.selector(scen, decisions, align_target) # Add argument for output of ACF
         elif variant == 'misaligned':
-            decision, sim = self.decision_selector.selector(scen, decisions, align_target, misaligned=True)
+            decision, sim = self.decision_selector.selector(scen, decisions, align_target, misaligned=True) # Add argument for output of ACF
         else:
             decision, sim = self.decision_selector.selector(scen, decisions)
 
