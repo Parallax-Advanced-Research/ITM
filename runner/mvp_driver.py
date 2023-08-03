@@ -3,6 +3,7 @@ from components.decision_selector import DecisionSelector
 from domain.mvp import MVPScenario, MVPDecision, MVPState
 from domain import Scenario
 from .driver import Driver
+from components.hra import hra
 
 
 class MVPDriver(Driver):
@@ -26,6 +27,8 @@ class MVPDriver(Driver):
         align_target = self.alignment_tgt
 
         # Decion Analytics
+        hra_obj = hra.HRA()
+        hra_result = hra_obj.hra_decision_analytics("itm/components/hra/scene2.json", 2)
 
         # Argument case formation (takes as input the output from DA)
 
