@@ -1,0 +1,21 @@
+{
+    "scenario":
+    {
+        "danger":"high",
+        "urgency":"high",
+        "error_prone":"high"
+    },
+    "predictors":
+    {
+        "relevance":{"system":["equal",3], "risk_reward_ratio":["low",1], "time":["seconds",1], "resources":["some",1]}
+    },
+
+    "treatment":{
+"saline lock":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"cariovascular"},
+"iv fluids":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":["vascular", "renal"]}
+     },
+    "casualty":
+    {
+        "injury":{"name":"broken arm", "system":"skeleton", "severity":"serious"}
+    }
+}
