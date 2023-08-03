@@ -4,7 +4,7 @@ import typing
 from pydantic.tools import parse_obj_as
 
 import domain as ext
-from components.decision_selector import Case
+from components.decision_selector.cbr import Case
 from domain.internal import Scenario, Decision, Probe, KDMA, KDMAs
 from domain.mvp import MVPState
 

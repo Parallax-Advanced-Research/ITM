@@ -1,5 +1,5 @@
 from domain.internal import Decision, Scenario
-from .decision_analyzer import DecisionAnalyzer
+from components import DecisionAnalyzer
 
 
 class BaselineDecisionAnalyzer(DecisionAnalyzer):
