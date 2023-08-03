@@ -1,8 +1,8 @@
 import math
 from domain.internal import Scenario, Probe, Decision, KDMAs
+from components import DecisionSelector
 from .case import Case
 from .mvp_sim import scen_sim, decision_sim, align_sim, probe_sim
-from .decision_selector import DecisionSelector
 
 SCEN_W = 1
 PROBE_W = 1
@@ -10,9 +10,10 @@ ALIGN_W = 2
 DECISION_W = 1
 
 
-class BaselineDecisionSelector(DecisionSelector):
+class CBRDecisionSelector(DecisionSelector):
     def __init__(self, case_base: list[Case], variant: str = 'aligned'):
-        super().__init__(case_base, variant)
+        self.cb: list[Case] = case_base
+        self.variant = variant
 
     def select(self, scenario: Scenario, probe: Probe, target: KDMAs) -> (Decision, float):
         #  probe # a prompt with multiple choice answer (of decisions)

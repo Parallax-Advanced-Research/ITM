@@ -15,7 +15,7 @@ def test_local_soar():
     args = type("Foo", (object,), {})()
     args.model = 'soar'
     args.expr = 'data/mvp/test/soar.json'
-    args.kdma_association = ['mission=7', 'denial=3']
+    args.kdmas = ['mission=7', 'denial=3']
     args.output = None
     args.batch = True
     args.verbose = True
@@ -32,7 +32,7 @@ def test_local_bbn():
     args = type("Foo", (object,), {})()
     args.model = 'bbn'
     args.expr = 'data/mvp/test/bbn.json'
-    args.kdma_association = ['knowledge=3']
+    args.kdmas = ['knowledge=3']
     args.output = None
     args.batch = True
     args.verbose = True
@@ -92,7 +92,7 @@ def main():
     test_gen_bbn()
     test_local_bbn()
     test_local_soar()
-    test_endpoint()
+    # test_endpoint()
 
 
 if __name__ == '__main__':
