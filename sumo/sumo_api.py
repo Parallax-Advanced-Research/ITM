@@ -26,8 +26,8 @@ class SumoAPI:
             success &= self.tell(statement)
         return success
 
-    def ask(self, query: str) -> dict[str, str]:
-        resp = self._get('ask', {'query': query, 'timeout': 300})
+    def ask(self, query: str, timeout: int =300) -> dict[str, str]:
+        resp = self._get('ask', {'query': query, 'timeout': timeout})
         return resp.json()
 
     def _get(self, endpoint: str, params: dict | None = None) -> Response:
