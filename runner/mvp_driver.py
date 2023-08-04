@@ -4,6 +4,7 @@ from domain.mvp import MVPScenario, MVPDecision, MVPState
 from domain import Scenario
 from .driver import Driver
 from components.hra import hra
+import json
 
 
 class MVPDriver(Driver):
@@ -26,9 +27,28 @@ class MVPDriver(Driver):
         ]
         align_target = self.alignment_tgt
 
-        # Decion Analytics
+        # Decision Analytics
+
+        scen_info = {
+            "predictors":{"relevance":{"risk_reward_ratio":["low",1], "time":["seconds",1], "system":["equal",1], "resources":["few",0]}},
+            "casualty":{"injury":{"name":"broken arm", "system":"skeleton", "severity":"serious"}},
+            "treatment":{
+            "airway":{"risk_reward_ratio":"med", "resources":"few", "time":"seconds", "system":"respiratory"},
+            "saline lock":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"cariovascular"},
+            "iv fluids":{"risk_reward_ratio":"low", "resources":"some", "time":"minutes", "system":["vascular", "renal"]},
+            "medications":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"all"},
+            "tranexamic acid":{"risk_reward_ratio":"med", "resources":"few", "time":"seconds", "system":"cardiovascular"}},
+            "state": state,
+            "scen":scen
+        }
+
+        json_object = json.dumps(scen_info, indent=4)
+        
+        with open("scene_info.json", "w") as outfile:
+            outfile.write(json_object)
+
         hra_obj = hra.HRA()
-        hra_result = hra_obj.hra_decision_analytics("itm/components/hra/scene2.json", 2)
+        hra_result = hra_obj.hra_decision_analytics("scene_info.json", 2)
 
         # Argument case formation (takes as input the output from DA)
 
