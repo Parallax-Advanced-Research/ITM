@@ -26,9 +26,28 @@ class SumoAPI:
             success &= self.tell(statement)
         return success
 
-    def ask(self, query: str, timeout: int =300) -> dict[str, str]:
+    def ask(self, query: str, timeout: int =10) -> dict[str, str]:
         resp = self._get('ask', {'query': query, 'timeout': timeout})
         return resp.json()
+
+    def ask_max(self, query: str, timeout: int = 10, max_answers: int = 2) -> list[dict[str, str]]:
+        ret_hash = []
+        if max_answers < 0:
+            max_answers = 9001
+        while len(ret_hash) < max_answers:
+            resp = None
+            resp = self._get('ask', {'query': query, 'timeout': timeout}).json()
+            if 'error' in resp:
+                break
+            bindings = resp['bindings']
+            ret_hash.append(bindings)
+            new_str = '(and %s' % query
+            for free_var in bindings:
+                new_str += ' (not (equal %s %s))' % (free_var, bindings[free_var])
+            new_str += ')'
+            query = new_str
+            new_str = ''
+        return ret_hash
 
     def _get(self, endpoint: str, params: dict | None = None) -> Response:
         if params != ():
