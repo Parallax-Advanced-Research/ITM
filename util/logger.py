@@ -27,7 +27,7 @@ def _tagged_log(self, level, msg, *args, **kwargs):
             logger._tags[tag] = ctime
         else:
             logger._tags[tag] = time.time()
-    logging.Logger._log(self, level, msg, *args, **kwargs)
+    logging.Logger._log(self, level, msg, stacklevel=2, *args, **kwargs)
 
 
 class CustomFormatter(logging.Formatter):
@@ -62,7 +62,7 @@ class SimpleFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-logger = logging.getLogger("MPEGS")
+logger = logging.getLogger("TAD")
 logger.setLevel(logging.DEBUG)
 logger._log = functools.partial(_tagged_log, logger)
 logger._tags = {}
@@ -75,4 +75,4 @@ logger.propagate = False
 
 
 def use_simple_logger():
-    ch.setFormatter(SimpleFormatter())
+    ch.setFormatter(CustomFormatter())
