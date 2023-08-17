@@ -27,7 +27,7 @@ def _tagged_log(self, level, msg, *args, **kwargs):
             logger._tags[tag] = ctime
         else:
             logger._tags[tag] = time.time()
-    logging.Logger._log(self, level, msg, stacklevel=2, *args, **kwargs)
+    logging.Logger._log(self, level, msg, *args, **kwargs, stacklevel=2)
 
 
 class CustomFormatter(logging.Formatter):

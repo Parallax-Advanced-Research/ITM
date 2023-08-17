@@ -1,3 +1,4 @@
+import math
 import requests
 from requests import Response
 
@@ -9,6 +10,13 @@ class SumoAPI:
     def init(self) -> bool:
         try:
             self._get('init')
+        except:
+            return False
+        return True
+
+    def reset(self) -> bool:
+        try:
+            self._get('reset')
         except:
             return False
         return True
@@ -29,6 +37,25 @@ class SumoAPI:
     def ask(self, query: str) -> dict[str, str]:
         resp = self._get('ask', {'query': query, 'timeout': 300})
         return resp.json()
+
+    def ask_max(self, query: str, timeout: int = 10, max_answers: int = 2) -> list[dict[str, str]]:
+        ret_hash = []
+        if max_answers < 0:
+            max_answers = math.inf
+        while len(ret_hash) < max_answers:
+            resp = None
+            resp = self._get('ask', {'query': query, 'timeout': timeout}).json()
+            if 'error' in resp:
+                break
+            bindings = resp['bindings']
+            ret_hash.append(bindings)
+            new_str = '(and %s' % query
+            for free_var in bindings:
+                new_str += ' (not (equal %s %s))' % (free_var, bindings[free_var])
+            new_str += ')'
+            query = new_str
+            new_str = ''
+        return ret_hash
 
     def _get(self, endpoint: str, params: dict | None = None) -> Response:
         if params != ():

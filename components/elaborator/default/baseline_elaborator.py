@@ -1,5 +1,4 @@
-from domain import Probe
-from domain.internal import Decision, Scenario
+from domain.internal import Decision, Scenario, Probe
 from components import Elaborator
 
 
