@@ -34,8 +34,8 @@ class SumoAPI:
             success &= self.tell(statement)
         return success
 
-    def ask(self, query: str) -> dict[str, str]:
-        resp = self._get('ask', {'query': query, 'timeout': 300})
+    def ask(self, query: str, timeout: int =10) -> dict[str, str]:
+        resp = self._get('ask', {'query': query, 'timeout': timeout})
         return resp.json()
 
     def ask_max(self, query: str, timeout: int = 10, max_answers: int = 2) -> list[dict[str, str]]:
