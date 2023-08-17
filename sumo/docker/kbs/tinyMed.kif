@@ -1,0 +1,35 @@
+(instance attributeT TernaryPredicate)
+(domain attributeT 1 TimePosition)
+(domain attributeT 2 Entity)
+(domain attributeT 3 Attribute)
+
+(instance Pneumothorax Attribute)
+(instance LungIssue Attribute)
+(instance ShortnessBreath Attribute)
+(subclass NeedleDecompression Process)
+(not (equal LungIssue ShortnessBreath))
+(not (equal LungIssue Pneumothorax))
+(not (equal ShortnessBreath Pneumothorax))
+
+(instance meetsTemporally BinaryPredicate)
+(domain meetsTemporally 1 TimeInterval)
+(domain meetsTemporally 2 TimeInterval)
+
+(instance during BinaryPredicate)
+(domain during 1 TimeInterval)
+(domain during 2 TimeInterval)
+
+(=>
+  (and
+    (instance ?X Human)
+    (instance ?ND NeedleDecompression)
+    (attributeT ?T ?X Pneumothorax)
+    (during (WhenFn ?ND) ?T)
+    (meetsTemporally ?T ?T2)
+    (patient ?ND ?X))
+  (and
+    (not
+        (attributeT ?T2 ?X Pneumothorax))
+    (attributeT ?T2 ?X LungIssue)
+    (attributeT ?T2 ?X ShortnessBreath))) 
+

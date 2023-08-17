@@ -33,8 +33,8 @@ class Driver:
         probe = Probe(ext_probe.id, state, ext_probe.prompt, decisions)
 
         probe.decisions = self.elaborator.elaborate(self.scenario, probe)
-        # TODO: Inject this somewhere?
-        decision_analysis = [analyzer.analyze(self.scenario, decision) for analyzer in self.analyzers for decision in probe.decisions]
+        for analyzer in self.analyzers:
+            analyzer.analyze(self.scenario, probe)
         decision, sim = self.selector.select(self.scenario, probe, self.alignment_tgt)
 
         return ext.Response(self.scenario.id_, probe.id_, decision.id_, str(decision.justifications))

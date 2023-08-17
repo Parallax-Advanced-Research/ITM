@@ -1,3 +1,4 @@
+import math
 import requests
 from requests import Response
 
@@ -9,6 +10,13 @@ class SumoAPI:
     def init(self) -> bool:
         try:
             self._get('init')
+        except:
+            return False
+        return True
+
+    def reset(self) -> bool:
+        try:
+            self._get('reset')
         except:
             return False
         return True
@@ -33,7 +41,7 @@ class SumoAPI:
     def ask_max(self, query: str, timeout: int = 10, max_answers: int = 2) -> list[dict[str, str]]:
         ret_hash = []
         if max_answers < 0:
-            max_answers = 9001
+            max_answers = math.inf
         while len(ret_hash) < max_answers:
             resp = None
             resp = self._get('ask', {'query': query, 'timeout': timeout}).json()

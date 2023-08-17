@@ -1,14 +1,17 @@
+import typing
 from dataclasses import dataclass
 
-
-class DecisionMetric:
-    def __init__(self):
-        self.metric_name = []
-        self.analytic_attrs = []  # list of attributes
+T = typing.TypeVar('T')
 
 
 @dataclass
-class Attribute:
-    name: str
-    desc: str
-    value: str
+class DecisionMetric(typing.Generic[T]):
+    def __init__(self):
+        self.name: str
+        self.description: str
+        self.type: typing.Type
+        self.value: T
+
+
+DecisionName = str
+DecisionMetrics = dict[DecisionName, DecisionMetric]
