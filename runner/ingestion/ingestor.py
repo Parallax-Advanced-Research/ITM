@@ -1,4 +1,4 @@
-from components.decision_selector import Case
+from components.decision_selector.cbr import Case
 from domain import Scenario
 
 
@@ -9,5 +9,5 @@ class Ingestor:
     def ingest_as_cases(self) -> list[Case]:
         raise NotImplementedError
 
-    def ingest_as_domain(self) -> list[Scenario]:
+    def ingest_as_domain(self) -> Scenario:
         raise NotImplementedError

@@ -7,8 +7,9 @@ import uuid
 from pydantic.tools import parse_obj_as
 from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
 from runner import MVPDriver, TA3Client
-from components.decision_selector import DecisionSelector, Case
+from components.decision_selector.cbr import Case
 from domain import Scenario
+from domain.internal import KDMAs, KDMA
 from util import logger, LogLevel, use_simple_logger
 
 MVP_DIR = './data/mvp'
@@ -38,42 +39,39 @@ def ltest(args):
     else:
         logger.setLevel(LogLevel.ERROR)
 
-    kdmas = []
+    kdma_lst = []
+    # if args.kdma_association is not None:
+    #     for kdmastr in args.kdma_association:
     if args.kdmas is not None:
         for kdmastr in args.kdmas:
             k, v = kdmastr.split('=')
-            kdmas.append({'kdma': k, 'value': float(v)})
+            kdma_lst.append(KDMA(k, v))
+    kdmas: KDMAs = KDMAs(kdma_lst)
 
     logger.info(f"Setting alignment to: {kdmas} for variant: {args.variant}")
     logger.info(f"Loading CaseBase at {MODEL_DIR}/{args.model}.p")
     cases: list[Case] = pickle.load(open(f'{MODEL_DIR}/{args.model}.p', 'rb'))
 
-    selector = DecisionSelector(cases, lambda_align=0, lambda_scen=0, lambda_dec=0)
-    driver = MVPDriver(selector)
+    driver = MVPDriver(cases, args.variant)
 
     responses = []
-    jscens = json.load(open(args.expr, 'r'))
-    if not isinstance(jscens, list):
-        jscens = [jscens]
+    scen = parse_obj_as(Scenario, json.load(open(args.expr, 'r')))
+    logger.info(f"Running Scenario: {scen.id}")
+    driver.set_scenario(scen)
+    driver.set_alignment_tgt(kdmas)
 
-    for jscen in jscens:
-        scen: Scenario = parse_obj_as(Scenario, jscen)
-        logger.info(f"Running Scenario: {scen.id}")
-        driver.set_scenario(scen)
-        driver.set_alignment_tgt(kdmas)
+    for probe in scen.probes:
+        logger.info(f"-Running Probe: {probe.id}")
+        logger.debug(f"--Choices: {[o.id for o in probe.options]}")
 
-        for probe in scen.probes:
-            logger.info(f"-Running Probe: {probe.id}")
-            logger.debug(f"--Choices: {[o.id for o in probe.options]}")
+        # Set probe state if not set
+        if probe.state == {} and scen.state != {}:
+            probe.state = scen.state
 
-            # Set probe state if not set
-            if probe.state == {} and scen.state != {}:
-                probe.state = scen.state
-
-            response = driver.decide(probe, args.variant)
-            logger.info(f"--Probe Response: {response.choice}")
-            responses.append(response)
-        logger.info(f"Finished Scenario: {scen.id}")
+        response = driver.decide(probe)
+        logger.info(f"--Probe Response: {response.choice}")
+        responses.append(response)
+    logger.info(f"Finished Scenario: {scen.id}")
 
     outf = args.output or f'{args.model}_results_{args.variant}.json'
     responses = [dataclasses.asdict(response) for response in responses]
@@ -93,18 +91,18 @@ def api_test(args):
 
     logger.info(f"Loading Case Base: {f'{MODEL_DIR}/{args.model}.p'}")
     cases: list[Case] = pickle.load(open(f'{MODEL_DIR}/{args.model}.p', 'rb'))
-    selector = DecisionSelector(cases, lambda_align=0, lambda_scen=0, lambda_dec=0)
-    driver = MVPDriver(selector)
+    driver = MVPDriver(cases, args.variant)
 
     client = TA3Client(args.endpoint)
     scen = client.start_scenario(f'TAD-{args.variant}')
     align_tgt = client.get_tgt_alignment(scen.id)
+    kdmas = KDMAs([KDMA(kdma['kdma'], float(kdma['value'])) for kdma in align_tgt])
 
     driver.set_scenario(scen)
+    driver.set_alignment_tgt(kdmas)
     if args.variant == 'baseline':
         logger.info(f"Running Scenario: {scen.id} on baseline")
     else:
-        driver.set_alignment_tgt(align_tgt)
         logger.info(f"Running Scenario: {scen.id} with alignment: {align_tgt} on {args.variant}")
 
     is_complete = False
@@ -115,7 +113,7 @@ def api_test(args):
 
         logger.info(f"-Running Probe: {probe.id}")
         logger.debug(f"--Choices: {[o.id for o in probe.options]}")
-        response = driver.decide(probe, args.variant)
+        response = driver.decide(probe)
         logger.info(f"--Probe Response: {response.choice}")
         is_complete = client.respond(response)
     logger.info(f"Finished Scenario: {scen.id}")
@@ -131,15 +129,11 @@ def generate(args):
     expr_name = args.output or args.ta1
 
     logger.info(f"Ingesting training data at: {args.dir} using {args.ta1} format")
-    scenarios = ingestor.ingest_as_domain()
-    scenarios = [dataclasses.asdict(scen) for scen in scenarios]
-
-    # Reduce to non-list of only 1
-    if len(scenarios) == 1:
-        scenarios = scenarios[0]
+    scenario = ingestor.ingest_as_domain()
+    scenario = dataclasses.asdict(scenario)
 
     os.makedirs(TEST_DIR, exist_ok=True)
-    json.dump(scenarios, open(f'{TEST_DIR}/{expr_name}.json', 'w'))
+    json.dump(scenario, open(f'{TEST_DIR}/{expr_name}.json', 'w'))
     logger.info(f"Evaluation file written to {TEST_DIR}/{expr_name}.json")
 
 

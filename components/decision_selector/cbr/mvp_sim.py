@@ -1,5 +1,6 @@
 from dataclasses import asdict
-from domain.mvp import MVPState, MVPScenario, MVPDecision, Casualty
+from domain.internal import Scenario, Decision, Probe, KDMA, KDMAs
+from domain.mvp import MVPState, Casualty
 from .sim_tools import similarity
 
 TIME_W = 0.5
@@ -7,11 +8,9 @@ CASUALTY_W = 1
 UNSTRUCTURED_W = 1
 VITALS_W = 1
 DEMOGRAPHIC_W = 1
-STATE_W = 1
-PROMPT_W = 1
 
 
-def casuality_sim(c1: Casualty, c2: Casualty) -> float:
+def casualty_sim(c1: Casualty, c2: Casualty) -> float:
     sim = 0
     tot_wgt = UNSTRUCTURED_W + VITALS_W + DEMOGRAPHIC_W
 
@@ -31,33 +30,32 @@ def state_sim(s1: MVPState, s2: MVPState) -> float:
     sim = 0
     tot_wgt = TIME_W + UNSTRUCTURED_W
 
-    sim += TIME_W * similarity(s1.time, s2.time)
+    sim += TIME_W * similarity(s1.time_, s2.time_)
     sim += UNSTRUCTURED_W * similarity(s1.unstructured, s2.unstructured)
 
     num_cas = max(len(s1.casualties), len(s2.casualties))
     for i in range(num_cas):
         if len(s1.casualties) > i and len(s2.casualties) > i:
-            sim += CASUALTY_W * casuality_sim(s1.casualties[i], s2.casualties[i])
+            sim += CASUALTY_W * casualty_sim(s1.casualties[i], s2.casualties[i])
         tot_wgt += CASUALTY_W
 
     return sim / tot_wgt
 
 
-def scen_sim(s1: MVPScenario, s2: MVPScenario) -> float:
-    sim = 0
-    tot_wgt = STATE_W + PROMPT_W
-
-    sim += STATE_W * state_sim(s1.state, s2.state)
-    sim += PROMPT_W * similarity(s1.prompt, s2.prompt)
-
-    return sim / tot_wgt
+def scen_sim(s1: Scenario, s2: Scenario) -> float:
+    return state_sim(s1.state, s2.state)
 
 
-def decision_sim(d1: MVPDecision, d2: MVPDecision) -> float:
+def probe_sim(p1: Probe, p2: Probe) -> float:
+    # TODO: Handle probe states
+    return similarity(p1.prompt, p2.prompt)
+
+
+def decision_sim(d1: Decision, d2: Decision) -> float:
     return similarity(d1.value, d2.value)
 
 
-def align_sim(a1: list, a2: list) -> float:
-    a1d = {kdma['kdma'].lower(): float(kdma['value']) for kdma in a1}
-    a2d = {kdma['kdma'].lower(): float(kdma['value']) for kdma in a2}
+def align_sim(a1: KDMAs, a2: KDMAs) -> float:
+    a1d = {n.lower(): v for n, v in a1.kdma_map.items()}
+    a2d = {n.lower(): v for n, v in a2.kdma_map.items()}
     return similarity(a1d, a2d)

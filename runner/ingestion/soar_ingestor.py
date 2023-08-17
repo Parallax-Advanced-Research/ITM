@@ -3,11 +3,13 @@ import csv
 import uuid
 import yaml
 import typing
+from pydantic.tools import parse_obj_as
 
-from components.decision_selector import Case
-from domain.mvp import MVPScenario, MVPDecision
-from domain import Scenario, ProbeChoice, Probe
-import domain.mvp.mvp_state as st
+
+import domain as ext
+from domain.internal import Scenario, Probe, Decision, KDMA, KDMAs
+from domain.mvp import MVPState, Casualty
+from components.decision_selector.cbr import Case
 from .ingestor import Ingestor
 
 
@@ -23,9 +25,9 @@ class SOARIngestor(Ingestor):
         prompt1 = "Which casualty do you treat first?"
         prompt2 = "What treatment do you give to"
 
-        jscen = yaml.load(open(f"{self.data_dir}/scenario.yaml", 'r'), Loader=yaml.Loader)
-        jstate = jscen['state']
-        state = st.MVPState.from_dict(jstate)
+        ext_scen = parse_obj_as(ext.Scenario, yaml.load(open(f"{self.data_dir}/scenario.yaml", 'r'), Loader=yaml.Loader))
+        state = MVPState.from_dict(ext_scen.state)
+        scen = Scenario(ext_scen.id, state)
 
         cases = []
         for raw_csv in [f for f in os.listdir(self.data_dir) if f.endswith('.csv')]:
@@ -39,49 +41,45 @@ class SOARIngestor(Ingestor):
                     order = int(line[4])
                     patient = line[5]
                     treatment = line[6]
-                    denial = line[7]
-                    mission = line[8]
-                    align = [{'kdma': 'mission', 'value': mission}, {'kdma': 'denial', 'value': denial}]
+                    denial = float(line[7])
+                    mission = float(line[8])
+                    kdmas = KDMAs([KDMA('mission', mission), KDMA('denaial', denial)])
 
                     # Build Prompt1-Case
                     if user != prev_user:
-                        scen = MVPScenario('soar-test-type-1', str(uuid.uuid4()), prompt1, state)
                         decisions = []
                         for cas in state.casualties:
-                            decisions.append(MVPDecision('', cas.id))
-                        fdecision = MVPDecision('', patient)
-
-                        case = Case(scen, fdecision, decisions, alignment=align)
+                            decisions.append(Decision(cas.id, cas.id))
+                        choice = Decision(patient, patient, kdmas=kdmas)
+                        probe = Probe(f"{scen.id_}-who", state, prompt1, decisions)
+                        case = Case(scen, probe, choice)
                         cases.append(case)
 
-                    scen = MVPScenario('soar-test-type-2', str(uuid.uuid4()), f"{prompt2} {patient}?", state)
                     decisions = []
                     for toption in SOARIngestor.TREATMENT_LIST:
-                        decisions.append(MVPDecision('', toption))
-                    fdecision = MVPDecision('', treatment)
-                    case = Case(scen, fdecision, decisions, align)
+                        decisions.append(Decision(toption, toption))
+                    choice = Decision(treatment, treatment, kdmas=kdmas)
+                    probe = Probe(f"{scen.id_}-how-{patient}", state, f"{prompt2} {patient}?", decisions)
+                    case = Case(scen, probe, choice)
                     cases.append(case)
 
                     prev_user = user
         return cases
 
-    def ingest_as_domain(self) -> list[Scenario]:
+    def ingest_as_domain(self) -> ext.Scenario:
         prompt1 = "Which casualty do you treat first?"
         prompt2 = "What treatment do you give to"
 
-        jscen = yaml.load(open(f"{self.data_dir}/scenario.yaml", 'r'), Loader=yaml.Loader)
-        state = jscen['state']
-
-        casualties = [st.Casualty(**c) for c in state['casualties']]
-        probes = [
-            Probe(str(uuid.uuid4()), prompt=prompt1, state={}, options=[
-                ProbeChoice(f"choice{i}", c.id) for i, c in enumerate(casualties)
+        scen = parse_obj_as(ext.Scenario, yaml.load(open(f"{self.data_dir}/scenario.yaml", 'r'), Loader=yaml.Loader))
+        casualties = [Casualty(**c) for c in scen.state['casualties']]
+        scen.probes = [
+            ext.Probe(str(uuid.uuid4()), prompt=prompt1, state={}, options=[
+                ext.ProbeChoice(f"choice{i}", c.id) for i, c in enumerate(casualties)
             ])]
 
         for cas in casualties:
-            probes.append(Probe(str(uuid.uuid4()), prompt=f"{prompt2} {cas.id}?", state={}, options=[
-                ProbeChoice(f"choice{i}", t) for i, t in enumerate(SOARIngestor.TREATMENT_LIST)
+            scen.probes.append(ext.Probe(str(uuid.uuid4()), prompt=f"{prompt2} {cas.id}?", state={}, options=[
+                ext.ProbeChoice(f"choice{i}", t) for i, t in enumerate(SOARIngestor.TREATMENT_LIST)
             ]))
 
-        scenario = Scenario('MVP-Scenario', jscen['id'], state=state, probes=probes)
-        return [scenario]
+        return scen
