@@ -1,5 +1,6 @@
 from typing import Optional
 import random
+from util import logger
 
 from .sim import MCSim
 from .mc_node import MCStateNode, MCDecisionNode
@@ -26,6 +27,7 @@ class MonteCarloTree:
         :param max_depth: The depth to execute to
         :return: MCStateNode at the end of this tree
         """
+        self._sim.reset()
         root = self._rand.choice(self._roots)
         return self._rollout(root, max_depth, 1)
 

@@ -25,3 +25,7 @@ class MCSim:
         :return: list[MCAction]
         """
         raise NotImplementedError
+
+    def reset(self):
+        raise NotImplementedError
+
