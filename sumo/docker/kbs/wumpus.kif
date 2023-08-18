@@ -183,6 +183,14 @@
   (neighbor ?X left ?Y)
   (neighbor ?Y right ?X))
 
+(<=>
+  (adjacent ?X ?Y)
+  (or
+    (neighbor ?X left ?Y)
+    (neighbor ?X top ?Y)
+    (neighbor ?X right ?Y)
+    (neighbor ?X bot ?Y)))
+
 (neighbor g03 bot g02)
 (neighbor g02 bot g01)
 (neighbor g01 bot g00)
@@ -228,31 +236,6 @@
 (neighbor wall left g31)
 (neighbor wall left g32)
 (neighbor wall left g33)
-
-(=>
-  (and
-    (instance ?V square)
-    (attribute ?V wumpus)
-    (neighbor ?V ?X ?W)
-    (instance ?W square)
-    (not (equal ?W wall)))
-  (attribute ?W stench))
-
-(=>
-  (and
-    (instance ?V square)
-    (attribute ?V pit)
-    (adjacent ?V ?W)
-    (instance ?W square)
-    (not (equal ?W wall)))
-  (attribute ?W breeze))
-
-(<=>
-  (and
-    (instance ?X square)
-    (not (attribute ?X wumpus))
-    (not (attribute ?X pit)))
-  (attribute ?X safe))
 
 (=>
   (and
@@ -440,3 +423,58 @@
   (and
     (player_at ?P1 ?T2)
     (player_facing right ?T2)))
+
+(=>
+    (and
+        (player_at ?GCell ?T)
+        (attribute ?GCell glitter))
+    (perceives glitter ?T))
+
+(=>
+    (and
+        (player_at ?GCell ?T)
+        (not (attribute ?GCell glitter)))
+    (perceives nothing ?T))
+
+; begin stench
+
+(=>
+    (and
+        (player_at ?X ?T)
+        (attribute ?X stench))
+    (perceives_stench stench ?T))
+
+(=>
+    (and
+        (player_at ?X ?T)
+        (not (attribute ?X stench)))
+    (perceives_stench nostench ?T))
+
+; breeze
+
+(=>
+    (and
+        (player_at ?X ?T)
+        (attribute ?X breeze))
+    (perceives_breeze breeze ?T))
+
+(=>
+    (and
+        (player_at ?X ?T)
+        (not (attribute ?X breeze)))
+    (perceives_breeze nobreeze ?T))
+
+(=>
+  (and
+    (player_at ?X ?T)
+    (or
+      (attribute ?X wumpus)
+      (attribute ?X pit)))
+  (isdead dead ?T))
+
+(=>
+  (and
+    (player_at ?X ?T)
+    (not (attribute ?X wumpus))
+    (not (attribute ?X pit)))
+  (isdead notdead ?T))
