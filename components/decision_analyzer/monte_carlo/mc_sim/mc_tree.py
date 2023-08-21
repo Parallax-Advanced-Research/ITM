@@ -1,4 +1,5 @@
 from typing import Optional
+from .mc_funcs import exploit_explore_tradeoff
 import random
 import bisect
 import numpy as np
@@ -51,44 +52,11 @@ class MonteCarloTree:
             if not state.children:
                 return state
 
-        @staticmethod
-        def exploit_explore_tradeoff(actions: list[MCDecisionNode], exploit=.75):
-            """
-            naive way to select a decision
-            :param actions: list of actions takeable from node
-            :param exploit: percentage of mix for exploit
-            :return: action chosen
-            """
-
-            def cdf(weights):
-                total = sum(weights)
-                result = []
-                cumsum = 0
-                for w in weights:
-                    cumsum += w
-                    result.append(cumsum / total)
-                return result
-            visited = [x.count for x in actions]
-            max_visited = max(visited)
-            visited = [max_visited - x for x in visited]
-            scores = [0, 0, 0]
-            try:
-                scores = [x.children[0].state.score for x in actions]
-            except:
-                pass
-            comb_score = []
-            for v, s in zip(visited, scores):
-                comb_score.append((exploit * s) + ((1 - exploit) * v))
-            comb_score = cdf(np.array(comb_score))
-            x = random.random()
-            idx = bisect.bisect_left(comb_score, x)
-            return actions[idx]
-
         # Choose decision and update node counts
-        if curr_depth > 20:
-            decision = exploit_explore_tradeoff(state.children)  # self._rand.choice(state.children)
-        else:
-            decision = self._rand.choice(state.children)
+        # This gets updated with not my gitlab issue i think
+        decision = exploit_explore_tradeoff(state.children)
+
+        # decision = self._rand.choice(state.children)
         state.count += 1
         decision.count += 1
 

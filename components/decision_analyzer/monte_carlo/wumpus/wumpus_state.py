@@ -24,7 +24,7 @@ class WumpusState(MCState):
         self.stench = stench
         self.arrows = 1
         self.gold = 0
-        self.score = 0
+        self.score = 1000
 
     def __str__(self):
         return "location %s facing %s time t%d glitter %s stench %s score %d" % (self.location, self.facing, self.time,
