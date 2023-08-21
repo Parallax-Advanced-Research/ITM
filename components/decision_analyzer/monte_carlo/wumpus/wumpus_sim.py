@@ -44,7 +44,7 @@ class WumpusSim(MCSim):
 
         return_list = []
         new_time = time + 1
-        new_status = self.sumo.ask('(and (player_at ?X t%d) (player_facing ?Y t%d) (perceives ?Z t%d ) (perceives_stench ?S t%d) (perceives_breeze ?B t%d) (isdead ?D t%d) )' % (new_time, new_time, new_time, new_time, new_time, new_time))
+        new_status = self.sumo.ask('(and (player_at ?X t%d) (player_facing ?Y t%d) (perceives ?Z t%d ) (perceives_stench ?S t%d) (perceives_breeze ?B t%d) (isdead ?D t%d) )' % (new_time, new_time, new_time, new_time, new_time, new_time), timeout=20)
         new_location = new_status['bindings']['?X']
         new_facing = new_status['bindings']['?Y']
         glitter_precept = new_status['bindings']['?Z']
@@ -57,6 +57,8 @@ class WumpusSim(MCSim):
             score -= 100
         elif glitter_precept == 'glitter':
             score += 100
+        elif new_location == location:
+            score -= 5
         else:
             score -= 1
         outcome.set_score(score)
@@ -75,8 +77,13 @@ class WumpusSim(MCSim):
         """
 
         location = state.location
+        orientation = state.facing
         # Do logic on location here? Pass Time information here?
         actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
+
+        # sumo cant seem to handle entering square g33 or theres an error? querylen is 10 minutes
+        if (location == 'g23' and orientation == 'right') or (location == 'g32' and orientation == 'top'):
+            actions = [WumpusAction(action='cw'), WumpusAction(action='ccw')]
         return actions
 
     def reset(self):
