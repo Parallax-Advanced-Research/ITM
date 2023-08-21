@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, fields
+from domain.internal import State
 
 
 class UpdatableDict:
@@ -80,11 +81,14 @@ class Casualty(UpdatableDict):
             self.vitals = Vitals(**vdict)
 
 
-@dataclass
-class MVPState(UpdatableDict):
+class MVPState(State):
     unstructured: str = ''
-    time: int = 0
     casualties: list[Casualty] = field(default_factory=list)
+
+    def __init__(self, unstructured: str, time_: int, casualties: list[Casualty]):
+        super().__init__(id_='MVPState', time_=time_)
+        self.unstructured = unstructured
+        self.casualties = casualties
 
     @staticmethod
     def from_dict(data: dict) -> 'MVPState':
