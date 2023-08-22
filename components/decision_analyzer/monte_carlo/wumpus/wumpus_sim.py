@@ -28,6 +28,8 @@ class WumpusSim(MCSim):
 
         # These should be known by state?
         if self.dirty:
+            print('(player_at %s t%d)' % (location, time))
+            print('(player_facing %s t%d)' % (facing, time))
             self.sumo.tell('(player_at %s t%d)' % (location, time))
             self.sumo.tell('(player_facing %s t%d)' % (facing, time))
             logger.debug('inserting dirty state location %s facing %s time %d' % (location, facing, time))
@@ -37,14 +39,16 @@ class WumpusSim(MCSim):
             self.do_breeze_tells(locations=pits)
             self.dirty = False
 
+        print(f'(time t{time} t{time +1 })')
         self.sumo.tell(f'(time t{time} t{time +1 })')
 
         act = action.action
+        print('(action %s t%d)' % (act, time))
         self.sumo.tell('(action %s t%d)' % (act, time))
 
         return_list = []
         new_time = time + 1
-        new_status = self.sumo.ask('(and (player_at ?X t%d) (player_facing ?Y t%d) (perceives ?Z t%d ) (perceives_stench ?S t%d) (perceives_breeze ?B t%d) (isdead ?D t%d) )' % (new_time, new_time, new_time, new_time, new_time, new_time), timeout=20)
+        new_status = self.sumo.ask('(and (player_at ?X t%d) (player_facing ?Y t%d) (perceives ?Z t%d ) (perceives_stench ?S t%d) (perceives_breeze ?B t%d) (isdead ?D t%d) )' % (new_time, new_time, new_time, new_time, new_time, new_time), timeout=10)
         new_location = new_status['bindings']['?X']
         new_facing = new_status['bindings']['?Y']
         glitter_precept = new_status['bindings']['?Z']
@@ -82,8 +86,8 @@ class WumpusSim(MCSim):
         actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
 
         # sumo cant seem to handle entering square g33 or theres an error? querylen is 10 minutes
-        if (location == 'g23' and orientation == 'right') or (location == 'g32' and orientation == 'top'):
-            actions = [WumpusAction(action='cw'), WumpusAction(action='ccw')]
+        # if (location == 'g23' and orientation == 'right') or (location == 'g32' and orientation == 'top'):
+        #     actions = [WumpusAction(action='cw'), WumpusAction(action='ccw')]
         return actions
 
     def reset(self):
@@ -95,8 +99,10 @@ class WumpusSim(MCSim):
             for j in range(4):
                 square_name = 'g%d%d' % (i, j)
                 if square_name == location:
+                    print('(attribute %s glitter)' % square_name)
                     self.sumo.tell('(attribute %s glitter)' % square_name)
                 else:
+                    print('(not (attribute %s glitter))' % square_name)
                     self.sumo.tell('(not (attribute %s glitter))' % square_name)
 
 
@@ -110,28 +116,37 @@ class WumpusSim(MCSim):
             for j in range(4):
                 square_name = 'g%d%d' % (i, j)
                 if square_name in adjacents:
+                    print('(attribute %s stench)' % square_name)
                     self.sumo.tell('(attribute %s stench)' % square_name)
                 else:
+                    print('(not (attribute %s stench))' % square_name)
                     self.sumo.tell('(not (attribute %s stench))' % square_name)
                 if square_name == location:
+                    print('(attribute %s wumpus)' % square_name)
                     self.sumo.tell('(attribute %s wumpus)' % square_name)
                 else:
+                    print('(attribute %s wumpus)' % square_name)
                     self.sumo.tell('(not (attribute %s wumpus))' % square_name)
 
     def do_breeze_tells(self, locations: list[str]) -> None:
         adjacents = set()
         for pit in locations:
             for direction in ['left', 'top', 'right', 'bot']:
+                
                 a = self.sumo.ask('(neighbor %s %s ?X)' % (pit, direction))['bindings']['?X']
                 adjacents.add(a)
         for i in range(4):
             for j in range(4):
                 square_name = 'g%d%d' % (i, j)
                 if square_name in adjacents:
+                    print('(attribute %s breeze)' % square_name)
                     self.sumo.tell('(attribute %s breeze)' % square_name)
                 else:
+                    print('(not (attribute %s breeze))' % square_name)
                     self.sumo.tell('(not (attribute %s breeze))' % square_name)
                 if square_name in locations:
+                    print('(attribute %s pit)' % square_name)
                     self.sumo.tell('(attribute %s pit)' % square_name)
                 else:
+                    print('(not (attribute %s pit))' % square_name)
                     self.sumo.tell('(not (attribute %s pit))' % square_name)
