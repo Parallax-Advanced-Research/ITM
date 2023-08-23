@@ -24,7 +24,6 @@ class WumpusSim(MCSim):
         location = state.location
         facing = state.facing
         time = state.time
-        score = state.score
 
         # These should be known by state?
         if self.dirty:
@@ -33,10 +32,10 @@ class WumpusSim(MCSim):
             self.sumo.tell('(player_at %s t%d)' % (location, time))
             self.sumo.tell('(player_facing %s t%d)' % (facing, time))
             logger.debug('inserting dirty state location %s facing %s time %d' % (location, facing, time))
-            self.do_glitter_tells('g12')
-            self.do_stench_tells('g02')
+            self._do_glitter_tells('g12')
+            self._do_stench_tells('g02')
             pits = ['g20', 'g22', 'g33']
-            self.do_breeze_tells(locations=pits)
+            self._do_breeze_tells(locations=pits)
             self.dirty = False
 
         print(f'(time t{time} t{time +1 })')
@@ -57,18 +56,9 @@ class WumpusSim(MCSim):
         death_precept = new_status['bindings']['?D']
 
         outcome = WumpusState(location=new_location, facing=new_facing, time=new_time, glitter=glitter_precept, stench=stench_precept)
-        if death_precept == 'dead':
-            score -= 100
-        elif glitter_precept == 'glitter':
-            score += 100
-        elif new_location == location:
-            score -= 5
-        else:
-            score -= 1
-        outcome.set_score(score)
-        logger.debug('At Time %d: (loc=%s, orient=%s, glitter=%s, stench=%s, breeze=%s, dead=%s, lastact=%s, score=%d' % (new_time, new_location, new_facing,
+        logger.debug('At Time %d: (loc=%s, orient=%s, glitter=%s, stench=%s, breeze=%s, dead=%s, lastact=%s' % (new_time, new_location, new_facing,
                                                                                             glitter_precept, stench_precept,
-                                                                                            breeze_precept, death_precept, action.action, score))
+                                                                                            breeze_precept, death_precept, action.action))
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
         return return_list
@@ -94,7 +84,7 @@ class WumpusSim(MCSim):
         self.sumo.reset()
         self.dirty = True
 
-    def do_glitter_tells(self, location: str) -> None:
+    def _do_glitter_tells(self, location: str) -> None:
         for i in range(4):
             for j in range(4):
                 square_name = 'g%d%d' % (i, j)
@@ -105,8 +95,7 @@ class WumpusSim(MCSim):
                     print('(not (attribute %s glitter))' % square_name)
                     self.sumo.tell('(not (attribute %s glitter))' % square_name)
 
-
-    def do_stench_tells(self, location: str) -> None:
+    def _do_stench_tells(self, location: str) -> None:
         # adjacents = sumo.ask_max('(adjacent %s ?X)' % location, max_answers=4)
         adjacents = []
         for direction in ['left', 'top', 'right', 'bot']:
@@ -128,7 +117,7 @@ class WumpusSim(MCSim):
                     print('(attribute %s wumpus)' % square_name)
                     self.sumo.tell('(not (attribute %s wumpus))' % square_name)
 
-    def do_breeze_tells(self, locations: list[str]) -> None:
+    def _do_breeze_tells(self, locations: list[str]) -> None:
         adjacents = set()
         for pit in locations:
             for direction in ['left', 'top', 'right', 'bot']:

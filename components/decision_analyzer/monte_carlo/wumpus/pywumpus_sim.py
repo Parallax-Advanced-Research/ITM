@@ -5,16 +5,16 @@ from util import logger
 
 
 class WumpusSquare:
-    def __init__(self, x, y, has_wump, has_pit, has_glit):
-        self.agent = None
-        self.name = 'g%d%d' % (x, y)
-        self.x = x
-        self.y = y
-        self.wump = has_wump
-        self.pit = has_pit
-        self.glit = has_glit
-        self.stench = None
-        self.breeze = None
+    def __init__(self, x: int, y: int, has_wump: bool, has_pit: bool, has_glit: bool):
+        self.agent: str | None = None
+        self.name: str = 'g%d%d' % (x, y)
+        self.x: int = x
+        self.y: int = y
+        self.wump: bool = has_wump
+        self.pit: bool = has_pit
+        self.glit: bool = has_glit
+        self.stench: str | None = None
+        self.breeze: str | None = None
 
     def perceive(self) -> dict[str, bool]:
         dead = self.pit or self.wump
@@ -32,15 +32,21 @@ class WumpusSquare:
 
 
 class WumpusGrid:
+
+    DIR_FACING = {
+        'cw': {'left': 'top', 'top': 'right', 'right': 'bot', 'bot': 'left'},
+        'ccw': {'left': 'bot', 'top': 'left', 'right': 'top', 'bot': 'right'}
+    }
+
     def __init__(self, sz: int = 4, wumpuii: list[str] = ['g02'], pits: list[str] = ['g20', 'g22', 'g33'],
                  glitters: list[str] = ['g12'], agent_start: str = 'g00', agent_face: str = 'right', time: int = 0):
-        self.size = sz
-        self.board = {}
-        self.agent_loc = agent_start
-        self.agent_face = agent_face
+        self.size: int = sz
+        self.board: dict[int, dict, int, WumpusSquare] = {}
+        self.agent_loc: str = agent_start
+        self.agent_face: str = agent_face
         x, y = int(agent_start[1]), int(agent_start[2])
-        self.pits = pits
-        self.wumpuii = wumpuii
+        self.pits: list[str] = pits
+        self.wumpuii: list[str] = wumpuii
         for row in range(sz):
             if row not in self.board.keys():
                 self.board[row] = dict()
@@ -54,17 +60,14 @@ class WumpusGrid:
                 self.board[row][col] = sq
         self.board[x][y].agent = agent_face
         self.propogate_aromatics()
-        self.time = time
+        self.time: int = time
 
     def do(self, action: str):
         start_x, start_y = int(self.agent_loc[1]), int(self.agent_loc[2])
         start_direction = self.agent_face
-        new_dir = {
-            'cw': {'left': 'top', 'top': 'right', 'right': 'bot', 'bot': 'left'},
-            'ccw': {'left': 'bot', 'top': 'left', 'right': 'top', 'bot': 'right'}
-        }
+
         if action in ['cw', 'ccw']:
-            new_direction = new_dir[action][start_direction]
+            new_direction = WumpusGrid.DIR_FACING[action][start_direction]
             self.agent_face = new_direction
             self.board[start_x][start_y].agent = new_direction
         else:
