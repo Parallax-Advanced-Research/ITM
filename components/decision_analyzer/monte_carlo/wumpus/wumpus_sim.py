@@ -1,13 +1,17 @@
-from dataclasses import dataclass
 from .wumpus_state import WumpusAction, WumpusState
 from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 
 from sumo import SumoAPI
-import time
 from util import logger
 
 
 class WumpusSim(MCSim):
+
+    LEFT_BOUNDARY = ['g00', 'g01', 'g02', 'g03']
+    TOP_BOUNDARY = ['g03', 'g13', 'g23', 'g33']
+    RIGHT_BOUNDARY = ['g33', 'g32', 'g31', 'g30']
+    BOT_BOUNDARY = ['g30', 'g20', 'g10', 'g00']
+
     def __init__(self):
         super().__init__()
         self.sumo = SumoAPI()
@@ -27,8 +31,6 @@ class WumpusSim(MCSim):
 
         # These should be known by state?
         if self.dirty:
-            print('(player_at %s t%d)' % (location, time))
-            print('(player_facing %s t%d)' % (facing, time))
             self.sumo.tell('(player_at %s t%d)' % (location, time))
             self.sumo.tell('(player_facing %s t%d)' % (facing, time))
             logger.debug('inserting dirty state location %s facing %s time %d' % (location, facing, time))
@@ -38,11 +40,9 @@ class WumpusSim(MCSim):
             self._do_breeze_tells(locations=pits)
             self.dirty = False
 
-        print(f'(time t{time} t{time +1 })')
         self.sumo.tell(f'(time t{time} t{time +1 })')
 
         act = action.action
-        print('(action %s t%d)' % (act, time))
         self.sumo.tell('(action %s t%d)' % (act, time))
 
         return_list = []
@@ -55,12 +55,14 @@ class WumpusSim(MCSim):
         breeze_precept = new_status['bindings']['?B']
         death_precept = new_status['bindings']['?D']
 
-        outcome = WumpusState(location=new_location, facing=new_facing, time=new_time, glitter=glitter_precept, stench=stench_precept)
+        outcome = WumpusState(location=new_location, facing=new_facing, time=new_time, glitter=glitter_precept,
+                              stench=stench_precept, breeze=breeze_precept, dead=death_precept)
         logger.debug('At Time %d: (loc=%s, orient=%s, glitter=%s, stench=%s, breeze=%s, dead=%s, lastact=%s' % (new_time, new_location, new_facing,
                                                                                             glitter_precept, stench_precept,
                                                                                             breeze_precept, death_precept, action.action))
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
+        score = self.score(outcome)
         return return_list
 
     def actions(self, state: WumpusState) -> list[WumpusAction]:
@@ -84,15 +86,25 @@ class WumpusSim(MCSim):
         self.sumo.reset()
         self.dirty = True
 
+    def score(self, state: WumpusState) -> float:
+        score = 1000 if state.woeful_scream_perceived else 0
+        score -= 10 if state.location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
+        score -= 10 if state.location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
+        score -= 10 if state.location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
+        score -= 10 if state.location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
+        score += 15 if state.glitter else 0
+        score += 7 if state.stench else 0
+        score -= 3 if state.breeze else 0
+        score -= 50 if state.dead else 0
+        return score
+
     def _do_glitter_tells(self, location: str) -> None:
         for i in range(4):
             for j in range(4):
                 square_name = 'g%d%d' % (i, j)
                 if square_name == location:
-                    print('(attribute %s glitter)' % square_name)
                     self.sumo.tell('(attribute %s glitter)' % square_name)
                 else:
-                    print('(not (attribute %s glitter))' % square_name)
                     self.sumo.tell('(not (attribute %s glitter))' % square_name)
 
     def _do_stench_tells(self, location: str) -> None:
@@ -105,16 +117,12 @@ class WumpusSim(MCSim):
             for j in range(4):
                 square_name = 'g%d%d' % (i, j)
                 if square_name in adjacents:
-                    print('(attribute %s stench)' % square_name)
                     self.sumo.tell('(attribute %s stench)' % square_name)
                 else:
-                    print('(not (attribute %s stench))' % square_name)
                     self.sumo.tell('(not (attribute %s stench))' % square_name)
                 if square_name == location:
-                    print('(attribute %s wumpus)' % square_name)
                     self.sumo.tell('(attribute %s wumpus)' % square_name)
                 else:
-                    print('(attribute %s wumpus)' % square_name)
                     self.sumo.tell('(not (attribute %s wumpus))' % square_name)
 
     def _do_breeze_tells(self, locations: list[str]) -> None:
@@ -128,14 +136,10 @@ class WumpusSim(MCSim):
             for j in range(4):
                 square_name = 'g%d%d' % (i, j)
                 if square_name in adjacents:
-                    print('(attribute %s breeze)' % square_name)
                     self.sumo.tell('(attribute %s breeze)' % square_name)
                 else:
-                    print('(not (attribute %s breeze))' % square_name)
                     self.sumo.tell('(not (attribute %s breeze))' % square_name)
                 if square_name in locations:
-                    print('(attribute %s pit)' % square_name)
                     self.sumo.tell('(attribute %s pit)' % square_name)
                 else:
-                    print('(not (attribute %s pit))' % square_name)
                     self.sumo.tell('(not (attribute %s pit))' % square_name)
