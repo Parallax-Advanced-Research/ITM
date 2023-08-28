@@ -35,6 +35,7 @@ RUN cd /root \
     && echo "export ONTOLOGYPORTAL_GIT=/root/workspace" >> .bashrc \
     && echo 'export CATALINA_OPTS="$CATALINA_OPTS -Xmx10g"' >> .bashrc \
     && echo "export CATALINA_HOME=/root/Programs/apache-tomcat-8.5.23" >> .bashrc \
+    && echo "export VAMPIRE_OPTS='--mode portfolio --schedule casc_2019 --proof tptp -t'" >> .bashrc \
     && source .bashrc
 
 # Setup Vampire
