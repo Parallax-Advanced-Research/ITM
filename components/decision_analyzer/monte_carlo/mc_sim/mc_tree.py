@@ -37,7 +37,9 @@ class MonteCarloTree:
         :return: MCStateNode at the end of this tree
         """
         root = self._node_selector(self._rand, self._roots)
-        return self._rollout(root, max_depth, 1)
+        leaf_node = self._rollout(root, max_depth, 1)
+        self.score_propagation(leaf_node, self._sim.score(leaf_node.state))
+        return leaf_node
 
     def _rollout(self, state: MCStateNode, max_depth: int, curr_depth: int) -> MCStateNode:
         """
@@ -110,3 +112,20 @@ class MonteCarloTree:
                 to_return += MonteCarloTree.leaves(state)
 
         return to_return
+
+    @staticmethod
+    def score_propagation(node: MCStateNode | MCDecisionNode, score: float):
+        # go down up
+        # call this after a rollout on the leaf node, and keep going up the parents
+        # it should update the parents scores list and then calculate the average for it.
+
+        # update node score
+        node.score = score
+        node.scores.append(score)
+
+        # propagate the node score up the parents
+        parent = node.parent
+        while parent is not None:
+            parent.scores.append(score)
+            parent.score = sum(parent.scores) / len(parent.scores)
+            parent = parent.parent
