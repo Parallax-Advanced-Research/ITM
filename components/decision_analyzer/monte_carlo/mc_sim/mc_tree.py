@@ -115,11 +115,7 @@ class MonteCarloTree:
 
     @staticmethod
     def score_propagation(node: MCStateNode | MCDecisionNode, score: float):
-        # go down up
-        # call this after a rollout on the leaf node, and keep going up the parents
-        # it should update the parents scores list and then calculate the average for it.
-
-        # update node score
+        # update the node's score
         node.score = score
         node.scores.append(score)
 
