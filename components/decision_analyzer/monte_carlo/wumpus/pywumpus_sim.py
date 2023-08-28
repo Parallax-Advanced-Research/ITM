@@ -159,9 +159,6 @@ class PyWumpusSim(MCSim):
         outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time, glitter=glitter_precept,
                               stench=stench_precept, breeze=breeze_precept, dead=death_precept)
 
-        # logger.debug('At Time %d: (loc=%s, orient=%s, glitter=%s, stench=%s, breeze=%s, dead=%s, lastact=%s, score=%d' % (new_time, new_location, new_facing,
-        #                                                                                     glitter_precept, stench_precept,
-        #                                                                                     breeze_precept, death_precept, action.action, score))
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
         score = self.score(outcome)
@@ -176,12 +173,8 @@ class PyWumpusSim(MCSim):
 
         location = state.sumo_str_location
         orientation = state.facing
-        # Do logic on location here? Pass Time information here?
-        actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
 
-        # sumo cant seem to handle entering square g33 or theres an error? querylen is 10 minutes
-        # if (location == 'g23' and orientation == 'right') or (location == 'g32' and orientation == 'top'):
-        #     actions = [WumpusAction(action='cw'), WumpusAction(action='ccw')]
+        actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
         return actions
 
     def reset(self):
