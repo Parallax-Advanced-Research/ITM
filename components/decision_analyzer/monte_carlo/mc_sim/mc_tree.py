@@ -23,7 +23,7 @@ class MonteCarloTree:
 
         # Setup a randomizer
         if seed is None:
-            seed = random.seed
+            seed = random.random()
         self._rand: random.Random = random.Random(seed)
 
     # TODO: Alternatives?
