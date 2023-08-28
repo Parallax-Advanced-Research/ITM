@@ -25,7 +25,7 @@ class WumpusSim(MCSim):
         :param action: The action to simulate
         :return: list[SimResult]
         """
-        location = state.location
+        location = state.sumo_str_location
         facing = state.facing
         time = state.time
 
@@ -72,7 +72,7 @@ class WumpusSim(MCSim):
         :return: list[WumpusAction]
         """
 
-        location = state.location
+        location = state.sumo_str_location
         orientation = state.facing
         # Do logic on location here? Pass Time information here?
         actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
@@ -88,10 +88,10 @@ class WumpusSim(MCSim):
 
     def score(self, state: WumpusState) -> float:
         score = 1000 if state.woeful_scream_perceived else 0
-        score -= 10 if state.location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
-        score -= 10 if state.location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
-        score -= 10 if state.location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
-        score -= 10 if state.location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
+        score -= 10 if state.sumo_str_location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
+        score -= 10 if state.sumo_str_location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
+        score -= 10 if state.sumo_str_location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
+        score -= 10 if state.sumo_str_location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
         score += 15 if state.glitter else 0
         score += 7 if state.stench else 0
         score -= 3 if state.breeze else 0

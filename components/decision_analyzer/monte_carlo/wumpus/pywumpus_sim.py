@@ -38,12 +38,12 @@ class WumpusGrid:
     }
 
     def __init__(self, sz: int = 4, wumpuii: list[str] = ['g02'], pits: list[str] = ['g20', 'g22', 'g33'],
-                 glitters: list[str] = ['g12'], agent_start: str = 'g00', agent_face: str = 'right', time: int = 0):
+                 glitters: list[str] = ['g12'], start_x: int = 0, start_y: int = 0, agent_face: str = 'right', time: int = 0):
         self.size: int = sz
         self.board: dict[int, dict, int, WumpusSquare] = {}
-        self.agent_loc: str = agent_start
         self.agent_face: str = agent_face
-        x, y = int(agent_start[1]), int(agent_start[2])
+        x, y = start_x, start_y
+        self.sumo_str_loc: str = 'g%d%d' % (x, y)
         self.pits: list[str] = pits
         self.wumpuii: list[str] = wumpuii
         for row in range(sz):
@@ -62,7 +62,7 @@ class WumpusGrid:
         self.time: int = time
 
     def do(self, action: str):
-        start_x, start_y = int(self.agent_loc[1]), int(self.agent_loc[2])
+        start_x, start_y = int(self.sumo_str_loc[1]), int(self.sumo_str_loc[2])
         start_direction = self.agent_face
 
         if action in ['cw', 'ccw']:
@@ -70,7 +70,7 @@ class WumpusGrid:
             self.agent_face = new_direction
             self.board[start_x][start_y].agent = new_direction
         else:
-            x, y = int(self.agent_loc[1]), int(self.agent_loc[2])
+            x, y = int(self.sumo_str_loc[1]), int(self.sumo_str_loc[2])
             x = x + 1 if start_direction in ['left', 'right'] and start_direction == 'right' else x - 1
             y = y + 1 if start_direction in ['top', 'bot'] and start_direction == 'top' else y - 1
             x = max(min(x, self.size - 1), 0)
@@ -78,7 +78,7 @@ class WumpusGrid:
 
             self.board[start_x][start_y].agent = None
             self.board[x][y].agent = start_direction
-            self.agent_loc = 'g%d%d' % (x, y)
+            self.sumo_str_loc = 'g%d%d' % (x, y)
 
         self.time += 1
 
@@ -128,14 +128,15 @@ class PyWumpusSim(MCSim):
         :param action: The action to simulate
         :return: list[SimResult]
         """
-        location = state.location
+        location = state.sumo_str_location
         facing = state.facing
         time = state.time
 
         # These should be known by state?
         if self.dirty:
             # logger.debug('inserting dirty state location %s facing %s time %d' % (location, facing, time))
-            self.grid = WumpusGrid(agent_start=location, agent_face=facing, time=time)
+
+            self.grid = WumpusGrid(start_x=0, start_y=0, agent_face=facing, time=time)
             self.dirty = False
 
         act = action.action
@@ -143,18 +144,19 @@ class PyWumpusSim(MCSim):
         self.grid.do(act)
         return_list = []
 
-        x, y = int(self.grid.agent_loc[1]), int(self.grid.agent_loc[2])
+        x, y = int(self.grid.sumo_str_loc[1]), int(self.grid.sumo_str_loc[2])
         action_square = self.grid.board[x][y]
         new_time = time + 1
         new_status = action_square.perceive()  # non sumo precepts
         new_location = new_status['location']
+        new_x, new_y = int(new_location[1]), int(new_location[2])
         new_facing = new_status['facing']
         glitter_precept = new_status['glitter']
         stench_precept = new_status['stench']
         breeze_precept = new_status['breeze']
         death_precept = new_status['dead']
 
-        outcome = WumpusState(location=new_location, facing=new_facing, time=new_time, glitter=glitter_precept,
+        outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time, glitter=glitter_precept,
                               stench=stench_precept, breeze=breeze_precept, dead=death_precept)
 
         # logger.debug('At Time %d: (loc=%s, orient=%s, glitter=%s, stench=%s, breeze=%s, dead=%s, lastact=%s, score=%d' % (new_time, new_location, new_facing,
@@ -172,7 +174,7 @@ class PyWumpusSim(MCSim):
         :return: list[WumpusAction]
         """
 
-        location = state.location
+        location = state.sumo_str_location
         orientation = state.facing
         # Do logic on location here? Pass Time information here?
         actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
@@ -187,10 +189,10 @@ class PyWumpusSim(MCSim):
 
     def score(self, state: WumpusState) -> float:
         score = 1000 if state.woeful_scream_perceived else 0
-        score -= 10 if state.location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
-        score -= 10 if state.location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
-        score -= 10 if state.location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
-        score -= 10 if state.location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
+        score -= 10 if state.sumo_str_location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
+        score -= 10 if state.sumo_str_location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
+        score -= 10 if state.sumo_str_location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
+        score -= 10 if state.sumo_str_location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
         score += 15 if state.glitter else 0
         score += 7 if state.stench else 0
         score -= 3 if state.breeze else 0
