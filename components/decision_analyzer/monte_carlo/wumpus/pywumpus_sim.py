@@ -1,7 +1,6 @@
 from .wumpus_state import WumpusAction, WumpusState
 from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
-
-from util import logger
+from .wumpus_sim import WumpusSim
 
 
 class WumpusSquare:
@@ -132,7 +131,6 @@ class PyWumpusSim(MCSim):
         location = state.location
         facing = state.facing
         time = state.time
-        score = state.score
 
         # These should be known by state?
         if self.dirty:
@@ -156,21 +154,15 @@ class PyWumpusSim(MCSim):
         breeze_precept = new_status['breeze']
         death_precept = new_status['dead']
 
-        outcome = WumpusState(location=new_location, facing=new_facing, time=new_time, glitter=glitter_precept, stench=stench_precept)
-        if death_precept:
-            score -= 100
-        elif glitter_precept:
-            score += 100
-        elif new_location == location:
-            score -= 5
-        else:
-            score -= 1
-        outcome.set_score(score)
+        outcome = WumpusState(location=new_location, facing=new_facing, time=new_time, glitter=glitter_precept,
+                              stench=stench_precept, breeze=breeze_precept, dead=death_precept)
+
         # logger.debug('At Time %d: (loc=%s, orient=%s, glitter=%s, stench=%s, breeze=%s, dead=%s, lastact=%s, score=%d' % (new_time, new_location, new_facing,
         #                                                                                     glitter_precept, stench_precept,
         #                                                                                     breeze_precept, death_precept, action.action, score))
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
+        score = self.score(outcome)
         return return_list
 
     def actions(self, state: WumpusState) -> list[WumpusAction]:
@@ -192,3 +184,15 @@ class PyWumpusSim(MCSim):
 
     def reset(self):
         self.dirty = True
+
+    def score(self, state: WumpusState) -> float:
+        score = 1000 if state.woeful_scream_perceived else 0
+        score -= 10 if state.location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
+        score -= 10 if state.location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
+        score -= 10 if state.location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
+        score -= 10 if state.location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
+        score += 15 if state.glitter else 0
+        score += 7 if state.stench else 0
+        score -= 3 if state.breeze else 0
+        score -= 50 if state.dead else 0
+        return score
