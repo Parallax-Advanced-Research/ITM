@@ -38,7 +38,7 @@ class MonteCarloTree:
         """
         root = self._node_selector(self._rand, self._roots)
         leaf_node = self._rollout(root, max_depth, 1)
-        self.score_propagation(leaf_node, self._sim.score(leaf_node.state))
+        MonteCarloTree.score_propagation(leaf_node, self._sim.score(leaf_node.state))
         return leaf_node
 
     def _rollout(self, state: MCStateNode, max_depth: int, curr_depth: int) -> MCStateNode:

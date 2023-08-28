@@ -25,8 +25,3 @@ class MCSim:
         :return: list[MCAction]
         """
         raise NotImplementedError
-
-    # temp for testing
-    def score(self, state: MCState) -> float:
-        import random
-        return random.randrange(1, 10)
