@@ -7,7 +7,7 @@ from util import logger
 
 if __name__ == '__main__':
     sim = wumpy.WumpusSim()
-    init_wumpus_state = wumpy.WumpusState(location='g00', facing='right', time=0, glitter='nothing', stench='nostench',
+    init_wumpus_state = wumpy.WumpusState(start_x=0, start_y=0, facing='right', time=0, glitter='nothing', stench='nostench',
                                           breeze='nobreeze', dead='notdead')
     root = mcsim.MCStateNode(init_wumpus_state)
     tree = mcsim.MonteCarloTree(sim, [root])
