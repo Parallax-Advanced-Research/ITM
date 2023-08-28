@@ -15,10 +15,10 @@ class WumpusAction(MCAction):
 
 
 class WumpusState(MCState):
-    def __init__(self, location: str, facing: str, time: int, glitter: str | bool, stench: str | bool,
+    def __init__(self, start_x: int, start_y: int, facing: str, time: int, glitter: str | bool, stench: str | bool,
                  breeze: str | bool, dead: str | bool):
         super().__init__()
-        self.location: str = location
+        self.sumo_str_location: str = 'g%d%d' % (start_x, start_y)
         self.facing: str = facing
         self.time: int = time
         self.glitter: bool = True if glitter == 'glitter' or glitter else False
@@ -30,7 +30,7 @@ class WumpusState(MCState):
         self.gold = 0
 
     def __str__(self):
-        return "location %s facing %s time t%d glitter %s stench %s" % (self.location, self.facing, self.time,
+        return "location %s facing %s time t%d glitter %s stench %s" % (self.sumo_str_location, self.facing, self.time,
                                                                         self.glitter, self.stench)
 
     def __repr__(self):

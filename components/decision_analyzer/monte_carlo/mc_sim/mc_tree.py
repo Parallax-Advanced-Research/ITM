@@ -1,17 +1,25 @@
 from typing import Optional
 import random
-import bisect
-import numpy as np
+import typing
 
 from .sim import MCSim
 from .mc_node import MCStateNode, MCDecisionNode
 
 
+def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode]) -> MCStateNode | MCDecisionNode:
+    return rand.choice(nodes)
+
+
+Node_Selector = typing.Callable[[random.Random, list[MCStateNode | MCDecisionNode]], MCStateNode | MCDecisionNode]
+
+
 class MonteCarloTree:
-    def __init__(self, sim: MCSim, roots: list[MCStateNode] = (), seed: Optional[float] = None):
+    def __init__(self, sim: MCSim, roots: list[MCStateNode] = (), seed: Optional[float] = None,
+                 node_selector: Node_Selector = select_random_node):
         self._sim: MCSim = sim
         self._roots: list[MCStateNode] = list(roots)
         self._rollouts: int = 0
+        self._node_selector: Node_Selector = node_selector
 
         # Setup a randomizer
         if seed is None:
@@ -28,8 +36,7 @@ class MonteCarloTree:
         :param max_depth: The depth to execute to
         :return: MCStateNode at the end of this tree
         """
-        self._sim.reset()
-        root = self._rand.choice(self._roots)
+        root = self._node_selector(self._rand, self._roots)
         return self._rollout(root, max_depth, 1)
 
     def _rollout(self, state: MCStateNode, max_depth: int, curr_depth: int) -> MCStateNode:
@@ -52,7 +59,7 @@ class MonteCarloTree:
                 return state
 
         # Choose decision and update node counts
-        decision = self._rand.choice(state.children)
+        decision = self._node_selector(self._rand, state.children)
         state.count += 1
         decision.count += 1
 
@@ -61,7 +68,7 @@ class MonteCarloTree:
             self._explore_decision(decision)
 
         # Choose a state and continue rollout
-        next_state = self._rand.choice(decision.children)
+        next_state = self._node_selector(self._rand, decision.children)
         return self._rollout(next_state, max_depth, curr_depth+1)
 
     def _explore_state(self, state: MCStateNode):
