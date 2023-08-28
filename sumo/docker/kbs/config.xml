@@ -76,5 +76,6 @@
       <constituent filename="tinySUMO.kif" />
       <constituent filename="itm.kif" />
       <constituent filename="tinyMed.kif" />
+      <constituent filename="wumpus.kif" />
     </kb>
   </configuration>

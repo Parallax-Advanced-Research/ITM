@@ -86,11 +86,11 @@ def test_train_soar():
 
 
 def main():
-    test_train_bbn()
-    test_train_soar()
-    test_gen_soar()
-    test_gen_bbn()
-    test_local_bbn()
+    # test_train_bbn()
+    # test_train_soar()
+    # test_gen_soar()
+    # test_gen_bbn()
+    # test_local_bbn()
     test_local_soar()
     # test_endpoint()
 
