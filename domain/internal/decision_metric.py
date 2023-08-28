@@ -1,16 +1,14 @@
 import typing
-from dataclasses import dataclass
 
 T = typing.TypeVar('T')
 
 
-@dataclass
 class DecisionMetric(typing.Generic[T]):
-    def __init__(self):
-        self.name: str
-        self.description: str
-        self.type: typing.Type
-        self.value: T
+    def __init__(self, name: str, description: str, type: typing.Type, value: T):
+        self.name: str = name
+        self.description: str = description
+        self.type: typing.Type = type
+        self.value: T = value
 
 
 DecisionName = str

@@ -1,5 +1,6 @@
-from domain.internal import Probe, Scenario, DecisionMetrics
+from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric
 from components import DecisionAnalyzer
+import random
 
 
 class BaselineDecisionAnalyzer(DecisionAnalyzer):
@@ -9,7 +10,8 @@ class BaselineDecisionAnalyzer(DecisionAnalyzer):
     def analyze(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
         analysis = {}
         for decision in probe.decisions:
-            metrics: DecisionMetrics = {}
+            metrics: DecisionMetrics = {"Random": DecisionMetric(name="Random", description="A random value",
+                                                                 type=type(float), value=random.random())}
             # Update the metrics in the decision with our currently calculated metrics
             decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
