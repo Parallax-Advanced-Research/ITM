@@ -16,7 +16,7 @@ def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecision
 def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode],
                         explore_ratio=.5, score_func=None) -> MCStateNode | MCDecisionNode:
 
-    exploit_ratio = 1 - explore_ratio
+    exploit_ratio = 1 - explore_ratio  # Unused
     scores, visits = [], []
 
     for node in nodes:
