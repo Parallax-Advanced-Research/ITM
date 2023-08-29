@@ -38,6 +38,26 @@ class BBNIngestor(Ingestor):
                 cases.append(Case(scen, probe, decisions[i]))
         return cases
 
+    def ingest_as_internal(self) -> (Scenario, list[Probe]):
+        ext_scen = parse_obj_as(ext.Scenario, json.load(open(self._scen_json, 'r')))
+        state = MVPState.from_dict(ext_scen.state)
+        scen = Scenario[MVPState](ext_scen.id, state)
+
+        probes = []
+        for fprobe in os.listdir(self._probe_dir):
+            ext_probe = parse_obj_as(ext.Probe, json.load(open(f'{self._probe_dir}/{fprobe}', 'r')))
+
+            decisions = []
+            for pchoice in ext_probe.options:
+                choice_kdmas: list[KDMA] = []
+                for kdma, value in pchoice.kdma_association.items():
+                    choice_kdmas.append(KDMA(kdma, value))
+                decisions.append(Decision(pchoice.id, pchoice.value, kdmas=KDMAs(choice_kdmas)))
+
+            probe: Probe[MVPState] = Probe(ext_probe.id, state, ext_probe.prompt, decisions)
+            probes.append(probe)
+        return scen, probes
+
     def ingest_as_domain(self) -> ext.Scenario:
         scen = parse_obj_as(ext.Scenario, json.load(open(self._scen_json, 'r')))
 
