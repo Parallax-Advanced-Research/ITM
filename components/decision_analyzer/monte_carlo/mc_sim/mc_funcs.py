@@ -1,4 +1,4 @@
-from .mc_node import MCDecisionNode
+from .mc_node import MCDecisionNode, MCStateNode
 import numpy as np
 import random
 import bisect
@@ -37,3 +37,12 @@ def exploit_explore_tradeoff(actions: list[MCDecisionNode], exploit=0):
     if idx != 0:
         print('whazo')
     return actions[idx]
+
+
+def explore_exploit(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode],
+                    explore_ratio=.99) -> MCStateNode | MCDecisionNode:
+    exploit_ratio = 1 - explore_ratio
+    scores, visits = [], []
+    for node in nodes:
+        scores.append()
+    return rand.choice(nodes)
