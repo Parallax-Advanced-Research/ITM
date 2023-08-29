@@ -58,6 +58,12 @@ class WumpusSim(MCSim):
 
         outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time, glitter=glitter_precept,
                               stench=stench_precept, breeze=breeze_precept, dead=death_precept)
+        if glitter_precept and action.action == 'pickup':
+            pass  # Needs to be outcome.adjust score
+            print("Yahtzee")
+        if action.action == 'shoot' and self.wumpus_in_path(new_x, new_y, new_facing):
+            logger.debug("At time %d a woeful scream was heard in the cave. The Wumpus has died.")
+            pass  # Needs to adjust score
         logger.debug('At Time %d: (loc=%s, orient=%s, glitter=%s, stench=%s, breeze=%s, dead=%s, lastact=%s' % (new_time, new_location, new_facing,
                                                                                             glitter_precept, stench_precept,
                                                                                             breeze_precept, death_precept, action.action))
@@ -77,10 +83,10 @@ class WumpusSim(MCSim):
         orientation = state.facing
         # Do logic on location here? Pass Time information here?
         actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
-
-        # sumo cant seem to handle entering square g33 or theres an error? querylen is 10 minutes
-        # if (location == 'g23' and orientation == 'right') or (location == 'g32' and orientation == 'top'):
-        #     actions = [WumpusAction(action='cw'), WumpusAction(action='ccw')]
+        if state.glitter:
+            actions.append(WumpusAction(action='pickup'))
+        if state.arrows == 1:
+            actions.append(WumpusAction(action='shoot'))
         return actions
 
     def reset(self):
@@ -93,7 +99,7 @@ class WumpusSim(MCSim):
         score -= 10 if state.sumo_str_location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
         score -= 10 if state.sumo_str_location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
         score -= 10 if state.sumo_str_location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
-        score += 15 if state.glitter else 0
+        score += 500 if state.glitter else 0
         score += 7 if state.stench else 0
         score -= 3 if state.breeze else 0
         score -= 50 if state.dead else 0
@@ -144,3 +150,6 @@ class WumpusSim(MCSim):
                     self.sumo.tell('(attribute %s pit)' % square_name)
                 else:
                     self.sumo.tell('(not (attribute %s pit))' % square_name)
+
+    def wumpus_in_path(self, x, y, face):
+        return True

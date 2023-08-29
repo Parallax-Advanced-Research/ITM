@@ -16,7 +16,7 @@ class WumpusAction(MCAction):
 
 class WumpusState(MCState):
     def __init__(self, start_x: int, start_y: int, facing: str, time: int, glitter: str | bool, stench: str | bool,
-                 breeze: str | bool, dead: str | bool):
+                 breeze: str | bool, dead: str | bool, zero_arrow: bool = False, carry_gold: bool = False):
         super().__init__()
         self.sumo_str_location: str = 'g%d%d' % (start_x, start_y)
         self.facing: str = facing
@@ -26,8 +26,8 @@ class WumpusState(MCState):
         self.dead: bool = True if dead == 'dead' or dead else False
         self.stench: bool = True if stench == 'stench' or stench else False
         self.woeful_scream_perceived: bool = False
-        self.arrows: int = 1
-        self.gold = 0
+        self.arrows: int = 1 if not zero_arrow else 0
+        self.gold = 0 if not carry_gold else 1 
 
     def __str__(self):
         return "location %s facing %s time t%d glitter %s stench %s" % (self.sumo_str_location, self.facing, self.time,

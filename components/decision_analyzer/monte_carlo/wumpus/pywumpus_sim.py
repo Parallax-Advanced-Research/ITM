@@ -1,7 +1,7 @@
 from .wumpus_state import WumpusAction, WumpusState
 from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from .wumpus_sim import WumpusSim
-
+from util import logger
 
 class WumpusSquare:
     def __init__(self, x: int, y: int, has_wump: bool, has_pit: bool, has_glit: bool):
@@ -161,7 +161,11 @@ class PyWumpusSim(MCSim):
 
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
-        score = self.score(outcome)
+
+        if glitter_precept and act == 'pickup':
+            logger.debug("Gold was got at time %d" % new_time)
+        if act == 'shoot' and self.wumpus_in_path(new_x, new_y, new_facing):
+            logger.debug("At time %d a woeful scream was heard in the cave. The Wumpus has died." % new_time)
         return return_list
 
     def actions(self, state: WumpusState) -> list[WumpusAction]:
@@ -173,8 +177,12 @@ class PyWumpusSim(MCSim):
 
         location = state.sumo_str_location
         orientation = state.facing
-
+        # Do logic on location here? Pass Time information here?
         actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
+        if state.glitter:
+            actions.append(WumpusAction(action='pickup'))
+        if state.arrows == 1:
+            actions.append(WumpusAction(action='shoot'))
         return actions
 
     def reset(self):
@@ -191,3 +199,21 @@ class PyWumpusSim(MCSim):
         score -= 3 if state.breeze else 0
         score -= 50 if state.dead else 0
         return score
+
+    def wumpus_in_path(self, x, y, face):
+        square = self.grid.board[x][y]
+        in_line = [square]
+        while True:
+            x = x + 1 if face == 'right' else x
+            x = x - 1 if face == 'left' else x
+            y = y + 1 if face == 'top' else y
+            y = y - 1 if face == 'bot' else y
+            try:
+                new_square = self.grid.board[x][y]
+                in_line.append(new_square)
+            except:
+                break
+        for candidate_square in in_line:
+            if candidate_square.wump:
+                return True
+        return False
