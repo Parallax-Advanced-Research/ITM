@@ -14,16 +14,15 @@ if __name__ == '__main__':
     tree = mcsim.MonteCarloTree(sim, [root], node_selector=selection_function)
 
     sim_times = []
-    rollouts = 25000
+    rollouts = 100000
     depth = 20
     for i in range(rollouts):
         sim_start = time.time()
         result = tree.rollout(max_depth=depth)
-        # logger.debug('rollout %d done' % i)
         end_time = time.time()
         simulation_time = end_time - sim_start
         sim_times.append(simulation_time)
-        if i % 10000 == 0:
+        if i % 5000 == 0 and i != 0:
             logger.debug("%d rollouts complete" % i)
     total_time = sum(sim_times)
     avg = np.mean(sim_times)
