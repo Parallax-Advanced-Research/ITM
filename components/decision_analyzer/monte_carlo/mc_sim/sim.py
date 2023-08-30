@@ -26,7 +26,8 @@ class MCSim:
         """
         raise NotImplementedError
 
-    def score(self, state: MCState) -> float:
+    @staticmethod
+    def score(state: MCState) -> float:
         """
         Scores a state such that we can prop this score
         :param state: State were going to score

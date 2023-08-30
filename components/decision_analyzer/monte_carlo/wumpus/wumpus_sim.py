@@ -47,7 +47,7 @@ class WumpusSim(MCSim):
 
         return_list = []
         new_time = time + 1
-        new_status = self.sumo.ask('(and (player_at ?X t%d) (player_facing ?Y t%d) (perceives ?Z t%d ) (perceives_stench ?S t%d) (perceives_breeze ?B t%d) (isdead ?D t%d) )' % (new_time, new_time, new_time, new_time, new_time, new_time), timeout=10)
+        new_status = self.sumo.ask('(and (player_at ?X t%d) (player_facing ?Y t%d) (perceives ?Z t%d ) (perceives_stench ?S t%d) (perceives_breeze ?B t%d) (isdead ?D t%d) )' % (new_time, new_time, new_time, new_time, new_time, new_time), timeout=20)
         new_location = new_status['bindings']['?X']
         new_x, new_y = int(new_location[1]), int(new_location[2])
         new_facing = new_status['bindings']['?Y']
@@ -69,7 +69,6 @@ class WumpusSim(MCSim):
                                                                                             breeze_precept, death_precept, action.action))
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
-        score = self.score(outcome)
         return return_list
 
     def actions(self, state: WumpusState) -> list[WumpusAction]:

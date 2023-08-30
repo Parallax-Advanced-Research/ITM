@@ -1,6 +1,9 @@
+import bisect
 from typing import Optional
 import random
 import typing
+
+import numpy as np
 
 from .sim import MCSim
 from .mc_node import MCStateNode, MCDecisionNode
@@ -8,6 +11,33 @@ from .mc_node import MCStateNode, MCDecisionNode
 
 def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode]) -> MCStateNode | MCDecisionNode:
     return rand.choice(nodes)
+
+
+def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode],
+                        explore_ratio=.1) -> MCStateNode | MCDecisionNode:
+
+    exploit_ratio = 1 - explore_ratio
+    scores, visits = [], []
+    for node in nodes:
+        scores.append(node.score * exploit_ratio)
+        visits.append(node.count * explore_ratio)
+    min_score = min(scores)
+    if not len(visits):
+        return rand.choice(nodes)
+
+    while max(visits) > 100:
+        visits = [v / 10 for v in visits]
+
+    zero_min_score = [(x - min_score) + 1.001 for x in scores]  # Want all scores to be positive and not sum to 0
+    weights = []
+    for iv, zms in zip(visits, zero_min_score):
+        weights.append(zms / (iv + 1.001))
+    total_weight = sum(weights)
+    if not total_weight:
+        return rand.choice(nodes)
+    norm_weights = [weight / total_weight for weight in weights]
+    chosen = rand.choices(population=nodes, weights=norm_weights, k=1 )[0]
+    return chosen
 
 
 Node_Selector = typing.Callable[[random.Random, list[MCStateNode | MCDecisionNode]], MCStateNode | MCDecisionNode]
@@ -23,7 +53,7 @@ class MonteCarloTree:
 
         # Setup a randomizer
         if seed is None:
-            seed = random.seed
+            seed = random.random()
         self._rand: random.Random = random.Random(seed)
 
     # TODO: Alternatives?
@@ -36,8 +66,11 @@ class MonteCarloTree:
         :param max_depth: The depth to execute to
         :return: MCStateNode at the end of this tree
         """
+        self._sim.reset()
         root = self._node_selector(self._rand, self._roots)
-        return self._rollout(root, max_depth, 1)
+        leaf_node = self._rollout(root, max_depth, 1)
+        MonteCarloTree.score_propagation(leaf_node, self._sim.score(leaf_node.state))
+        return leaf_node
 
     def _rollout(self, state: MCStateNode, max_depth: int, curr_depth: int) -> MCStateNode:
         """
@@ -110,3 +143,16 @@ class MonteCarloTree:
                 to_return += MonteCarloTree.leaves(state)
 
         return to_return
+
+    @staticmethod
+    def score_propagation(node: MCStateNode | MCDecisionNode, score: float):
+        # update the node's score
+        node.score = score
+        node.scores.append(score)
+
+        # propagate the node score up the parents
+        parent = node.parent
+        while parent is not None:
+            parent.scores.append(score)
+            parent.score = sum(parent.scores) / len(parent.scores)
+            parent = parent.parent
