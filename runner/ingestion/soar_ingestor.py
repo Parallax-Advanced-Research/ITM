@@ -22,6 +22,16 @@ class SOARIngestor(Ingestor):
         super().__init__(data_dir)
 
     def ingest_as_cases(self) -> typing.List[Case]:
+        scen, probes = self.ingest_as_internal()
+
+        cases = []
+        for probe in probes:
+            d: Decision
+            choice = [d for d in probe.decisions if d.kdmas is not None][0]
+            cases.append(Case(scen, probe, choice))
+        return cases
+
+    def ingest_as_internal(self) -> (Scenario, list[Probe]):
         prompt1 = "Which casualty do you treat first?"
         prompt2 = "What treatment do you give to"
 
@@ -29,7 +39,7 @@ class SOARIngestor(Ingestor):
         state = MVPState.from_dict(ext_scen.state)
         scen = Scenario(ext_scen.id, state)
 
-        cases = []
+        probes = []
         for raw_csv in [f for f in os.listdir(self.data_dir) if f.endswith('.csv')]:
             with open(f'{self.data_dir}/{raw_csv}', 'r') as data_file:
                 reader = csv.reader(data_file)
@@ -43,7 +53,7 @@ class SOARIngestor(Ingestor):
                     treatment = line[6]
                     denial = float(line[7])
                     mission = float(line[8])
-                    kdmas = KDMAs([KDMA('mission', mission), KDMA('denaial', denial)])
+                    kdmas = KDMAs([KDMA('mission', mission), KDMA('denial', denial)])
 
                     # Build Prompt1-Case
                     if user != prev_user:
@@ -51,20 +61,19 @@ class SOARIngestor(Ingestor):
                         for cas in state.casualties:
                             decisions.append(Decision(cas.id, cas.id))
                         choice = Decision(patient, patient, kdmas=kdmas)
+                        decisions.append(choice)
                         probe = Probe(f"{scen.id_}-who", state, prompt1, decisions)
-                        case = Case(scen, probe, choice)
-                        cases.append(case)
+                        probes.append(probe)
 
                     decisions = []
                     for toption in SOARIngestor.TREATMENT_LIST:
                         decisions.append(Decision(toption, toption))
                     choice = Decision(treatment, treatment, kdmas=kdmas)
+                    decisions.append(choice)
                     probe = Probe(f"{scen.id_}-how-{patient}", state, f"{prompt2} {patient}?", decisions)
-                    case = Case(scen, probe, choice)
-                    cases.append(case)
-
+                    probes.append(probe)
                     prev_user = user
-        return cases
+        return scen, probes
 
     def ingest_as_domain(self) -> ext.Scenario:
         prompt1 = "Which casualty do you treat first?"
