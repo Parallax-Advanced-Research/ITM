@@ -1,15 +1,28 @@
-c1 = (percept-node casualty :value "CASUALTY-B" :kb-concept-id "CNPT-1")
-c2 = (percept-node age :value "25" :kb-concept-id "CNPT-2")
-c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
-c4 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
-c5 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
-c6 = (percept-node mmHG :value "80" :kb-concept-id "CNPT-6")
-c7 = (percept-node Spo2 :value "98" :kb-concept-id "CNPT-7")
-c8 = (percept-node RR :value "18" :kb-concept-id "CNPT-8")
-c9 = (percept-node pain :value "6" :kb-concept-id "CNPT-9")
-c10 = (relation-node IED_injury :value "T" :kb-concept-id "CNPT-10")
-c11 = (relation-node 2nd_degree_burn :value "T" :kb-concept-id "CNPT-11")
-c12 = (relation-node 3rd_degree_burn :value "T" :kb-concept-id "CNPT-12")
+c1 = (percept-node casualty :value "CASUALTY-B")
+c2 = (percept-node age :value "40")
+c3 = (percept-node sex :value "M")
+c4 = (percept-node rank :value "VIP")
+c5 = (percept-node bleeding :value "NA")
+c6 = (percept-node respiration :value "FAST")
+c7 = (percept-node pulse :value "105")
+c8 = (percept-node responsiveness:value "YES")
+c9 = (percept-node consciousness :value "YES")
+c10 = (percept-node walking :value "NO")
+
+c14 = (percept-node choice :value "NA")
+c15 = (percept-node apply_treatment :value "NA")
+c16 = (percept-node direct_mobile_casualties :value "NA")
+c17 = (percept-node check_all_vitals :value "NA")
+c18 = (percept-node check_pulse :value "NA")
+c19 = (percept-node check_respiration :value "NA")
+c20 = (percept-node sitrep :value "NA")
+c21 = (percept-node tag_casualty :value "NA")
+
+c11 = (relation-node IED_injury :value "T")
+c12 = (relation-node 2nd_degree_burn :value "T")
+c13 = (relation-node 3rd_degree_burn :value "T")
+
+
 c1 -> c2
 c1 -> c3
 c1 -> c4
@@ -18,6 +31,26 @@ c1 -> c6
 c1 -> c7
 c1 -> c8
 c1 -> c9
-c10 -> c1
-c11 -> c1
+c1 -> c10
+
+c14 -> c15
+c14 -> c16
+c14 -> c17
+c14 -> c18
+c14 -> c19
+c14 -> c20
+c14 -> c21
+
+c17 -> c7
+c17 -> c6
+c17 -> c5
+c17 -> c8
+c17 -> c9
+c18 -> c7
+c18 -> c5
+c19 -> c6
+
+c11 -> c12
+c11 -> c13
 c12 -> c1
+c13 -> c1
