@@ -77,5 +77,6 @@
       <constituent filename="itm.kif" />
       <constituent filename="tinyMed.kif" />
       <constituent filename="wumpus.kif" />
+      <constituent filename="MedReason.kif" />
     </kb>
   </configuration>

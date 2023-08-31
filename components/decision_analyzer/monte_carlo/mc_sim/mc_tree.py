@@ -14,10 +14,11 @@ def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecision
 
 
 def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode],
-                        explore_ratio=.1) -> MCStateNode | MCDecisionNode:
+                        explore_ratio=.20) -> MCStateNode | MCDecisionNode:
 
     exploit_ratio = 1 - explore_ratio
-    scores, visits = [], []
+    scores = []
+    visits = []
     for node in nodes:
         scores.append(node.score * exploit_ratio)
         visits.append(node.count * explore_ratio)
@@ -25,7 +26,7 @@ def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisio
     if not len(visits):
         return rand.choice(nodes)
 
-    while max(visits) > 100:
+    while max(visits) > 10:
         visits = [v / 10 for v in visits]
 
     zero_min_score = [(x - min_score) + 1.001 for x in scores]  # Want all scores to be positive and not sum to 0
@@ -36,7 +37,7 @@ def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisio
     if not total_weight:
         return rand.choice(nodes)
     norm_weights = [weight / total_weight for weight in weights]
-    chosen = rand.choices(population=nodes, weights=norm_weights, k=1 )[0]
+    chosen = rand.choices(population=nodes, weights=norm_weights, k=1)[0]
     return chosen
 
 
@@ -156,3 +157,7 @@ class MonteCarloTree:
             parent.scores.append(score)
             parent.score = sum(parent.scores) / len(parent.scores)
             parent = parent.parent
+
+    @staticmethod
+    def score_prop_alg2(node: MCStateNode | MCDecisionNode, score: float):
+        node.score

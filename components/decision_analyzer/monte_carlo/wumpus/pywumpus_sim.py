@@ -69,6 +69,8 @@ class WumpusGrid:
             new_direction = WumpusGrid.DIR_FACING[action][start_direction]
             self.agent_face = new_direction
             self.board[start_x][start_y].agent = new_direction
+        elif action == 'shoot':
+            pass  # handled in Sim not grid, but dont walk
         else:
             x, y = int(self.sumo_str_loc[1]), int(self.sumo_str_loc[2])
             x = x + 1 if start_direction in ['left', 'right'] and start_direction == 'right' else x - 1
@@ -120,6 +122,7 @@ class PyWumpusSim(MCSim):
         super().__init__()
         self.grid = WumpusGrid()
         self.dirty = True
+        self.arrow = 1
 
     def exec(self, state: WumpusState, action: WumpusAction) -> list[SimResult]:
         """
@@ -135,7 +138,7 @@ class PyWumpusSim(MCSim):
         # These should be known by state?
         if self.dirty:
             # logger.debug('inserting dirty state location %s facing %s time %d' % (location, facing, time))
-
+            self.arrow = 1
             self.grid = WumpusGrid(start_x=0, start_y=0, agent_face=facing, time=time)
             self.dirty = False
 
@@ -155,17 +158,23 @@ class PyWumpusSim(MCSim):
         stench_precept = new_status['stench']
         breeze_precept = new_status['breeze']
         death_precept = new_status['dead']
+        woeful_scream_precept = False
+        if act == 'shoot' and self.wumpus_in_path(new_x, new_y, new_facing) and self.arrow == 1:
+            woeful_scream_precept = True
+        if act == 'shoot':
+            self.arrow -= 1
+        got_gold_precept = False
 
         outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time, glitter=glitter_precept,
-                              stench=stench_precept, breeze=breeze_precept, dead=death_precept)
+                              stench=stench_precept, breeze=breeze_precept, dead=death_precept,
+                              woeful=woeful_scream_precept)
 
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
 
         if glitter_precept and act == 'pickup':
             logger.debug("Gold was got at time %d" % new_time)
-        if act == 'shoot' and self.wumpus_in_path(new_x, new_y, new_facing):
-            logger.debug("At time %d a woeful scream was heard in the cave. The Wumpus has died." % new_time)
+
         return return_list
 
     def actions(self, state: WumpusState) -> list[WumpusAction]:
@@ -181,7 +190,7 @@ class PyWumpusSim(MCSim):
         actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
         if state.glitter:
             actions.append(WumpusAction(action='pickup'))
-        if state.arrows == 1:
+        if self.arrow == 1:
             actions.append(WumpusAction(action='shoot'))
         return actions
 
