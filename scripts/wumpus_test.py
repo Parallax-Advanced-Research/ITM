@@ -1,6 +1,5 @@
 import components.decision_analyzer.monte_carlo.wumpus as wumpy
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
-import components.decision_analyzer.monte_carlo.mc_sim.mc_funcs as mcfuncs
 import time
 import numpy as np
 import datetime

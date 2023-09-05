@@ -93,7 +93,7 @@ class WumpusSim(MCSim):
         self.dirty = True
 
     def score(self, state: WumpusState) -> float:
-        score = 1000 if state.woeful_scream_perceived else 0
+        score = 1000 if state.woeful_scream_perceived else 100
         score -= 10 if state.sumo_str_location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
         score -= 10 if state.sumo_str_location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
         score -= 10 if state.sumo_str_location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
