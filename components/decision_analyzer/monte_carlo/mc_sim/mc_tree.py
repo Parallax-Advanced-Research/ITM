@@ -14,29 +14,26 @@ def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecision
 
 
 def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode],
-                        explore_ratio=.1) -> MCStateNode | MCDecisionNode:
-
+                        explore_ratio=.09) -> MCStateNode | MCDecisionNode:
     exploit_ratio = 1 - explore_ratio
     scores, visits = [], []
     for node in nodes:
-        scores.append(node.score * exploit_ratio)
-        visits.append(node.count * explore_ratio)
-    min_score = min(scores)
-    if not len(visits):
+        scores.append(node.score)
+        visits.append(node.count)
+
+    visits = [max(visits) - v for v in visits]  # high numbers mean less visited, 0 means most visited
+    scores = [s - min(scores) for s in scores]  # Compress the range of scores to make this more meaningful
+    sum_score, sum_visit = float(sum(scores)), float(sum(visits))
+    if not sum_visit:  # If it hasnt been anywhere, pick random
         return rand.choice(nodes)
-
-    while max(visits) > 100:
-        visits = [v / 10 for v in visits]
-
-    zero_min_score = [(x - min_score) + 1.001 for x in scores]  # Want all scores to be positive and not sum to 0
+    norm_scores = [x / sum_score for x in scores] if sum_score else [0 for score in scores]
+    norm_visits = [x / sum_visit for x in visits] if sum_visit else [0 for visit in visits]
     weights = []
-    for iv, zms in zip(visits, zero_min_score):
-        weights.append(zms / (iv + 1.001))
-    total_weight = sum(weights)
-    if not total_weight:
-        return rand.choice(nodes)
-    norm_weights = [weight / total_weight for weight in weights]
-    chosen = rand.choices(population=nodes, weights=norm_weights, k=1 )[0]
+    for ns, nv in zip(norm_scores, norm_visits):
+        weights.append((ns * exploit_ratio) + (nv * explore_ratio))
+    sum_weights = sum(weights)
+    norm_weights = [weight / sum_weights for weight in weights] if sum_weights else [1./len(weights) for weight in weights]
+    chosen = rand.choices(population=nodes, weights=norm_weights, k=1)[0]
     return chosen
 
 
