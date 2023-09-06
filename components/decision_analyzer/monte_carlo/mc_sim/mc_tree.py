@@ -14,14 +14,16 @@ def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecision
 
 
 def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode],
-                        explore_ratio=.09) -> MCStateNode | MCDecisionNode:
+                        explore_ratio=.15) -> MCStateNode | MCDecisionNode:
+    if rand.random() < explore_ratio:
+        return rand.choice(nodes)
     exploit_ratio = 1 - explore_ratio
     scores, visits = [], []
     for node in nodes:
-        scores.append(node.score)
+        scores.append(node.score)  # Slowly it will learn life isnt leet.
         visits.append(node.count)
 
-    visits = [max(visits) - v for v in visits]  # high numbers mean less visited, 0 means most visited
+    # visits = [max(visits) - v for v in visits]  # high numbers mean less visited, 0 means most visited
     scores = [s - min(scores) for s in scores]  # Compress the range of scores to make this more meaningful
     sum_score, sum_visit = float(sum(scores)), float(sum(visits))
     if not sum_visit:  # If it hasnt been anywhere, pick random

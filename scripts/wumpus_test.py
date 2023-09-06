@@ -8,8 +8,8 @@ from util import logger
 if __name__ == '__main__':
     sim = wumpy.WumpusSim()
     selection_function = mcsim.mc_tree.select_node_eetrade
-    init_wumpus_state = wumpy.WumpusState(start_x=0, start_y=0, facing='right', time=0, glitter='nothing', stench='nostench',
-                                          breeze='nobreeze', dead='notdead')
+    init_wumpus_state = wumpy.WumpusState(start_x=0, start_y=0, facing='right', time=0, num_glitters=0, num_stench=0,
+                                          num_breeze=0, num_dead=0, num_arrows=1)
     root = mcsim.MCStateNode(init_wumpus_state)
     tree = mcsim.MonteCarloTree(sim, [root], node_selector=selection_function)
 
