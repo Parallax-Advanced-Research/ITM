@@ -120,6 +120,12 @@ class PyWumpusSim(MCSim):
         super().__init__()
         self.grid = WumpusGrid()
         self.dirty = True
+        self.breezes_felt = 0
+        self.stenches_felt = 0
+        self.deaths = 0
+        self.glitters = 0
+        self.gold_carried = 0  # not yet implemented
+        self.woeful_screams = 0
 
     def exec(self, state: WumpusState, action: WumpusAction) -> list[SimResult]:
         """
@@ -156,8 +162,18 @@ class PyWumpusSim(MCSim):
         breeze_precept = new_status['breeze']
         death_precept = new_status['dead']
 
-        outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time, glitter=glitter_precept,
-                              stench=stench_precept, breeze=breeze_precept, dead=death_precept)
+        if glitter_precept == 'glitter':
+            self.glitters += 1
+        if stench_precept == 'stench':
+            self.stenches_felt += 1
+        if breeze_precept == 'breeze':
+            self.breezes_felt += 1
+        if death_precept:
+            self.deaths += 1
+
+        outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time,
+                              num_glitters=self.glitters, num_stench=self.stenches_felt, num_breeze=self.breezes_felt,
+                              num_dead=self.deaths)
 
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
@@ -179,13 +195,16 @@ class PyWumpusSim(MCSim):
 
     def reset(self):
         self.dirty = True
+        self.breezes_felt = 0
+        self.stenches_felt = 0
+        self.deaths = 0
+        self.glitters = 0
+        self.gold_carried = 0  # not yet implemented
+        self.woeful_screams = 0
 
     def score(self, state: WumpusState) -> float:
-        score = 1000 if state.woeful_scream_perceived else 100
-        score -= 10 if state.sumo_str_location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
+        score = 100 + (1000 * state.woeful_screams)
+        score += (15 * state.glitter) + (7 * state.stench) - (3 * state.breeze) - (50 * state.dead)
         score += 15 if state.glitter else 0
         score += 7 if state.stench else 0
         score -= 3 if state.breeze else 0
