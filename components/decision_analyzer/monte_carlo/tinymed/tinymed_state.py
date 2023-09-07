@@ -3,10 +3,10 @@ from .tinymed_enums import Casualty, Supplies, Actions
 
 
 class TinymedState(MCState):
-    def __init__(self, casualties: list[Casualty], supplies: dict[Supplies, int]):
+    def __init__(self, casualties: list[Casualty], supplies: dict[str, int]):
         super().__init__()
         self.casualties: list[Casualty] = casualties
-        self.supplies: dict[Supplies, int] = supplies
+        self.supplies: dict[str, int] = supplies
 
 
 class TinymedAction(MCAction):

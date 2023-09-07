@@ -6,11 +6,11 @@ import numpy as np
 import datetime
 from util import logger
 
-wrist_bump = tnums.Injury(name='bump', location=tnums.Locations.LEFT_WRIST.value, severity=1.0)
-minor_cut = tnums.Injury(name='minor laceration', location=tnums.Locations.RIGHT_BICEP.value, severity=3.0)
-moder_cut = tnums.Injury(name='moderate cut', location=tnums.Locations.LEFT_SIDE.value, severity=5.0)
-major_cut = tnums.Injury(name='major cut', location=tnums.Locations.LEFT_THIGH.value, severity=7.0)
-collapsed_lung = tnums.Injury(name='collapsed lung', location=tnums.Locations.UNSPECIFIED.value, severity=9.0)
+wrist_bump = tnums.Injury(name=tnums.Injuries.LACERATION.value, location=tnums.Locations.LEFT_WRIST.value, severity=1.0)
+minor_cut = tnums.Injury(name=tnums.Injuries.LACERATION.value, location=tnums.Locations.RIGHT_BICEP.value, severity=3.0)
+moder_cut = tnums.Injury(name=tnums.Injuries.LACERATION.value, location=tnums.Locations.LEFT_SIDE.value, severity=5.0)
+major_cut = tnums.Injury(name=tnums.Injuries.LACERATION.value, location=tnums.Locations.LEFT_THIGH.value, severity=7.0)
+collapsed_lung = tnums.Injury(name=tnums.Injuries.CHEST_COLLAPSE.value, location=tnums.Locations.UNSPECIFIED.value, severity=9.0)
 
 raphael_vitals = tnums.Vitals(conscious=True, mental_status=tnums.MentalStates.DANDY.value,
                               breathing=tnums.BreathingDescriptions.NORMAL.value, hrpmin=49)
