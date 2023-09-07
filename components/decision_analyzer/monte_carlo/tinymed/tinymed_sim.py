@@ -7,7 +7,7 @@ class TinymedSim(MCSim):
     def __init__(self):
         super().__init__()
 
-    def exec(self, state: TinymedState, action: TinymedState) -> list[SimResult]:
+    def exec(self, state: TinymedState, action: TinymedAction) -> list[SimResult]:
         return []
 
     def actions(self, state: TinymedState) -> list[TinymedAction]:
