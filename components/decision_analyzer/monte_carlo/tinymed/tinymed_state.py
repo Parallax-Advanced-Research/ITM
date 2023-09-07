@@ -10,6 +10,11 @@ class TinymedState(MCState):
 
 
 class TinymedAction(MCAction):
-    def __init__(self, action: Actions):
+    def __init__(self, action: Actions, casualty_id: str | None = None, supply: str | None = None,
+                 location: str | None = None, tag: str | None = None):
         super().__init__()
-        self.action = action
+        self.action: Actions = action
+        self.casualty_id: str | None = casualty_id
+        self.supply: str | None = supply
+        self.location: str | None = location
+        self.tag: str | None = tag

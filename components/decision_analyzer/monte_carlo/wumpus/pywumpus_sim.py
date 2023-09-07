@@ -3,6 +3,7 @@ from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from .wumpus_sim import WumpusSim
 from util import logger
 
+
 class WumpusSquare:
     def __init__(self, x: int, y: int, has_wump: bool, has_pit: bool, has_glit: bool):
         self.agent: str | None = None
