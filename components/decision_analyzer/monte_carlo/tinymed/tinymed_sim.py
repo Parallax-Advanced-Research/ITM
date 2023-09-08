@@ -59,5 +59,9 @@ class TinymedSim(MCSim):
         pass
 
     def score(self, state: TinymedState) -> float:
-        return 3.0
+        injury_score: float = 0.0
+        for casualty in state.casualties:
+            for injury in casualty.injuries:
+                injury_score += injury.severity
+        return injury_score
 
