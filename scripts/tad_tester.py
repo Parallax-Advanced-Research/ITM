@@ -3,9 +3,9 @@ import tad
 
 def test_endpoint():
     args = type("Foo", (object,), {})()
-    args.model = 'bbn'
-    args.endpoint = '127.0.0.1:8080'
-    args.variant = 'aligned'
+    # args.model = 'bbn'
+    # args.endpoint = '127.0.0.1:8080'
+    # args.variant = 'aligned'
     args.verbose = True
 
     tad.api_test(args)

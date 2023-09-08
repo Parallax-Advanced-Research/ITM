@@ -90,8 +90,8 @@ def api_test(args):
         logger.setLevel(LogLevel.ERROR)
 
     driver = TA3Driver()
-    client = TA3Client(args.endpoint)
-    sid = client.start_session(f'TAD-{args.variant}')
+    client = TA3Client()
+    sid = client.start_session(f'TAD')
     logger.info(f"Started Session-{sid}")
     while True:
         scen = client.start_scenario()
@@ -142,47 +142,47 @@ def main():
     subs = parser.add_subparsers()
     subs.required = True
 
-    trainer = subs.add_parser('train', help="Train a TAD model")
-    trainer.add_argument('ta1', type=str, help="The TA1 team to train a model for", choices=["soar", "bbn"])
-    trainer.add_argument('dir', type=str, help="The directory of the TA1 training data (examples in data/mvp/train)")
-    trainer.add_argument('-model_name', type=str, help="The name to give the trained model")
-    trainer.add_argument('--verbose', default=False, help="Turns on logging", action='store_true')
-    trainer.set_defaults(func=train)
-
-    ltester = subs.add_parser('test-local', help="Test a TAD model on local json files")
-    ltester.add_argument('model', type=str,
-                         help="The name of the TAD model to load (in data/mvp/models), without extension")
-    ltester.add_argument('expr', type=str,
-                         help="Path to a json file with a Scenario (or list of Scenario) object. Examples can be generated with gen-from-train")
-    ltester.add_argument("-kdmas",
-                         metavar="KDMA=VALUE",
-                         nargs='+',
-                         help="Target KDMA values to align to. If not provided, runs baseline algorithm. "
-                              "Do not put spaces before or after the = sign. "
-                              "e.g., -kdmas mission=1 denial=0.5",
-                         required=False)
-    ltester.add_argument('-variant', type=str, help="The version of TAD to run, default: aligned", choices=["baseline", "aligned", 'misaligned'],
-                         default="aligned")
-    ltester.add_argument('-output', type=str, help="File to output list ADM responses as json Response objects")
-    ltester.add_argument('--batch', default=False, help="Changes output to batch format", action='store_true')
-    ltester.add_argument('--verbose', default=False, help="Turns on logging", action='store_true')
-    ltester.set_defaults(func=ltest)
+    # trainer = subs.add_parser('train', help="Train a TAD model")
+    # trainer.add_argument('ta1', type=str, help="The TA1 team to train a model for", choices=["soar", "bbn"])
+    # trainer.add_argument('dir', type=str, help="The directory of the TA1 training data (examples in data/mvp/train)")
+    # trainer.add_argument('-model_name', type=str, help="The name to give the trained model")
+    # trainer.add_argument('--verbose', default=False, help="Turns on logging", action='store_true')
+    # trainer.set_defaults(func=train)
+    #
+    # ltester = subs.add_parser('test-local', help="Test a TAD model on local json files")
+    # ltester.add_argument('model', type=str,
+    #                      help="The name of the TAD model to load (in data/mvp/models), without extension")
+    # ltester.add_argument('expr', type=str,
+    #                      help="Path to a json file with a Scenario (or list of Scenario) object. Examples can be generated with gen-from-train")
+    # ltester.add_argument("-kdmas",
+    #                      metavar="KDMA=VALUE",
+    #                      nargs='+',
+    #                      help="Target KDMA values to align to. If not provided, runs baseline algorithm. "
+    #                           "Do not put spaces before or after the = sign. "
+    #                           "e.g., -kdmas mission=1 denial=0.5",
+    #                      required=False)
+    # ltester.add_argument('-variant', type=str, help="The version of TAD to run, default: aligned", choices=["baseline", "aligned", 'misaligned'],
+    #                      default="aligned")
+    # ltester.add_argument('-output', type=str, help="File to output list ADM responses as json Response objects")
+    # ltester.add_argument('--batch', default=False, help="Changes output to batch format", action='store_true')
+    # ltester.add_argument('--verbose', default=False, help="Turns on logging", action='store_true')
+    # ltester.set_defaults(func=ltest)
 
     atester = subs.add_parser('test', help="Test a TAD model via ta3's api")
-    atester.add_argument('model', type=str,
-                         help="The name of the TAD model to load (in data/mvp/models), without extension")
-    atester.add_argument('endpoint', type=str, help="The URL of the TA3 api")
-    atester.add_argument('-variant', type=str, help="The version of TAD to run, default: aligned", choices=["baseline", "aligned", 'misaligned'],
-                         default="aligned")
+    # atester.add_argument('model', type=str,
+    #                      help="The name of the TAD model to load (in data/mvp/models), without extension")
+    # atester.add_argument('endpoint', type=str, help="The URL of the TA3 api")
+    # atester.add_argument('-variant', type=str, help="The version of TAD to run, default: aligned", choices=["baseline", "aligned", 'misaligned'],
+    #                      default="aligned")
     atester.add_argument('--verbose', default=False, help="Turns on logging", action='store_true')
     atester.set_defaults(func=api_test)
 
-    gen = subs.add_parser('gen-from-train', help="Generates a evaluation from TA1 training data")
-    gen.add_argument('ta1', type=str, help="The TA1 team to train a model for", choices=["soar", "bbn"])
-    gen.add_argument('dir', type=str, help="The directory of the TA1 training data (examples in data/mvp/train)")
-    gen.add_argument('-output', type=str, help="The path/name.json of the file to dump ADMs responses to")
-    gen.add_argument('--verbose', default=False, help="Turns on logging", action='store_true')
-    gen.set_defaults(func=generate)
+    # gen = subs.add_parser('gen-from-train', help="Generates a evaluation from TA1 training data")
+    # gen.add_argument('ta1', type=str, help="The TA1 team to train a model for", choices=["soar", "bbn"])
+    # gen.add_argument('dir', type=str, help="The directory of the TA1 training data (examples in data/mvp/train)")
+    # gen.add_argument('-output', type=str, help="The path/name.json of the file to dump ADMs responses to")
+    # gen.add_argument('--verbose', default=False, help="Turns on logging", action='store_true')
+    # gen.set_defaults(func=generate)
 
     use_simple_logger()
     args = parser.parse_args()
