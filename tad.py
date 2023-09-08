@@ -10,12 +10,12 @@ from runner import MVPDriver, TA3Driver, TA3Client
 from components.decision_selector.cbr import Case
 from domain import Scenario
 from domain.internal import KDMAs, KDMA
-from util import logger, LogLevel, use_simple_logger
+from util import logger, LogLevel, use_simple_logger, dict_difference
 
 MVP_DIR = './data/mvp'
 MODEL_DIR = f'{MVP_DIR}/models'
 TEST_DIR = f'{MVP_DIR}/test'
-VERBOSE_LEVEL = LogLevel.INFO
+VERBOSE_LEVEL = LogLevel.DEBUG
 
 
 def train(args):
@@ -101,6 +101,7 @@ def api_test(args):
         logger.info(f"Started Scenario-{scen.id}")
         driver.set_scenario(scen)
         driver.set_alignment_tgt(client.align_tgt)
+        logger.debug(f"-Initial State: {scen.state}")
 
         probe = client.get_probe()
         while True:
@@ -111,7 +112,11 @@ def api_test(args):
             logger.info(f"Responding to probe-{probe.id}")
             action = driver.decide(probe)
             logger.info(f"Chosen Action-{action}")
-            probe = client.take_action(action)
+            new_probe = client.take_action(action)
+            if new_probe:
+                difference = dict_difference(probe.state, new_probe.state, {'id', 'type'})
+                logger.debug(f"-State Changes: {difference}")
+            probe = new_probe
     
     
 def generate(args):

@@ -17,6 +17,7 @@ class TA3Elaborator(Elaborator):
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d)
 
+        probe.decisions = to_return
         return to_return
 
     def _treatment(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
