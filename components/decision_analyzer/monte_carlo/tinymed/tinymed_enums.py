@@ -52,6 +52,10 @@ class Locations(Enum):
     LEFT_WRIST = "left wrist"
     LEFT_FACE = "left face"
     RIGHT_FACE = "right face"
+    LEFT_CHEST = "left chest"
+    RIGHT_CHEST = "right chest"
+    LEFT_NECK = "left neck"
+    RIGHT_NECK = "right neck"
     UNSPECIFIED = "unspecified"
 
 
