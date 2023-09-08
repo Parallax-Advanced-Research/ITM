@@ -10,20 +10,27 @@ def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecision
     return rand.choice(nodes)
 
 
+def score_merger_average_of_children(parent_scores: list[float]) -> float:
+    return sum(parent_scores) / len(parent_scores)
+
+
 Node_Selector = typing.Callable[[random.Random, list[MCStateNode | MCDecisionNode]], MCStateNode | MCDecisionNode]
+Score_Merger = typing.Callable[[list[float]], float]
 
 
 class MonteCarloTree:
     def __init__(self, sim: MCSim, roots: list[MCStateNode] = (), seed: Optional[float] = None,
-                 node_selector: Node_Selector = select_random_node):
+                 node_selector: Node_Selector = select_random_node,
+                 score_merger: Score_Merger = score_merger_average_of_children):
         self._sim: MCSim = sim
         self._roots: list[MCStateNode] = list(roots)
         self._rollouts: int = 0
         self._node_selector: Node_Selector = node_selector
+        self._score_merger: Score_Merger = score_merger
 
         # Setup a randomizer
         if seed is None:
-            seed = random.seed
+            seed = random.random()
         self._rand: random.Random = random.Random(seed)
 
     # TODO: Alternatives?
@@ -37,7 +44,9 @@ class MonteCarloTree:
         :return: MCStateNode at the end of this tree
         """
         root = self._node_selector(self._rand, self._roots)
-        return self._rollout(root, max_depth, 1)
+        leaf_node = self._rollout(root, max_depth, 1)
+        MonteCarloTree.score_propagation(leaf_node, self._sim.score(leaf_node.state), self._score_merger)
+        return leaf_node
 
     def _rollout(self, state: MCStateNode, max_depth: int, curr_depth: int) -> MCStateNode:
         """
@@ -110,3 +119,16 @@ class MonteCarloTree:
                 to_return += MonteCarloTree.leaves(state)
 
         return to_return
+
+    @staticmethod
+    def score_propagation(node: MCStateNode | MCDecisionNode, score: float, score_merger: Score_Merger):
+        # update the node's score
+        node.score = score
+        node.scores.append(score)
+
+        # propagate the node score up the parents
+        parent = node.parent
+        while parent is not None:
+            parent.scores.append(score)
+            parent.score = score_merger(parent.scores)
+            parent = parent.parent
