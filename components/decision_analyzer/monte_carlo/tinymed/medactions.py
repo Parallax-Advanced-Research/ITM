@@ -99,10 +99,6 @@ def update_default_injury(i: Injury, elapsed: float) -> None:
     i.time_elapsed += elapsed
 
 
-def appropriate_treatment(supply: str, injury_type: str) -> bool:
-    return True  # We will need top make sure the supply at least kinda treats the injury
-
-
 def find_casualty(action: TinymedAction, casualties: list[Casualty]) -> Casualty | None:
     c_id = action.casualty_id
     for casualties in casualties:
@@ -122,28 +118,6 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
         casualty_injuries: list[Injury] = c2.injuries
         for ci in casualty_injuries:
             update_injury_map[ci.name](ci, time_taken)
-    new_state = TinymedState(casualties=casualties, supplies=supplies)
-    return [new_state]
-
-
-def apply_treatment(casualties: list[Casualty], supplies: dict[str, int], action: TinymedAction) -> list[TinymedState]:
-    for c in casualties:
-        casualty_injuries: list[Injury] = c.injuries
-        if c.id == action.casualty_id:
-            for ci in casualty_injuries:
-                if ci.location == action.location:
-                    if supplies[action.supply] > 0:
-                        if appropriate_treatment(action.supply, ci.name):
-                            c.update_injury(success=True, injury=ci)
-                        else:
-                            c.update_injury(success=False, injury=ci)
-                    else:
-                        c.update_injury(success=False, injury=ci)
-                else:
-                    c.update_injury(success=False, injury=ci)
-        else:
-            for ci in casualty_injuries:
-                c.update_injury(success=False, injury=ci)
     new_state = TinymedState(casualties=casualties, supplies=supplies)
     return [new_state]
 

@@ -92,20 +92,6 @@ class Injury:
         self.severity = severity
         self.time_elapsed: float = 0.0
 
-    def progress(self, time_passed: float):
-        if time_passed % 5 == 0:
-            if self.severity < 2:
-                pass  # very minor things dont get infected/advance
-            elif self.severity < 4:
-                self.severity += .04
-            elif self.severity < 7:
-                self.severity += .25
-            else:
-                self.severity += .64
-
-    def recover(self, time_passed: float, recovery_factor: int = 1):
-        self.severity = recovery_factor  # I would recommend they still go to their primary after the battle
-
 
 class Vitals:
     def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int):
@@ -130,16 +116,3 @@ class Casualty:
         self.tag: str = tag
         self.time_elapsed: int = 0
         self.dead = False
-
-    def check_if_dead(self):
-        for i in self.injuries:
-            if i.severity >= 10:
-                self.dead = True
-
-    def update_injury(self, success: bool, injury: Injury):
-        self.time_elapsed += 1
-        if success:
-            injury.recover()
-        else:
-            injury.progress(self.time_elapsed)
-        self.check_if_dead()
