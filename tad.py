@@ -6,7 +6,7 @@ import os
 import uuid
 from pydantic.tools import parse_obj_as
 from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
-from runner import MVPDriver, TA3Client
+from runner import MVPDriver, TA3Driver, TA3Client
 from components.decision_selector.cbr import Case
 from domain import Scenario
 from domain.internal import KDMAs, KDMA
@@ -89,34 +89,29 @@ def api_test(args):
     else:
         logger.setLevel(LogLevel.ERROR)
 
-    logger.info(f"Loading Case Base: {f'{MODEL_DIR}/{args.model}.p'}")
-    cases: list[Case] = pickle.load(open(f'{MODEL_DIR}/{args.model}.p', 'rb'))
-    driver = MVPDriver(cases, args.variant)
-
+    driver = TA3Driver()
     client = TA3Client(args.endpoint)
-    scen = client.start_scenario(f'TAD-{args.variant}')
-    align_tgt = client.get_tgt_alignment(scen.id)
-    kdmas = KDMAs([KDMA(kdma['kdma'], float(kdma['value'])) for kdma in align_tgt])
-
-    driver.set_scenario(scen)
-    driver.set_alignment_tgt(kdmas)
-    if args.variant == 'baseline':
-        logger.info(f"Running Scenario: {scen.id} on baseline")
-    else:
-        logger.info(f"Running Scenario: {scen.id} with alignment: {align_tgt} on {args.variant}")
-
-    is_complete = False
-    while not is_complete:
-        probe = client.get_probe(scen.id)
-        if probe is None:
+    sid = client.start_session(f'TAD-{args.variant}')
+    logger.info(f"Started Session-{sid}")
+    while True:
+        scen = client.start_scenario()
+        if scen is None:
+            logger.info("Session Complete!")
             break
+        logger.info(f"Started Scenario-{scen.id}")
+        driver.set_scenario(scen)
+        driver.set_alignment_tgt(client.align_tgt)
 
-        logger.info(f"-Running Probe: {probe.id}")
-        logger.debug(f"--Choices: {[o.id for o in probe.options]}")
-        response = driver.decide(probe)
-        logger.info(f"--Probe Response: {response.choice}")
-        is_complete = client.respond(response)
-    logger.info(f"Finished Scenario: {scen.id}")
+        probe = client.get_probe()
+        while True:
+            if probe is None:
+                logger.info(f"Scenario Complete")
+                break
+
+            logger.info(f"Responding to probe-{probe.id}")
+            action = driver.decide(probe)
+            logger.info(f"Chosen Action-{action}")
+            probe = client.take_action(action)
     
     
 def generate(args):

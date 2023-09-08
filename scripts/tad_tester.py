@@ -91,8 +91,8 @@ def main():
     # test_gen_soar()
     # test_gen_bbn()
     # test_local_bbn()
-    test_local_soar()
-    # test_endpoint()
+    # test_local_soar()
+    test_endpoint()
 
 
 if __name__ == '__main__':

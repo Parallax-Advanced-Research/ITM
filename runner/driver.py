@@ -1,7 +1,7 @@
 import typing
 import domain as ext
 from components import Elaborator, DecisionSelector, DecisionAnalyzer
-from domain.internal import Scenario, State, Probe, Decision, KDMA, KDMAs
+from domain.internal import Scenario, State, Probe, Decision, Action, KDMA, KDMAs
 
 
 class Driver:
@@ -24,20 +24,35 @@ class Driver:
         state = self._extract_state(scenario.state)
         self.scenario = Scenario(scenario.id, state)
 
-    def decide(self, ext_probe: ext.Probe) -> ext.Response:
+    def decide(self, ext_probe: ext.Probe) -> ext.Action:
+        # Translate probe external state into internal state
         state = self._extract_state(ext_probe.state)
-        decisions: list[Decision] = []
+
+        # Extract the decisions
+        decisions: list[Decision[Action]] = []
         for option in ext_probe.options:
-            kdmas = KDMAs([KDMA(k, v) for k, v in option.kdma_association.items()])
-            decisions.append(Decision(option.id, option.value, kdmas=kdmas))
+            # Extract KDMAs
+            kdmas = KDMAs([KDMA(k, v) for k, v in option.kdmas.items()]) if option.kdmas is not None else None
+            # Extract action parameters (ta3 api)
+            params = option.params.copy() if option.params is not None else {}
+            params.update({'casualty': option.casualty})
+            # Add decision
+            decisions.append(Decision(option.id, Action(option.type, params), kdmas=kdmas))
         probe = Probe(ext_probe.id, state, ext_probe.prompt, decisions)
 
+        # Elaborate decisions, and analyze them
         probe.decisions = self.elaborator.elaborate(self.scenario, probe)
         for analyzer in self.analyzers:
             analyzer.analyze(self.scenario, probe)
+
+        # Decide which decision is best
+        decision: Decision[Action]
         decision, sim = self.selector.select(self.scenario, probe, self.alignment_tgt)
 
-        return ext.Response(self.scenario.id_, probe.id_, decision.id_, str(decision.justifications))
+        # Extract external decision for response
+        params = decision.value.params.copy()
+        casualty = params.pop('casualty')
+        return ext.Action(decision.id_, decision.value.name, casualty, {}, params)
 
     def _extract_state(self, dict_state: dict) -> State:
         raise NotImplementedError
