@@ -1,9 +1,129 @@
+import random
+
 from .tinymed_state import TinymedAction, TinymedState
-from .tinymed_enums import Casualty, Supplies, Actions, Locations, Tags, Injury
+from .tinymed_enums import Casualty, Supplies, Actions, Locations, Tags, Injury, Injuries
+import typing
+
+resolve_action = typing.Callable[[list[Casualty], dict[str, int], TinymedAction, random.Random], list[TinymedState]]
+resolve_injury = typing.Callable[[Casualty, dict[str, int], TinymedAction, random.Random], float]
+update_injury = typing.Callable[[Injury, float], None]
+
+
+def apply_bandage(casualty: Casualty, supplies: dict[str, int],
+                  action: TinymedAction, rng: random.Random) -> float:
+        fail = rng.random() < .16
+        time_taken = rng.choice([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 3.0, 4.5])
+        if supplies[action.supply] <= 0:
+            fail = True
+        for ci in casualty.injuries:
+            if ci.location == action.location and not fail:
+                ci.severity = 1
+                ci.time_elapsed += time_taken
+            else:
+                update_injury_map[ci.name](ci, time_taken)
+        return time_taken
+
+
+def apply_hemostat(casualty: Casualty, supplies: dict[str, int],
+                  action: TinymedAction, rng: random.Random) -> float:
+    fail = rng.random() < .25
+    time_taken = rng.choice([1.0, 1.5])
+    if supplies[action.supply] <= 0:
+        fail = True
+    for ci in casualty.injuries:
+        if ci.location == action.location and not fail:
+            ci.severity = 1
+            ci.time_elapsed += time_taken
+        else:
+            update_injury_map[ci.name](ci, time_taken)
+    return time_taken
+
+
+def apply_tourniquet(casualty: Casualty, supplies: dict[str, int],
+                  action: TinymedAction, rng: random.Random) -> float:
+    fail = False
+    time_taken = rng.choice([3.0, 3.0, 3.0, 6.0])
+    if supplies[action.supply] <= 0:
+        fail = True
+    for ci in casualty.injuries:
+        if ci.location == action.location and not fail:
+            ci.severity = 3
+            ci.time_elapsed += time_taken
+        else:
+            update_injury_map[ci.name](ci, time_taken)
+    return time_taken
+
+
+def use_decompression_needle(casualty: Casualty, supplies: dict[str, int],
+                  action: TinymedAction, rng: random.Random) -> float:
+    fail = rng.random() < .10
+    time_taken = rng.choice([5.0, 7.0])
+    if supplies[action.supply] <= 0:
+        fail = True
+    for ci in casualty.injuries:
+        if ci.location == action.location and not fail:
+            ci.severity = 2
+            ci.time_elapsed += time_taken
+        else:
+            update_injury_map[ci.name](ci, time_taken)
+    return time_taken
+
+
+def use_naso_airway(casualty: Casualty, supplies: dict[str, int],
+                  action: TinymedAction, rng: random.Random) -> float:
+    fail = rng.random() < .05
+    time_taken = 2.0
+    if supplies[action.supply] <= 0:
+        fail = True
+    for ci in casualty.injuries:
+        if ci.location == action.location and not fail:
+            ci.severity = 2
+            ci.time_elapsed += time_taken
+        else:
+            update_injury_map[ci.name](ci, time_taken)
+    return time_taken
+
+
+def update_bleeding(i: Injury, elapsed: float) -> None:
+    i.severity += (elapsed * .49)
+    i.time_elapsed += elapsed
+
+
+def update_chest_collapse(i: Injury, elapsed: float) -> None:
+    i.severity += (elapsed * .64)
+    i.time_elapsed += elapsed
+
+
+def update_default_injury(i: Injury, elapsed: float) -> None:
+    i.severity += (elapsed * .25)
+    i.time_elapsed += elapsed
 
 
 def appropriate_treatment(supply: str, injury_type: str) -> bool:
     return True  # We will need top make sure the supply at least kinda treats the injury
+
+
+def find_casualty(action: TinymedAction, casualties: list[Casualty]) -> Casualty | None:
+    c_id = action.casualty_id
+    for casualties in casualties:
+        if casualties.id == c_id:
+            return casualties
+    return None
+
+
+def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int],
+                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
+    c = find_casualty(action, casualties)
+    time_taken = treatment_map[action.supply](c, supplies, action, rng)
+    supplies[action.supply] -= 1
+    for c2 in casualties:
+        if c.id == c2.id:
+            continue  # already updated, casualty of action
+        casualty_injuries: list[Injury] = c2.injuries
+        for ci in casualty_injuries:
+            update_injury_map[ci.name](ci, time_taken)
+    new_state = TinymedState(casualties=casualties, supplies=supplies)
+    return [new_state]
 
 
 def apply_treatment(casualties: list[Casualty], supplies: dict[str, int], action: TinymedAction) -> list[TinymedState]:
@@ -26,6 +146,46 @@ def apply_treatment(casualties: list[Casualty], supplies: dict[str, int], action
                 c.update_injury(success=False, injury=ci)
     new_state = TinymedState(casualties=casualties, supplies=supplies)
     return [new_state]
+
+
+def default_action(casualties: list[Casualty], supplies: dict[str, int],
+                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
+    same_state = TinymedState(casualties, supplies)
+    return [same_state]
+
+
+treatment_map: typing.Mapping[str, resolve_injury] = {
+    Supplies.PRESSURE_BANDAGE.value: apply_bandage,
+    Supplies.HEMOSTATIC_GAUZE.value: apply_hemostat,
+    Supplies.TOURNIQUET.value: apply_tourniquet,
+    Supplies.DECOMPRESSION_NEEDLE.value: use_decompression_needle,
+    Supplies.NASOPHARYNGEAL_AIRWAY.value: use_naso_airway
+}
+
+update_injury_map: typing.Mapping[str, update_injury] = {
+    Injuries.LACERATION.value: update_bleeding,
+    Injuries.EAR_BLEED.value: update_default_injury,
+    Injuries.FOREHEAD_SCRAPE.value: update_default_injury,
+    Injuries.ASTHMATIC.value: update_default_injury,
+    Injuries.PUNCTURE.value: update_default_injury,
+    Injuries.SHRAPNEL.value: update_default_injury,
+    Injuries.CHEST_COLLAPSE.value: update_chest_collapse,
+    Injuries.AMPUTATION.value: update_default_injury,
+    Injuries.BURN.value: update_default_injury
+}
+
+action_map: typing.Mapping[str, resolve_action] = {
+    Actions.APPLY_TREATMENT.value: apply_treatment_mappers,
+    Actions.CHECK_ALL_VITALS.value: default_action,
+    Actions.CHECK_PULSE.value: default_action,
+    Actions.CHECK_RESPIRATION.value: default_action,
+    Actions.DIRECT_MOBILE_CASUALTY.value: default_action,
+    Actions.MOVE_TO_EVAC.value: default_action,
+    Actions.TAG_CASUALTY.value: default_action,
+    Actions.SITREP.value: default_action,
+    Actions.UNKNOWN.value: default_action
+}
+
 
 def get_treatment_actions(casualties: list[Casualty], supplies: list[str]) -> list[tuple]:
     treatments: list[tuple] = []

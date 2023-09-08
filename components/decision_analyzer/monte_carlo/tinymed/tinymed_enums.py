@@ -86,8 +86,9 @@ class Injury:
         self.name = name
         self.location = location
         self.severity = severity
+        self.time_elapsed: float = 0.0
 
-    def progress(self, time_passed: int):
+    def progress(self, time_passed: float):
         if time_passed % 5 == 0:
             if self.severity < 2:
                 pass  # very minor things dont get infected/advance
@@ -98,8 +99,8 @@ class Injury:
             else:
                 self.severity += .64
 
-    def recover(self):
-        self.severity = 1  # I would recommend they still go to their primary after the battle
+    def recover(self, time_passed: float, recovery_factor: int = 1):
+        self.severity = recovery_factor  # I would recommend they still go to their primary after the battle
 
 
 class Vitals:

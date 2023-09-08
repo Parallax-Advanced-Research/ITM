@@ -1,44 +1,51 @@
 from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from components.decision_analyzer.monte_carlo.tinymed import tinymed_enums as tnums
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty, Supplies
-from components.decision_analyzer.monte_carlo.tinymed.medactions import supply_dict_to_list, get_possible_actions, create_tm_actions, trim_tm_actions, apply_treatment
+from components.decision_analyzer.monte_carlo.tinymed.medactions import (supply_dict_to_list, get_possible_actions,
+                                                                         create_tm_actions, trim_tm_actions,
+                                                                         apply_treatment, action_map)
 from .tinymed_state import TinymedState, TinymedAction
-
-
-class Battlefield(MCSim):
-    def __init__(self):
-        self.casualties = None
-        self.supplies = None
+from typing import Optional
+import random
 
 
 class TinymedSim(MCSim):
 
-    def __init__(self):
+    def __init__(self, seed: Optional[float] = None):
+        self._rand: random.Random = random.Random(seed)
         super().__init__()
 
-    def exec(self, state: TinymedState, action: TinymedAction) -> list[SimResult]:
+    def exec_old(self, state: TinymedState, action: TinymedAction) -> list[SimResult]:
         outcomes: list[SimResult] = []
         if action == tnums.Actions.APPLY_TREATMENT:
-            states = apply_treatment(casualties= state.casualties, supplies=state.supplies, action=action)
-        if action == tnums.Actions.CHECK_ALL_VITALS:
+            states = apply_treatment(casualties=state.casualties, supplies=state.supplies, action=action, rng=self._rand)
+        elif action == tnums.Actions.CHECK_ALL_VITALS:
             pass
-        if action == tnums.Actions.CHECK_PULSE:
+        elif action == tnums.Actions.CHECK_PULSE:
             pass
-        if action == tnums.Actions.CHECK_RESPIRATION:
+        elif action == tnums.Actions.CHECK_RESPIRATION:
             pass
-        if action == tnums.Actions.DIRECT_MOBILE_CASUALTY:
+        elif action == tnums.Actions.DIRECT_MOBILE_CASUALTY:
             pass
-        if action == tnums.Actions.MOVE_TO_EVAC:
+        elif action == tnums.Actions.MOVE_TO_EVAC:
             pass
-        if action == tnums.Actions.SITREP:
+        elif action == tnums.Actions.SITREP:
             pass
-        if action == tnums.Actions.TAG_CASUALTY:
+        elif action == tnums.Actions.TAG_CASUALTY:
             pass
         else:
             states = [state]  # This is an action not defined in the API, do nothing
         outcomes.extend(states)
         outcome = SimResult(action=action, outcome=state)  # Need something more than this, just so exec works
         return [outcome]
+
+    def exec(self, state: TinymedState, action: TinymedAction) -> list[SimResult]:
+        new_state = action_map[action.action](state.casualties, state.supplies, action, self._rand)
+        outcomes = []
+        for new_s in new_state:
+            outcome = SimResult(action=action, outcome=new_s)
+            outcomes.append(outcome)
+        return outcomes
 
     def actions(self, state: TinymedState) -> list[TinymedAction]:
         casualties: list[Casualty] = state.casualties
@@ -53,3 +60,4 @@ class TinymedSim(MCSim):
 
     def score(self, state: TinymedState) -> float:
         return 3.0
+
