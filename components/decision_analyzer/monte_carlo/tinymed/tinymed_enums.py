@@ -84,6 +84,9 @@ class Demographics:
         self.sex: str = sex
         self.rank: str = rank
 
+    def __eq__(self, other: 'Demographics'):
+        return self.age == other.age and self.sex == other.sex and self.rank == other.rank
+
 
 class Injury:
     def __init__(self, name: str, location: str, severity: float):
@@ -106,6 +109,9 @@ class Injury:
     def recover(self, time_passed: float, recovery_factor: int = 1):
         self.severity = recovery_factor  # I would recommend they still go to their primary after the battle
 
+    def __eq__(self, other: 'Injury'):
+        return self.name == other.name and self.location == other.location and self.severity == other.severity
+
 
 class Vitals:
     def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int):
@@ -113,6 +119,10 @@ class Vitals:
         self.mental_status: str = mental_status
         self.breathing: str = breathing
         self.hrpmin: int = hrpmin
+
+    def __eq__(self, other: 'Vitals'):
+        return (self.conscious == other.conscious and self.mental_status == other.mental_status and
+                self.breathing == other.breathing and self.hrpmin == other.hrpmin)
 
 
 class Casualty:
@@ -130,6 +140,28 @@ class Casualty:
         self.tag: str = tag
         self.time_elapsed: int = 0
         self.dead = False
+
+    def __eq__(self, other: 'Casualty'):
+        same = False
+        if (self.id == other.id and self.unstructured == other.unstructured and
+            self.name == other.name and self.relationship == other.relationship and
+            self.demographics == other.demographics and self.vitals == other.vitals and
+            self.complete_vitals == other.complete_vitals and self.assessed == other.assessed and
+            self.tag == other.tag and self.time_elapsed == other.time_elapsed and self.dead == other.dead):
+            same = True
+        if len(self.injuries) == len(other.injuries):
+            same = False
+            return same
+
+        # is sorting by id enough? not sure yet
+        # id don't think it is, might need custom function that considers more than just hrpmin
+        # maybe turn into set as already check length
+        self_inj_sorted = sorted(self.injuries, key=lambda x: x.hrpmin)
+        other_inj_sorted = sorted(other.injuries, key=lambda x: x.hrpmin)
+        if self_inj_sorted == other_inj_sorted:
+            same = True
+        return same
+
 
     def check_if_dead(self):
         for i in self.injuries:
