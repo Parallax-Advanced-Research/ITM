@@ -982,12 +982,13 @@ class HRA(DecisionAnalyzer):
         decision_hra_dict = DecisionMetric("hra decision", "given scenario and probe, selected treatement per hra strategy", dict, decision_hra)
         learned_kdma_set = DecisionMetric("hra kdma set", "learned kdma set", dict, {'mission':mission, 'denial':denial})
         learned_predictors = DecisionMetric("hra predictors", "learned predictors", dict, predictors)
+        casualty_selected = DecisionMetric("hra casualty", "next casualty selected", dict, next_casualty)
         
         if search_path:
             decision_comparison_order = DecisionMetric("hra decision comparison order", "decision comparison order", str, search_tree)
-            return {"decision_hra_dict":decision_hra_dict, "learned_kdma_set":learned_kdma_set, "learned_predictors":learned_predictors, "decision_comparison_order":decision_comparison_order}
+            return {"decision_hra_dict":decision_hra_dict, "learned_kdma_set":learned_kdma_set, "learned_predictors":learned_predictors, "casualty_selected":casualty_selected, "decision_comparison_order":decision_comparison_order}
         else:
-            return {"decision_hra_dict":decision_hra_dict, "learned_kdma_set":learned_kdma_set, "learned_predictors":learned_predictors}
+            return {"decision_hra_dict":decision_hra_dict, "learned_kdma_set":learned_kdma_set, "learned_predictors":learned_predictors, "casualty_selected":casualty_selected}
 
         #if search_path:
         #    return ({'mission':mission, 'denial':denial}, predictors, decision_hra, search_tree)
