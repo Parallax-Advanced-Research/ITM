@@ -478,3 +478,25 @@
     (not (attribute ?X wumpus))
     (not (attribute ?X pit)))
   (isdead notdead ?T))
+
+; pickup logic
+(=>
+  (and
+    (action pickup ?T1)
+    (player_at ?PA ?T1)
+    (player_facing ?PF ?T1)
+    (time ?T1 ?T2))
+  (and
+    (player_at ?PA ?T2)
+    (player_facing ?PF ?T2)))
+
+; shoot logic
+(=>
+  (and
+    (action shoot ?T1)
+    (player_at ?PA ?T1)
+    (player_facing ?PF ?T1)
+    (time ?T1 ?T2))
+  (and
+    (player_at ?PA ?T2)
+    (player_facing ?PF ?T2)))

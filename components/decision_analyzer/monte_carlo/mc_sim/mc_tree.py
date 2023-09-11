@@ -1,6 +1,9 @@
+import bisect
 from typing import Optional
 import random
 import typing
+
+import numpy as np
 
 from .sim import MCSim
 from .mc_node import MCStateNode, MCDecisionNode
@@ -12,6 +15,32 @@ def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecision
 
 def score_merger_average_of_children(parent_scores: list[float]) -> float:
     return sum(parent_scores) / len(parent_scores)
+
+
+def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode],
+                        explore_ratio=.15) -> MCStateNode | MCDecisionNode:
+    if rand.random() < explore_ratio:
+        return rand.choice(nodes)
+    exploit_ratio = 1 - explore_ratio
+    scores, visits = [], []
+    for node in nodes:
+        scores.append(node.score)  # Slowly it will learn life isnt leet.
+        visits.append(node.count)
+
+    # visits = [max(visits) - v for v in visits]  # high numbers mean less visited, 0 means most visited
+    scores = [s - min(scores) for s in scores]  # Compress the range of scores to make this more meaningful
+    sum_score, sum_visit = float(sum(scores)), float(sum(visits))
+    if not sum_visit:  # If it hasnt been anywhere, pick random
+        return rand.choice(nodes)
+    norm_scores = [x / sum_score for x in scores] if sum_score else [0 for score in scores]
+    norm_visits = [x / sum_visit for x in visits] if sum_visit else [0 for visit in visits]
+    weights = []
+    for ns, nv in zip(norm_scores, norm_visits):
+        weights.append((ns * exploit_ratio) + (nv * explore_ratio))
+    sum_weights = sum(weights)
+    norm_weights = [weight / sum_weights for weight in weights] if sum_weights else [1./len(weights) for weight in weights]
+    chosen = rand.choices(population=nodes, weights=norm_weights, k=1)[0]
+    return chosen
 
 
 Node_Selector = typing.Callable[[random.Random, list[MCStateNode | MCDecisionNode]], MCStateNode | MCDecisionNode]
@@ -43,6 +72,7 @@ class MonteCarloTree:
         :param max_depth: The depth to execute to
         :return: MCStateNode at the end of this tree
         """
+        self._sim.reset()
         root = self._node_selector(self._rand, self._roots)
         leaf_node = self._rollout(root, max_depth, 1)
         MonteCarloTree.score_propagation(leaf_node, self._sim.score(leaf_node.state), self._score_merger)
@@ -68,13 +98,21 @@ class MonteCarloTree:
                 return state
 
         # Choose decision and update node counts
-        decision = self._node_selector(self._rand, state.children)
+        decision: MCDecisionNode = self._node_selector(self._rand, state.children)
         state.count += 1
         decision.count += 1
 
-        # If node unexplored, explore it
-        if not decision.children:
-            self._explore_decision(decision)
+        # always explore decision
+        # TODO determine if we should always take/explore unique nodes
+        state_node = self._explore_decision(decision)
+        unique_state = True
+        for child_state in decision.children:
+            if state_node.state == child_state.state:
+                unique_state = False
+                break
+        if unique_state:
+            decision.children.append(state_node)
+
 
         # Choose a state and continue rollout
         next_state = self._node_selector(self._rand, decision.children)
@@ -89,16 +127,18 @@ class MonteCarloTree:
         for action in actions:
             state.children.append(MCDecisionNode(state, action))
 
-    def _explore_decision(self, decision: MCDecisionNode):
+    def _explore_decision(self, decision: MCDecisionNode) -> MCStateNode:
         """
         Explores the possible states that this action could cause (if more than 1 due to probabilities
         :param decision: The decision node to explore/simulate
         """
-        # Get all the possible results of the action, and add them as children (fully explore this node)
+        # Get all the possible results of the action and choose one
         results = self._sim.exec(decision.parent.state, decision.action)
+        state_nodes = []
         for result in results:
             snode = MCStateNode(result.outcome, decision)
-            decision.children.append(snode)
+            state_nodes.append(snode)
+        return self._node_selector(self._rand, state_nodes)
 
     @staticmethod
     def leaves(node: MCStateNode) -> list[MCStateNode]:

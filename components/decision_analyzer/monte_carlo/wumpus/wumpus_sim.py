@@ -17,6 +17,12 @@ class WumpusSim(MCSim):
         self.sumo = SumoAPI()
         self.sumo.init()
         self.dirty = True
+        self.breezes_felt = 0
+        self.stenches_felt = 0
+        self.deaths = 0
+        self.glitters = 0
+        self.gold_carried = 0  # not yet implemented
+        self.woeful_screams = 0
 
     def exec(self, state: WumpusState, action: WumpusAction) -> list[SimResult]:
         """
@@ -47,7 +53,7 @@ class WumpusSim(MCSim):
 
         return_list = []
         new_time = time + 1
-        new_status = self.sumo.ask('(and (player_at ?X t%d) (player_facing ?Y t%d) (perceives ?Z t%d ) (perceives_stench ?S t%d) (perceives_breeze ?B t%d) (isdead ?D t%d) )' % (new_time, new_time, new_time, new_time, new_time, new_time), timeout=10)
+        new_status = self.sumo.ask('(and (player_at ?X t%d) (player_facing ?Y t%d) (perceives ?Z t%d ) (perceives_stench ?S t%d) (perceives_breeze ?B t%d) (isdead ?D t%d) )' % (new_time, new_time, new_time, new_time, new_time, new_time), timeout=20)
         new_location = new_status['bindings']['?X']
         new_x, new_y = int(new_location[1]), int(new_location[2])
         new_facing = new_status['bindings']['?Y']
@@ -56,14 +62,24 @@ class WumpusSim(MCSim):
         breeze_precept = new_status['bindings']['?B']
         death_precept = new_status['bindings']['?D']
 
-        outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time, glitter=glitter_precept,
-                              stench=stench_precept, breeze=breeze_precept, dead=death_precept)
+        if glitter_precept == 'glitter':
+            self.glitters += 1
+        if stench_precept == 'stench':
+            self.stenches_felt += 1
+        if breeze_precept == 'breeze':
+            self.breezes_felt += 1
+        if death_precept:
+            self.deaths += 1
+
+        outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time,
+                              num_glitters=self.glitters, num_stench=self.stenches_felt, num_breeze=self.breezes_felt,
+                              num_dead=self.deaths)
+
         logger.debug('At Time %d: (loc=%s, orient=%s, glitter=%s, stench=%s, breeze=%s, dead=%s, lastact=%s' % (new_time, new_location, new_facing,
                                                                                             glitter_precept, stench_precept,
                                                                                             breeze_precept, death_precept, action.action))
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
-        score = self.score(outcome)
         return return_list
 
     def actions(self, state: WumpusState) -> list[WumpusAction]:
@@ -86,13 +102,16 @@ class WumpusSim(MCSim):
     def reset(self):
         self.sumo.reset()
         self.dirty = True
+        self.breezes_felt = 0
+        self.stenches_felt = 0
+        self.deaths = 0
+        self.glitters = 0
+        self.gold_carried = 0  # not yet implemented
+        self.woeful_screams = 0
 
     def score(self, state: WumpusState) -> float:
-        score = 1000 if state.woeful_scream_perceived else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
+        score = 100 + (1000 * state.woeful_screams)
+        score += (15 * state.glitter) + (7 * state.stench) - (3 * state.breeze) - (50 * state.dead)
         score += 15 if state.glitter else 0
         score += 7 if state.stench else 0
         score -= 3 if state.breeze else 0
@@ -144,3 +163,4 @@ class WumpusSim(MCSim):
                     self.sumo.tell('(attribute %s pit)' % square_name)
                 else:
                     self.sumo.tell('(not (attribute %s pit))' % square_name)
+
