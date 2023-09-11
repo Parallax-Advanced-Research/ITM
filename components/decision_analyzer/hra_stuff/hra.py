@@ -866,7 +866,13 @@ class HRA(DecisionAnalyzer):
         "medications":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"all"},
         "tranexamic acid":{"risk_reward_ratio":"med", "resources":"few", "time":"seconds", "system":"cardiovascular"},
         "blood products":{"risk_reward_ratio":"high", "resources":"many", "time":"hours", "system":"cardiovascular"},
-        "needle decomp":{"risk_reward_ratio":"high", "resources":"some", "time":"minutes", "system":"respiratory"}        
+        "needle decomp":{"risk_reward_ratio":"high", "resources":"some", "time":"minutes", "system":"respiratory"},
+        "CHECK_ALL_VITALS":{"risk_reward_ratio":"", "resources":"", "time":"", "system":""},
+        "hemostatic gauze":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"cardiovascular"},
+        "tourniquet":{"risk_reward_ratio":"low", "resources":"few", "time":"minutes", "system":"cardiovascular"},
+        "pressure bandage":{"risk_reward_ratio":"", "resources":"", "time":"", "system":"integumentary"},
+        "decompression needle":{"risk_reward_ratio":"med", "resources":"few", "time":"minutes", "system":"respiratory"},
+        "nasopharyngeal airway":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"respiratory"}       
         }
 
         #file["casualty"] = {"injury":{"name":"broken arm", "system":"skeleton", "severity":"serious"}}
