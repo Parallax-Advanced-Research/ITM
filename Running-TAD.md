@@ -14,13 +14,17 @@ install the requirements via pip
 
 `pip install -r requirements.txt`
 
-You will also need to install tha TA3 client codebase located at: https://github.com/NextCenturyCorporation/itm-mvp/tree/main
+You will need to install the TA3 client codebase located at: https://github.com/NextCenturyCorporation/itm-evaluation-client
 
-Download or checkout the repository, and then run the following command to install the itm_client subdirectory of the TA3 repo:
+You will also need the TA3 server codebase located at: https://github.com/NextCenturyCorporation/itm-evaluation-server
 
-`pip install -e /path/to/itm-mvp/itm_client`
+The system has been tested with the main branch as of 9/8/2023
 
-## Running TAD Locally
+Download or checkout the repositories, and then run the following command to install the TA3 client into your TAD codebase:
+
+`pip install -e /path/to/ta3/client/codebase`
+
+## Running TAD Locally -- NON-FUNCTIONAL! THIS IS CURRENTLY NON-FUNCTIONAL AS THE TA1 DATA IS NOT UPDATED TO TA3'S FORMAT
 
 We have created a simple CLI to interact with the TAD (tad.py). It is mostly self documenting.
 
@@ -49,16 +53,38 @@ These can be further tweaked with additional options provided by the CLI. e.g.,
 
 ## Running TAD with TA3's API
 
-The same CLI can be used to run with TA3's api. Make sure a model has already been generated via the train command mentioned above, then:
+The same CLI can be used to run with TA3's api:
 
-`python tad.py test bbn 127.0.0.1:8080 --verbose -variant misaligned`
+`python tad.py test --verbose`
 
-Which will run the BBN model on data returned from a TA3 API running locally with the misaligned variant.
+Which will run on data returned from a TA3 API running locally.
 
-**NOTE**: You will need to run the TA3 server on your machine to test this, or point the CLI to a valid endpoint hosting the TA3 server.
+**NOTE**: You will need to run the TA3 server on your machine to test this.
 
 If you have followed the installation instructions in the TA3 github, you should be able to run:
 
 `python -m swagger_server`
 
-from the itm-mvp/itm_server directory of the TA3 repo to run it locally.
+from the main directory of the TA3 server repo to run it locally.
+
+**NOTE**: If at any point, the TA3 server does not finish an entire session, it will need to be restarted. It does not gracefully handle interruptions of sessions.
+
+## Running TAD with Human Selection process
+
+The main inside of scripts/ta3_tester.py will connect to the TA3 server (ensure it is running, see above with `python -m swagger_service`) and run through the TAD pipeline. It does the following:
+
+1. Converts the input Scenario and Action list into an internal Scenario and Probe (which contains a list of Decisions)
+2. It elaborates each Decision, fully specifying it
+   * Currently, this takes any ungrounded locations and enumerates a given casualties injuries as possible locations
+   * It also takes any ungrounded supplies and enumerates the list of supplies with values above 0
+   * This results in a fully grounded set of Decsions (or Actions), even for some combinations that may not make logical sense (e.g., Tourniquet applied to Left Face)
+3. Calls Decision Analyzers on all decisions to annotate them with decision metrics
+4. Displays the State and Annotated Actions to the command line, and awaits user input to choose an action # This could be easily replaced with calling decision selection if one wanted to in the codebase
+5. Translates the chosen Decision back into a TA3 action, and replies to TA3
+6. Gets a new probe, and returns to step 1 while TA3 has more scenarios and probes to respond to
+
+## Modifying the TA3 TAD Component list
+
+TAD uses the runner.Driver class to specify which components are in use. Right now, it is using only DefaultComponents. To add a new custom component, go to runner.ta3_driver.py and replace the corresponding BaselineComponent with yours.
+
+For example, adding another DecisionAnalyzer to the analyzer list in the constructor will automatically have it be called during execution.

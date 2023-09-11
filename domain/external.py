@@ -9,16 +9,12 @@ class ProbeType:
 
 
 @dataclass
-class ProbeChoice:
+class Action:
     id: str = ''
-    value: str = ''
-    kdma_association: dict[str, float] = None
-
-    @validator("kdma_association")
-    def none_probes(cls, kdma_association: dict[str, float] | None):
-        if kdma_association is None:
-            return {}
-        return kdma_association
+    type: str = ''
+    casualty: str = ''
+    kdmas: dict = field(default_factory={})
+    params: dict = field(default_factory={})
 
 
 @dataclass
@@ -27,7 +23,7 @@ class Probe:
     type: str = ProbeType.MC
     prompt: str = ''
     state: dict = field(default_factory={})
-    options: list[ProbeChoice] = field(default_factory=[])
+    options: list[Action] = field(default_factory=[])
 
 
 @dataclass
@@ -43,10 +39,3 @@ class Scenario:
             return []
         return probes
 
-
-@dataclass
-class Response:
-    scenario_id: str = ''
-    probe_id: str = ''
-    choice: str = ''
-    justification: str = ''

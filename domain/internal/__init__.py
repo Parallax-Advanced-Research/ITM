@@ -1,4 +1,4 @@
-from .decision import Decision
+from .decision import Decision, Action
 from .decision_metric import DecisionMetric, DecisionName, DecisionMetrics
 from .justification import Justification
 from .kdmas import KDMA, KDMAs
