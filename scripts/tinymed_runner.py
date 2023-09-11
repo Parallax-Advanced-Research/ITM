@@ -8,13 +8,13 @@ import datetime
 from util import logger
 
 if __name__ == '__main__':
-    sim = tmed.TinymedSim()
     selection_function = mcsim.mc_tree.select_node_eetrade
 
     casualties = medact.get_starting_casualties()
     supplies = medact.get_starting_supplies()
     init_tiny_state = tmed.TinymedState(casualties=casualties, supplies=supplies)
 
+    sim = tmed.TinymedSim(init_tiny_state)
     root = mcsim.MCStateNode(init_tiny_state)
     tree = mcsim.MonteCarloTree(sim, [root], node_selector=selection_function)
 
