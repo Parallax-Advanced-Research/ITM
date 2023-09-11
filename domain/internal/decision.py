@@ -6,6 +6,15 @@ from .kdmas import KDMAs
 T = typing.TypeVar('T')
 
 
+class Action:
+    def __init__(self, name_: str, params: dict[str, typing.Any]):
+        self.name: str = name_
+        self.params: dict[str, typing.Any] = params
+
+    def __str__(self):
+        return f"{self.name}({','.join(self.params.values())})"
+
+
 class Decision(typing.Generic[T]):
     def __init__(self, id_: str, value: T,
                  justifications: list[Justification] = (),

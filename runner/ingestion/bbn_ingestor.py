@@ -29,7 +29,7 @@ class BBNIngestor(Ingestor):
             decisions = []
             for pchoice in ext_probe.options:
                 choice_kdmas: list[KDMA] = []
-                for kdma, value in pchoice.kdma_association.items():
+                for kdma, value in pchoice.kdmas.items():
                     choice_kdmas.append(KDMA(kdma, value))
                 decisions.append(Decision(pchoice.id, pchoice.value, kdmas=KDMAs(choice_kdmas)))
 
@@ -50,7 +50,7 @@ class BBNIngestor(Ingestor):
             decisions = []
             for pchoice in ext_probe.options:
                 choice_kdmas: list[KDMA] = []
-                for kdma, value in pchoice.kdma_association.items():
+                for kdma, value in pchoice.kdmas.items():
                     choice_kdmas.append(KDMA(kdma, value))
                 decisions.append(Decision(pchoice.id, pchoice.value, kdmas=KDMAs(choice_kdmas)))
 

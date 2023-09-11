@@ -15,9 +15,6 @@ class TinymedState(MCState):
         if len(self.supplies) != len(other.supplies):
             return False
 
-        # is sorting by id enough? not sure yet
-        # id don't think it is, might need custom function that considers more than just id
-        # maybe turn into set as already check length
         self_cas_sorted = sorted(self.casualties, key=lambda x: x.id)
         other_cas_sorted = sorted(other.casualties, key=lambda x: x.id)
         if self_cas_sorted != other_cas_sorted:

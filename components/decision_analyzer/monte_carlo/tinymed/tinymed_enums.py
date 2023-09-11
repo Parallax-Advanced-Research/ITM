@@ -96,7 +96,8 @@ class Injury:
         self.time_elapsed: float = 0.0
 
     def __eq__(self, other: 'Injury'):
-        return self.name == other.name and self.location == other.location and self.severity == other.severity
+        return (self.name == other.name and self.location == other.location and self.severity == other.severity and
+                self.time_elapsed == other.time_elapsed)
 
 class Vitals:
     def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int):
@@ -134,13 +135,11 @@ class Casualty:
             self.complete_vitals == other.complete_vitals and self.assessed == other.assessed and
             self.tag == other.tag and self.time_elapsed == other.time_elapsed and self.dead == other.dead):
             same = True
+
         if len(self.injuries) == len(other.injuries):
             same = False
             return same
 
-        # is sorting by id enough? not sure yet
-        # id don't think it is, might need custom function that considers more than just hrpmin
-        # maybe turn into set as already check length
         self_inj_sorted = sorted(self.injuries, key=lambda x: x.hrpmin)
         other_inj_sorted = sorted(other.injuries, key=lambda x: x.hrpmin)
         if self_inj_sorted == other_inj_sorted:

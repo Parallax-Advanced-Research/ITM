@@ -3,9 +3,9 @@ import tad
 
 def test_endpoint():
     args = type("Foo", (object,), {})()
-    args.model = 'bbn'
-    args.endpoint = '127.0.0.1:8080'
-    args.variant = 'aligned'
+    # args.model = 'bbn'
+    # args.endpoint = '127.0.0.1:8080'
+    # args.variant = 'aligned'
     args.verbose = True
 
     tad.api_test(args)
@@ -91,8 +91,8 @@ def main():
     # test_gen_soar()
     # test_gen_bbn()
     # test_local_bbn()
-    test_local_soar()
-    # test_endpoint()
+    # test_local_soar()
+    test_endpoint()
 
 
 if __name__ == '__main__':

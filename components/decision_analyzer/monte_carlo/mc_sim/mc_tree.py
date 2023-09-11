@@ -13,6 +13,10 @@ def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecision
     return rand.choice(nodes)
 
 
+def score_merger_average_of_children(parent_scores: list[float]) -> float:
+    return sum(parent_scores) / len(parent_scores)
+
+
 def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode],
                         explore_ratio=.15) -> MCStateNode | MCDecisionNode:
     if rand.random() < explore_ratio:
@@ -40,15 +44,18 @@ def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisio
 
 
 Node_Selector = typing.Callable[[random.Random, list[MCStateNode | MCDecisionNode]], MCStateNode | MCDecisionNode]
+Score_Merger = typing.Callable[[list[float]], float]
 
 
 class MonteCarloTree:
     def __init__(self, sim: MCSim, roots: list[MCStateNode] = (), seed: Optional[float] = None,
-                 node_selector: Node_Selector = select_random_node):
+                 node_selector: Node_Selector = select_random_node,
+                 score_merger: Score_Merger = score_merger_average_of_children):
         self._sim: MCSim = sim
         self._roots: list[MCStateNode] = list(roots)
         self._rollouts: int = 0
         self._node_selector: Node_Selector = node_selector
+        self._score_merger: Score_Merger = score_merger
 
         # Setup a randomizer
         if seed is None:
@@ -68,7 +75,7 @@ class MonteCarloTree:
         self._sim.reset()
         root = self._node_selector(self._rand, self._roots)
         leaf_node = self._rollout(root, max_depth, 1)
-        MonteCarloTree.score_propagation(leaf_node, self._sim.score(leaf_node.state))
+        MonteCarloTree.score_propagation(leaf_node, self._sim.score(leaf_node.state), self._score_merger)
         return leaf_node
 
     def _rollout(self, state: MCStateNode, max_depth: int, curr_depth: int) -> MCStateNode:
@@ -91,13 +98,21 @@ class MonteCarloTree:
                 return state
 
         # Choose decision and update node counts
-        decision = self._node_selector(self._rand, state.children)
+        decision: MCDecisionNode = self._node_selector(self._rand, state.children)
         state.count += 1
         decision.count += 1
 
-        # If node unexplored, explore it
-        if not decision.children:
-            self._explore_decision(decision)
+        # always explore decision
+        # TODO determine if we should always take/explore unique nodes
+        state_node = self._explore_decision(decision)
+        unique_state = True
+        for child_state in decision.children:
+            if state_node.state == child_state.state:
+                unique_state = False
+                break
+        if unique_state:
+            decision.children.append(state_node)
+
 
         # Choose a state and continue rollout
         next_state = self._node_selector(self._rand, decision.children)
@@ -112,16 +127,18 @@ class MonteCarloTree:
         for action in actions:
             state.children.append(MCDecisionNode(state, action))
 
-    def _explore_decision(self, decision: MCDecisionNode):
+    def _explore_decision(self, decision: MCDecisionNode) -> MCStateNode:
         """
         Explores the possible states that this action could cause (if more than 1 due to probabilities
         :param decision: The decision node to explore/simulate
         """
-        # Get all the possible results of the action, and add them as children (fully explore this node)
+        # Get all the possible results of the action and choose one
         results = self._sim.exec(decision.parent.state, decision.action)
+        state_nodes = []
         for result in results:
             snode = MCStateNode(result.outcome, decision)
-            decision.children.append(snode)
+            state_nodes.append(snode)
+        return self._node_selector(self._rand, state_nodes)
 
     @staticmethod
     def leaves(node: MCStateNode) -> list[MCStateNode]:
@@ -144,7 +161,7 @@ class MonteCarloTree:
         return to_return
 
     @staticmethod
-    def score_propagation(node: MCStateNode | MCDecisionNode, score: float):
+    def score_propagation(node: MCStateNode | MCDecisionNode, score: float, score_merger: Score_Merger):
         # update the node's score
         node.score = score
         node.scores.append(score)
@@ -153,5 +170,5 @@ class MonteCarloTree:
         parent = node.parent
         while parent is not None:
             parent.scores.append(score)
-            parent.score = sum(parent.scores) / len(parent.scores)
+            parent.score = score_merger(parent.scores)
             parent = parent.parent
