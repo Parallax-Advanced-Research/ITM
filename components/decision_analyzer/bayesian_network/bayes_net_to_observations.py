@@ -9,8 +9,19 @@ from util import assignment_to_hash
 # CPD table for a node work. Once we start considering parents and children, we
 # may need to add more observations in the parent nodes to make the full thing work.
 MAX_OBSERVATIONS_PER_NODE = 100
+MAX_APPROXIMATION_ERROR = 0.04 # There *are errors above 0.03
+WARN_APPROXIMATION_ERROR = 0.02
+# TODO: This is total error right now, but maybe per-value error is the more useful number.
 
 nodes: Dict[str, 'Node']
+
+verbose_mode = True
+
+def verbose(s: str) -> None:
+	if not verbose_mode: return
+	sys.stderr.write(str(s))
+	sys.stderr.write("\n")
+	sys.stderr.flush()
 
 class Node:
 	def __init__(self, name: str, json_dict: Dict[str, Any], max_observations: int, epsilon: float) -> None:
@@ -76,7 +87,7 @@ class Node:
 #
 #			return result
 
-		def rational_approximation(probs: Dict[str, float]) -> Dict[str, Fraction]:
+		def rational_approximation(name: str, probs: Dict[str, float]) -> Dict[str, Fraction]:
 			""" For this approach, `max_denom` (which will be renamed) is instead the maximum number of observations we're permitted. """
 
 			# TODO: have some epsilon where we warn if absolute error exceeds it
@@ -99,8 +110,9 @@ class Node:
 				n = sum(counts.values())
 				err = sum(abs(counts[k] / float(n) - probs[k]) for k in probs)
 				return counts, err
-			
+		
 
+			nonlocal error_count
 			best: Tuple[Dict[str, int], float] = ( {}, float('inf') )
 			for n_observations in range(1, max_observations + 1):
 				est = find_approximation(n_observations)
@@ -109,12 +121,36 @@ class Node:
 
 			assert best[1] != float('inf'), f"Could not find satisfying set of observations smaller than {max_observations+1}"
 			counts = best[0]
+			err = best[1]
 			n = sum(counts.values())
+
 			result = { k: Fraction(v, n) for k,v in counts.items() }
 			assert 1.0 == sum(result.values())
-			return result
+			#verbose(f"Approximation error for {name}: {err}")
 
-		return { k: rational_approximation(v) for k,v in real_distribution.items() }
+			# TODO: print the name of the random variable as well as the parent assignment
+			if err > MAX_APPROXIMATION_ERROR:
+				sys.stderr.write(f"\x1b[31mERROR: approximation error for {name} = {err}\x1b[0m\n")
+				error_count += 1
+			elif err > WARN_APPROXIMATION_ERROR:
+				sys.stderr.write(f"\x1b[93mWARNING: approximation error for {name} = {err}\x1b[0m\n")
+			return result
+		
+		error_count = 0
+		r = { k: rational_approximation(k, v) for k,v in real_distribution.items() }
+		assert 0 == error_count
+		return r
+
+	def to_dict(self) -> Dict[str, Any]:
+		def aux(entry: Dict[str, Fraction]) -> Dict[str, str]:
+			return { k:f"{v.numerator}/{v.denominator}" for k,v in entry.items() }
+
+		return {
+			"name": self.name,
+			"parents": self.parents,
+			"values": self.values,
+			"distribution": { k:aux(v) for k,v in self.distribution.items() }
+		}
 
 def main(argv: List[str]) -> int:
 	global nodes
@@ -129,6 +165,10 @@ def main(argv: List[str]) -> int:
 	assert type(j) is dict and all(type(k) is str for k in j)
 
 	nodes = { k:Node(k, v, MAX_OBSERVATIONS_PER_NODE, 0.001) for k,v in j.items() }
-	print(nodes)
+	
+	for node in nodes.values():
+		print(f"# {node.name}")
+		print(json.dumps(node.to_dict(), indent=4))
+		print()
 
 sys.exit(main(sys.argv))
