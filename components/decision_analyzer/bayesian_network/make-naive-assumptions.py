@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 
-import yaml, sys, random, time
+import yaml, sys, random, time, json
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Any, Union
 
 # used by hash_to_assignment, assignment_to_hash
 FS0 = ":="
 FS1 = "#!#"
 
 nodes: Dict[str, 'Node'] = {}
+
+verbose_mode = True
+
+def verbose(s: str) -> None:
+	sys.stderr.write(s)
+	sys.stderr.write("\n")
+	sys.stderr.flush()
 
 def split_by_comma(s: str) -> List[str]:
 	return [a.strip() for a in s.split(',')]
@@ -57,22 +64,22 @@ def hash_to_assignment(key: str) -> Dict[str,str]:
 
 class Node:
 	def is_root(self) -> bool:
-		print(f"{self.name}.is_root() -> basis_rows = {self.basis_rows} -> {len(self.basis_rows)}")
+		verbose(f"{self.name}.is_root() -> basis_rows = {self.basis_rows} -> {len(self.basis_rows)}")
 		return 0 == len(self.basis_rows)
 
-	def __init__(self, name: str, data: Dict[str, str]) -> None:
+	def __init__(self, name: str, data: Dict[str, Union[str, List[str]]]) -> None:
 		data = data.copy()
-		for k in ('values', 'baseline'):
-			assert k in data, f"{name} is missing {k} field"
+		assert 'values' in data and type(data['values']) is list
+		assert 'baseline' in data and type(data['baseline']) is str
 
 		self.name = name
 		self.baseline = data['baseline']
-		self.probability_table: Dict[str,float] = {}
+		self.probability_table: Dict[str, Dict[str, float]] = {}
 		values_lst = data['values']
 		assert list == type(values_lst)
 
-		print(f"baseline = {self.baseline}, {type(self.baseline)}")
-		print(f"vals: {values_lst}")
+		verbose(f"baseline = {self.baseline}, {type(self.baseline)}")
+		verbose(f"vals: {values_lst}")
 		offset = values_lst.index(self.baseline)
 
 		self.values = {}
@@ -83,7 +90,9 @@ class Node:
     		# Row is something like this: 0.7 A, 0.2 V, 0.05 P, 0.05 U. Outputs the corresponding dict. PRE: normalized
 			prob = {}
 			z = 0.0
-			for entry in split_by_comma(data[key]):
+			field = data[key]
+			assert type(field) is str
+			for entry in split_by_comma(field):
 				p, val = entry.split()
 				assert val in self.values
 				prob[val] = float(p)
@@ -94,7 +103,8 @@ class Node:
 			return prob
 
 		if 'parents' not in data: # root node
-			self.basis_rows = {}
+			self.basis_rows: Dict[str, Dict[str, float]] = {}
+			assert type(data['probability']) is str
 			self.probability_table[''] = parse_row('probability', True)
 			return
 
@@ -106,17 +116,17 @@ class Node:
 		del data['values']
 		del data['baseline']
 
-		print(f"# {name}")
-		print(f"Values: {self.values}\nParents: {self.parents}\n")
+		verbose(f"# {name}")
+		verbose(f"Values: {self.values}\nParents: {self.parents}\n")
 		
 		self.basis_rows = {}
 		for parent in self.parents:
-			print(f"Add parent of {name}: {parent}")
+			verbose(f"Add parent of {name}: {parent}")
 			assert parent in data, f"Missing row for P({name} | {parent})"
 			self.basis_rows[parent] = parse_row(parent, False)
 			del data[parent]
 				
-		print(f"Rows: {self.basis_rows}\n\n")
+		verbose(f"Rows: {self.basis_rows}\n\n")
 		
 		self.probability_table = {}
 		#self.naive_estimation() # TODO: might need to wait until I've read in all the nodes before I can do this; it will need to know the value set for each parent
@@ -128,27 +138,27 @@ class Node:
 		    TODO: Copy over the assumptions from my notes """
 
 		if self.is_root(): return
-		print(f"\n\nnaive_estimation({self.name})")
+		verbose(f"\n\nnaive_estimation({self.name})")
 
 		# TODO: The rows where exactly one parent is true are copied over from basis rows
 		
 		# TODO: make not psuedocode
 		parent_assignments = possible_assignments([ nodes[parent] for parent in self.parents ])
-		print(f"Basis rows: {self.basis_rows}")
+		verbose(f"Basis rows: {self.basis_rows}")
 		for assignment in parent_assignments:
 			# TODO: I'm assuming here that parents are boolean. But that's true for everything except
 			# severe_burns and RR, I think. I'll just handle those manually.
 			# The same basic logic works; it's just that there'll be a row for every value other than the
 			# "normal" one.
 
-			print(f"Assignment: {assignment}")
+			verbose(f"Assignment: {assignment}")
 			relevant_lines = []
 			for parent, value in assignment.items():
-				print(f"p,v = {parent}, {value}")
+				verbose(f"p,v = {parent}, {value}")
 				if nodes[parent].baseline != value:
-					print("APPEND")
+					verbose("APPEND")
 					relevant_lines.append(self.basis_rows[parent])
-			print(f"Relevant Lines: {relevant_lines}")
+			verbose(f"Relevant Lines: {relevant_lines}")
 
 			h = assignment_to_hash(assignment)
 			self.probability_table[h] = self.simulate(relevant_lines) # play 1M games with these basis probability rows and the rules in my notes. Output resulting distribution
@@ -160,7 +170,7 @@ class Node:
 
 				estimate = self.probability_table[h]
 				truth = self.basis_rows[included[0]]
-				err = sum(abs(estimate[k] - truth[k]) for k in self.values.keys())
+				err = sum(abs(estimate[k] - truth[k]) for k in self.values)
 
 				# Not a small epsilon because we expect *some* estimation error.
 				# But if it exceeds 1%, something's up.
@@ -194,15 +204,15 @@ class Node:
 			selections.append(random.choices(options, weights, k=N))
 
 		# Each row independently applies the offset that it drew this round
-		counts = defaultdict(int)
+		counts: Dict[int, int] = defaultdict(int)
 		for idx in range(N):
 			offset = 0
-			for row,_ in enumerate(rows_to_apply):
-				offset += selections[row][idx]
+			for jdx,_ in enumerate(rows_to_apply):
+				offset += selections[jdx][idx]
 			counts[offset] += 1
 
 		# Scale counts to proportion of N, convert offsets back into labels
-		results = { k:0.0 for k in self.values.keys() }
+		results = { k:0.0 for k in self.values }
 		values_inverse = { v:k for k,v in self.values.items() }
 		min_offset = min(self.values.values())
 		max_offset = max(self.values.values())
@@ -218,9 +228,27 @@ class Node:
 
 	def print_table(self) -> None:
 		for k,v in self.probability_table.items():
-			print(f"{hash_to_assignment(k)} -> {v}")
+			verbose(f"{hash_to_assignment(k)} -> {v}")
 
-def main(argv: List[str]):
+	def to_dict(self) -> Dict[str, Any]:
+		""" used to construct a json """
+
+		parents = self.parents if 'parents' in self.__dict__ else []
+
+		return { # This will be placed in a dict with self.name as key
+			"parents": parents, # names
+			"baseline": self.baseline, # not really needed after this stage, but meh.
+			"distribution": [{
+				"parent_assignment" : hash_to_assignment(k),
+				"probabilities" : v
+			} for k,v in self.probability_table.items()]
+		}
+
+def print_nodes(nodes: Dict[str, Node]) -> None:
+	d = { k : v.to_dict() for k, v in nodes.items() }
+	print(json.dumps(d, sort_keys = True, indent = 4))
+
+def main(argv: List[str]) -> None:
 	fname = argv[1] if len(argv) > 1 else 'scenario-bn.yaml'
 	with open(fname, encoding='utf-8') as fin:
 		y = yaml.load(fin, Loader=yaml.BaseLoader)
@@ -229,15 +257,17 @@ def main(argv: List[str]):
 	for k, v in y.items():
 		nodes[k] = Node(k, v)
 
-	print("\n\n#### Naive Estimation ######\n\n")
+	verbose("\n\n#### Naive Estimation ######\n\n")
 	for node in nodes.values():
 		node.naive_estimation()
 
 
-	print("\n\n#### Results #####\n\n")
+	verbose("\n\n#### Results #####\n\n")
 	for node in nodes.values():
-		print(f"# {node.name}")
+		verbose(f"# {node.name}")
 		node.print_table()
+
+	print_nodes(nodes)
 
 	# TODO: Add the code to convert to observations here. It'll be quicker (for me) than writing in lisp,
 	# and python has the Fraction and Decimal libraries to do the rationalize step.

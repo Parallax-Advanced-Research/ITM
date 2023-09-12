@@ -103,8 +103,8 @@ hrpmin:
     # https://www.osmosis.org/learn/Cardiovascular_changes_during_hemorrhage. Also, physics.
     # Although these also link to shock, we want direct links as well, because we're losing blood pressure to a failure to circulate,
     # but also because we're leaking.
-    internal_hemorrhage: 0.7 low, 0.3 normal
-    external_hemorrhage: 0.7 low, 0.3 normal
+    internal_hemorrhage: 0.7 low, 0.3 normal, 0.0 high
+    external_hemorrhage: 0.7 low, 0.3 normal, 0.0 high
 
     # Looks like it initially increases heart rate, but in moderate to severe cases, it decreases
     # https://my.clevelandclinic.org/health/diseases/21164-hypothermia-low-body-temperature
@@ -119,8 +119,8 @@ mmHg:
     baseline: normal
     parents: [ internal_hemorrhage, external_hemorrhage, hypothermia ]
     
-    internal_hemorrhage: 0.7 low, 0.3 normal
-    external_hemorrhage: 0.7 low, 0.3 normal
+    internal_hemorrhage: 0.7 low, 0.3 normal, 0.0 high
+    external_hemorrhage: 0.7 low, 0.3 normal, 0.0 high
     hypothermia: 0.4 low, 0.3 normal, 0.3 high # Same deal as with heart rate
 
 SpO2: # low blood oxygen = "hypoxemia". high = "hyperxemia"
@@ -304,3 +304,9 @@ death:
     shock: 0.3 true, 0.7 false # https://pubmed.ncbi.nlm.nih.gov/9751548/. 31% died within 2 hours of ER arrival
     brain_injury: 0.1 true, 0.9 false # most will be concussions
     hypothermia: 0.7 true, 0.3 false # "Researchers found a 21% mortality rate in patients with a core temperature less than 32° C originating from environmental exposure. However, that same degree of hypothermia following traumatic injury resulted in 100% mortality, independent of the presence of shock, injury severity score, or fluid resuscitation". So hypothermia might not kill you by itself, but it makes everything else *much* worse. And there *will* be other things if they have it here. https://www.ems1.com/ems-products/bleeding-control/articles/hypothermia-and-trauma-a-deadly-combination-GSR7YIuhEq3MoNFB/
+
+
+explosion:
+    values: [ false, true]
+    baseline: false
+    probability: 0.8 false, 0.2 true
