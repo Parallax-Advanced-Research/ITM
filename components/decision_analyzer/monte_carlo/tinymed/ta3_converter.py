@@ -43,7 +43,7 @@ def convert_supplies(ta_supplies: list[TA_SUPPLY]) -> dict[str, int]:
     return supplies
 
 
-def convert_state(ta3_state: TA3State):
+def convert_state(ta3_state: TA3State) -> TinymedState:
     cas = convert_casualties(ta3_state.casualties)
     sup = convert_supplies(ta3_state.supplies)
-    return TinymedState(casualties=cas, supplies=sup, unstructured=ta3_state.unstructured)
+    return TinymedState(casualties=cas, supplies=sup, time=ta3_state.time_, unstructured=ta3_state.unstructured)
