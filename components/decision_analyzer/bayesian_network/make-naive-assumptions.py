@@ -3,10 +3,7 @@
 import yaml, sys, random, time, json
 from collections import defaultdict
 from typing import Dict, List, Any, Union
-
-# used by hash_to_assignment, assignment_to_hash
-FS0 = ":="
-FS1 = "#!#"
+from util import hash_to_assignment, assignment_to_hash
 
 nodes: Dict[str, 'Node'] = {}
 
@@ -39,28 +36,6 @@ def possible_assignments(nodes: List['Node']) -> List[Dict[str,str]]:
 	aux({}, nodes)
 	return results
 
-
-def assignment_to_hash(assignment: Dict[str,str]) -> str:
-	""" A dictionary can't be a key in another dictionary """
-	for k,v in assignment.items():
-		assert FS0 not in k
-		assert FS0 not in v
-		assert FS1 not in k
-		assert FS1 not in v
-
-	order = sorted(assignment.keys())
-	return FS1.join((f"{k}{FS0}{assignment[k]}" for k in order))
-
-def hash_to_assignment(key: str) -> Dict[str,str]:
-	result: Dict[str,str] = {}
-	if '' == key: return result
-
-	for field in key.split(FS1):
-		a = field.split(FS0)
-		assert 2 == len(a)
-		assert a[0] not in result
-		result[a[0]] = a[1]
-	return result
 
 class Node:
 	def is_root(self) -> bool:
@@ -129,7 +104,6 @@ class Node:
 		verbose(f"Rows: {self.basis_rows}\n\n")
 		
 		self.probability_table = {}
-		#self.naive_estimation() # TODO: might need to wait until I've read in all the nodes before I can do this; it will need to know the value set for each parent
 		
 		assert 0 == len(data), f"Unexpected keys in {name}: {data.keys()}"
 
@@ -140,9 +114,6 @@ class Node:
 		if self.is_root(): return
 		verbose(f"\n\nnaive_estimation({self.name})")
 
-		# TODO: The rows where exactly one parent is true are copied over from basis rows
-		
-		# TODO: make not psuedocode
 		parent_assignments = possible_assignments([ nodes[parent] for parent in self.parents ])
 		verbose(f"Basis rows: {self.basis_rows}")
 		for assignment in parent_assignments:
@@ -175,9 +146,6 @@ class Node:
 				# Not a small epsilon because we expect *some* estimation error.
 				# But if it exceeds 1%, something's up.
 				assert err < 0.01, "Estimation error is a bit high. Use a bigger N for the simulation"
-				
-				# TODO: calculate difference between the simulated one and the real one. They should be
-				# within some reasonable epsilon, but aren't expected to be *super* close.
 
 				self.probability_table[h] = self.basis_rows[included[0]]
 
@@ -189,13 +157,8 @@ class Node:
 		# TODO: it'd be straightforward to calculate the exact value, but would take slightly longer to code.
 		# Do it right once there's not a deadline.
 
-
-		# TODO: This is getting run even for the baseline cases, which it wasn't supposed to.
-		# That said, *do* run it for those, and then sanity check that the result is within epsilon
-		# of the real value.
-		
 		# Much faster to do it in one call
-		N = 10_00_000 # TODO: increase to 10M
+		N = 10_00_000
 		selections = []
 		for row in rows_to_apply:
 			keys = list(row.keys())
@@ -237,6 +200,7 @@ class Node:
 
 		return { # This will be placed in a dict with self.name as key
 			"parents": parents, # names
+			"values": self.values, # maps name -> offset
 			"baseline": self.baseline, # not really needed after this stage, but meh.
 			"distribution": [{
 				"parent_assignment" : hash_to_assignment(k),
@@ -276,5 +240,6 @@ def main(argv: List[str]) -> None:
 	# I'll need to output lisp code, but that's easy enough.
 
 seed = int(time.time())
+verbose(f"Seed: {seed}")
 main(sys.argv)
 
