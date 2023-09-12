@@ -89,7 +89,7 @@ class Node:
 				prob[val] = float(p)
 				z += float(p)
 
-			name = f"P({val})" if is_root else f"P({val} | {key})"
+			name = f"P({self.name} = {val})" if is_root else f"P({self.name} = {val} | {key})"
 			assert abs(1.0 - z) < 0.00001, f"{name} doesn't sum to 1.0: {z}"
 			return prob
 
