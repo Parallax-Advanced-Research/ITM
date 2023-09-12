@@ -74,6 +74,14 @@
 # IMPORTANT: The rows where we specify the probability given a single parent are the probabilities that that parent is true
 # *and all other parents are false*, NOT the marginal probability given that parent
 
+# TODO: The final version should probably have some sort of add-k smoothing, where we avoid any probabilities being *exactly* 0.0
+
+# TODO: Are shock and blood pressure really separate nodes? hemorrhagic shock seems to just be defined as blood pressure < 90 mm Hg (https://pubmed.ncbi.nlm.nih.gov/9751548/)
+
+
+# Merck Manual seems to be a good source for a lot of this info. https://www.merckmanuals.com/home/heart-and-blood-vessel-disorders/low-blood-pressure-and-shock/shock
+# Another nice link. diagnosis flowcharts of sorts. https://www.wikidoc.org/index.php/Tension_pneumothorax_resident_survival_guide
+
 # Symptoms
 AVPU:
     # Remember, this can be any cause of unconsciousness.
@@ -88,111 +96,185 @@ AVPU:
     airway_blocked: 0.4 A, 0.0 V, 0.0 P, 0.6 U # if they die in 4 minutes, they lose consciousness even faster
 
 hrpmin: 
-    parents: internal_hemorrhage, external_hemorrhage, hypothermia, tension_pseumothorax, severe_burns
+    parents: internal_hemorrhage, external_hemorrhage, hypothermia, tension_pneumothorax
     values: low, normal, high
 
-    internal_hemorrhage: 50% high
-    external_hemorrhage: 50% high
+    # https://www.osmosis.org/learn/Cardiovascular_changes_during_hemorrhage. Also, physics.
+    # Although these also link to shock, we want direct links as well, because we're losing blood pressure to a failure to circulate,
+    # but also because we're leaking.
+    internal_hemorrhage: 0.7 low, 0.3 normal
+    external_hemorrhage: 0.7 low, 0.3 normal
+
+    # Looks like it initially increases heart rate, but in moderate to severe cases, it decreases
+    # https://my.clevelandclinic.org/health/diseases/21164-hypothermia-low-body-temperature
+    # https://www.betterhealth.vic.gov.au/health/healthyliving/hypothermia
+    # https://www.medicalnewstoday.com/articles/182197
+    hypothermia: 0.4 low, 0.3 normal, 0.3 high 
+
+    tension_pneumothorax: 0.0 low, 0.4 normal, 0.6 high # https://www.ncbi.nlm.nih.gov/books/NBK441885/
 
 mmHg:
     values: low, normal, high
-    parents: internal_hemorrhage, external_hemorrhage, hypothermia, tension_pseumothorax
+    parents: internal_hemorrhage, external_hemorrhage, hypothermia
     
-    internal_hemorrhage: 75% low
-    external_hemorrhage: 75% low
+    internal_hemorrhage: 0.7 low, 0.3 normal
+    external_hemorrhage: 0.7 low, 0.3 normal
+    hypothermia: 0.4 low, 0.3 normal, 0.3 high # Same deal as with heart rate
 
-SpO2:
-    values: low, normal, high
-    parents: airway_blocked
+SpO2: # low blood oxygen = "hypoxemia". high = "hyperxemia"
+    values: low, normal # removed high. Nothing trauma-related seems to cause that.
+    parents: airway_blocked, tension_pneumothorax
+
+    airway_blocked: 0.9 low, 0.1 normal # fairly arbitrary; the probability is basically "has the airway been blocked long enough to drop blood oxygen yet?"
+    tension_pneumothorax: 0.7 low, 0.3 normal # https://www.wikidoc.org/index.php/Tension_pneumothorax_resident_survival_guide
 
 RR:
     values: low, normal, high
-    parents: hypothermia, airway_blocked, tension_pseumothorax, severe_burns, internal_hemorrhage, external_hemorrhage
+    parents: hypothermia, airway_blocked, tension_pneumothorax, severe_burns, internal_hemorrhage, external_hemorrhage
     
-    internal_hemorrhage: 75% high
-    external_hemorrhage: 75% high
+
+    hypothermia: 0.3 low, 0.7 normal, 0.0 high # https://www.betterhealth.vic.gov.au/health/healthyliving/hypothermia
+    airway_blocked: 1.0 low, 0.0 normal, 0.0 high
+    tension_pneumothorax: 0.7 low, 0.3 normal, 0.0 high # https://www.wikidoc.org/index.php/Tension_pneumothorax_resident_survival_guide
+       severe_burns: 0.3 low, 0.7 normal, 0.0 high 
+    internal_hemorrhage: 0.7 high, 0.0 normal, 0.0 low
+    external_hemorrhage: 0.7 high, 0.0 normal, 0.0 low
 
 
 pain:
     values: low_or_none, med, high
-    parents: internal_hemorrhage, external_hemorrhage, limb_fracture, amputation, tension_pseumothorax, severe_burns
+    parents: internal_hemorrhage, external_hemorrhage, brain_injury, limb_fracture, amputation, tension_pneumothorax, severe_burns
 
     internal_hemorrhage: 15% pain high, 15% pain medium, 15% pain low # https://www.medicalnewstoday.com/articles/320322. mostly a guess.
     internal_hemorrhage: 15% pain high, 15% pain medium, 15% pain low # https://www.medicalnewstoday.com/articles/320322. mostly a guess.
     brain_injury: 15% high, 85% low_or_none # https://www.nyp.org/neuro/brain-hemorrhage
+    limb_fracture: 0.3 low_or_none, 0.3 med, 0.4 high # depends on the type of break and whether it can be kept immobilized.
+    amputation: 0.1 low_or_none, 0.1 med, 0.8 high # guess. nonzero for low because the nerves might be too damaged to feel pain.
+    tension_pneumothorax: 0.1 low_or_none, 0.7 med, 0.2 high # https://www.merckmanuals.com/home/injuries-and-poisoning/chest-injuries/tension-pneumothorax
+    severe_burns: 0.3 low_or_none, 0.3 med, 0.4 high # "how much pain you have is unrelated to the level of burn. The most serious can be painless" https://www.pennmedicine.org/for-patients-and-visitors/patient-information/conditions-treated-a-to-z/burns
 
 eye_or_vision_problems:
     values: false, true
     parents: brain_injury
+    
+    brain_injury: 0.1 true, 0.9 false # total guess, but there are a lot of types of brain injury that wouldn't affect vision
 
-chest_rising:
-    values: false, true
-    parents: RR
+# TODO: bring this back once I can deal with non-boolean parents
+#chest_rising:
+#    values: false, true
+#    parents: RR
 
+# mostly just guessing on the visible trauma ones
 visible_trauma_to_head:
     values: false, true
     parents: brain_injury, airway_blocked
+
+    brain_injury: 0.3 true, 0.7 false # blunt force might not be visible
+    airway_blocked: 0.6 true, 0.4 false # most *trauma* that would block an airway would probably leave visible damage
 
 visible_trauma_to_torso:
     values: false, true
     parents: internal_hemorrhage, external_hemorrhage
 
-    internal_hemorrhage: 70% // guess. assuming internal more likely for torso, external for limbs
-    external_hemorrhage: 30%
+    internal_hemorrhage: 0.7 true, 0.3 false # guess. assuming internal more likely for torso, external for limbs
+    external_hemorrhage: 0.5 true, 0.5 false # false means the hemorrhage is coming from somewhere else (might also be coming from multiple places)
 
 visible_trauma_to_extremities:
     values: false, true
     parents: internal_hemorrhage, external_hemorrhage, limb_fracture
     
-    internal_hemorrhage: 10%
-    external_hemorrhage: 70%
+    internal_hemorrhage: 0.1 true, 0.9 false
+    external_hemorrhage: 0.6 true, 0.4 false
 
 # Conditions
+# Mostly guessing on how likely an explosion is to cause any of these.
+# IMPORTANT: These numbers should all be interpreted as "P(injury is this | there exists some injury)". Otherwise, I need to estimate how close
+# they're standing to the explosion, etc.
+
 airway_blocked:
     parents: severe_burns, explosion
     values: false, true
 
-tension_pseumothorax:
+    severe_burns: 0.1 true, 0.9 false
+    explosion: 0.1 true, 0.9 false # This being airway blocked through non-burn methods
+
+tension_pneumothorax:
     parents: explosion
     values: false, true
 
-severe_burns_BSA_above_x_pct:
+    # TODO: should this have an edge coming from internal_hemorrhage?
+    explosion: 0.2 true, 0.8 false
+
+severe_burns:
     parents: explosion
-    values: 0, 25, 50, 75
+    values: false, true 
+    # TODO: eventually, I want to be able to specify body surface area bins, e.g. % BSA > 0, 25, 50, 75
+
+    explosion: 0.6 true, 0.4 false
 
 amputation:
     parents: explosion
     values: false, true
 
+    explosion: 0.2 true, 0.8 false
+
 external_hemorrhage:
     parents: amputation, explosion
     values: false, true
 
-shock:
-    parents: internal_hemorrhage, external_hemorrhage, tension_pseumothorax, severe_burns_BSA_above_x_pct, explosion
-    values: false, true
-
-    internal_hemorrhage: 90% // guess, but shock seems to be inevitable if hemorrhage is left untreated. But it remains after the TQ, so it's separate.
-    external_hemorrhage: 90%
+    explosion: 0.4 true, 0.6 false
 
 internal_hemorrhage:
     parents: limb_fracture, explosion
     values: false, true
 
+    explosion: 0.4 true, 0.6 false
+
+shock:
+    parents: internal_hemorrhage, external_hemorrhage, tension_pneumothorax, severe_burns
+    values: false, true
+
+    internal_hemorrhage: 0.9 true, 0.1 false # guess, but shock seems to be inevitable if hemorrhage is left untreated. But it remains after the TQ, so it's separate.
+    external_hemorrhage: 0.9 true, 0.1 false
+    tension_pneumothorax: 0.5 true, 0.5 false # the likely comorbid hemorraghing will push it up further. This just makes an already high risk even higher. "dangerously low (shock)". https://www.merckmanuals.com/home/injuries-and-poisoning/chest-injuries/tension-pneumothorax
+    severe_burns: 0.2 true, 0.8 false "Typically, patients are at risk for developing burn shock if they have greater than 20% of their total body surface area (TBSA) burned." https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3097558/
+
+    # no explosion link here; other conditions will cause the shock
+
 brain_injury:
     parents: explosion
     values: false, true
 
+    explosion: 0.2 true, 0.8 false
+
 hypothermia:
-    parents: explosion
+    parents: shock
     values: false, true
+
+    shock: 0.2 true, 0.8 false # trama triad of death. "One of those complications is hypothermia, occurring in about 10% of patients." But that includes *all* trauma patients, not requiring shock, so increasing by a bit.  https://www.ems1.com/ems-products/bleeding-control/articles/hypothermia-and-trauma-a-deadly-combination-GSR7YIuhEq3MoNFB/
+
+    # no direct link from explosion
 
 limb_fracture:
     parents: explosion
     values: false, true
 
+    explosion: 0.2 true, 0.8 false
+
+# TODO: treatments
+
 # TODO: Most conditions will have an edge going to death.
 death:
-    parents: tension_pseumothorax, severe_burns_BSA_above_x_pct, airway_blocked, external_hemorrhage, shock, internal_hemorrhage, brain_injury, hypothermia
+    parents: tension_pneumothorax, severe_burns, airway_blocked, external_hemorrhage, shock, internal_hemorrhage, brain_injury, hypothermia
     # NOTE: amputation and limb_fracture don't cause death directly. They cause hemorrhage and shock and maybe hypothermia (TODO: add that edge?) and...
     # NOTE: Death here means death in less time than it takes to hand them off to the next stage.
+
+    # The numbers here are estimates/guesses if untreated
+    tension_pneumothorax: 0.8 true, 0.2 false
+    severe_burns: 0.1 true, 0.9 false # the resulting shock is what kills you
+    airway_blocked: 0.9 true, 0.1 false
+    external_hemorrhage: 0.8 true, 0.2 false
+    internal_hemorrhage: 0.8 true, 0.2 false
+    shock: 0.3 true, 0.7 false # https://pubmed.ncbi.nlm.nih.gov/9751548/. 31% died within 2 hours of ER arrival
+    brain_injury: 0.1 true, 0.9 false # most will be concussions
+    hypothermia: 0.7 true, 0.3 false # "Researchers found a 21% mortality rate in patients with a core temperature less than 32° C originating from environmental exposure. However, that same degree of hypothermia following traumatic injury resulted in 100% mortality, independent of the presence of shock, injury severity score, or fluid resuscitation". So hypothermia might not kill you by itself, but it makes everything else *much* worse. And there *will* be other things if they have it here. https://www.ems1.com/ems-products/bleeding-control/articles/hypothermia-and-trauma-a-deadly-combination-GSR7YIuhEq3MoNFB/
