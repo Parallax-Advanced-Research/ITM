@@ -3,10 +3,11 @@ from .tinymed_enums import Casualty, Supplies, Actions
 
 
 class TinymedState(MCState):
-    def __init__(self, casualties: list[Casualty], supplies: dict[str, int]):
+    def __init__(self, casualties: list[Casualty], supplies: dict[str, int], unstructured: str = ''):
         super().__init__()
         self.casualties: list[Casualty] = casualties
         self.supplies: dict[str, int] = supplies
+        self.unstructured = unstructured
 
     def __eq__(self, other: 'TinymedState'):
         # fastest checks are lengths
