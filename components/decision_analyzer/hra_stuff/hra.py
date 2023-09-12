@@ -856,15 +856,15 @@ class HRA(DecisionAnalyzer):
         "decompression needle":{"risk_reward_ratio":"med", "resources":"few", "time":"minutes", "system":"respiratory"},
         "nasopharyngeal airway":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"respiratory"}       
         }
-        """
+        
         #file["casualty"] = {"injury":{"name":"broken arm", "system":"skeleton", "severity":"serious"}}
 
-        file["casualty_list"] = {"casualty-A": {"age": 22, "sex": "M", "rank": "Military", "hrpmin": 145, "mmhg": 60, "spo2": 85,"rr": 40, "pain": 0}}#,
+        #file["casualty_list"] = {"casualty-A": {"age": 22, "sex": "M", "rank": "Military", "hrpmin": 145, "mmhg": 60, "spo2": 85,"rr": 40, "pain": 0}}#,
         #"casualty-B": {"age": 25, "sex": "M", "rank": "Military", "hrpmin": 120, "mmhg": 80, "spo2": 98, "rr": 18, "pain": 6},
         #"casualty-D": {"age": 40, "sex": "M", "rank": "VIP", "hrpmin": 105, "mmhg": 120, "spo2": 99, "rr": 15, "pain": 2},
         #"casualty-E": {"age": 26, "sex": "M", "rank": "Military", "hrpmin": 120, "mmhg": 100, "spo2": 95, "rr": 15, "pain": 10},
         #"casualty-F": {"age": 12, "sex": "M", "rank": "Civilian", "hrpmin": 120, "mmhg": 30, "spo2": 99, "rr": 25, "pain": 3}}
-        """
+        
         file['injury_list'] = ["Forehead Scrape", "Ear Bleed", "Asthmatic", "Laceration", "Puncture", "Shrapnel", "Chest Collapse", "Amputation", "Burn"]
 
         json_object = json.dumps(file, indent=2)
@@ -977,44 +977,23 @@ class HRA(DecisionAnalyzer):
         new_file = self.preprocess()
         with open(new_file, 'r+') as f:
             data = json.load(f)
-        #with open(new_file, "w") as outfile:
-        #    outfile.write(json_object)
-        #data = json.load(outfile)
-        #data = dict()
+
         casualty_data = dict()
         for ele in scen.state.casualties:
             casualty_data[ele.id] = {"id":ele.id, "name":ele.name, "injuries":[l.name for l in ele.injuries], "demographics":{"age":ele.demographics.age, "sex":ele.demographics.sex, "rank":ele.demographics.rank}, "vitals":{"breathing":ele.vitals.breathing, "hrpmin":ele.vitals.hrpmin}, "tag":ele.tag, "assessed":ele.assessed,"relationship":ele.relationship}
         
         data['casualty_list'] = casualty_data
         json_object = json.dumps(data, indent=2)
-        #new_file = "newfile.json"
-        #mod_path = Path(__file__).parent
-        #new_file = (mod_path / new_file).resolve()
+
         with open(new_file, "w") as outfile:
             outfile.write(json_object)
-        #print("hra data", data,  "\n-----------------")
-        #json_object = json.dumps(data, indent=4)
-        #with open(new_file, "a") as outfile:
-        #    outfile.write(json_object)
         
-        # debug
-        ##json_object = json.dumps(scen, indent=4)
-        #mod_path = Path(__file__).parent
-        #new_file = (mod_path / "scene.json").resolve()
-        ##with open(new_file, "w") as outfile:
-        ##    outfile.write(json_object)
-        # debug
-        #data = dict()
-        
-        print("HRA: initial state casualty  info",scen.state.casualties)# casualties)#dict(scen.state)) # debug
-        
-        #for ele in scen.state.casualties:
-        #    print("\n","ele", "\n", ele)
+        #print("HRA: initial state casualty  info",scen.state.casualties) debug
         
         hra_results = self.hra_decision_analytics(new_file)
-        #print("hra results", hra_results)
+        #print("hra results", hra_results) #debug
         analysis = {}
-        """
+        
         for decision in probe.decisions:
             
             metrics: DecisionMetrics = {"learned_kdma_set":DecisionMetric("hra kdma set", "learned kdma set", dict, hra_results['learned_kdma_set']),\
@@ -1022,11 +1001,11 @@ class HRA(DecisionAnalyzer):
                     "casualty_selected":DecisionMetric("hra casualty", "next casualty selected", dict, hra_results['casualty_selected'])}
             decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
-        """
+        
         return analysis
 
 
-
+"""
 if __name__ == '__main__':
     #cwd = Path.cwd()
     #print("cwd", cwd)
@@ -1043,6 +1022,7 @@ if __name__ == '__main__':
     #result = hra_obj.hra_decision_analytics(file_path, 2, rand_seed=0)
     #result = hra_obj.analyze(file_path, 2, rand_seed=0)
     print("result", result)
+"""
 
 
 
