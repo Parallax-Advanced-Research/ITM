@@ -736,64 +736,46 @@ class HRA(DecisionAnalyzer):
     - the next casualty to treat from the list of casualties, as a dicitionary entry with casulaty id as key
     and remaining fields as the value
     '''
-    def choose_next_casualty(self, casualty_list:dict, kdma_list:dict)->dict:
+    def choose_next_casualty(self, casualty_list:dict, kdma_list:dict, injury_list:list)->dict:
 
-    # separate casualties by rank
-        group = copy.deepcopy(casualty_list)
-        vip = dict()
-        civilian = dict()
-        for key, val in casualty_list.items():
-            if val['rank'] == "VIP":
-                vip[key] = val
-            elif val['rank'] == "Civilian":
-                civilian[key] = val
+    # store casualty
+        next_casualty = dict()
+        
+        next_casualty_id = None
+        next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "VIP"]
+        if len(next_casualty_id) == 0:
+            next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "Civilian"]
+        if len(next_casualty_id) == 0:
+            next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "Intel Officer"]
+        if len(next_casualty_id) == 0:
+            next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "Marine"]    
+        
+        if len(next_casualty_id) > 0:
+            next_casualty = casualty_list[next_casualty_id[0]]
+            if len(next_casualty['injuries']) == 0:
+                return next_casualty
+        else:
+            return "no casualties"
+ 
+    # get the injury body system
+        data_injury = dict()
+        for injury in next_casualty['injuries']:
+            if injury == "Burn" or injury == "Forehead Scrape" or injury == "Laceration":
+                data_injury =  {"injury":injury, "system":"integumentary"}
+                break
+            elif injury == "Asthmatic" or injury == "Chest Collapse":
+                data_injury =  {"injury":injury, "system":"respiratory"}
+                break
+            elif injury == "Ear Bleed":
+                data_injury =  {"injury":injury, "system":"nervous"}
+                break
+            elif injury == "Puncture" or injury == "Shrapnel" or injury == "Amputation":
+                data_injury =  {"injury":injury, "system":"other"}
+                break
+            
 
-    # compare casualties by hrmpin(highest), spo2(lowest), rr(highest) in order
-    # consider groups according to kdma values
-        if kdma_list['mission'] >= 0 and kdma_list['mission'] <= 2 and len(civilian):
-            group = civilian
-        elif kdma_list['mission'] >= 8 and kdma_list['mission'] <= 10 and len(vip):
-            group = vip 
-
-    # - check hrmpin(highest)
-        vals = dict()
-        for key, val in group.items():
-            vals[key] = val['hrpmin']
-        max_val = max(vals.values())
-        hrpmin_best = [key for key, value in vals.items() if value == max_val]
-
-    # if there are not ties, return, else check spo2(lowest)
-        hrpmin_best_sz = len(hrpmin_best)
-        if hrpmin_best_sz == 1:
-            return {hrpmin_best[0]:group[hrpmin_best[0]]}
-        elif hrpmin_best_sz > 1:
-            group = dict()
-            for ele in hrpmin_best:
-                group[ele] = casualty_list[ele]
-            vals = dict()
-            for key, val in group.items():
-                vals[key] = val['spo2']
-            min_val = min(vals.values())
-            spo2_best = [key for key, value in vals.items() if value == min_val]
-
-    # if there are not ties, return, else check rr(highest)
-            spo2_best_sz = len(spo2_best)
-            if spo2_best_sz == 1:
-                return {spo2_best[0]:group[spo2_best[0]]}
-            elif spo2_best_sz > 1:
-                group = dict()
-                for ele in spo2_best:
-                    group[ele] = casualty_list[ele]
-                vals = dict()
-                for key, val in group.items():
-                    vals[key] = val['rr']
-                max_val = max(vals.values())
-                rr_best = [key for key, value in vals.items() if value == max_val]
-                return {rr_best[0]:group[rr_best[0]]}
-
-    # if none of the earlier conditions are met, return empty entry
-        return {"":""}
-    
+        return {"casualty":{"id":next_casualty['id'], "name":data_injury['injury'], "system":data_injury['system']}}
+        
     '''map between kdmas and treatment predictors (for future work may include casualty and scenario predictors)
     '''
     # for now convert functions are stubs, they will be flushed out later
@@ -849,39 +831,41 @@ class HRA(DecisionAnalyzer):
     '''
     def preprocess(self)->str:
         file = dict()
-
-        file["scenario"] = {"danger":"high", "urgency":"high", "error_prone":"high"}
+        
+        #file["scenario"] = {"danger":"high", "urgency":"high", "error_prone":"high"}
 
         file["kdma"] = {"mission":8, "denial":3}
 
         #file["predictors"] = {"relevance":{"risk_reward_ratio":"low", "time":"seconds", "system":"equal", "resources":"few"}},
 
         file["treatment"] = {
-        "airway":{"risk_reward_ratio":"med", "resources":"few", "time":"seconds", "system":"respiratory"},
-        "chest seal":{"risk_reward_ratio":"med", "resources":"many", "time":"hours", "system":"respiratory"},
-        "saline lock":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"cariovascular"},
-        "intraoss device":{"risk_reward_ratio":"high", "resources":"some", "time":"hours", "system":"cardiovascular"},
-        "iv fluids":{"risk_reward_ratio":"low", "resources":"some", "time":"minutes", "system":["vascular", "renal"]},
-        "hemorrhage control":{"risk_reward_ratio":"med", "resources":"some", "time":"hours", "system":"cardiovascular"},
-        "medications":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"all"},
-        "tranexamic acid":{"risk_reward_ratio":"med", "resources":"few", "time":"seconds", "system":"cardiovascular"},
-        "blood products":{"risk_reward_ratio":"high", "resources":"many", "time":"hours", "system":"cardiovascular"},
-        "needle decomp":{"risk_reward_ratio":"high", "resources":"some", "time":"minutes", "system":"respiratory"},
-        "CHECK_ALL_VITALS":{"risk_reward_ratio":"", "resources":"", "time":"", "system":""},
+        #"airway":{"risk_reward_ratio":"med", "resources":"few", "time":"seconds", "system":"respiratory"},
+        #"chest seal":{"risk_reward_ratio":"med", "resources":"many", "time":"hours", "system":"respiratory"},
+        #"saline lock":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"cariovascular"},
+        #"intraoss device":{"risk_reward_ratio":"high", "resources":"some", "time":"hours", "system":"cardiovascular"},
+        #"iv fluids":{"risk_reward_ratio":"low", "resources":"some", "time":"minutes", "system":["vascular", "renal"]},
+        #"hemorrhage control":{"risk_reward_ratio":"med", "resources":"some", "time":"hours", "system":"cardiovascular"},
+        #"medications":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"all"},
+        #"tranexamic acid":{"risk_reward_ratio":"med", "resources":"few", "time":"seconds", "system":"cardiovascular"},
+        #"blood products":{"risk_reward_ratio":"high", "resources":"many", "time":"hours", "system":"cardiovascular"},
+        #"needle decomp":{"risk_reward_ratio":"high", "resources":"some", "time":"minutes", "system":"respiratory"},
+        "CHECK_ALL_VITALS":{"risk_reward_ratio":"low", "resources":"few", "time":"minutes", "system":"all"},
         "hemostatic gauze":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"cardiovascular"},
         "tourniquet":{"risk_reward_ratio":"low", "resources":"few", "time":"minutes", "system":"cardiovascular"},
         "pressure bandage":{"risk_reward_ratio":"", "resources":"", "time":"", "system":"integumentary"},
         "decompression needle":{"risk_reward_ratio":"med", "resources":"few", "time":"minutes", "system":"respiratory"},
         "nasopharyngeal airway":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"respiratory"}       
         }
-
+        """
         #file["casualty"] = {"injury":{"name":"broken arm", "system":"skeleton", "severity":"serious"}}
 
-        file["casualty_list"] = {"casualty-A": {"age": 22, "sex": "M", "rank": "Military", "hrpmin": 145, "mmhg": 60, "spo2": 85,"rr": 40, "pain": 0},
-        "casualty-B": {"age": 25, "sex": "M", "rank": "Military", "hrpmin": 120, "mmhg": 80, "spo2": 98, "rr": 18, "pain": 6},
-        "casualty-D": {"age": 40, "sex": "M", "rank": "VIP", "hrpmin": 105, "mmhg": 120, "spo2": 99, "rr": 15, "pain": 2},
-        "casualty-E": {"age": 26, "sex": "M", "rank": "Military", "hrpmin": 120, "mmhg": 100, "spo2": 95, "rr": 15, "pain": 10},
-        "casualty-F": {"age": 12, "sex": "M", "rank": "Civilian", "hrpmin": 120, "mmhg": 30, "spo2": 99, "rr": 25, "pain": 3}}
+        file["casualty_list"] = {"casualty-A": {"age": 22, "sex": "M", "rank": "Military", "hrpmin": 145, "mmhg": 60, "spo2": 85,"rr": 40, "pain": 0}}#,
+        #"casualty-B": {"age": 25, "sex": "M", "rank": "Military", "hrpmin": 120, "mmhg": 80, "spo2": 98, "rr": 18, "pain": 6},
+        #"casualty-D": {"age": 40, "sex": "M", "rank": "VIP", "hrpmin": 105, "mmhg": 120, "spo2": 99, "rr": 15, "pain": 2},
+        #"casualty-E": {"age": 26, "sex": "M", "rank": "Military", "hrpmin": 120, "mmhg": 100, "spo2": 95, "rr": 15, "pain": 10},
+        #"casualty-F": {"age": 12, "sex": "M", "rank": "Civilian", "hrpmin": 120, "mmhg": 30, "spo2": 99, "rr": 25, "pain": 3}}
+        """
+        file['injury_list'] = ["Forehead Scrape", "Ear Bleed", "Asthmatic", "Laceration", "Puncture", "Shrapnel", "Chest Collapse", "Amputation", "Burn"]
 
         json_object = json.dumps(file, indent=2)
         new_file = "newfile.json"
@@ -932,7 +916,7 @@ class HRA(DecisionAnalyzer):
         data['predictors'] = {'relevance':predictors}
 
     # get next casualty to treat
-        next_casualty = self.choose_next_casualty(data['casualty_list'], data['kdma'])
+        next_casualty = self.choose_next_casualty(data['casualty_list'], data['kdma'], data['injury_list'])
         data['casualty'] = next_casualty
         data['casualty']['injury'] = {'system':"unknown"}
 
@@ -951,7 +935,8 @@ class HRA(DecisionAnalyzer):
         decision_hra = dict()
         for treatment in treatment_idx:
             decision_hra[treatment] = {'take-the-best':0, 'exhaustive':0, 'tallying':0, 'satisfactory':0, 'one-bounce':0}
-        
+        decision_hra["no preference"] = {'take-the-best':0, 'exhaustive':0, 'tallying':0, 'satisfactory':0, 'one-bounce':0}
+    
     # call each HRA strategy and store the result with the matching decision list
         take_the_best_result = self.take_the_best(new_file, search_path)#file_name, search_path
         decision_hra[take_the_best_result[0]]['take-the-best'] += 1
@@ -990,9 +975,46 @@ class HRA(DecisionAnalyzer):
 
         # create scenario file
         new_file = self.preprocess()
-        hra_results = self.hra_decision_analytics(new_file)
-        analysis = {}
+        with open(new_file, 'r+') as f:
+            data = json.load(f)
+        #with open(new_file, "w") as outfile:
+        #    outfile.write(json_object)
+        #data = json.load(outfile)
+        #data = dict()
+        casualty_data = dict()
+        for ele in scen.state.casualties:
+            casualty_data[ele.id] = {"id":ele.id, "name":ele.name, "injuries":[l.name for l in ele.injuries], "demographics":{"age":ele.demographics.age, "sex":ele.demographics.sex, "rank":ele.demographics.rank}, "vitals":{"breathing":ele.vitals.breathing, "hrpmin":ele.vitals.hrpmin}, "tag":ele.tag, "assessed":ele.assessed,"relationship":ele.relationship}
         
+        data['casualty_list'] = casualty_data
+        json_object = json.dumps(data, indent=2)
+        #new_file = "newfile.json"
+        #mod_path = Path(__file__).parent
+        #new_file = (mod_path / new_file).resolve()
+        with open(new_file, "w") as outfile:
+            outfile.write(json_object)
+        #print("hra data", data,  "\n-----------------")
+        #json_object = json.dumps(data, indent=4)
+        #with open(new_file, "a") as outfile:
+        #    outfile.write(json_object)
+        
+        # debug
+        ##json_object = json.dumps(scen, indent=4)
+        #mod_path = Path(__file__).parent
+        #new_file = (mod_path / "scene.json").resolve()
+        ##with open(new_file, "w") as outfile:
+        ##    outfile.write(json_object)
+        # debug
+        #data = dict()
+        
+        print("HRA: initial state casualty  info",scen.state.casualties)# casualties)#dict(scen.state)) # debug
+        
+        #for ele in scen.state.casualties:
+        #    print("\n","ele", "\n", ele)
+        
+        hra_results = self.hra_decision_analytics(new_file)
+        print("!!!!HRA RESULTS POR FIN!!!", hra_results)
+        analysis = {}
+        """
         for decision in probe.decisions:
             
             metrics: DecisionMetrics = {"learned_kdma_set":DecisionMetric("hra kdma set", "learned kdma set", dict, hra_results['learned_kdma_set']),\
@@ -1000,10 +1022,11 @@ class HRA(DecisionAnalyzer):
                     "casualty_selected":DecisionMetric("hra casualty", "next casualty selected", dict, hra_results['casualty_selected'])}
             decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
+        """
         return analysis
 
 
-"""
+
 if __name__ == '__main__':
     #cwd = Path.cwd()
     #print("cwd", cwd)
@@ -1011,14 +1034,16 @@ if __name__ == '__main__':
     #print("mod_path:", mod_path)
     #file_path = (mod_path / "scene_one_treatment.json").resolve()
     #file_path = (mod_path / "hra_info.json").resolve()
-    file_path = (mod_path / "scene.json").resolve()
+    #file_path = (mod_path / "scene.json").resolve()
+    new_file = (mod_path / "newfile.json").resolve()
     #print("file_path", type(file_path),file_path)
     hra_obj = HRA()
     #result = hra_obj.one_bounce(file_path, 2, 3)
-    result = hra_obj.hra_decision_analytics(file_path, 2, rand_seed=0)
+    result = hra_obj.hra_decision_analytics(new_file)
+    #result = hra_obj.hra_decision_analytics(file_path, 2, rand_seed=0)
     #result = hra_obj.analyze(file_path, 2, rand_seed=0)
     print("result", result)
 
-"""
+
 
     
