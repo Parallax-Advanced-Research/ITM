@@ -146,7 +146,7 @@ update_injury_map: typing.Mapping[str, update_injury] = {
     Injuries.SHRAPNEL.value: update_default_injury,
     Injuries.CHEST_COLLAPSE.value: update_chest_collapse,
     Injuries.AMPUTATION.value: update_default_injury,
-    Injuries.BURN.value: update_default_injury
+    Injuries.BURN.value: update_default_injury,
 }
 
 action_map: typing.Mapping[str, resolve_action] = {

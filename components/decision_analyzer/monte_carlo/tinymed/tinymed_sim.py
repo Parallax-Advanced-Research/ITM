@@ -39,8 +39,8 @@ class TinymedSim(MCSim):
         return tinymed_actions_trimmed
 
     def reset(self):
-        self.current_casualties: list[Casualty] = get_starting_casualties()
-        self.current_supplies: dict[str, int] = get_starting_supplies()
+        self.current_casualties: list[Casualty] = self._init_state.casualties
+        self.current_supplies: dict[str, int] = self._init_state.supplies
         pass
 
     def score(self, state: TinymedState) -> float:

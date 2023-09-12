@@ -71,7 +71,7 @@ class Injuries(Enum):
     EAR_BLEED = 'ear bleed'
     ASTHMATIC = 'asthmatic'
     LACERATION = 'laceration'
-    PUNCTURE = 'puncture'
+    PUNCTURE = 'Puncture'
     SHRAPNEL = 'shrapnel'
     CHEST_COLLAPSE = 'chest collapse'
     AMPUTATION = 'amputation'
