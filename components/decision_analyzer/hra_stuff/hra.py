@@ -650,9 +650,9 @@ class HRA(DecisionAnalyzer):
                         battle_idx = 0
                         continue
                     else:
-                        return "no preference, no sequence tree"
+                        return ("no preference", "")
                 else:
-                    return "no preference, no sequence tree" # NOTE: should sequence tree be returned?
+                    return ("no preference", "") # NOTE: should sequence tree be returned?
 
     # - else if fighter wins
             else:
@@ -723,7 +723,7 @@ class HRA(DecisionAnalyzer):
     # - - break
 
     # if outside of while loop no definitive winner was reahed
-        return "no preference, no comparison sequence"
+        return ("no preference", "")
 
     '''
     Select the next casualty to treat, using the kdma mission. If the value is high, then VIPs are the priority.
@@ -950,18 +950,18 @@ class HRA(DecisionAnalyzer):
             tallying_result = self.tallying(new_file, m, search_path=search_path)#(file_name, m, search_path=search_path)
         decision_hra[tallying_result[0]]['tallying'] += 1
 
-        #satisfactory_result = self.satisfactory(new_file, m, seed=rand_seed, search_path=search_path)#file_name, search_path
-        #decision_hra[satisfactory_result[0]]['satisfactory'] += 1
+        satisfactory_result = self.satisfactory(new_file, m, seed=rand_seed, search_path=search_path)#file_name, search_path
+        decision_hra[satisfactory_result[0]]['satisfactory'] += 1
 
-        #one_bounce_result = self.one_bounce(new_file, m, k, search_path)#file_name, search_path
-        #decision_hra[one_bounce_result[0]]['one-bounce'] += 1
+        one_bounce_result = self.one_bounce(new_file, m, k, search_path)#file_name, search_path
+        decision_hra[one_bounce_result[0]]['one-bounce'] += 1
 
         if search_path:
             search_tree['take-the-best'] = take_the_best_result[2]
             search_tree['exhaustive'] = exhaustive_result[2]
             search_tree['tallying'] = tallying_result[2]
-            #search_tree['satisfactory'] = satisfactory_result[2]
-            #search_tree['one-bounce'] = one_bounce_result[2]
+            search_tree['satisfactory'] = satisfactory_result[2]
+            search_tree['one-bounce'] = one_bounce_result[2]
         
     # return all hra decision analysis elements       
         if search_path:
@@ -1012,7 +1012,7 @@ class HRA(DecisionAnalyzer):
         #    print("\n","ele", "\n", ele)
         
         hra_results = self.hra_decision_analytics(new_file)
-        print("!!!!HRA RESULTS POR FIN!!!", hra_results)
+        #print("hra results", hra_results)
         analysis = {}
         """
         for decision in probe.decisions:
