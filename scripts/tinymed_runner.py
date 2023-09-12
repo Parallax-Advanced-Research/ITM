@@ -6,6 +6,9 @@ import time
 import numpy as np
 import datetime
 from util import logger
+import pickle as pkl
+
+save = True
 
 if __name__ == '__main__':
     selection_function = mcsim.mc_tree.select_node_eetrade
@@ -19,8 +22,8 @@ if __name__ == '__main__':
     tree = mcsim.MonteCarloTree(sim, [root], node_selector=selection_function)
 
     sim_times = []
-    rollouts = 100000
-    depth = 4
+    rollouts = 10000
+    depth = 9
     for i in range(rollouts):
         sim_start = time.time()
         result = tree.rollout(max_depth=depth)
@@ -34,3 +37,5 @@ if __name__ == '__main__':
     logger.debug("%d rollouts of depth %d took %s time (%s avg)" % (rollouts, depth,
                                                                     datetime.timedelta(seconds=total_time),
                                                                     datetime.timedelta(seconds=avg)))
+    if save:
+        pkl.dump(tree, open('tree.pkl', 'wb'))
