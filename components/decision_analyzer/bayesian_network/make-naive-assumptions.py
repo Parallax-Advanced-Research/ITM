@@ -10,6 +10,7 @@ nodes: Dict[str, 'Node'] = {}
 verbose_mode = True
 
 def verbose(s: str) -> None:
+	if not verbose_mode: return
 	sys.stderr.write(s)
 	sys.stderr.write("\n")
 	sys.stderr.flush()
