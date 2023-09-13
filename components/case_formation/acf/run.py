@@ -22,7 +22,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 data_dir = os.path.join(current_dir, 'data')
 output_dir = os.path.join(current_dir, 'output')
 
-mvp1_df = pd.read_csv(os.path.join(output_dir, 'train_cases.csv'))
+mvp1_df = pd.read_csv(os.path.join(data_dir, 'argument_case_base.csv'))
 mvp2_df = pd.read_csv(os.path.join(data_dir, 'mvp2.csv'))
 
 # of we jave time we can join these two files but ingestor will do this for us

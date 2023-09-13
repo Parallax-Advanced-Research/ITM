@@ -183,7 +183,18 @@ def retrieval(X_test, y_test, X_train, y_train, weights, k=1, threshold=10):
     return dec, y_pred,x_pred
 
 def create_argument_case(df, feature_weights):
-    '''       '''
+    '''
+                Description: Takes a DataFrame and trains XGBoost algorithm
+
+                Inputs:
+                        df:     DataFrame
+                        feature_weights: computed ReliefF weights
+
+                Outputs:
+                        weights: Feature Weights from XGBoost
+
+                Caveats:
+        '''
     loo = LeaveOneOut()
     predictions = []
     gt = []
@@ -203,11 +214,11 @@ def create_argument_case(df, feature_weights):
         #selected_neighbors = X_train.iloc[indices]
 
         new_case = X_test.copy()
-        new_case["M Mission"] = x_pred["Mission"]
         new_case["M Risk aversion"] = x_pred["Risk aversion"]
-        new_case["difference"] = np.linalg.norm(
-             np.array([new_case["M Mission"], new_case["M Risk aversion"]]) - np.array(
-                 [new_case["Mission"], new_case["Risk aversion"]]))
+        new_case["M Mission"] = x_pred["Mission"]
+        new_case["Average difference"] = np.linalg.norm(
+             np.array([new_case["M Risk aversion"], new_case["M Mission"]]) - np.array(
+                 [new_case["Risk aversion"], new_case["Mission"]]))
         new_case["new Decision"] = y_pred
         new_case["Decision"] = y_test
         argument_cases.append(new_case)
@@ -217,6 +228,7 @@ def create_argument_case(df, feature_weights):
     accuracy = accuracy_score(np.array(gt), np.array(predictions))
     print("Average Accuracy:", accuracy)
 
-    result_concat = pd.concat(argument_cases, ignore_index=True)
-    result_concat.to_csv(get_data_dir() + r'/argument_case_base.csv', index=False)
+    df_argument_case_base = pd.concat(argument_cases, ignore_index=True)
+    df_argument_case_base.to_csv(get_data_dir() + 'argument_case_base.csv', index=False)
     print("Create argument case base finish")
+    return df_argument_case_base
