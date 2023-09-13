@@ -1,0 +1,73 @@
+Background,PatientTreated,Scenario,Risk aversion,Mission,Decision
+EMT,Casualty A,safe area,9,6,Treatment 1
+EMT,Casualty A,danger,9,6,Treatment 2
+EMT,Casualty B,safe area,9,6,Treatment 1
+EMT,Casualty B,danger,9,6,Treatment 2
+EMT,Casualty C,safe area,9,6,Treatment 1
+EMT,Casualty C,danger,9,6,Treatment 2
+EMT,Casualty D,safe area,9,6,Treatment 4
+EMT,Casualty D,danger,9,6,Treatment 5
+EMT,Casualty E,safe area,9,6,Treatment 4
+EMT,Casualty E,danger,9,6,Treatment 5
+EMT,Casualty F,safe area,9,6,Treatment 2
+EMT,Casualty F,danger,9,6,Treatment 4
+Non-medical,Casualty A,safe area,8,7,Treatment 1
+Non-medical,Casualty A,danger,8,7,Treatment 2
+Non-medical,Casualty B,safe area,8,7,Treatment 1
+Non-medical,Casualty B,danger,8,7,Treatment 2
+Non-medical,Casualty C,safe area,8,7,Treatment 1
+Non-medical,Casualty C,danger,8,7,Treatment 2
+Non-medical,Casualty D,safe area,8,7,Treatment 4
+Non-medical,Casualty D,danger,8,7,Treatment 5
+Non-medical,Casualty E,safe area,8,7,Treatment 4
+Non-medical,Casualty E,danger,8,7,Treatment 5
+Non-medical,Casualty F,safe area,8,7,Treatment 2
+Non-medical,Casualty F,danger,8,7,Treatment 4
+Nurse,Casualty A,safe area,6,9,Treatment 1
+Nurse,Casualty A,danger,6,9,Treatment 2
+Nurse,Casualty B,safe area,6,9,Treatment 1
+Nurse,Casualty B,danger,6,9,Treatment 2
+Nurse,Casualty C,safe area,6,9,Treatment 1
+Nurse,Casualty C,danger,6,9,Treatment 2
+Nurse,Casualty D,safe area,6,9,Treatment 4
+Nurse,Casualty D,danger,6,9,Treatment 5
+Nurse,Casualty E,safe area,6,9,Treatment 4
+Nurse,Casualty E,danger,6,9,Treatment 5
+Nurse,Casualty F,safe area,6,9,Treatment 2
+Nurse,Casualty F,danger,6,9,Treatment 4
+Nurse Practitioner,Casualty A,safe area,1,5,Treatment 2
+Nurse Practitioner,Casualty A,danger,1,5,Treatment 3
+Nurse Practitioner,Casualty B,safe area,1,5,Treatment 2
+Nurse Practitioner,Casualty B,danger,1,5,Treatment 3
+Nurse Practitioner,Casualty C,safe area,1,5,Treatment 2
+Nurse Practitioner,Casualty C,danger,1,5,Treatment 3
+Nurse Practitioner,Casualty D,safe area,1,5,Treatment 5
+Nurse Practitioner,Casualty D,danger,1,5,Treatment 6
+Nurse Practitioner,Casualty E,safe area,1,5,Treatment 5
+Nurse Practitioner,Casualty E,danger,1,5,Treatment 6
+Nurse Practitioner,Casualty F,safe area,1,5,Treatment 3
+Nurse Practitioner,Casualty F,danger,1,5,Treatment 5
+Paramedic,Casualty A,safe area,2,4,Treatment 2
+Paramedic,Casualty A,danger,2,4,Treatment 3
+Paramedic,Casualty B,safe area,2,4,Treatment 2
+Paramedic,Casualty B,danger,2,4,Treatment 3
+Paramedic,Casualty C,safe area,2,4,Treatment 2
+Paramedic,Casualty C,danger,2,4,Treatment 3
+Paramedic,Casualty D,safe area,2,4,Treatment 5
+Paramedic,Casualty D,danger,2,4,Treatment 6
+Paramedic,Casualty E,safe area,2,4,Treatment 5
+Paramedic,Casualty E,danger,2,4,Treatment 6
+Paramedic,Casualty F,safe area,2,4,Treatment 3
+Paramedic,Casualty F,danger,2,4,Treatment 5
+Physician,Casualty A,safe area,1,4,Treatment 2
+Physician,Casualty A,danger,1,4,Treatment 3
+Physician,Casualty B,safe area,1,4,Treatment 2
+Physician,Casualty B,danger,1,4,Treatment 3
+Physician,Casualty C,safe area,1,4,Treatment 2
+Physician,Casualty C,danger,1,4,Treatment 3
+Physician,Casualty D,safe area,1,4,Treatment 5
+Physician,Casualty D,danger,1,4,Treatment 6
+Physician,Casualty E,safe area,1,4,Treatment 5
+Physician,Casualty E,danger,1,4,Treatment 6
+Physician,Casualty F,safe area,1,4,Treatment 4
+Physician,Casualty F,danger,1,4,Treatment 6

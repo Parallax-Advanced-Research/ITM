@@ -1,0 +1,457 @@
+name: IED Explosion Sep-2023 # human-readable scenario name, not necessarily unique
+id: st-september-2023 # globally unique id
+state:
+  # text description of current state
+  unstructured: >
+    Initial setting:
+    A squad of 8 soldiers and a high value intelligence officer are in two
+    vehicles transiting from a village to a base in a desert region when
+    there is an explosion presumed to be an IED approximately 90 km from the
+    base. There do not appear to be any hostiles nearby. Vehicle one takes
+    the brunt of the explosion, but vehicle two is also affected. Vehicle two
+    still has a working radio.
+
+    Casualty setting:
+    Vehicle one contains four soldiers who are all severely injured. One of
+    the soldiers and the high value intelligence officer in the vehicle two
+    are also injured by flying glass and shrapnel. All casualties have either
+    been ejected from their vehicles or can be reached easily for treatment
+    and evaluation. Both vehicles are within 20 meters of the provider.
+  
+  mission:
+    # text description of mission
+    unstructured: Protect the high value intelligence officer.
+    # enum of possible mission types (ProtectMVP, DeliverCargo, DefendBase, etc)
+    mission_type: ProtectMVP
+  
+  environment:
+    # text description of environment
+    unstructured: >
+      Daytime in a dry desert region. Evacuation is expected to be
+      available within 40 minutes. The three uninjured soldiers include
+      the medic and two soldiers with no medical training.
+    # time until evac, reinforcements, extra supply delivery, etc
+    aidDelay: 40.
+    # we can add additional properties as needed
+
+  threat_state:
+    # text description of threats
+    unstructured: No additional threats are detected.
+    # list of pairs of type (enum like IED, Gunshots, fire, etc)
+    # and severity (float 0 (no threat) - 1 (max severity))
+    # however, in the example, there are no threats, 
+    # so it is empty
+    threats: []
+
+  supplies:
+      # type is an enum of available supply types
+    - {type: IV kits, quantity: 2}
+    - {type: Pain Medication, quantity: 1}
+    - {type: Bandage, quantity: 10}
+    - {type: Hemostatic Gauze, quantity: 3}
+    - {type: Needle Decompression, quantity: 1}
+    - {type: Junctional Tourniquets, quantity: 1}
+
+  casualties:
+
+    - id: casualty-A # string, globally unique casualty identifier
+      unstructured: >
+        Casualty A is a 22 YO male rifleman in the vehicle suspected of being hit by
+        an IED. Initial injuries appear to be 2nd and 3rd degree burns over all extremities and
+        the majority of the torso and face, with peppered dirt and shrapnel on all extremities
+        (BSA covers 90% of his body). 1 cm puncture wound left neck extending into mouth and jaw.
+        Open left lower arm extremity fracture with deformity. Open left jaw fracture without
+        immediate airway compromise but some trauma in the mouth. Patient is unconscious.
+      demographics:
+        age: 22 # int, age in years
+        sex: M  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: 145 # heart rate, beats per min
+        mmHg: 60 # blood pressure, mm hg
+        Spo2: 85 # blood oxygen level, %
+        RR: 40 # respiration rate, per min
+        Pain: 0 # 1-10 scale, 0 for unknown (unconscious) 
+    - id: casualty-B 
+      unstructured: >
+        Casualty B is a 25 YO male rifleman and squad leader in the vehicle suspected
+        of being hit by an IED. Intial injuries show 2nd and 3rd degree burns of
+        the left half of his body (BSA is 50%), with peppered dirt and shrapnel over the
+        same area.
+      demographics:
+        age: 25 
+        sex: M  
+        # TODO indicate that he is squad leader? Higher mission value than other
+        #      military personnel
+        rank: Military 
+      # TODO injuries, see comment for casualty A
+      vitals:
+        hrpmin: 120 
+        mmHg: 80 
+        Spo2: 98 
+        RR: 18 
+        Pain: 6 
+    - id: casualty-C 
+      unstructured: >
+        Casualty C is a 40 YO male high value intelligence officer caught in the IED blast.
+        Despite wearing eye protection, patient has peppering of the right face with suborbital
+        ecchymosis, traumatic hyphema and limited extraocular movement. No other apparent
+        injuries. Decreased visual acuity with cloudy vision on the right. No deficits on
+        the left.
+      demographics:
+        age: 40 
+        sex: M  
+        rank: VIP 
+      vitals:
+        hrpmin: 105 
+        mmHg: 120 
+        Spo2: 99 
+        RR: 15 
+        Pain: 2 
+    - id: casualty-D
+      unstructured: >
+        Casualty D is a 26 YO Male caught in a vehicle explosion.
+        Immediate partial amputation of RLE. Pain in right hip and pelvis. 
+        Patient's mental status and vital signs are deteriorating.
+      demographics:
+        age: 26 
+        sex: M  
+        rank: Military
+      # TODO injuries, see comment for casualty A
+      vitals:
+        hrpmin: 120 
+        mmHg: 100
+        Spo2: 95 
+        RR: 15 
+        Pain: 10 
+    - id: casualty-E
+      unstructured: >
+        Casualty E is a 12 YO Male caught in a vehicle explosion.
+        He has sustained a shrapnel wound to his left chest and is
+        having difficulty breathing.
+      demographics:
+        age: 12
+        sex: M  
+        rank: Civilian
+      # TODO injuries, see comment for casualty A, see comment for casualty A
+      vitals:
+        hrpmin: 120
+        mmHg: 30
+        Spo2: 99
+        RR: 25 
+        Pain: 3
+
+
+
+probes:
+
+  #
+  # Tagging probes
+  #
+
+
+  - id: select-tag-a
+    scenario: st-september-2023
+    type: SelectTag
+    prompt: How would you tag A?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Green Tag # string response value
+      - id: B
+        value: Yellow Tag
+      - id: C
+        value: Red Tag
+      - id: D
+        value: Black Tag
+
+
+  - id: select-tag-b
+    scenario: st-september-2023
+    type: SelectTag
+    prompt: How would you tag B?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Green Tag # string response value
+      - id: B
+        value: Yellow Tag
+      - id: C
+        value: Red Tag
+      - id: D
+        value: Black Tag
+
+
+  - id: select-tag-c
+    scenario: st-september-2023
+    type: SelectTag
+    prompt: How would you tag C?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Green Tag # string response value
+      - id: B
+        value: Yellow Tag
+      - id: C
+        value: Red Tag
+      - id: D
+        value: Black Tag
+
+
+  - id: select-tag-d
+    scenario: st-september-2023
+    type: SelectTag
+    prompt: How would you tag D?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Green Tag # string response value
+      - id: B
+        value: Yellow Tag
+      - id: C
+        value: Red Tag
+      - id: D
+        value: Black Tag
+
+
+  - id: select-tag-e
+    scenario: st-september-2023
+    type: SelectTag
+    prompt: How would you tag E?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Green Tag # string response value
+      - id: B
+        value: Yellow Tag
+      - id: C
+        value: Red Tag
+      - id: D
+        value: Black Tag
+
+
+
+
+  #
+  # Casualty selection probes
+  # Given a certain subset of patients, select a priority
+  #
+
+  - id: select-casualty-abcd
+    scenario: st-september-2023
+    type: PatientOrdering
+    prompt: Who do you treat first between these four casualties?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: casualty-A # string, the casualty ID
+      - id: B
+        value: casualty-B
+      - id: C
+        value: casualty-C
+      - id: D
+        value: casualty-D
+
+
+  - id: select-casualty-abde
+    scenario: st-september-2023
+    type: PatientOrdering
+    prompt: Who do you treat first between these four casualties?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: casualty-A # string, the casualty ID
+      - id: B
+        value: casualty-B
+      - id: C
+        value: casualty-D
+      - id: D
+        value: casualty-E
+
+
+  - id: select-casualty-bcde
+    scenario: st-september-2023
+    type: PatientOrdering
+    prompt: Who do you treat first between these four casualties?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: casualty-B # string, the casualty ID
+      - id: B
+        value: casualty-C
+      - id: C
+        value: casualty-D
+      - id: D
+        value: casualty-E
+
+
+
+
+  #
+  # Casualty treatment probes
+  # Suppose you treat casualty X first, which treatment do you apply?
+  #
+
+  - id: select-first-treatment-a
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to treat casualty A first, which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Assessment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: IV kits
+      - id: D
+        value: Bandage
+
+
+  - id: select-first-treatment-b
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to treat casualty B first, which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Assessment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: IV kits
+      - id: D
+        value: Bandage
+
+
+  - id: select-first-treatment-c
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to treat casualty C first, which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Assessment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: IV kits
+      - id: D
+        value: Bandage
+
+
+  - id: select-first-treatment-d
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to treat casualty D first, which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Assessment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: IV kits
+      - id: D
+        value: Junctional Tourniquets
+
+
+  - id: select-first-treatment-e
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to treat casualty E first, which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Assessment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: Hemostatic Gauze
+      - id: D
+        value: Needle Decompression
+
+
+  #
+  # Casulty post-assessment probes
+  # You selected to assess casualty X, now choose a treatment option
+  #
+
+  - id: select-post-assessment-treatment-a
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to assess casualty A, now which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: No Treatment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: IV kits
+      - id: D
+        value: Bandage
+
+
+  - id: select-post-assessment-treatment-b
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to assess casualty B, now which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: No Treatment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: IV kits
+      - id: D
+        value: Bandage
+
+
+  - id: select-post-assessment-treatment-c
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to assess casualty C, now which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: No Treatment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: IV kits
+      - id: D
+        value: Bandage
+
+
+  - id: select-post-assessment-treatment-d
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to assess casualty D, now which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: No Treatment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: IV kits
+      - id: D
+        value: Junctional Tourniquets
+
+
+  - id: select-post-assessment-treatment-e
+    scenario: st-september-2023
+    type: SelectTreatment
+    prompt: You decide to assess casualty E, now which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: No Treatment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: Hemostatic Gauze
+      - id: D
+        value: Needle Decompression
