@@ -7,6 +7,8 @@ class TA3Elaborator(Elaborator):
     def elaborate(self, scenario: Scenario, probe: Probe) -> list[Decision[Action]]:
         d: Decision[Action]
         to_return: list[Decision[Action]] = []
+        for cas in probe.state.casualties:
+            print(f"Casualty: {cas.id} Injuries: {cas.injuries}")
         for d in probe.decisions:
             _name = d.value.name
             d.value.params = {k: v for k, v in d.value.params.items() if v is not None}
@@ -14,8 +16,11 @@ class TA3Elaborator(Elaborator):
                 to_return += self._treatment(probe.state, d)
             elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CASUALTIES':
                 to_return += [d]
+            elif _name == 'TAG_CASUALTY':
+                to_return += self._tag(probe.state.casualties, d)
             else:
-                to_return += self._ground_casualty(probe.state.casualties, d)
+                to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
+
 
         probe.decisions = to_return
         return to_return
@@ -57,7 +62,14 @@ class TA3Elaborator(Elaborator):
 
     def _tag(self, casualties: list[Casualty], decision: Decision[Action]) -> list[Decision[Action]]:
         action = decision.value
-        cas_grounded = self._ground_casualty(casualties, decision)
+        cas_grounded: list[Decision[Action]] = []
+        if 'casualty' not in action.params:
+            for cas in casualties:
+                if not cas.tag:
+                    # Copy the casualty into the params dict
+                    cas_params = action.params.copy()
+                    cas_params['casualty'] = cas.id
+                    cas_grounded.append(Decision(decision.id_, Action(action.name, cas_params), kdmas=decision.kdmas))
         tag_grounded: list[Decision[Action]] = []
         for cas_action in cas_grounded:
             # If no category set, enumerate the tag types
@@ -71,12 +83,12 @@ class TA3Elaborator(Elaborator):
         return tag_grounded
 
     @staticmethod
-    def _ground_casualty(casualties: list[Casualty], decision: Decision[Action]) -> list[Decision[Action]]:
+    def _ground_casualty(casualties: list[Casualty], decision: Decision[Action], injured_only = True) -> list[Decision[Action]]:
         action = decision.value
         cas_grounded: list[Decision[Action]] = []
         if 'casualty' not in action.params:
             for cas in casualties:
-                if cas.injuries:
+                if cas.injuries or not injured_only:
                     # Copy the casualty into the params dict
                     cas_params = action.params.copy()
                     cas_params['casualty'] = cas.id
