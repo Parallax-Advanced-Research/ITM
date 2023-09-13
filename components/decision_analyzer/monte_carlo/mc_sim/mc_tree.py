@@ -119,16 +119,3 @@ class MonteCarloTree:
                 to_return += MonteCarloTree.leaves(state)
 
         return to_return
-
-    @staticmethod
-    def score_propagation(node: MCStateNode | MCDecisionNode, score: float, score_merger: Score_Merger):
-        # update the node's score
-        node.score = score
-        node.scores.append(score)
-
-        # propagate the node score up the parents
-        parent = node.parent
-        while parent is not None:
-            parent.scores.append(score)
-            parent.score = score_merger(parent.scores)
-            parent = parent.parent
