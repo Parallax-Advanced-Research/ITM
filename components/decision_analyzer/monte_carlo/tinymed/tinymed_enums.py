@@ -69,13 +69,13 @@ class Tags(Enum):
 class Injuries(Enum):
     FOREHEAD_SCRAPE = 'forehead scrape'
     EAR_BLEED = 'ear bleed'
-    ASTHMATIC = 'asthmatic'
-    LACERATION = 'laceration'
+    ASTHMATIC = 'Asthmatic'
+    LACERATION = 'Laceration'
     PUNCTURE = 'Puncture'
-    SHRAPNEL = 'shrapnel'
+    SHRAPNEL = 'Shrapnel'
     CHEST_COLLAPSE = 'chest collapse'
-    AMPUTATION = 'amputation'
-    BURN = 'burn'
+    AMPUTATION = 'Amputation'
+    BURN = 'Burn'
 
 
 class Demographics:

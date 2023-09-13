@@ -14,7 +14,8 @@ def _convert_vitals(ta_vitals: TA_VIT) -> Vitals:
 
 
 def _convert_injury(ta_injury: TA_INJ) -> Injury:
-    return Injury(name=ta_injury['name'], location=ta_injury['location'], severity=ta_injury['severity'])
+    severe = ta_injury['severity'] if ta_injury['severity'] is not None else .7
+    return Injury(name=ta_injury['name'], location=ta_injury['location'], severity=severe)
 
 
 def _convert_casualty(ta_casualty: TA_CAS) -> Casualty:

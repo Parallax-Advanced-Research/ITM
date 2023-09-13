@@ -86,17 +86,17 @@ def use_naso_airway(casualty: Casualty, supplies: dict[str, int],
 
 
 def update_bleeding(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * .49)
+    i.severity += (elapsed * .049)
     i.time_elapsed += elapsed
 
 
 def update_chest_collapse(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * .64)
+    i.severity += (elapsed * .064)
     i.time_elapsed += elapsed
 
 
 def update_default_injury(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * .25)
+    i.severity += (elapsed * .025)
     i.time_elapsed += elapsed
 
 

@@ -16,6 +16,8 @@ class TinymedSim(MCSim):
     def __init__(self, init_state: TinymedState, seed: Optional[float] = None):
         self._rand: random.Random = random.Random(seed)
         self._init_state = deepcopy(init_state)
+        self._init_supplies = deepcopy(init_state.supplies)
+        self._init_casualties = deepcopy(init_state.casualties)
         self.current_casualties: list[Casualty] = self._init_state.casualties
         self.current_supplies: dict[str, int] = self._init_state.supplies
         super().__init__()
@@ -39,8 +41,8 @@ class TinymedSim(MCSim):
         return tinymed_actions_trimmed
 
     def reset(self):
-        self.current_casualties: list[Casualty] = self._init_state.casualties
-        self.current_supplies: dict[str, int] = self._init_state.supplies
+        self.current_casualties: list[Casualty] = deepcopy(self._init_casualties)
+        self.current_supplies: dict[str, int] = deepcopy(self._init_supplies)
         pass
 
     def score(self, state: TinymedState) -> float:
