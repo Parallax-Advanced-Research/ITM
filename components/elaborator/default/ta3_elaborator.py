@@ -7,8 +7,6 @@ class TA3Elaborator(Elaborator):
     def elaborate(self, scenario: Scenario, probe: Probe) -> list[Decision[Action]]:
         d: Decision[Action]
         to_return: list[Decision[Action]] = []
-        for cas in probe.state.casualties:
-            print(f"Casualty: {cas.id} Injuries: {cas.injuries}")
         for d in probe.decisions:
             _name = d.value.name
             d.value.params = {k: v for k, v in d.value.params.items() if v is not None}
