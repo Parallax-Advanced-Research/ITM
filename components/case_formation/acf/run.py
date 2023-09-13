@@ -16,6 +16,16 @@ from components.hra import hra
 from components.hra import *
 from components.case_formation.acf.argument_case_base import *
 
+from create_argument import *
+
+df_partial_cases = partial_cases()
+df_elab_cases = elab_cases(df_partial_cases)
+df_train_cases = case_expansion(df_elab_cases)
+feature_weights = weight_learning(df_train_cases)
+print("learned feature weights: ", feature_weights)
+df_argument_case_base = create_argument_case(df_train_cases, feature_weights)
+df_argument_label = create_argument(df_argument_case_base)
+alignment_score(df_argument_label)
 
 # just to run it from this location for now
 current_dir = os.path.dirname(os.path.realpath(__file__)) 
