@@ -119,13 +119,13 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
         casualty_injuries: list[Injury] = c2.injuries
         for ci in casualty_injuries:
             update_injury_map[ci.name](ci, time_taken)
-    new_state = TinymedState(casualties=casualties, supplies=supplies)
+    new_state = TinymedState(casualties=casualties, supplies=supplies, time=time_taken)
     return [new_state]
 
 
 def default_action(casualties: list[Casualty], supplies: dict[str, int],
                             action: TinymedAction, rng: random.Random) -> list[TinymedState]:
-    same_state = TinymedState(casualties, supplies)
+    same_state = TinymedState(casualties, supplies, time=0)
     return [same_state]
 
 
