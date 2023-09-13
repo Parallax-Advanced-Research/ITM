@@ -1,11 +1,11 @@
 import tad
+import argparse
 
 
-def test_endpoint():
-    args = type("Foo", (object,), {})()
-    args.model = 'bbn'
-    args.endpoint = '127.0.0.1:8080'
-    args.variant = 'aligned'
+def test_endpoint(args):
+    # args.model = 'bbn'
+    # args.endpoint = '127.0.0.1:8080'
+    # args.variant = 'aligned'
     args.verbose = True
 
     tad.api_test(args)
@@ -91,8 +91,13 @@ def main():
     # test_gen_soar()
     # test_gen_bbn()
     # test_local_bbn()
-    test_local_soar()
-    # test_endpoint()
+    # test_local_soar()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--human', default=False, help="Allows human to give selections at command line", action='store_true')
+    parser.add_argument('--verbose', default=True, help="Turns on logging", action='store_true')
+    args = parser.parse_args()
+
+    test_endpoint(args)
 
 
 if __name__ == '__main__':

@@ -1,7 +1,8 @@
 import typing
 import domain as ext
 from components import Elaborator, DecisionSelector, DecisionAnalyzer
-from domain.internal import Scenario, State, Probe, Decision, KDMA, KDMAs
+from domain.internal import Scenario, State, Probe, Decision, Action, KDMA, KDMAs
+from util import logger
 
 
 class Driver:
@@ -24,20 +25,57 @@ class Driver:
         state = self._extract_state(scenario.state)
         self.scenario = Scenario(scenario.id, state)
 
-    def decide(self, ext_probe: ext.Probe) -> ext.Response:
+    def translate_probe(self, ext_probe: ext.Probe) -> Probe:
+        # Translate probe external state into internal state
         state = self._extract_state(ext_probe.state)
-        decisions: list[Decision] = []
-        for option in ext_probe.options:
-            kdmas = KDMAs([KDMA(k, v) for k, v in option.kdma_association.items()])
-            decisions.append(Decision(option.id, option.value, kdmas=kdmas))
-        probe = Probe(ext_probe.id, state, ext_probe.prompt, decisions)
 
-        probe.decisions = self.elaborator.elaborate(self.scenario, probe)
+        # Extract the decisions
+        decisions: list[Decision[Action]] = []
+        for option in ext_probe.options:
+            # Extract KDMAs
+            kdmas = KDMAs([KDMA(k, v) for k, v in option.kdmas.items()]) if option.kdmas is not None else None
+            # Extract action parameters (ta3 api)
+            params = option.params.copy() if option.params is not None else {}
+            params.update({'casualty': option.casualty})
+            # Add decision
+            decisions.append(Decision(option.id, Action(option.type, params), kdmas=kdmas))
+        probe = Probe(ext_probe.id, state, ext_probe.prompt, decisions)
+        return probe
+
+    def elaborate(self, probe: Probe) -> list[Decision[Action]]:
+        return self.elaborator.elaborate(self.scenario, probe)
+
+    def analyze(self, probe: Probe):
         for analyzer in self.analyzers:
             analyzer.analyze(self.scenario, probe)
-        decision, sim = self.selector.select(self.scenario, probe, self.alignment_tgt)
 
-        return ext.Response(self.scenario.id_, probe.id_, decision.id_, str(decision.justifications))
+    def select(self, probe: Probe) -> Decision[Action]:
+        d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
+        return d
+
+    @staticmethod
+    def respond(decision: Decision[Action]) -> ext.Action:
+        params = decision.value.params.copy()
+        casualty = params.pop('casualty')
+        return ext.Action(decision.id_, decision.value.name, casualty, {}, params)
+
+    def decide(self, ext_probe: ext.Probe) -> ext.Action:
+        probe: Probe = self.translate_probe(ext_probe)
+
+        # Elaborate decisions, and analyze them
+        probe.decisions = self.elaborate(probe)
+        self.analyze(probe)
+
+        index : int = 0
+        for d in probe.decisions:
+            logger.info(f"Available Action {index}: {d}")
+            index += 1
+
+        # Decide which decision is best
+        decision: Decision[Action] = self.select(probe)
+
+        # Extract external decision for response
+        return self.respond(decision)
 
     def _extract_state(self, dict_state: dict) -> State:
         raise NotImplementedError
