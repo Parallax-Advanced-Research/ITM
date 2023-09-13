@@ -2,14 +2,14 @@ from enum import Enum
 
 
 class Actions(Enum):
-    APPLY_TREATMENT = "apply treatment"
-    CHECK_ALL_VITALS = "check all vitals"
-    CHECK_PULSE = "check pulse"
-    CHECK_RESPIRATION = "check respiration"
-    DIRECT_MOBILE_CASUALTY = "direct mobile casualty"
-    MOVE_TO_EVAC = "get to the choppah"
-    TAG_CASUALTY = "tag casualty"
-    SITREP = "sitrep"
+    APPLY_TREATMENT = "APPLY_TREATMENT"
+    CHECK_ALL_VITALS = "CHECK_ALL_VITALS"
+    CHECK_PULSE = "CHECK_PULSE"
+    CHECK_RESPIRATION = "CHECK_RESPIRATION"
+    DIRECT_MOBILE_CASUALTY = "DIRECT_MOBILE_CASUALTY"
+    MOVE_TO_EVAC = "MOVE_TO_EVAC"
+    TAG_CASUALTY = "TAG_CASUALTY"
+    SITREP = "SITREP"
     UNKNOWN = "unknown"
 
 

@@ -21,13 +21,15 @@ if __name__ == '__main__':
     # supplies = medact.get_starting_supplies()
     # init_tiny_state = tmed.TinymedState(casualties=casualties, supplies=supplies)
 
-
-
     client = TA3Client()
     driver = TA3Driver()
     sid = client.start_session(f'TAD')
     logger.info(f"Started Session-{sid}")
     scen = client.start_scenario()
+    save = True if scen.id == 'soartech-september-demo-scenario-1' else False
+    logger.debug(scen.id)
+    if not save:
+        quit(1)
     if scen is None:
         logger.info("Session Complete!")
     ta3_init_state = ta3state.TA3State(unstructured=scen.state['unstructured'],
@@ -41,8 +43,8 @@ if __name__ == '__main__':
     tree = mcsim.MonteCarloTree(sim, [root], node_selector=selection_function)
 
     sim_times = []
-    rollouts = 1000
-    depth = 9
+    rollouts = 10000
+    depth = 6
     for i in range(rollouts):
         sim_start = time.time()
         result = tree.rollout(max_depth=depth)
@@ -59,3 +61,4 @@ if __name__ == '__main__':
 
     if save:
         pkl.dump(tree, open('tree.pkl', 'wb'))
+        logger.debug('tree saved.')

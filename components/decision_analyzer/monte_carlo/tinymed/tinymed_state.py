@@ -38,3 +38,13 @@ class TinymedAction(MCAction):
         self.supply: str | None = supply
         self.location: str | None = location
         self.tag: str | None = tag
+
+    def lookup(self, attribute: str) -> str | None:
+        if attribute == 'casualty_id':
+            return self.casualty_id
+        if attribute == 'supply':
+            return self.supply
+        if attribute == 'location':
+            return self.location
+        if attribute == 'tag':
+            return self.tag
