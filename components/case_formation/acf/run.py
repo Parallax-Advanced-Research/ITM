@@ -14,7 +14,7 @@ from components.decision_analyzer.event_based_diagnosis.ebd_analyzer import Even
 from components.decision_selector.cbr.cbr_decision_selector import CBRDecisionSelector, Case
 from components.hra import hra
 from components.hra import *
-from learn_weights import *
+from components.case_formation.acf.argument_case_base import *
 
 
 # just to run it from this location for now

@@ -229,6 +229,6 @@ def create_argument_case(df, feature_weights):
     print("Average Accuracy:", accuracy)
 
     df_argument_case_base = pd.concat(argument_cases, ignore_index=True)
-    df_argument_case_base.to_csv(get_data_dir() + 'argument_case_base.csv', index=False)
+    df_argument_case_base.to_csv(get_data_dir() + '/argument_case_base.csv', index=False)
     print("Create argument case base finish")
     return df_argument_case_base
