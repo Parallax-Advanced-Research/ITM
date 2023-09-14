@@ -8,16 +8,15 @@ import json
 import os
 import sys
 import yaml
+# this will be imports relative to the module once it is a module
 sys.path.append('.')
-from domain.internal import Probe, State, Decision, KDMAs, KDMA, Scenario, DecisionMetric
+from domain.internal import *
+
 from components import DecisionAnalyzer
 from components.decision_analyzer import *
-# there will probably be a default here. Also, we will probably just call Decision Analyzer
-# python imports are weird
-from components.decision_analyzer.event_based_diagnosis.ebd_analyzer import EventBasedDiagnosisAnalyzer
-from components.decision_selector.cbr.cbr_decision_selector import CBRDecisionSelector, Case
+from components.decision_selector.cbr.cbr_decision_selector import Case
 from components.hra import hra
-from components.hra import *
+
 
 warnings.filterwarnings('ignore')
 def get_data_dir():

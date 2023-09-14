@@ -28,7 +28,7 @@ monte_carlo_analyzer = MonteCarloAnalyzer()
 # hra analyzer is a function that takes a json file and returns a dictionary of decisions
 hra_object = hra.HRA()
 hra_analyzer = hra_object.hra_decision_analytics
-# see other possible hra response types below
+# two examples of the individual calls other possible hra response types below
 a = hra_object.take_the_best(os.path.join(data_dir, "scene_one_treatment.json"))
 k = hra_object.tallying(os.path.join(data_dir, "scene2.json"), 4, 0)
 
