@@ -2,11 +2,13 @@ import json
 import random
 import copy
 from pathlib import Path
-from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric
+from domain.internal import Probe, Scenario, Decision, DecisionMetrics, DecisionMetric
 from components import DecisionAnalyzer
 
 # currently runs for set of possible decisions, future may change to be called for each decision
 class HRA(DecisionAnalyzer):
+    STRATEGIES = ["take-the-best", "exhaustive", "tallying", "satisfactory", "one-bounce"]
+
     def __init__(self):
         super().__init__()
 
@@ -741,14 +743,17 @@ class HRA(DecisionAnalyzer):
     # store casualty
         next_casualty = dict()
         
-        next_casualty_id = None
-        next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "VIP"]
+        next_casualty_id = []
         if len(next_casualty_id) == 0:
-            next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "Civilian"]
+            next_casualty_id = [key for key, value in casualty_list.items() if value['relationship'] == "FRIEND"]
+        if len(next_casualty_id) == 0:
+            next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "VIP"]
         if len(next_casualty_id) == 0:
             next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "Intel Officer"]
         if len(next_casualty_id) == 0:
             next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "Marine"]    
+        if len(next_casualty_id) == 0:
+            next_casualty_id = [key for key, value in casualty_list.items() if value['demographics']['rank'] == "Civilian"]
         
         if len(next_casualty_id) > 0:
             next_casualty = casualty_list[next_casualty_id[0]]
@@ -909,9 +914,9 @@ class HRA(DecisionAnalyzer):
         system = 'system'
 
         predictors = {risk_reward_ratio:self.convert_between_kdma_risk_reward_ratio(mission, denial, None),\
-                                    resources:self.convert_between_kdma_resources(mission, denial, None),\
-                                          time:self.convert_between_kdma_time(mission, denial, None),\
-                                              system:self.convert_between_kdma_system(mission, denial, None)}
+                      resources:self.convert_between_kdma_resources(mission, denial, None),\
+                      time:self.convert_between_kdma_time(mission, denial, None),\
+                      system:self.convert_between_kdma_system(mission, denial, None)}
         
         data['predictors'] = {'relevance':predictors}
 
@@ -1000,7 +1005,7 @@ class HRA(DecisionAnalyzer):
                 "vitals":{"breathing":ele.vitals.breathing, "hrpmin":ele.vitals.hrpmin}, 
                 "tag":ele.tag, "assessed":ele.assessed, "relationship":ele.relationship
                 }
-        
+    
         data['casualty_list'] = casualty_data
         json_object = json.dumps(data, indent=2)
 
@@ -1010,26 +1015,52 @@ class HRA(DecisionAnalyzer):
         #print("HRA: initial state casualty  info",scen.state.casualties) debug
         
         hra_results = self.hra_decision_analytics(new_file)
-        #print("hra results", hra_results) #debug
-        analysis = {}
-        
-        for decision in probe.decisions:
-            metrics: DecisionMetrics = {
-                "learned_kdma_set":
-                    DecisionMetric("hra kdma set", "learned kdma set", dict, 
-                        hra_results['learned_kdma_set']),
-                "learned_predictors":
-                    DecisionMetric("hra predictors", "learned predictors", dict, 
-                        hra_results['learned_predictors']),
-                "casualty_selected":
-                    DecisionMetric("hra casualty", "next casualty selected", dict, 
-                        hra_results['casualty_selected'])
-                }
-            decision.metrics.update(metrics)
-            analysis[decision.id_] = metrics
-        
-        return analysis
+        priority_casualty = hra_results["casualty_selected"]["id"]
 
+        for ele in scen.state.casualties:
+            casualty_data = dict()
+            casualty_data[ele.id] = {
+                "id":ele.id, 
+                "name":ele.name, 
+                "injuries":[l.name for l in ele.injuries], 
+                "demographics":{"age":ele.demographics.age, "sex":ele.demographics.sex, 
+                                "rank":ele.demographics.rank}, 
+                "vitals":{"breathing":ele.vitals.breathing, "hrpmin":ele.vitals.hrpmin}, 
+                "tag":ele.tag, "assessed":ele.assessed, "relationship":ele.relationship
+                }
+        
+            data['casualty_list'] = casualty_data
+            json_object = json.dumps(data, indent=2)
+
+            with open(new_file, "w") as outfile:
+                outfile.write(json_object)
+            
+            #print("HRA: initial state casualty  info",scen.state.casualties) debug
+            
+            hra_results = self.hra_decision_analytics(new_file)
+            #print("hra results", hra_results) #debug
+            analysis = {}
+            
+            print("HRA Dict:")
+            print(str(hra_results['decision_hra_dict']))
+            
+            for decision in probe.decisions:
+                if ele.id == decision.value.params['casualty']:
+                    if decision.value.name == "CHECK_ALL_VITALS":
+                        self.update_metrics(decision, hra_results['decision_hra_dict'], decision.value.name, 
+                            ele.id == priority_casualty)
+                    elif decision.value.name == "APPLY_TREATMENT":
+                        self.update_metrics(decision, hra_results['decision_hra_dict'], decision.value.params['treatment'].lower(),
+                            ele.id == priority_casualty)
+        
+        return {}
+
+
+    def update_metrics(self, decision: Decision, hra_results: dict, action_name: str, is_priority: bool):
+        metrics = {strategy: DecisionMetric(strategy, strategy, int, hra_results[action_name][strategy]) for strategy in HRA.STRATEGIES}
+        metrics["priority"] = DecisionMetric("priority", "Casualty considered most important", bool, is_priority)
+        decision.metrics.update(metrics)
+        
 
 """
 if __name__ == '__main__':
