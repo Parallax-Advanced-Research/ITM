@@ -2,6 +2,9 @@ import os
 import pickle
 from argument_case_base import *
 from create_argument import *
+from components.decision_analyzer.event_based_diagnosis.ebd_analyzer import EventBasedDiagnosisAnalyzer
+from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
+from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 data_dir = get_data_dir()
 
 # initialize the dataframes and create the argument case base
@@ -27,14 +30,15 @@ argument_case_probes = ArgumentCaseProbe(df_argument_case_base).create_argument_
 decision_analyzer = DecisionAnalyzer() # not implemented but will probably be a wrapper for the other analyzers
 generic_analyzer = BaselineDecisionAnalyzer()
 monte_carlo_analyzer = MonteCarloAnalyzer()
-#event_based_analyzer = EventBasedDiagnosisAnalyzer() # I get an error
+event_based_analyzer = EventBasedDiagnosisAnalyzer() # I get an error
+heuristic_rule_analyzer = HeuristicRuleAnalyzer() # I get an error
 
 # hra analyzer is a function that takes a json file and returns a dictionary of decisions
-hra_object = hra.HRA()
-hra_analyzer = hra_object.hra_decision_analytics
-# two examples of the individual calls other possible hra response types below
-a = hra_object.take_the_best(os.path.join(data_dir, "scene_one_treatment.json"))
-k = hra_object.tallying(os.path.join(data_dir, "scene2.json"), 4, 0)
+# hra_object = hra.HRA()
+# hra_analyzer = hra_object.hra_decision_analytics
+# # two examples of the individual calls other possible hra response types below
+# a = hra_object.take_the_best(os.path.join(data_dir, "scene_one_treatment.json"))
+# k = hra_object.tallying(os.path.join(data_dir, "scene2.json"), 4, 0)
 
 # this is a placehoder for the scenario
 # labels in the yaml scenario file
@@ -45,16 +49,19 @@ scenario = Scenario(id_=labels['id'], state=labels['state'])
 cases = []
 for probe in argument_case_probes:
     # response is a decision dictionary
-   
+    print("Probe: " + str(vars(probe)))
     metrics = {}
 
     # response is a DecisionMetric dictionary object
-    metrics['generic'] = generic_analyzer.analyze(scenario, probe)
+    metrics['ebd'] = event_based_analyzer.analyze(scenario, probe)
     metrics['monte_carlo'] = monte_carlo_analyzer.analyze(scenario, probe)    
+    metrics['hra'] = heuristic_rule_analyzer.analyze(scenario, probe)
     #meterics['event_based'] = event_based_analyzer.analyze(scenario, probe)
 
     # response is a dictionary of decisions   
-    metrics['hra'] = hra_analyzer(os.path.join(data_dir, 'scene2.json'),0)
+    # metrics['hra'] = hra_analyzer(os.path.join(data_dir, 'scene2.json'),0)
+    
+    
     
     # we probably only get one set of decision metrics when fully implemented
     

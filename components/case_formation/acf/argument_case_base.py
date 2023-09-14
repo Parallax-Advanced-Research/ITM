@@ -15,7 +15,6 @@ sys.path.append('.')
 from components import DecisionAnalyzer
 from components.decision_analyzer import *
 from components.decision_selector.cbr.cbr_decision_selector import Case
-from components.hra import hra
 from domain.internal import *
 
 warnings.filterwarnings('ignore')
