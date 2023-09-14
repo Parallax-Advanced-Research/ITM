@@ -2,6 +2,7 @@
 
 import json, sys, math
 from fractions import Fraction
+from collections import defaultdict
 from typing import List, Any, Dict, Tuple, Set, Optional
 from util import assignment_to_hash, hash_to_assignment
 
@@ -16,6 +17,7 @@ WARN_APPROXIMATION_ERROR = 0.02
 nodes: Dict[str, 'Node']
 
 verbose_mode = True
+assignment_hash = str # TODO: rename various type specifications to be more illustrative
 
 #unreduced_fraction = namedtuple("unreduced_fraction", "numerator denominator")
 
@@ -286,9 +288,9 @@ class Node:
 # to its probabilities (using the rows corresponding to the parts that have been set already)
 # It then sends a set of partial observations along to the next.
 def probabilities_to_observations() -> List[Observation]:
-	def find_matching_cpd_row(node: Node, observation: Observation) -> Dict[str, Fraction]:
+	def find_matching_cpd_row(node: Node, observation: Observation) -> str:
 		match: Optional[Dict[str, Fraction]] = None
-		for k, prob in node.distribution.items():
+		for k in node.distribution:
 			assignment = hash_to_assignment(k)
 
 			def term_matches(k: str) -> bool:
@@ -298,7 +300,7 @@ def probabilities_to_observations() -> List[Observation]:
 
 			if all(term_matches(k) for k in observation.assignment):
 				assert match is None # store and continue, as a sanity check against multiple matches. Can return early if speed becomes an issue.
-				match = prob
+				match = k
 		assert match is not None, "Can't happen: Failed to find matching row."
 		return match
 
@@ -330,6 +332,7 @@ def probabilities_to_observations() -> List[Observation]:
 		print(f"# Observations: {observations}")
 		print()
 
+		row_bins: Dict[assignment_hash,List[Observation]]  = defaultdict(list) # each bin has all observations that match its corresponding row
 		new_observations = []
 		for obs in observations:
 			# distribution this subset of observations among the various values for this node
@@ -337,18 +340,45 @@ def probabilities_to_observations() -> List[Observation]:
 			# TODO: Multiple input observations *will* match a given row, because they differ in variables that aren't parents of this node.
 			# So we need to bin them according to the matched row, and *then* scale.
 			row = find_matching_cpd_row(node, obs)
-			for val, prob in row.items():
-				#count = prob.numerator * n_observations / prob.denominator
-				# TODO: instead of dividing by denominator, divide by denominator * number of rows?
-				count = prob.numerator * n_observations / (prob.denominator * len(node.distribution))
-				assert int(count) == count
-				new_assignment = obs.assignment.copy()
-				assert val not in new_assignment
-				new_assignment[node.name] = val
-				new_obs = Observation(new_assignment, int(count))
-				print(f"New Observation for row {prob.numerator}/{prob.denominator}: {new_obs.count} x {new_obs.assignment}")
-				new_observations.append(new_obs)
-		assert n_observations == sum(a.count for a in new_observations), f"Total count for {node.name} doesn't sum to n_observations (sum={sum(a.count for a in new_observations)} != n_obs={n_observations})"
+			print("Matching row = ", row)
+			row_bins[row].append(obs)
+
+		# Remember, *all* bins get effectively scaled up to the same denominator. But they *store* the reduced one
+		# because of how Fraction works.
+		# Okay, *forget* about min_observations, n_observations, etc.
+		# Each row gets a *fixed* number of observations, determined entirely by what the previous node sent us.
+		# Then the fraction of that determines how it's distributed. It isn't scaled at all.
+		for bin_k, bin_v in row_bins.items():
+			print(f"# Bin\nKey = {bin_k} -> {node.distribution[bin_k]}\n")
+			print(f"# Vals:")
+			for v in bin_v:
+				print(f"\t{v}")
+			#total_observations = sum(obs.count for obs in bin_v)
+			#total_denominator = sum(prob.denominator for prob in node.distribution[bin_k].values())
+			#print("total observations = ", total_observations)
+			#print("total denominator = ", total_denominator)
+			
+			# Each observation in the bin is a fraction of the total row's mass.
+			# And then that fraction is further distributed according to the row's distribution
+			for obs in bin_v:
+				# obs is e.g. (16384 x {'explosion': 'true', 'amputation': 'false'})
+				print("obs = ", obs)
+				for val, prob in node.distribution[bin_k].items():
+					# node.distribution[bin_k] is e.g. {'false': Fraction(1, 8), 'true': Fraction(7, 8)}
+					print("val = ", val)
+					print("prob = ", prob)
+					new_assignment = obs.assignment.copy()
+					new_assignment[node.name] = val
+					new_count = obs.count * prob.numerator / prob.denominator
+					print(f"{obs.count=}\n{prob.numerator=}\n{prob.denominator=}\n{new_count=}\n")
+					new_count = round(new_count) # TODO: this is a kludge.
+					#assert new_count == int(new_count)
+					new_obs = Observation(new_assignment, int(new_count))
+					print(f"New Observation for row {prob.numerator}/{prob.denominator}: {new_obs.count} x {new_obs.assignment}")
+					new_observations.append(new_obs)
+
+
+		#assert n_observations == sum(a.count for a in new_observations), f"Total count for {node.name} doesn't sum to n_observations (sum={sum(a.count for a in new_observations)} != n_obs={n_observations})"
 		# TODO: I think I need to sum all the rows when working out n_observations. The rows sum to 1, but...
 		observations = new_observations
 	return observations
@@ -375,7 +405,21 @@ def main(argv: List[str]) -> int:
 		print(json.dumps(node.to_dict(), indent=4))
 		print()
 
-	probabilities_to_observations()
+	observations = probabilities_to_observations()
+	print("# OBSERVATIONS")
+	for obs in observations:
+		print(obs)
 	return 0
 
 sys.exit(main(sys.argv))
+
+# NOTE: I am no longer convinced that it's possible to determine a number that will divide evenly
+# without doing a fair amount of communication up and down the tree and/or topologically sorted list.
+# I'm wondering if the right approach isn't to just send 1.0 down the chain, then decide at the end
+# what to multiply the various resulting observations by (remember, they're (count, assignment) pairs,
+# and nothing's stopping us from letting count be a float) so as to end up with at least 1 for every
+# nonzero entry.
+# Yeah, that's clearly the right approach (or at least, it seems that way at 23:17). I can skip the rationalizing step, too.
+# Another issue: memory. And the fact that that *is* an issue *might* mean that this can't be done in a reasonable number of
+# observations, since if there are enough Observation objects to exhaust my memory, and each has at least count=1...
+
