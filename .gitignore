@@ -312,3 +312,4 @@ $RECYCLE.BIN/
 *.lnk
 
 /temp/cue.hems
+/temp/*.json
