@@ -89,7 +89,7 @@ def api_test(args):
     else:
         logger.setLevel(LogLevel.ERROR)
 
-    driver = TA3Driver(human = args.human)
+    driver = TA3Driver(args)
     client = TA3Client()
     sid = client.start_session(f'TAD')
     logger.info(f"Started Session-{sid}")

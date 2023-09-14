@@ -10,13 +10,16 @@ from .driver import Driver
 
 
 class TA3Driver(Driver):
-    def __init__(self, human = False):
-        if human:
+    def __init__(self, args):
+        if args.human:
             selector = HumanDecisionSelector()
         else:
             selector = BaselineDecisionSelector()
         elaborator = TA3Elaborator()
-        analyzer1 = EventBasedDiagnosisAnalyzer()
+        if args.ebd:
+            analyzer1 = EventBasedDiagnosisAnalyzer()
+        else:
+            analyzer1 = BaselineDecisionAnalyzer()
         analyzer2 = HeuristicRuleAnalyzer()
         super().__init__(elaborator, selector, [analyzer1, analyzer2])
 
