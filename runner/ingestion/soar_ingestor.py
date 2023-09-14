@@ -9,7 +9,7 @@ from pydantic.tools import parse_obj_as
 import domain as ext
 from domain.internal import Scenario, Probe, Decision, KDMA, KDMAs
 from domain.mvp import MVPState, Casualty
-from components.decision_selector.cbr import Case
+from components.decision_selector.mvp_cbr import Case
 from .ingestor import Ingestor
 
 

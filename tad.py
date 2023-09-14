@@ -7,7 +7,7 @@ import uuid
 from pydantic.tools import parse_obj_as
 from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
 from runner import MVPDriver, TA3Driver, TA3Client
-from components.decision_selector.cbr import Case
+from components.decision_selector.mvp_cbr import Case
 from domain import Scenario
 from domain.internal import KDMAs, KDMA
 from util import logger, LogLevel, use_simple_logger, dict_difference
