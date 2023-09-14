@@ -27,4 +27,4 @@ class Decision(typing.Generic[T]):
         self.kdmas: KDMAs | None = kdmas
 
     def __repr__(self):
-        return f"{self.id_}: {self.value} - {self.kdmas}"
+        return f"{self.id_}: {self.value} - {self.kdmas} - {[(dm.name, dm.value) for dm in self.metrics.values()]}"
