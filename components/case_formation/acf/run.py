@@ -32,7 +32,8 @@ hra_analyzer = hra_object.hra_decision_analytics
 a = hra_object.take_the_best(os.path.join(data_dir, "scene_one_treatment.json"))
 k = hra_object.tallying(os.path.join(data_dir, "scene2.json"), 4, 0)
 
-# this is just a placehoder for the scenario
+# this is a placehoder for the scenario
+# labels in the yaml scenario file
 scenario = Scenario(id_=labels['id'], state=labels['state'])
 
 # here we get the analysis for each probe which is a dictionary of decision metrics
@@ -57,7 +58,8 @@ for probe in argumentCaseProbes:
     cases.append(case)
 
 print('added {} cases with Decision Metrics to the case base'.format(len(cases)))
-# do something with the new cases (add them back into a case base)
+
+# do something with the new cases
 pickle.dump(cases, open(get_output_dir() + '/out_case_base.p', 'wb'))
 
 
