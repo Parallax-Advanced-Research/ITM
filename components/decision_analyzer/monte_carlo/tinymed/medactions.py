@@ -258,7 +258,7 @@ def trim_tm_actions(actions: list[TinymedAction]) -> list[TinymedAction]:
     for act in actions:
         if act.action == Actions.APPLY_TREATMENT.value:
             if act.supply == Supplies.DECOMPRESSION_NEEDLE.value:
-                if act.location in [Locations.UNSPECIFIED.value]:
+                if act.location in [Locations.UNSPECIFIED.value, Locations.LEFT_CHEST, Locations.RIGHT_CHEST]:
                     trimmed.append(act)
             if act.supply == Supplies.TOURNIQUET.value or act.supply == Supplies.PRESSURE_BANDAGE.value or act.supply == Supplies.HEMOSTATIC_GAUZE.value:
                 if act.location in [Locations.RIGHT_FOREARM.value, Locations.LEFT_FOREARM.value,
@@ -267,13 +267,18 @@ def trim_tm_actions(actions: list[TinymedAction]) -> list[TinymedAction]:
                                     Locations.RIGHT_WRIST.value, Locations.LEFT_WRIST.value,
                                     Locations.RIGHT_CALF.value, Locations.LEFT_CALF.value]:
                     trimmed.append(act)
+            if act.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
+                if act.location in [Locations.RIGHT_SHOULDER.value, Locations.LEFT_SHOULDER.value,
+                                    Locations.RIGHT_SIDE.value, Locations.LEFT_SIDE.value,
+                                    Locations.RIGHT_NECK.value, Locations.LEFT_NECK.value]:
+                    trimmed.append(act)
             if act.supply == Supplies.NASOPHARYNGEAL_AIRWAY.value:
-                if act.location in [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]:
+                if act.location in [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value, Locations.UNSPECIFIED.value]:
                     trimmed.append(act)
         elif act.action != Actions.UNKNOWN.value:
             trimmed.append(act)
-        # print("action being trimmed", act.action)
     return trimmed
+
 
 def get_starting_casualties():
     wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
