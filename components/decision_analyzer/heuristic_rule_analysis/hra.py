@@ -873,9 +873,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         file['injury_list'] = ["Forehead Scrape", "Ear Bleed", "Asthmatic", "Laceration", "Puncture", "Shrapnel", "Chest Collapse", "Amputation", "Burn"]
 
         json_object = json.dumps(file, indent=2)
-        new_file = "newfile.json"
-        mod_path = Path(__file__).parent
-        new_file = (mod_path / new_file).resolve()
+        new_file = "temp/newfile.json"
         with open(new_file, "w") as outfile:
             outfile.write(json_object)
 
@@ -927,8 +925,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     # add predictors and casualty to scenario file
         json_object = json.dumps(data, indent=4)
-        mod_path = Path(__file__).parent
-        new_file = (mod_path / "scene.json").resolve()
+        new_file = "temp/scene.json"
         with open(new_file, "w") as outfile:
             outfile.write(json_object)
 
@@ -1040,9 +1037,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             hra_results = self.hra_decision_analytics(new_file)
             #print("hra results", hra_results) #debug
             analysis = {}
-            
-            print("HRA Dict:")
-            print(str(hra_results['decision_hra_dict']))
             
             for decision in probe.decisions:
                 if ele.id == decision.value.params['casualty']:
