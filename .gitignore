@@ -311,3 +311,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+/temp/cue.hems

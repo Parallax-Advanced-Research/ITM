@@ -89,7 +89,7 @@ def api_test(args):
     else:
         logger.setLevel(LogLevel.ERROR)
 
-    driver = TA3Driver()
+    driver = TA3Driver(human = args.human)
     client = TA3Client()
     sid = client.start_session(f'TAD')
     logger.info(f"Started Session-{sid}")
@@ -110,12 +110,15 @@ def api_test(args):
                 break
 
             logger.info(f"Responding to probe-{probe.id}")
+            
             action = driver.decide(probe)
             logger.info(f"Chosen Action-{action}")
             new_probe = client.take_action(action)
             if new_probe:
                 difference = dict_difference(probe.state, new_probe.state, {'id', 'type'})
-                logger.debug(f"-State Changes: {difference}")
+                logger.debug(f"-State Additions: {difference}")
+                difference = dict_difference(new_probe.state, probe.state, {'id', 'type'})
+                logger.debug(f"-State Removals: {difference}")
             probe = new_probe
     
     
