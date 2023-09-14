@@ -17,7 +17,7 @@ alignment_score(df_argument_label)
 print("argument case base: ", df_argument_case_base)
 
 # put the argument case base into a list of probes for analysis
-argumentCaseProbes = ArgumentCaseProbe(df_argument_case_base).create_argument_case_probes()
+argument_case_probes = ArgumentCaseProbe(df_argument_case_base).create_argument_case_probes()
 
 # initialize the analyzers
 decision_analyzer = DecisionAnalyzer() # not implemented but will probably be a wrapper for the other analyzers
@@ -39,7 +39,7 @@ scenario = Scenario(id_=labels['id'], state=labels['state'])
 # here we get the analysis for each probe which is a dictionary of decision metrics
 # these decision metrics can be used to augment the case base with the DecisionMetrics returned
 cases = []
-for probe in argumentCaseProbes:
+for probe in argument_case_probes:
     # response is a decision dictionary
    
     metrics = {}
