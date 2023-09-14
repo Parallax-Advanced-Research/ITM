@@ -8,6 +8,9 @@ data_dir = get_data_dir()
 df_partial_cases = partial_cases()
 df_elab_cases = elab_cases(df_partial_cases)
 df_extended_cases = case_expansion(df_elab_cases)
+# internal note: the df_extended_cases is the argument case base for which we would get the decision metrics
+# but right now the weight learning doesn't handle the added decision metrics as features so we skip ahead to have an output
+# argument_case_probes = ArgumentCaseProbe(df_extended_cases).create_argument_case_probes()
 feature_weights = weight_learning(df_extended_cases)
 print("learned feature weights: ", feature_weights)
 df_argument_case_base = create_argument_case(df_extended_cases, feature_weights)
