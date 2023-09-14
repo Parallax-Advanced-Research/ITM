@@ -38,6 +38,9 @@ class Observation:
 		self.assignment = assignment
 		self.count = count
 
+	def __repr__(self) -> str:
+		return f"({self.count} x {self.assignment})"
+
 
 class Node:
 	def __init__(self, name: str, json_dict: Dict[str, Any], max_observations: int, epsilon: float) -> None:
@@ -65,9 +68,12 @@ class Node:
 		for entry in real_distribution.values():
 			assert all(type(k) is str and type(v) is float for k,v in entry.items())
 
-		self.min_observations = 0
 		self.children: Dict[str, 'Node'] = {}
 		self.distribution = self.rational_distribution(real_distribution, max_observations, epsilon)
+		
+		# This will be a lower bound, not the true value, for everything except (eventually), the root
+		self.min_observations = max(max(a.denominator for a in row.values()) for row in self.distribution.values()) * len(self.distribution)
+		#self.min_observations = sum( sum(a.denominator for a in row.values()) for row in self.distribution.values() )
 
 	def add_child_edges(self) -> None:
 		""" Must be called after all nodes are created """
@@ -177,7 +183,8 @@ class Node:
 
 
 			# We try numbers that are likely to result in a small LCM first. Better that both be 100 than a 7 and a 15.
-			order_to_check = sorted(factors(max_observations))
+			# We don't permit 1, because it'll get added to the total, and yields annoying sums that are relatively prime to a gazillion things
+			order_to_check = sorted(a for a in factors(max_observations) if a >= 2)
 			#added: Set[int] = set(order_to_check)
 		#	for num in range(2, max_observations + 1, 2):
 		#		if num not in added:
@@ -198,7 +205,7 @@ class Node:
 			counts = best[0]
 			err = best[1]
 			n = sum(counts.values())
-			self.min_observations = n # This will be a lower bound, not the true value, for everything except (eventually), the root
+#			self.min_observations = n # This will be a lower bound, not the true value, for everything except (eventually), the root
 
 			result = { k: Fraction(v, n) for k,v in counts.items() }
 			assert 1.0 == sum(result.values())
@@ -213,6 +220,7 @@ class Node:
 			return result
 		
 		r = { k: rational_approximation(k, v) for k,v in real_distribution.items() }
+
 		print(f"## FOO : {self.name}")
 		for k, v in r.items():
 			print(f"{k}: {v}")
@@ -282,7 +290,13 @@ def probabilities_to_observations() -> List[Observation]:
 		match: Optional[Dict[str, Fraction]] = None
 		for k, prob in node.distribution.items():
 			assignment = hash_to_assignment(k)
-			if all(k in assignment and assignment[k] == observation.assignment[k] for k in observation.assignment):
+
+			def term_matches(k: str) -> bool:
+				""" term either *matches* matches, or refers to a variable that shouldn't be considered """
+				if k not in node.parents: return True
+				return assignment[k] == observation.assignment[k]
+
+			if all(term_matches(k) for k in observation.assignment):
 				assert match is None # store and continue, as a sanity check against multiple matches. Can return early if speed becomes an issue.
 				match = prob
 		assert match is not None, "Can't happen: Failed to find matching row."
@@ -319,9 +333,14 @@ def probabilities_to_observations() -> List[Observation]:
 		new_observations = []
 		for obs in observations:
 			# distribution this subset of observations among the various values for this node
+
+			# TODO: Multiple input observations *will* match a given row, because they differ in variables that aren't parents of this node.
+			# So we need to bin them according to the matched row, and *then* scale.
 			row = find_matching_cpd_row(node, obs)
 			for val, prob in row.items():
-				count = prob.numerator * n_observations / prob.denominator
+				#count = prob.numerator * n_observations / prob.denominator
+				# TODO: instead of dividing by denominator, divide by denominator * number of rows?
+				count = prob.numerator * n_observations / (prob.denominator * len(node.distribution))
 				assert int(count) == count
 				new_assignment = obs.assignment.copy()
 				assert val not in new_assignment
@@ -329,7 +348,7 @@ def probabilities_to_observations() -> List[Observation]:
 				new_obs = Observation(new_assignment, int(count))
 				print(f"New Observation for row {prob.numerator}/{prob.denominator}: {new_obs.count} x {new_obs.assignment}")
 				new_observations.append(new_obs)
-		assert n_observations == sum(a.count for a in new_observations), f"Total count for {node.name} doesn't sum to n_observations ({sum(a.count for a in new_observations)} != {n_observations})"
+		assert n_observations == sum(a.count for a in new_observations), f"Total count for {node.name} doesn't sum to n_observations (sum={sum(a.count for a in new_observations)} != n_obs={n_observations})"
 		# TODO: I think I need to sum all the rows when working out n_observations. The rows sum to 1, but...
 		observations = new_observations
 	return observations
