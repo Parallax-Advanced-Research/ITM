@@ -66,6 +66,14 @@ class Driver:
         probe.decisions = self.elaborate(probe)
         self.analyze(probe)
 
+        # Print info affecting decisions
+        index: int = 0
+        for d in probe.decisions:
+            logger.debug(f"Available Action {index}: {d}")
+            index += 1
+        for cas in probe.state.casualties:
+            logger.debug(f"Casualty: {cas.id} Injuries: {cas.injuries} Vitals: {cas.vitals} Tag: {cas.tag}")
+
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
 

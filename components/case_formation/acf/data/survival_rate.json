@@ -1,0 +1,10 @@
+{
+  "Treatment 1": {
+    "safe area": {
+      "Survival rate": 1
+    },
+    "danger": {
+      "Survival rate": 0
+    }
+  }
+}

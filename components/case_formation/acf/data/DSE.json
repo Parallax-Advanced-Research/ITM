@@ -1,0 +1,11 @@
+{
+  "possible-decisions": {
+    "Treatment 1": 1,
+    "Treatment 2": 1,
+    "Treatment 3": 1,
+    "Treatment 4": 1,
+    "Treatment 5": 1,
+    "Treatment 6": 1,
+    "summary": [1,1,1,1,1,1]
+      } 
+}

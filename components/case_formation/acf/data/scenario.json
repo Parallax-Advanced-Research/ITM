@@ -1,0 +1,20 @@
+{ 
+ "safe area": {
+   "Casualty A": {"Treatment 1": 1,"Treatment 2": 1,"Treatment 3": 0},
+   "Casualty B": {"Treatment 1": 1,"Treatment 2": 1,"Treatment 3": 0},
+   "Casualty C": {"Treatment 1": 1,"Treatment 2": 1,"Treatment 3": 0},
+   "Casualty D": {"Treatment 4": 1,"Treatment 5": 1,"Treatment 6": 0},
+   "Casualty E": {"Treatment 4": 1,"Treatment 5": 1,"Treatment 6": 0},
+   "Casualty F": {"Treatment 2": 1,"Treatment 3": 1,"Treatment 4": 1,"Treatment 5": 1,"Treatment 6": 0}
+  },
+
+ "danger": {
+   "Casualty A": {"Treatment 1": 0,"Treatment 2": 1,"Treatment 3": 1},
+   "Casualty B": {"Treatment 1": 0,"Treatment 2": 1,"Treatment 3": 1},
+   "Casualty C": {"Treatment 1": 0,"Treatment 2": 1,"Treatment 3": 1},
+   "Casualty D": {"Treatment 4": 0,"Treatment 5": 1,"Treatment 6": 1},
+   "Casualty E": {"Treatment 4": 0,"Treatment 5": 1,"Treatment 6": 1},
+   "Casualty F": {"Treatment 2": 0,"Treatment 3": 1,"Treatment 4": 1,"Treatment 5": 1,"Treatment 6": 0}
+  }
+
+}

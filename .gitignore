@@ -311,6 +311,8 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+/temp/cue.hems
+/temp/*.json
 
 temp/newfile.json
 

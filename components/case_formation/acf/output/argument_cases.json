@@ -1,0 +1,1478 @@
+{
+    "0":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "1":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            0.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "2":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            1.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "3":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            1.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "4":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            2.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "5":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            2.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "6":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            3.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "7":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            3.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "8":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            4.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "9":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            4.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "10":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            5.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "11":{
+        "Background, PatientTreated, Scenario":[
+            0.0,
+            5.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "12":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            0.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "13":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            0.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "14":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            1.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "15":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "16":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            2.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "17":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            2.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "18":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            3.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "19":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            3.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "20":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            4.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "21":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            4.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "22":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            5.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "23":{
+        "Background, PatientTreated, Scenario":[
+            1.0,
+            5.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "24":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            0.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "25":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            0.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "26":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            1.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "27":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            1.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "28":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            2.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "29":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            2.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "30":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            3.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "31":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            3.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "32":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            4.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "33":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            4.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "34":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            5.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "35":{
+        "Background, PatientTreated, Scenario":[
+            2.0,
+            5.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if low risk then favor higher"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "36":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            0.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "37":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            0.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "38":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            1.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "39":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            1.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "40":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            2.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "41":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            2.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "42":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            3.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "43":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            3.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "44":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            4.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "45":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            4.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "46":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            5.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "47":{
+        "Background, PatientTreated, Scenario":[
+            3.0,
+            5.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "48":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            0.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "49":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            0.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "50":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            1.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "51":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            1.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "52":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            2.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "53":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            2.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "54":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            3.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "55":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            3.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "56":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            4.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "57":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            4.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "58":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            5.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "59":{
+        "Background, PatientTreated, Scenario":[
+            4.0,
+            5.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "60":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            0.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "61":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            0.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty A then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "62":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            1.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "63":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            1.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty B then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "64":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            2.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "65":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            2.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty C then treatment 1, treatment 2, treatment 3",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+        ]
+    },
+    "66":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            3.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "67":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            3.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty D then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "68":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            4.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "69":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            4.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty E then treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+        ]
+    },
+    "70":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            5.0,
+            0.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if safe area then treatment 1 survival rate is high",
+            "if safe then exclude the highest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    "71":{
+        "Background, PatientTreated, Scenario":[
+            5.0,
+            5.0,
+            1.0
+        ],
+        "Labels":[
+            "if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6",
+            "if danger then exclude the lowest",
+            "if high risk then favor lower"
+        ],
+        "Applicable Decisions":[
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+        ]
+    }
+}
