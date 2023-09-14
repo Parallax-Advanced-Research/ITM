@@ -965,9 +965,20 @@ class HRA(DecisionAnalyzer):
         
     # return all hra decision analysis elements       
         if search_path:
-            return {"decision_hra_dict":decision_hra, "learned_kdma_set":{'mission':mission, 'denial':denial}, "learned_predictors":predictors, "casualty_selected":next_casualty, "decision_comparison_order":search_tree}
+            return {
+                "decision_hra_dict": decision_hra, 
+                "learned_kdma_set": {'mission': mission, 'denial': denial}, 
+                "learned_predictors": predictors, 
+                "casualty_selected": next_casualty, 
+                "decision_comparison_order": search_tree
+                }
         else:
-            return {"decision_hra_dict":decision_hra, "learned_kdma_set":{'mission':mission, 'denial':denial}, "learned_predictors":predictors, "casualty_selected":next_casualty}
+            return {
+                "decision_hra_dict": decision_hra, 
+                "learned_kdma_set": {'mission': mission, 'denial': denial}, 
+                "learned_predictors": predictors, 
+                "casualty_selected":next_casualty
+                }
     
     '''Parent class function that call hra_decision_analytics
     '''
@@ -980,7 +991,15 @@ class HRA(DecisionAnalyzer):
 
         casualty_data = dict()
         for ele in scen.state.casualties:
-            casualty_data[ele.id] = {"id":ele.id, "name":ele.name, "injuries":[l.name for l in ele.injuries], "demographics":{"age":ele.demographics.age, "sex":ele.demographics.sex, "rank":ele.demographics.rank}, "vitals":{"breathing":ele.vitals.breathing, "hrpmin":ele.vitals.hrpmin}, "tag":ele.tag, "assessed":ele.assessed,"relationship":ele.relationship}
+            casualty_data[ele.id] = {
+                "id":ele.id, 
+                "name":ele.name, 
+                "injuries":[l.name for l in ele.injuries], 
+                "demographics":{"age":ele.demographics.age, "sex":ele.demographics.sex, 
+                                "rank":ele.demographics.rank}, 
+                "vitals":{"breathing":ele.vitals.breathing, "hrpmin":ele.vitals.hrpmin}, 
+                "tag":ele.tag, "assessed":ele.assessed, "relationship":ele.relationship
+                }
         
         data['casualty_list'] = casualty_data
         json_object = json.dumps(data, indent=2)
@@ -995,10 +1014,17 @@ class HRA(DecisionAnalyzer):
         analysis = {}
         
         for decision in probe.decisions:
-            
-            metrics: DecisionMetrics = {"learned_kdma_set":DecisionMetric("hra kdma set", "learned kdma set", dict, hra_results['learned_kdma_set']),\
-                "learned_predictors":DecisionMetric("hra predictors", "learned predictors", dict, hra_results['learned_predictors']),\
-                    "casualty_selected":DecisionMetric("hra casualty", "next casualty selected", dict, hra_results['casualty_selected'])}
+            metrics: DecisionMetrics = {
+                "learned_kdma_set":
+                    DecisionMetric("hra kdma set", "learned kdma set", dict, 
+                        hra_results['learned_kdma_set']),
+                "learned_predictors":
+                    DecisionMetric("hra predictors", "learned predictors", dict, 
+                        hra_results['learned_predictors']),
+                "casualty_selected":
+                    DecisionMetric("hra casualty", "next casualty selected", dict, 
+                        hra_results['casualty_selected'])
+                }
             decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
         
