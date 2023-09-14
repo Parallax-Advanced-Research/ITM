@@ -181,12 +181,14 @@ def get_action_all(casualties: list[Casualty], action_str: str) -> list[tuple]:
         action_tuple: tuple[str, str] = (action_str, casualty_id)
         actions.append(action_tuple)
     if action_str == Actions.SITREP.value:
-        actions.append((action_str))  # sitrep can be done on casualty or on scene
+        one_tuple = (Actions.SITREP.value,)
+        actions.append(one_tuple)  # sitrep can be done on casualty or on scene
     return actions
 
 
 def get_dmc_actions() -> list[tuple]:
-    return [(Actions.DIRECT_MOBILE_CASUALTY.value)]
+    one_tuple = (Actions.DIRECT_MOBILE_CASUALTY.value,)
+    return [one_tuple]
 
 
 def get_tag_options(casualties: list[Casualty]) -> list[tuple]:
@@ -237,7 +239,7 @@ def create_tm_actions(actions: list[tuple]) -> list[TinymedAction]:
             casualty, supply, loc = act_tuple[1:]
             tm_action = TinymedAction(action, casualty_id=casualty, supply=supply, location=loc)
         elif action in [Actions.CHECK_PULSE.value, Actions.CHECK_RESPIRATION.value, Actions.CHECK_ALL_VITALS.value,
-                        Actions.MOVE_TO_EVAC.value, Actions.SITREP.value]:
+                        Actions.MOVE_TO_EVAC.value]:
             casualty = act_tuple[1]
             tm_action = TinymedAction(action, casualty_id=casualty)
         elif action == Actions.DIRECT_MOBILE_CASUALTY.value:
@@ -246,7 +248,7 @@ def create_tm_actions(actions: list[tuple]) -> list[TinymedAction]:
             casualty, tag = act_tuple[1:]
             tm_action = TinymedAction(action=action, casualty_id=casualty, tag=tag)
         else:
-            tm_action = TinymedAction(action=Actions.UNKNOWN)
+            tm_action = TinymedAction(action=action)
         tm_actions.append(tm_action)
     return tm_actions
 
@@ -258,7 +260,7 @@ def trim_tm_actions(actions: list[TinymedAction]) -> list[TinymedAction]:
             if act.supply == Supplies.DECOMPRESSION_NEEDLE.value:
                 if act.location in [Locations.UNSPECIFIED.value]:
                     trimmed.append(act)
-            if act.supply == Supplies.TOURNIQUET or act.supply == Supplies.PRESSURE_BANDAGE.value or act.supply == Supplies.HEMOSTATIC_GAUZE.value:
+            if act.supply == Supplies.TOURNIQUET.value or act.supply == Supplies.PRESSURE_BANDAGE.value or act.supply == Supplies.HEMOSTATIC_GAUZE.value:
                 if act.location in [Locations.RIGHT_FOREARM.value, Locations.LEFT_FOREARM.value,
                                     Locations.RIGHT_BICEP.value, Locations.LEFT_BICEP.value,
                                     Locations.RIGHT_THIGH.value, Locations.LEFT_THIGH.value,
@@ -268,8 +270,9 @@ def trim_tm_actions(actions: list[TinymedAction]) -> list[TinymedAction]:
             if act.supply == Supplies.NASOPHARYNGEAL_AIRWAY.value:
                 if act.location in [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]:
                     trimmed.append(act)
-        else:
-            pass
+        elif act.action != Actions.UNKNOWN.value:
+            trimmed.append(act)
+        # print("action being trimmed", act.action)
     return trimmed
 
 def get_starting_casualties():

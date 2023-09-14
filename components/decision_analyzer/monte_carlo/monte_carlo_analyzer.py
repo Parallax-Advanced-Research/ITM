@@ -54,34 +54,13 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         for decision in probe.decisions:
             probe_dec_str = decision_to_actstr(decision)
             if probe_dec_str in tree_hash.keys():
-                value = tree_hash[probe_dec_str]
+                value =\
+                    tree_hash[probe_dec_str]
             else:
                 value = 9.9
             metrics: DecisionMetrics = {"Severity": DecisionMetric(name="Severity",
                                                                    description="Severity of all injuries across all casualties",
                                                                    type=type(float), value=value)}
-            decision.metrics.update(metrics)
-            analysis[probe_dec_str] = metrics  # decision id was not unique, only decision categories
-        return analysis
-
-
-    def analyze2(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
-
-        analysis = {}
-        decision_node_list: list[mcnode.MCDecisionNode] = self.trained_tree._roots[0].children
-        tree_hash = {}
-        for dn in decision_node_list:
-            dec_str = tinymedact_to_actstr(dn)
-            dec_severity = dn.score
-            tree_hash[dec_str] = dec_severity
-        for decision in probe.decisions:
-            probe_dec_str = decision_to_actstr(decision)
-            if probe_dec_str in tree_hash.keys():
-                value = tree_hash[probe_dec_str]
-            else:
-                value = 9.9
-            metrics: DecisionMetrics = {"Severity": DecisionMetric(name="Severity", description="Severity of all injuries across all casualties",
-                                                                 type=type(float), value=value)}
             decision.metrics.update(metrics)
             analysis[probe_dec_str] = metrics  # decision id was not unique, only decision categories
         return analysis

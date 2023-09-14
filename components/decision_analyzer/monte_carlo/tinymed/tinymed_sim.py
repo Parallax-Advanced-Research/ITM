@@ -1,5 +1,5 @@
 from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty, Supplies
+from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty, Supplies, Actions
 from components.decision_analyzer.monte_carlo.tinymed.medactions import (supply_dict_to_list, get_possible_actions,
                                                                          create_tm_actions, trim_tm_actions, action_map,
                                                                          get_starting_supplies, get_starting_casualties)
@@ -25,6 +25,7 @@ class TinymedSim(MCSim):
     def exec(self, state: TinymedState, action: TinymedAction) -> list[SimResult]:
         supplies: dict[str, int] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
+
         new_state = action_map[action.action](casualties, supplies, action, self._rand)
         outcomes = []
         for new_s in new_state:

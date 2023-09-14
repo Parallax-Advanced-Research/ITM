@@ -10,7 +10,7 @@ class Actions(Enum):
     MOVE_TO_EVAC = "MOVE_TO_EVAC"
     TAG_CASUALTY = "TAG_CASUALTY"
     SITREP = "SITREP"
-    UNKNOWN = "unknown"
+    UNKNOWN = "UNKNOWN"
 
 
 class MentalStates(Enum):
