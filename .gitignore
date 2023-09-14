@@ -311,3 +311,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+
+temp/newfile.json
+
+temp/scene.json

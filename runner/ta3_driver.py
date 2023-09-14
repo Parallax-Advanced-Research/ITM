@@ -11,7 +11,7 @@ class TA3Driver(Driver):
         selector = BaselineDecisionSelector()
         elaborator = TA3Elaborator()
         analyzer = BaselineDecisionAnalyzer()
-        mc_analyzer = mca.MonteCarloAnalyzer()
+        mc_analyzer = mca.MonteCarloAnalyzer(max_rollouts=10000, max_depth=2)
         super().__init__(elaborator, selector, [analyzer, mc_analyzer])
 
     def _extract_state(self, dict_state: dict):
