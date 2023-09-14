@@ -2,13 +2,13 @@
 
 import json, sys, math
 from fractions import Fraction
-from typing import List, Any, Dict, Tuple, Set
-from util import assignment_to_hash
+from typing import List, Any, Dict, Tuple, Set, Optional
+from util import assignment_to_hash, hash_to_assignment
 
 # NOTE: This is the maximum number of observations needed to make *just* the
 # CPD table for a node work. Once we start considering parents and children, we
 # may need to add more observations in the parent nodes to make the full thing work.
-MAX_OBSERVATIONS_PER_NODE = 192
+MAX_OBSERVATIONS_PER_NODE = 128
 MAX_APPROXIMATION_ERROR = 0.05
 WARN_APPROXIMATION_ERROR = 0.02
 # TODO: This is total error right now, but maybe per-value error is the more useful number.
@@ -32,6 +32,12 @@ def factors(n: int) -> Set[int]:
 			result.add(idx)
 			result.add(n // idx)
 	return result
+	
+class Observation:
+	def __init__(self, assignment: Dict[str, str], count: int) -> None:
+		self.assignment = assignment
+		self.count = count
+
 
 class Node:
 	def __init__(self, name: str, json_dict: Dict[str, Any], max_observations: int, epsilon: float) -> None:
@@ -207,6 +213,10 @@ class Node:
 			return result
 		
 		r = { k: rational_approximation(k, v) for k,v in real_distribution.items() }
+		print(f"## FOO : {self.name}")
+		for k, v in r.items():
+			print(f"{k}: {v}")
+			assert 1.0 == sum(v.values()), f"{self.name} row {k} doesn't sum to 1.0 : {sum(v.values())}"
 		assert 0 == error_count
 		return r
 
@@ -218,7 +228,8 @@ class Node:
 			"name": self.name,
 			"parents": self.parents,
 			"values": self.values,
-			"distribution": { k:aux(v) for k,v in self.distribution.items() }
+			"distribution": { k:aux(v) for k,v in self.distribution.items() },
+			"min_observations": self.min_observations,
 		}
 
 #	def update_min_observations(self, extra_lower_bound: int = 0) -> int:
@@ -242,14 +253,6 @@ class Node:
 		# in order?
 		# put in order s.t. I always visit a child after all its parents
 
-		# start at root. Create a set of partial observations where only root is set.
-		# For now, assume a single root. It's true in this case: explosion.
-		# split into two sets: root=true, root=false.
-		# Each set is then sent down the *list* individually.
-		# So { Expl=true, brain_damage=?, others=?} is sent to brain_damage. It divides the set according
-		# to its probabilities (using the rows corresponding to the parts that have been set already)
-		# It then sends a set of partial observations along to the next.
-	
 #	Partial_Observation = Dict[str, str]
 #	def receive_partial_observations(self, partial_observations: List[Partial_Observation]) -> None:
 #		for obs in partial_observations:
@@ -265,8 +268,27 @@ class Node:
 #		         node and for all the children.
 #		"""
 #		# TODO: send a series of messages to the parents, consisting of all partial observations
+		
 
-def probabilities_to_observations() -> None:
+# start at root. Create a set of partial observations where only root is set.
+# For now, assume a single root. It's true in this case: explosion.
+# split into two sets: root=true, root=false.
+# Each set is then sent down the *list* individually.
+# So { Expl=true, brain_damage=?, others=?} is sent to brain_damage. It divides the set according
+# to its probabilities (using the rows corresponding to the parts that have been set already)
+# It then sends a set of partial observations along to the next.
+def probabilities_to_observations() -> List[Observation]:
+	def find_matching_cpd_row(node: Node, observation: Observation) -> Dict[str, Fraction]:
+		match: Optional[Dict[str, Fraction]] = None
+		for k, prob in node.distribution.items():
+			assignment = hash_to_assignment(k)
+			if all(k in assignment and assignment[k] == observation.assignment[k] for k in observation.assignment):
+				assert match is None # store and continue, as a sanity check against multiple matches. Can return early if speed becomes an issue.
+				match = prob
+		assert match is not None, "Can't happen: Failed to find matching row."
+		return match
+
+
 	print([a.min_observations for a in nodes.values()])
 	n_observations = math.lcm(*(a.min_observations for a in nodes.values()))
 
@@ -281,11 +303,37 @@ def probabilities_to_observations() -> None:
 
 	topological_order: List[Node] = []
 	while len(remaining):
-		node = get_next()
-		remaining.remove(node)
-		topological_order.insert(0, nodes[node])
+		name = get_next()
+		remaining.remove(name)
+		topological_order.append(nodes[name])
 
 	print(f"LCM: {n_observations}\norder: {[a.name for a in topological_order]}\n")
+
+	observations = [ Observation({}, n_observations) ]
+	for node in topological_order:
+		print(f"# {node.name}")
+		print(f"# Distribution: {node.distribution}")
+		print(f"# Observations: {observations}")
+		print()
+
+		new_observations = []
+		for obs in observations:
+			# distribution this subset of observations among the various values for this node
+			row = find_matching_cpd_row(node, obs)
+			for val, prob in row.items():
+				count = prob.numerator * n_observations / prob.denominator
+				assert int(count) == count
+				new_assignment = obs.assignment.copy()
+				assert val not in new_assignment
+				new_assignment[node.name] = val
+				new_obs = Observation(new_assignment, int(count))
+				print(f"New Observation for row {prob.numerator}/{prob.denominator}: {new_obs.count} x {new_obs.assignment}")
+				new_observations.append(new_obs)
+		assert n_observations == sum(a.count for a in new_observations), f"Total count for {node.name} doesn't sum to n_observations ({sum(a.count for a in new_observations)} != {n_observations})"
+		# TODO: I think I need to sum all the rows when working out n_observations. The rows sum to 1, but...
+		observations = new_observations
+	return observations
+	
 
 def main(argv: List[str]) -> int:
 	global nodes
