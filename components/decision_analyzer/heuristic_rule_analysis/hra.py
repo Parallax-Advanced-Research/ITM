@@ -6,7 +6,7 @@ from domain.internal import Probe, Scenario, Decision, DecisionMetrics, Decision
 from components import DecisionAnalyzer
 
 # currently runs for set of possible decisions, future may change to be called for each decision
-class HRA(DecisionAnalyzer):
+class HeuristicRuleAnalyzer(DecisionAnalyzer):
     STRATEGIES = ["take-the-best", "exhaustive", "tallying", "satisfactory", "one-bounce"]
 
     def __init__(self):
@@ -1057,7 +1057,7 @@ class HRA(DecisionAnalyzer):
 
 
     def update_metrics(self, decision: Decision, hra_results: dict, action_name: str, is_priority: bool):
-        metrics = {strategy: DecisionMetric(strategy, strategy, int, hra_results[action_name][strategy]) for strategy in HRA.STRATEGIES}
+        metrics = {strategy: DecisionMetric(strategy, strategy, int, hra_results[action_name][strategy]) for strategy in HeuristicRuleAnalyzer.STRATEGIES}
         metrics["priority"] = DecisionMetric("priority", "Casualty considered most important", bool, is_priority)
         decision.metrics.update(metrics)
         
@@ -1073,7 +1073,7 @@ if __name__ == '__main__':
     #file_path = (mod_path / "scene.json").resolve()
     new_file = (mod_path / "newfile.json").resolve()
     #print("file_path", type(file_path),file_path)
-    hra_obj = HRA()
+    hra_obj = HeuristicRuleAnalyzer()
     #result = hra_obj.one_bounce(file_path, 2, 3)
     result = hra_obj.hra_decision_analytics(new_file)
     #result = hra_obj.hra_decision_analytics(file_path, 2, rand_seed=0)
