@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ -z "$TA3_ENDPOINT" ]
+if [ ! -z "$1" ]
    then TA3_ENDPOINT=$1
 fi
 if [ -z "$TA3_ENDPOINT" ]
