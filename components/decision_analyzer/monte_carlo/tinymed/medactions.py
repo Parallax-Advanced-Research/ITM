@@ -10,93 +10,23 @@ resolve_injury = typing.Callable[[Casualty, dict[str, int], TinymedAction, rando
 update_injury = typing.Callable[[Injury, float], None]
 
 
-def apply_bandage(casualty: Casualty, supplies: dict[str, int],
-                  action: TinymedAction, rng: random.Random) -> float:
-        fail = rng.random() < .16
-        time_taken = rng.choice([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 3.0, 4.5])
-        if supplies[action.supply] <= 0:
-            fail = True
-        for ci in casualty.injuries:
-            if ci.location == action.location and not fail:
-                ci.severity = 1
-                ci.time_elapsed += time_taken
-            else:
-                update_injury_map[ci.name](ci, time_taken)
-        return time_taken
-
-
-def apply_hemostat(casualty: Casualty, supplies: dict[str, int],
-                  action: TinymedAction, rng: random.Random) -> float:
-    fail = rng.random() < .25
-    time_taken = rng.choice([1.0, 1.5])
+def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
+                            action: TinymedAction, rng: random.Random) -> float:
+    fail = rng.random() < MedicalOracle.FAILURE_CHANCE[action.supply]
+    time_taken = rng.choice(MedicalOracle.TIME_TAKEN[action.supply])
     if supplies[action.supply] <= 0:
         fail = True
     for ci in casualty.injuries:
         if ci.location == action.location and not fail:
-            ci.severity = 1
+            ci.severity = MedicalOracle.SUCCESSFUL_SEVERITY[action.supply]
             ci.time_elapsed += time_taken
         else:
             update_injury_map[ci.name](ci, time_taken)
     return time_taken
 
 
-def apply_tourniquet(casualty: Casualty, supplies: dict[str, int],
-                  action: TinymedAction, rng: random.Random) -> float:
-    fail = False
-    time_taken = rng.choice([3.0, 3.0, 3.0, 6.0])
-    if supplies[action.supply] <= 0:
-        fail = True
-    for ci in casualty.injuries:
-        if ci.location == action.location and not fail:
-            ci.severity = 3
-            ci.time_elapsed += time_taken
-        else:
-            update_injury_map[ci.name](ci, time_taken)
-    return time_taken
-
-
-def use_decompression_needle(casualty: Casualty, supplies: dict[str, int],
-                  action: TinymedAction, rng: random.Random) -> float:
-    fail = rng.random() < .10
-    time_taken = rng.choice([5.0, 7.0])
-    if supplies[action.supply] <= 0:
-        fail = True
-    for ci in casualty.injuries:
-        if ci.location == action.location and not fail:
-            ci.severity = 2
-            ci.time_elapsed += time_taken
-        else:
-            update_injury_map[ci.name](ci, time_taken)
-    return time_taken
-
-
-def use_naso_airway(casualty: Casualty, supplies: dict[str, int],
-                  action: TinymedAction, rng: random.Random) -> float:
-    fail = rng.random() < .05
-    time_taken = 2.0
-    if supplies[action.supply] <= 0:
-        fail = True
-    for ci in casualty.injuries:
-        if ci.location == action.location and not fail:
-            ci.severity = 2
-            ci.time_elapsed += time_taken
-        else:
-            update_injury_map[ci.name](ci, time_taken)
-    return time_taken
-
-
-def update_bleeding(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * .049)
-    i.time_elapsed += elapsed
-
-
-def update_chest_collapse(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * .064)
-    i.time_elapsed += elapsed
-
-
-def update_default_injury(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * .025)
+def update_generic_injury(i: Injury, elapsed: float) -> None:
+    i.severity += (elapsed * MedicalOracle.INJURY_UPDATE_TIMES[i.name])
     i.time_elapsed += elapsed
 
 
@@ -122,6 +52,10 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
     new_state = TinymedState(casualties=casualties, supplies=supplies, time=time_taken)
     return [new_state]
 
+def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, int],
+                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
+    pass
+
 
 def default_action(casualties: list[Casualty], supplies: dict[str, int],
                             action: TinymedAction, rng: random.Random) -> list[TinymedState]:
@@ -130,23 +64,23 @@ def default_action(casualties: list[Casualty], supplies: dict[str, int],
 
 
 treatment_map: typing.Mapping[str, resolve_injury] = {
-    Supplies.PRESSURE_BANDAGE.value: apply_bandage,
-    Supplies.HEMOSTATIC_GAUZE.value: apply_hemostat,
-    Supplies.TOURNIQUET.value: apply_tourniquet,
-    Supplies.DECOMPRESSION_NEEDLE.value: use_decompression_needle,
-    Supplies.NASOPHARYNGEAL_AIRWAY.value: use_naso_airway
+    Supplies.PRESSURE_BANDAGE.value: apply_generic_treatment,
+    Supplies.HEMOSTATIC_GAUZE.value: apply_generic_treatment,
+    Supplies.TOURNIQUET.value: apply_generic_treatment,
+    Supplies.DECOMPRESSION_NEEDLE.value: apply_generic_treatment,
+    Supplies.NASOPHARYNGEAL_AIRWAY.value: apply_generic_treatment
 }
 
 update_injury_map: typing.Mapping[str, update_injury] = {
-    Injuries.LACERATION.value: update_bleeding,
-    Injuries.EAR_BLEED.value: update_default_injury,
-    Injuries.FOREHEAD_SCRAPE.value: update_default_injury,
-    Injuries.ASTHMATIC.value: update_default_injury,
-    Injuries.PUNCTURE.value: update_default_injury,
-    Injuries.SHRAPNEL.value: update_default_injury,
-    Injuries.CHEST_COLLAPSE.value: update_chest_collapse,
-    Injuries.AMPUTATION.value: update_default_injury,
-    Injuries.BURN.value: update_default_injury,
+    Injuries.LACERATION.value: update_generic_injury,
+    Injuries.EAR_BLEED.value: update_generic_injury,
+    Injuries.FOREHEAD_SCRAPE.value: update_generic_injury,
+    Injuries.ASTHMATIC.value: update_generic_injury,
+    Injuries.PUNCTURE.value: update_generic_injury,
+    Injuries.SHRAPNEL.value: update_generic_injury,
+    Injuries.CHEST_COLLAPSE.value: update_generic_injury,
+    Injuries.AMPUTATION.value: update_generic_injury,
+    Injuries.BURN.value: update_generic_injury,
 }
 
 action_map: typing.Mapping[str, resolve_action] = {
@@ -343,3 +277,41 @@ def get_starting_supplies():
         Supplies.NASOPHARYNGEAL_AIRWAY.value: 3
     }
     return supplies
+
+
+class MedicalOracle:
+    FAILURE_CHANCE = {
+        Supplies.PRESSURE_BANDAGE.value: .16,
+        Supplies.HEMOSTATIC_GAUZE.value: .25,
+        Supplies.TOURNIQUET.value: 0,
+        Supplies.DECOMPRESSION_NEEDLE.value: .10,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: .05
+    }
+
+    TIME_TAKEN = {
+        Supplies.PRESSURE_BANDAGE.value: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 3.0, 4.5],
+        Supplies.HEMOSTATIC_GAUZE.value: [1.0, 1.5],
+        Supplies.TOURNIQUET.value: [3.0, 3.0, 3.0, 6.0],
+        Supplies.DECOMPRESSION_NEEDLE.value: [5.0, 7.0],
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: [2.0]
+    }
+
+    SUCCESSFUL_SEVERITY = {
+        Supplies.PRESSURE_BANDAGE.value: 1,
+        Supplies.HEMOSTATIC_GAUZE.value: 1,
+        Supplies.TOURNIQUET.value: 3,
+        Supplies.DECOMPRESSION_NEEDLE.value: 2,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 2
+    }
+
+    INJURY_UPDATE_TIMES = {
+        Injuries.LACERATION.value: .049,
+        Injuries.BURN.value: .042,
+        Injuries.PUNCTURE.value: .036,
+        Injuries.SHRAPNEL.value: .016,
+        Injuries.AMPUTATION.value: .064,
+        Injuries.ASTHMATIC.value: .004,
+        Injuries.CHEST_COLLAPSE.value: .064,
+        Injuries.EAR_BLEED.value: .003,
+        Injuries.FOREHEAD_SCRAPE.value: .003
+    }

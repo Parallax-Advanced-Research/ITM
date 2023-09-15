@@ -3,7 +3,7 @@ from components.decision_selector.default import HumanDecisionSelector
 from components.decision_selector.default import BaselineDecisionSelector
 from components.elaborator.default import TA3Elaborator
 from components.decision_analyzer.monte_carlo import monte_carlo_analyzer as mca
-from components.decision_analyzer.event_based_diagnosis.ebd_analyzer import EventBasedDiagnosisAnalyzer
+# from components.decision_analyzer.event_based_diagnosis.ebd_analyzer import EventBasedDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from .driver import Driver
 
@@ -16,7 +16,7 @@ class TA3Driver(Driver):
             selector = BaselineDecisionSelector()
         elaborator = TA3Elaborator()
         
-        mc = mca.MonteCarloAnalyzer(max_rollouts=10000, max_depth=2)
+        mc = mca.MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
         # ebd = EventBasedDiagnosisAnalyzer() # LISP REQUIREMENT NOT INCLUDED IN INSTALLATION INSTRUCTIONS
         hra = HeuristicRuleAnalyzer()
         analyzers = [mc, hra] # ebd]
