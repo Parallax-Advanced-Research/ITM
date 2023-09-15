@@ -52,9 +52,42 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
     new_state = TinymedState(casualties=casualties, supplies=supplies, time=time_taken)
     return [new_state]
 
+def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int],
+                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
+    if action.casualty_id is None:
+        # Apply for all if not other instructions
+        retlist = []
+        for c in casualties:
+            action.casualty_id = c.id
+            retlist.extend(apply_singlecaualty_action(casualties, supplies, action, rng))
+        action.casualty_id = None
+        return retlist
+    else:
+        return apply_singlecaualty_action(casualties, supplies, action, rng)
+
+
+def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int],
+                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
+    c1 = find_casualty(action, casualties)
+    time_taken = rng.choice(MedicalOracle.TIME_TAKEN[action.action])
+    c1.tag = action.tag
+    for c in casualties:
+        casualty_injuries: list[Injury] = c.injuries
+        for ci in casualty_injuries:
+            update_injury_map[ci.name](ci, time_taken)
+    new_state = TinymedState(casualties=casualties, supplies=supplies, time=time_taken)
+    return [new_state]
+
+
 def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, int],
                             action: TinymedAction, rng: random.Random) -> list[TinymedState]:
-    pass
+    time_taken = rng.choice(MedicalOracle.TIME_TAKEN[action.action])
+    for c in casualties:
+        casualty_injuries: list[Injury] = c.injuries
+        for ci in casualty_injuries:
+            update_injury_map[ci.name](ci, time_taken)
+    new_state = TinymedState(casualties=casualties, supplies=supplies, time=time_taken)
+    return [new_state]
 
 
 def default_action(casualties: list[Casualty], supplies: dict[str, int],
@@ -85,13 +118,13 @@ update_injury_map: typing.Mapping[str, update_injury] = {
 
 action_map: typing.Mapping[str, resolve_action] = {
     Actions.APPLY_TREATMENT.value: apply_treatment_mappers,
-    Actions.CHECK_ALL_VITALS.value: default_action,
-    Actions.CHECK_PULSE.value: default_action,
-    Actions.CHECK_RESPIRATION.value: default_action,
+    Actions.CHECK_ALL_VITALS.value: apply_singlecaualty_action,
+    Actions.CHECK_PULSE.value: apply_singlecaualty_action,
+    Actions.CHECK_RESPIRATION.value: apply_singlecaualty_action,
     Actions.DIRECT_MOBILE_CASUALTY.value: default_action,
-    Actions.MOVE_TO_EVAC.value: default_action,
-    Actions.TAG_CASUALTY.value: default_action,
-    Actions.SITREP.value: default_action,
+    Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
+    Actions.TAG_CASUALTY.value: apply_casualtytag_action,
+    Actions.SITREP.value: apply_zeroornone_action,
     Actions.UNKNOWN.value: default_action
 }
 
@@ -268,6 +301,7 @@ def get_starting_casualties():
     ]
     return casualties
 
+
 def get_starting_supplies():
     supplies = {
         Supplies.TOURNIQUET.value: 3,
@@ -293,7 +327,13 @@ class MedicalOracle:
         Supplies.HEMOSTATIC_GAUZE.value: [1.0, 1.5],
         Supplies.TOURNIQUET.value: [3.0, 3.0, 3.0, 6.0],
         Supplies.DECOMPRESSION_NEEDLE.value: [5.0, 7.0],
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: [2.0]
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: [2.0],
+        Actions.CHECK_PULSE.value: [1.0],
+        Actions.CHECK_RESPIRATION.value: [1.0],
+        Actions.CHECK_ALL_VITALS.value: [1.5],
+        Actions.SITREP.value: [1.0],
+        Actions.TAG_CASUALTY.value: [1.0],
+        Actions.MOVE_TO_EVAC.value: [1.0]
     }
 
     SUCCESSFUL_SEVERITY = {
