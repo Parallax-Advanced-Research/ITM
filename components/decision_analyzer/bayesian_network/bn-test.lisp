@@ -18,6 +18,8 @@ S(W1 | S0 R1) = 0.9
 P(W1 | S1 R0) = 0.9
 S(W1 | S1 R1) = 0.99
 
+; that should probably be conditioned on rain, but leaving it in place in case
+; the later math uses this version
 P(S1 | C0) = 0.5
 P(S1 | C1) = 0.1
 

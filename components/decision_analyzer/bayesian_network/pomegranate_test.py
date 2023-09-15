@@ -75,11 +75,11 @@ class BayesianNetwork:
 			node = get_next()
 			remaining.remove(node)
 			self.nodes.append(node)
-			
+		
+		self.name2node = { node.name : node for node in self.nodes }
+		
 		# Get edge list
 		node2idx = { node:idx for idx,node in enumerate(self.nodes) }
-
-		self.name2node = { node.name : node for node in self.nodes }
 
 		self.edges: List[Tuple[int,int]] = []
 		for idx, node in enumerate(self.nodes):
@@ -92,18 +92,44 @@ class BayesianNetwork:
 			[ (a[0].probs, a[1].probs) for a in self.edges ])
 	
 	
-	def predict(self, observation: Dict[VarName, Value], vars_to_predict: List[VarName]) -> Dict[VarName, Val2Prob]:
+	def predict_batch(self, observations: List[Dict[VarName, Value]]) -> List[Dict[VarName, Val2Prob]]:
 		UNOBSERVED = -1 # may not be a legal value. i.e. must be negative
-		def val_idx(node: RandVar) -> int:
-			if node.name not in observation: return UNOBSERVED
-			return node.val2idx[observation[val]]
 
-		value_row = torch.tensor([[ val_idx(node) for node in self.nodes ]])
+		observation_tensors = []
+		for observation in observations:
+			for k in observation:
+				assert k in self.name2node, f"Unrecognized random variable: {k}"
+
+			def val_idx(node: RandVar) -> int:
+				if node.name not in observation: return UNOBSERVED
+				return node.val2idx[observation[node.name]]
+			observation_tensors.append([ val_idx(node) for node in self.nodes ])
+
+		value_row = torch.tensor(observation_tensors)
 		masked_observation = torch.masked.MaskedTensor(value_row, mask=(value_row != UNOBSERVED))
 	
-		print(f"{masked_observation=}")
 		posterior = self.model.predict_proba(masked_observation)
-		print(f"{posterior=}")
+		# Format: posterior[node_idx][obs_idx][val_idx] = P(node_idx = val_idx) for observation obs_idx
+
+		result = []
+		for obs_idx, _ in enumerate(observations):
+			result_row: Dict[VarName, Val2Prob] = { node.name : {} for node in self.nodes }
+			for node_idx, node in enumerate(self.nodes):
+				result_row[node.name] = { 
+					val_name : float(posterior[node_idx][obs_idx][val_idx])
+					for val_idx, val_name in enumerate(node.idx2val)
+				}
+			result.append(result_row)
+
+		# TODO: test with an actual n > 1 batch
+		return result
+
+
+	def predict(self, observations: Dict[VarName, Value]) -> Dict[VarName, Val2Prob]:
+		r = self.predict_batch([observations])
+
+		assert 1 == len(r)
+		return r[0]
 	
 
 #X_masked=MaskedTensor(
@@ -149,7 +175,8 @@ net = BayesianNetwork([clouds, zeus, rain, sprinkler, wet])
 
 def test(observation):
 	print(f"# Observation = {observation}")
-	net.predict(observation, [])
+	print(net.predict(observation))
 
 test({})
-test({'Z': 'T'})
+#test({'bogus_name': 'T'})
+test({'zeus': 'T'})
