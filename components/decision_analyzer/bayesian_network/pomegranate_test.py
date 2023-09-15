@@ -1,29 +1,33 @@
 import numpy as np
-from pomegranate.distributions import Categorical, ConditionalCategorical
-from pomegranate.bayesian_network import BayesianNetwork
+import torch
+#from pomegranate.distributions import Categorical, ConditionalCategorical
+#from pomegranate.bayesian_network import BayesianNetwork
+import pomegranate.distributions, pomegranate.bayesian_network
 from typing import List, Tuple, Dict, Union
 
 RandVar = Union['DiscreteDistribution', 'ConditionalProbabilityTable']
 Value = str
+VarName = str
+Probability = float
 Assignment = Dict[RandVar, Value]
-Val2Prob = Dict[Value, float]
+Val2Prob = Dict[Value, Probability]
 
-class DiscreteDistribution:
+class DistributionPrior:
 	def __init__(self, name: str, probs: Val2Prob) -> None:
 		self.name = name
 		self.parents: List[RandVar] = [] # always empty. for compatability with ConditionalProbabilityTable
 		self.val2idx = { v:idx for idx,v in enumerate(probs.keys()) }
 		self.idx2val = list(probs.keys())
-		self.probs = Categorical([list(probs.values())])
+		self.probs = pomegranate.distributions.Categorical([list(probs.values())])
 
 
-class ConditionalProbabilityTable:
+class DistributionConditional:
 	def __init__(self, name: str, values: List[str], parents: List[RandVar], probs: List[Tuple[Assignment, Val2Prob]]) -> None:
 		""" Each row of probs is ({parent0_obj: val, parent1_obj: val, ...}, [P(self=val0), P(self=val1), ...]) """
 
 		BOGUSVAL = -42
 		self.name = name
-		self.parents = parents
+		self.parents: List[RandVar] = parents
 		self.val2idx = { v:idx for idx,v in enumerate(values) }
 		self.idx2val = values
 
@@ -53,25 +57,85 @@ class ConditionalProbabilityTable:
 
 		print(table.shape)
 		print(table)
-		self.probs = ConditionalCategorical([table])
+		self.probs = pomegranate.distributions.ConditionalCategorical([table])
+
+class BayesianNetwork:
+	def __init__(self, nodes: List[RandVar]) -> None:
+		# Put nodes in a topological order
+		# TODO: O(N^2), but that might be unavoidable
+		remaining: Set[RandVar] = set(nodes)
+		def get_next() -> RandVar:
+			for node in remaining:
+				if all(parent not in remaining for parent in node.parents):
+					return node
+			assert False
+
+		self.nodes: List[Node] = []
+		while len(remaining):
+			node = get_next()
+			remaining.remove(node)
+			self.nodes.append(node)
+			
+		# Get edge list
+		node2idx = { node:idx for idx,node in enumerate(self.nodes) }
+
+		self.name2node = { node.name : node for node in self.nodes }
+
+		self.edges: List[Tuple[int,int]] = []
+		for idx, node in enumerate(self.nodes):
+			for parent in node.parents:
+				self.edges.append((parent, node))
+	
+		# Create model
+		self.model = pomegranate.bayesian_network.BayesianNetwork(
+			[ a.probs for a in self.nodes], 
+			[ (a[0].probs, a[1].probs) for a in self.edges ])
+	
+	
+	def predict(self, observation: Dict[VarName, Value], vars_to_predict: List[VarName]) -> Dict[VarName, Val2Prob]:
+		UNOBSERVED = -1 # may not be a legal value. i.e. must be negative
+		def val_idx(node: RandVar) -> int:
+			if node.name not in observation: return UNOBSERVED
+			return node.val2idx[observation[val]]
+
+		value_row = torch.tensor([[ val_idx(node) for node in self.nodes ]])
+		masked_observation = torch.masked.MaskedTensor(value_row, mask=(value_row != UNOBSERVED))
+	
+		print(f"{masked_observation=}")
+		posterior = self.model.predict_proba(masked_observation)
+		print(f"{posterior=}")
+	
+
+#X_masked=MaskedTensor(
+#  [
+#    [0,       --],
+#    [      --, 0],
+#    [0, 0],
+#    [      --,       --]
+#  ]
+#)
 
 
-clouds = DiscreteDistribution('clouds', { 'F': 0.5, 'T': 0.5 })
-zeus = DiscreteDistribution('zeus', { 'F': 0.8, 'T': 0.2 })
+		# If I'm reading this right, each row of the output will be a separate random variable.
+		# And the columns of each will vary (not for sprinkler), and match the number of values for that var
+	
+
+clouds = DistributionPrior('clouds', { 'F': 0.5, 'T': 0.5 })
+zeus = DistributionPrior('zeus', { 'F': 0.8, 'T': 0.2 })
 
 # first n entries are the parents, presumably in order. Last entry is the current node.
 # docs don't mention this, but it's consistent with the example
-rain = ConditionalProbabilityTable('rain', [ 'F', 'T' ], [ clouds, zeus ], [
+rain = DistributionConditional('rain', [ 'F', 'T' ], [ clouds, zeus ], [
 	({ clouds: 'F', zeus: 'F' }, { 'F': 0.8, 'T': 0.2 } ),
 	({ clouds: 'F', zeus: 'T' }, { 'F': 0.5, 'T': 0.5 } ),
 	({ clouds: 'T', zeus: 'F' }, { 'F': 0.2, 'T': 0.8 } ),
 	({ clouds: 'T', zeus: 'T' }, { 'F': 0.1, 'T': 0.9 } ) ])
 
-sprinkler = ConditionalProbabilityTable('sprinkler', [ 'F', 'T' ], [ rain ], [
+sprinkler = DistributionConditional('sprinkler', [ 'F', 'T' ], [ rain ], [
 	({ rain: 'F' }, { 'F': 0.5, 'T': 0.5 } ),
 	({ rain: 'T' }, { 'F': 0.1, 'T': 0.9 } ) ])
 
-wet = ConditionalProbabilityTable('wet', [ 'F', 'T' ], [ rain, sprinkler ], [
+wet = DistributionConditional('wet', [ 'F', 'T' ], [ rain, sprinkler ], [
 	({ rain: 'F', sprinkler: 'F'}, { 'F': 1.0, 'T': 0.0 } ),
 	({ rain: 'F', sprinkler: 'T'}, { 'F': 0.1, 'T': 0.9 } ),
 	({ rain: 'T', sprinkler: 'F'}, { 'F': 0.1, 'T': 0.9 } ),
@@ -80,22 +144,12 @@ wet = ConditionalProbabilityTable('wet', [ 'F', 'T' ], [ rain, sprinkler ], [
 # TODO: ctors should verify that table contains an entry for every parent and nothing else,
 # and that the second part of the tuple has the values and nothing else
 
-def get_edge_list(nodes: List[RandVar]) -> List[Tuple[int, int]]:
-	node2idx = { node:idx for idx,node in enumerate(nodes) }
-
-	edges: List[Tuple[int,int]] = []
-	for idx, node in enumerate(nodes):
-		for parent in node.parents:
-			edges.append((parent.probs, node.probs))
-	return edges
-
 # TODO: compute edge set from nodes
-nodes = [clouds, zeus, rain, sprinkler, wet]
-edges = get_edge_list(nodes)
-for node in nodes:
-	print(f"# {node.name}\n{node.probs}\n\n")
-print(edges)
-def name(idx: int) -> str:
-	return nodes[idx].name
-model = BayesianNetwork([ a.probs for a in nodes], edges)
+net = BayesianNetwork([clouds, zeus, rain, sprinkler, wet])
 
+def test(observation):
+	print(f"# Observation = {observation}")
+	net.predict(observation, [])
+
+test({})
+test({'Z': 'T'})
