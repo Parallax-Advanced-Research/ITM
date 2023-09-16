@@ -96,7 +96,10 @@ class Bayesian_Net:
 			return
 		gnb.showBN(self.bn, size='9')
 
-	def infer(self, observation: Dict[RandVar, Value]) -> Dict[RandVar, Dict[Value, float]]:
+	def predict(self, observation: Dict[RandVar, Value]) -> Dict[RandVar, Dict[Value, float]]:
+		""" RandVar and Value are both strings. And the float is a probability
+			Usage: bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
+		"""
 		ie = pyAgrum.LazyPropagation(self.bn)
 		ie.setEvidence(observation)
 		result = {}
@@ -107,20 +110,21 @@ class Bayesian_Net:
 
 bn = Bayesian_Net('bayes_net.json')
 bn.display()
-a = bn.infer({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'true'})
+a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'true'})
 print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.infer({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'false'})
+a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'false'})
 print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.infer({'explosion': 'true'})
+a = bn.predict({'explosion': 'true'})
 print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.infer({'explosion': 'false'})
+a = bn.predict({'explosion': 'false'})
 print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.infer({})
+a = bn.predict({})
 print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.infer({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
+a = bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
 print(f"{a['shock']=}, {a['death']=}")
+
