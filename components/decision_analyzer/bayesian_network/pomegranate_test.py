@@ -85,6 +85,8 @@ class BayesianNetwork:
 		for idx, node in enumerate(self.nodes):
 			for parent in node.parents:
 				self.edges.append((parent, node))
+
+		print("Edges: ", [f"{a[0].name} -> {a[1].name}" for a in self.edges])
 	
 		# Create model
 		self.model = pomegranate.bayesian_network.BayesianNetwork(
@@ -146,26 +148,26 @@ class BayesianNetwork:
 		# And the columns of each will vary (not for sprinkler), and match the number of values for that var
 	
 
-clouds = DistributionPrior('clouds', { 'F': 0.5, 'T': 0.5 })
-zeus = DistributionPrior('zeus', { 'F': 0.8, 'T': 0.2 })
+zeus = DistributionPrior('zeus', { 'F': 0.85, 'T': 0.15 })
+clouds = DistributionPrior('clouds', { 'F': 0.75, 'T': 0.25 })
 
 # first n entries are the parents, presumably in order. Last entry is the current node.
 # docs don't mention this, but it's consistent with the example
 rain = DistributionConditional('rain', [ 'F', 'T' ], [ clouds, zeus ], [
-	({ clouds: 'F', zeus: 'F' }, { 'F': 0.8, 'T': 0.2 } ),
-	({ clouds: 'F', zeus: 'T' }, { 'F': 0.5, 'T': 0.5 } ),
-	({ clouds: 'T', zeus: 'F' }, { 'F': 0.2, 'T': 0.8 } ),
+	({ clouds: 'F', zeus: 'F' }, { 'F': 0.97, 'T': 0.03 } ),
+	({ clouds: 'F', zeus: 'T' }, { 'F': 0.4, 'T': 0.6 } ),
+	({ clouds: 'T', zeus: 'F' }, { 'F': 0.32, 'T': 0.68 } ),
 	({ clouds: 'T', zeus: 'T' }, { 'F': 0.1, 'T': 0.9 } ) ])
 
 sprinkler = DistributionConditional('sprinkler', [ 'F', 'T' ], [ rain ], [
-	({ rain: 'F' }, { 'F': 0.5, 'T': 0.5 } ),
-	({ rain: 'T' }, { 'F': 0.1, 'T': 0.9 } ) ])
+	({ rain: 'F' }, { 'F': 0.55, 'T': 0.45 } ),
+	({ rain: 'T' }, { 'F': 0.88, 'T': 0.12 } ) ])
 
 wet = DistributionConditional('wet', [ 'F', 'T' ], [ rain, sprinkler ], [
 	({ rain: 'F', sprinkler: 'F'}, { 'F': 1.0, 'T': 0.0 } ),
-	({ rain: 'F', sprinkler: 'T'}, { 'F': 0.1, 'T': 0.9 } ),
-	({ rain: 'T', sprinkler: 'F'}, { 'F': 0.1, 'T': 0.9 } ),
-	({ rain: 'T', sprinkler: 'T'}, { 'F': 0.01, 'T': 0.99 } ) ])
+	({ rain: 'F', sprinkler: 'T'}, { 'F': 0.21, 'T': 0.79 } ),
+	({ rain: 'T', sprinkler: 'F'}, { 'F': 0.18, 'T': 0.82 } ),
+	({ rain: 'T', sprinkler: 'T'}, { 'F': 0.02, 'T': 0.98 } ) ])
 
 # TODO: ctors should verify that table contains an entry for every parent and nothing else,
 # and that the second part of the tuple has the values and nothing else
@@ -180,3 +182,4 @@ def test(observation):
 test({})
 #test({'bogus_name': 'T'})
 test({'zeus': 'T'})
+#test({'zeus': 'T', 'rain': 'F'})
