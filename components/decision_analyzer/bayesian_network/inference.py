@@ -3,6 +3,9 @@ import pyAgrum
 import json
 from typing import Dict, Any, List
 
+RandVar = str
+Value = str
+
 notebook = False
 try:
 	from IPython import get_ipython
@@ -16,7 +19,8 @@ except:
 
 class Bayesian_Net:
 	bn: pyAgrum.BayesNet
-
+	node_names: List[str]
+	values: Dict[str, List[str]] # in order of offset
 
 	def __init__(self, json_fname: str) -> None:
 		def get_topological_order(j: Dict[str, Any]) -> List[str]:
@@ -43,10 +47,16 @@ class Bayesian_Net:
 
 			values = [''] * len(defn['values'])
 			for val,offset in defn['values'].items():
-				assert '' == values[offset], 'duplicate offset'
 				assert ('|' not in val) and ('{' not in val) and ('}' not in val), \
 					f"Invalid value: {val} (doesn't work with pyagrum's fast syntax"
-				values[offset] = val
+				min_offset = min(defn['values'].values())
+				idx = offset - min_offset
+				assert idx >= 0
+				assert '' == values[idx], 'duplicate offset'
+				values[idx] = val
+
+			assert name not in self.values
+			self.values[name] = values
 
 			fast_desc = "%s{%s}" % (name, '|'.join(values)) 
 			print(fast_desc)
@@ -60,25 +70,57 @@ class Bayesian_Net:
 		self.bn = pyAgrum.BayesNet()
 
 		# add nodes
-		node_names = get_topological_order(j)
-		for name in node_names:
+		self.node_names = get_topological_order(j)
+		self.values = {}
+		for name in self.node_names:
 			add_node(name, j[name])
 
 		# add edges
 		edges = []
-		for name in node_names:
+		for name in self.node_names:
 			for parent in j[name]['parents']:
 				edges.append((parent, name))
 		self.bn.addArcs(edges)
 
 		# add cpts
+		for name in self.node_names:
+			for dist in j[name]['distribution']:
+				assignment = dist['parent_assignment']
+				ordered_probs = [ dist['probabilities'][val] for val in self.values[name] ]
+				#print(f"Ordered probs for {name}|{assignment}: {ordered_probs}")
+				self.bn.cpt(name)[assignment] = ordered_probs
 		
 	def display(self):
 		if not notebook:
 			print("Needs to be in a jupyter notebook for display")
 			return
 		gnb.showBN(self.bn, size='9')
-		
+
+	def infer(self, observation: Dict[RandVar, Value]) -> Dict[RandVar, Dict[Value, float]]:
+		ie = pyAgrum.LazyPropagation(self.bn)
+		ie.setEvidence(observation)
+		result = {}
+		for node in self.node_names:
+			assert node not in result
+			result[node] = { a[0]: a[1] for a in zip(self.values[node], ie.posterior(node)[:]) }
+		return result
 
 bn = Bayesian_Net('bayes_net.json')
 bn.display()
+a = bn.infer({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'true'})
+print(f"{a['shock']=}, {a['death']=}")
+
+a = bn.infer({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'false'})
+print(f"{a['shock']=}, {a['death']=}")
+
+a = bn.infer({'explosion': 'true'})
+print(f"{a['shock']=}, {a['death']=}")
+
+a = bn.infer({'explosion': 'false'})
+print(f"{a['shock']=}, {a['death']=}")
+
+a = bn.infer({})
+print(f"{a['shock']=}, {a['death']=}")
+
+a = bn.infer({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
+print(f"{a['shock']=}, {a['death']=}")
