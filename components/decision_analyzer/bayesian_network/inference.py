@@ -5,6 +5,7 @@ from typing import Dict, Any, List
 
 RandVar = str
 Value = str
+TESTING = False
 
 notebook = False
 try:
@@ -59,7 +60,7 @@ class Bayesian_Net:
 			self.values[name] = values
 
 			fast_desc = "%s{%s}" % (name, '|'.join(values)) 
-			print(fast_desc)
+			#print(fast_desc)
 			self.bn.add(fast_desc)
 
 
@@ -109,22 +110,24 @@ class Bayesian_Net:
 		return result
 
 bn = Bayesian_Net('bayes_net.json')
-bn.display()
-a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'true'})
-print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'false'})
-print(f"{a['shock']=}, {a['death']=}")
+if TESTING:
+	bn.display()
+	a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'true'})
+	print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.predict({'explosion': 'true'})
-print(f"{a['shock']=}, {a['death']=}")
+	a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'false'})
+	print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.predict({'explosion': 'false'})
-print(f"{a['shock']=}, {a['death']=}")
+	a = bn.predict({'explosion': 'true'})
+	print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.predict({})
-print(f"{a['shock']=}, {a['death']=}")
+	a = bn.predict({'explosion': 'false'})
+	print(f"{a['shock']=}, {a['death']=}")
 
-a = bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
-print(f"{a['shock']=}, {a['death']=}")
+	a = bn.predict({})
+	print(f"{a['shock']=}, {a['death']=}")
+
+	a = bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
+	print(f"{a['shock']=}, {a['death']=}")
 
