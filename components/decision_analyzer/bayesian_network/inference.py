@@ -1,7 +1,7 @@
 import pyAgrum
 #import pyAgrum.causal as csl
 import json
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Set
 
 RandVar = str
 Value = str
@@ -10,10 +10,9 @@ TESTING = False
 notebook = False
 try:
 	from IPython import get_ipython
-	if get_ipython() is not None and 'IPKernelApp' in get_ipython().config:
-		from IPython.display import display, Math, Latex,HTML
-		import pyAgrum.lib.notebook as gnb
-		#import pyAgrum.causal.notebook as cslnb
+	ipy = get_ipython() # type: ignore[no-untyped-call]
+	if ipy is not None and 'IPKernelApp' in ipy.config:
+		import pyAgrum.lib.notebook as gnb # pylint: disable=ungrouped-imports
 		notebook = True
 except:
 	pass
@@ -30,6 +29,7 @@ class Bayesian_Net:
 			remaining: Set[str] = set(node_names)
 			def get_next() -> str:
 				for node in remaining:
+					assert type(node) is str
 					if all(parent not in remaining for parent in j[node]['parents']):
 						return node
 				assert False
@@ -90,8 +90,8 @@ class Bayesian_Net:
 				ordered_probs = [ dist['probabilities'][val] for val in self.values[name] ]
 				#print(f"Ordered probs for {name}|{assignment}: {ordered_probs}")
 				self.bn.cpt(name)[assignment] = ordered_probs
-		
-	def display(self):
+	
+	def display(self) -> None:
 		if not notebook:
 			print("Needs to be in a jupyter notebook for display")
 			return
