@@ -109,9 +109,9 @@ class Bayesian_Net:
 			result[node] = { a[0]: a[1] for a in zip(self.values[node], ie.posterior(node)[:]) }
 		return result
 
-bn = Bayesian_Net('bayes_net.json')
-
 if TESTING:
+	bn = Bayesian_Net('bayes_net.json')
+
 	bn.display()
 	a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'true'})
 	print(f"{a['shock']=}, {a['death']=}")
