@@ -60,7 +60,7 @@ class Casualty:
             demographics=Demographics(**data['demographics']),
             vitals=Vitals(**data['vitals']),
             tag=data['tag'],
-            assessed=data['assessed'],
+            assessed=data.get('assessed', None),
             unstructured=data['unstructured'],
             relationship=data['relationship']
         )
