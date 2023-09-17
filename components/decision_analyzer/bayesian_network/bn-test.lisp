@@ -18,6 +18,8 @@ S(W1 | S0 R1) = 0.9
 P(W1 | S1 R0) = 0.9
 S(W1 | S1 R1) = 0.99
 
+; that should probably be conditioned on rain, but leaving it in place in case
+; the later math uses this version
 P(S1 | C0) = 0.5
 P(S1 | C1) = 0.1
 
@@ -52,7 +54,7 @@ Rain:
 P(R1 | C0 Z0) = 0.2, so 5 observations
 P(R1 | C1 Z0) = 0.8, so 5 observations
 P(R1 | C0 Z1) = 0.5, so 2 observations
-P(R1 | C1 Z1) = 0.6, so 10 observations
+P(R1 | C1 Z1) = 0.7, so 10 observations
 LCM(110, 5+5+2+10) = 110
 
 Clouds:
@@ -67,6 +69,11 @@ As far as the code goes, we should be able to do the nodes in any order as long 
 since everything depends only on its children, and it'll call the function on them to either calculate or retrieve, as needed.
 
 TODO: code will sanity check by writing a bunch of random probability tables and seeing that the resulting probability tables are within epsilon everywhere.
+
+Once we know the number of observations, our best bet is probably starting at the leaves and working up.
+We know exactly what number of observations are there, and that in turn will send observations up the tree.
+Then go up a node, and *that* node takes the observations it has (which also has info about what the child is),
+and distributes them among the parent assignments.
 
 (defun fractional-component (x)
     (- x (ffloor x)))

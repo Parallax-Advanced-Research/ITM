@@ -1,0 +1,1 @@
+from .bn_analyzer import BayesNetDiagnosisAnalyzer

@@ -40,7 +40,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             stdspread = DecisionMetric("StdSpread", "", float, std_spread)
 
             metrics = {avgspread.name: avgspread, stdspread.name: stdspread}
-            decision.metrics = metrics
+            decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
         return analysis
             
