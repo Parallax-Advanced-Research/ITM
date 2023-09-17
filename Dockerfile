@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM python:3.10
 WORKDIR /root
 ADD components/ /root/tad/components
 ADD data/ /root/tad/data
