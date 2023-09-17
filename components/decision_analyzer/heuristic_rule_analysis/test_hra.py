@@ -6,7 +6,7 @@ import hra
 class TestHRA(unittest.TestCase):
 
     def setUp(self):
-        self.hra = hra.HRA()
+        self.hra = hra.HeuristicRuleAnalyzer()
 
     def test_take_the_best_one_treatment_space(self):
         result = self.hra.take_the_best("scene_one_treatment.json")

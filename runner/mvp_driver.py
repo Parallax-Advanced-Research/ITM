@@ -3,7 +3,6 @@ from components.decision_selector.cbr import CBRDecisionSelector, Case
 from components.elaborator.default import BaselineElaborator
 from components.decision_analyzer.default import BaselineDecisionAnalyzer
 from .driver import Driver
-from components.hra import hra
 import json
 
 
