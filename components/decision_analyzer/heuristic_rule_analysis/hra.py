@@ -1044,7 +1044,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             analysis = {}
             
             for decision in probe.decisions:
-                if ele.id == decision.value.params['casualty']:
+                if ele.id == decision.value.params.get('casualty', None):
                     if decision.value.name == "CHECK_ALL_VITALS":
                         self.update_metrics(decision, hra_results['decision_hra_dict'], decision.value.name, 
                             ele.id == priority_casualty)

@@ -16,6 +16,8 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         analysis = {}
         for decision in probe.decisions:
             ob = self.make_observation(probe.state, decision.value)
+            if ob is None:
+                continue
             predictions = self.bn.predict(ob)
 
             metrics = []
@@ -38,12 +40,12 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         return analysis
             
     def make_observation(self, state: State, a: Action):
-        patient = a.params['casualty']
+        patient = a.params.get('casualty',None)
         if patient is None:
-            raise Error("No casualty in action: " + str(a))
+            return None
         cas = self.find_casualty(patient, state)
         if cas is None:
-            raise Error("No casualty in state with name: " + patient)
+            raise Exception("No casualty in state with name: " + patient)
         data = {
             'hrpmin': self.get_hrpmin(cas),
             'pain': self.get_pain(cas),

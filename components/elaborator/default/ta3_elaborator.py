@@ -16,6 +16,8 @@ class TA3Elaborator(Elaborator):
                 to_return += [d]
             elif _name == 'TAG_CASUALTY':
                 to_return += self._tag(probe.state.casualties, d)
+            elif _name == 'END_SCENARIO':
+                to_return += [d]
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
 

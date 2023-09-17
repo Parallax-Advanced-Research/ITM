@@ -26,7 +26,8 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         analysis = {}
         for decision in probe.decisions:
             cue = self.make_observation(scen, decision.value)
-
+            if cue is None:
+                continue
             (recollection, _) = self._hems.remember(self._hems.get_eltm(), lst(cue), Symbol('+', 'HEMS'), 1, True)
             spreads = []
             for cpd in recollection:
@@ -45,12 +46,12 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         return analysis
             
     def make_observation(self, scen: Scenario, a: Action):
-        patient = a.params['casualty']
+        patient = a.params.get('casualty', None)
         if patient is None:
-            raise Error("No casualty in action: " + str(a))
+            return None
         cas = self.find_casualty(patient, scen.state)
         if cas is None:
-            raise Error("No casualty in state with name: " + patient)
+            raise Exception("No casualty in state with name: " + patient)
         data = [
             #('rank', cas.demographics.rank, 4),
              ('hrpmin', self.get_hrpmin(cas), 5),
