@@ -54,7 +54,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             tree_hash[dec_str] = dec_severity
         for decision in probe.decisions:
             probe_dec_str = decision_to_actstr(decision)
-            if probe_dec_str in tree_hash.keys():
+            if probe_dec_str in tree_hash.keys() and tree_hash[probe_dec_str] != 0:
                 value = tree_hash[probe_dec_str]
             else:
                 value = 9.9

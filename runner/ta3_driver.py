@@ -16,7 +16,7 @@ class TA3Driver(Driver):
             selector = BaselineDecisionSelector()
         elaborator = TA3Elaborator()
         
-        mc = mca.MonteCarloAnalyzer(max_rollouts=5000, max_depth=2)
+        mc = mca.MonteCarloAnalyzer(max_rollouts=500, max_depth=2)
         # ebd = EventBasedDiagnosisAnalyzer() # LISP REQUIREMENT NOT INCLUDED IN INSTALLATION INSTRUCTIONS
         hra = HeuristicRuleAnalyzer()
         analyzers = [mc, hra] # ebd]

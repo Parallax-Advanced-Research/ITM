@@ -135,6 +135,7 @@ def get_action_all(casualties: list[Casualty], action_str: str) -> list[tuple]:
     if action_str == Actions.SITREP.value:
         one_tuple = (Actions.SITREP.value,)
         actions.append(one_tuple)  # sitrep can be done on casualty or on scene
+
     return actions
 
 
@@ -199,8 +200,11 @@ def create_tm_actions(actions: list[tuple]) -> list[TinymedAction]:
         elif action == Actions.TAG_CASUALTY.value:
             casualty, tag = act_tuple[1:]
             tm_action = TinymedAction(action=action, casualty_id=casualty, tag=tag)
-        else:
-            tm_action = TinymedAction(action=action)
+        elif action == Actions.SITREP.value:
+            if len(act_tuple) == 1:  # Only sitrep
+                tm_action = TinymedAction(action=action)
+            else:
+                tm_action = TinymedAction(action=action, casualty_id=act_tuple[1])
         tm_actions.append(tm_action)
     return tm_actions
 
