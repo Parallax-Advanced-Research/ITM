@@ -89,15 +89,17 @@ class Demographics:
 
 
 class Injury:
-    def __init__(self, name: str, location: str, severity: float):
+    def __init__(self, name: str, location: str, severity: float, treated: float = False):
         self.name = name
         self.location = location
         self.severity = severity
         self.time_elapsed: float = 0.0
+        self.treated = treated
 
     def __eq__(self, other: 'Injury'):
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
-                self.time_elapsed == other.time_elapsed)
+                self.time_elapsed == other.time_elapsed) and (self.treated == other.treated)
+
 
 class Vitals:
     def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int):

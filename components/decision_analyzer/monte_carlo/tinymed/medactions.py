@@ -37,13 +37,15 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
         if ci.location == action.location and not fail and supply_location_logical and supply_injury_logical:
             ci.severity = MedicalOracle.SUCCESSFUL_SEVERITY[action.supply]
             ci.time_elapsed += time_taken
+            ci.treated = True
         else:
             update_injury_map[ci.name](ci, time_taken)
     return time_taken
 
 
 def update_generic_injury(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * MedicalOracle.INJURY_UPDATE_TIMES[i.name])
+    if not i.treated:
+        i.severity += (elapsed * MedicalOracle.INJURY_UPDATE_TIMES[i.name])
     i.time_elapsed += elapsed
 
 
