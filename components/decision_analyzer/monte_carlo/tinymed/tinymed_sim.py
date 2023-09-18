@@ -2,7 +2,8 @@ from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty, Supplies, Actions
 from components.decision_analyzer.monte_carlo.tinymed.medactions import (supply_dict_to_list, get_possible_actions,
                                                                          create_tm_actions, trim_tm_actions, action_map,
-                                                                         get_starting_supplies, get_starting_casualties)
+                                                                         get_starting_supplies, get_TMNT_demo_casualties,
+                                                                         remove_non_injuries, MedicalOracle)
 from copy import deepcopy
 from .tinymed_state import TinymedState, TinymedAction
 import util.logger
@@ -25,8 +26,7 @@ class TinymedSim(MCSim):
     def exec(self, state: TinymedState, action: TinymedAction) -> list[SimResult]:
         supplies: dict[str, int] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
-
-        new_state = action_map[action.action](casualties, supplies, action, self._rand)
+        new_state = action_map[action.action](casualties, supplies, action, self._rand, state.time)
         outcomes = []
         for new_s in new_state:
             outcome = SimResult(action=action, outcome=new_s)
@@ -39,6 +39,7 @@ class TinymedSim(MCSim):
         actions: list[tuple] = get_possible_actions(casualties, supplies)
         tinymed_actions: list[TinymedAction] = create_tm_actions(actions)
         tinymed_actions_trimmed: list[TinymedAction] = trim_tm_actions(tinymed_actions)
+        tinymed_actions_trimmed = remove_non_injuries(state, tinymed_actions_trimmed)
         return tinymed_actions_trimmed
 
     def reset(self):
