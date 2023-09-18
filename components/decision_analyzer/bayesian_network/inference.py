@@ -5,17 +5,6 @@ from typing import Dict, Any, List, Set
 
 RandVar = str
 Value = str
-TESTING = False
-
-notebook = False
-try:
-	from IPython import get_ipython
-	ipy = get_ipython() # type: ignore[no-untyped-call]
-	if ipy is not None and 'IPKernelApp' in ipy.config:
-		import pyAgrum.lib.notebook as gnb # pylint: disable=ungrouped-imports
-		notebook = True
-except:
-	pass
 
 class Bayesian_Net:
 	bn: pyAgrum.BayesNet
@@ -108,26 +97,4 @@ class Bayesian_Net:
 			assert node not in result
 			result[node] = { a[0]: a[1] for a in zip(self.values[node], ie.posterior(node)[:]) }
 		return result
-
-if TESTING:
-	bn = Bayesian_Net('bayes_net.json')
-
-	bn.display()
-	a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'true'})
-	print(f"{a['shock']=}, {a['death']=}")
-
-	a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'false'})
-	print(f"{a['shock']=}, {a['death']=}")
-
-	a = bn.predict({'explosion': 'true'})
-	print(f"{a['shock']=}, {a['death']=}")
-
-	a = bn.predict({'explosion': 'false'})
-	print(f"{a['shock']=}, {a['death']=}")
-
-	a = bn.predict({})
-	print(f"{a['shock']=}, {a['death']=}")
-
-	a = bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
-	print(f"{a['shock']=}, {a['death']=}")
 
