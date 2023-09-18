@@ -253,7 +253,7 @@ def remove_non_injuries(state: TinymedState, tinymedactions: list[TinymedAction]
     return list(set(retlist))
 
 
-def get_TMNT_demo_casualties():
+def get_TMNT_demo_casualties() -> list[Casualty]:
     wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
     minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=3.0)
     moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=5.0)
@@ -308,7 +308,7 @@ def get_TMNT_demo_casualties():
     return casualties
 
 
-def get_starting_supplies():
+def get_TMNT_supplies() -> dict[str, int]:
     supplies = {
         Supplies.TOURNIQUET.value: 3,
         Supplies.PRESSURE_BANDAGE.value: 2,

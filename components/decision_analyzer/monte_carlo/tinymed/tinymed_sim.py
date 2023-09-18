@@ -2,7 +2,7 @@ from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty, Supplies, Actions
 from components.decision_analyzer.monte_carlo.tinymed.medactions import (supply_dict_to_list, get_possible_actions,
                                                                          create_tm_actions, trim_tm_actions, action_map,
-                                                                         get_starting_supplies, get_TMNT_demo_casualties,
+                                                                         get_TMNT_supplies, get_TMNT_demo_casualties,
                                                                          remove_non_injuries, MedicalOracle)
 from copy import deepcopy
 from .tinymed_state import TinymedState, TinymedAction
