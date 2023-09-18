@@ -54,8 +54,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         for decision in probe.decisions:
             probe_dec_str = decision_to_actstr(decision)
             if probe_dec_str in tree_hash.keys():
-                value =\
-                    tree_hash[probe_dec_str]
+                value = tree_hash[probe_dec_str]
             else:
                 value = 9.9
             metrics: DecisionMetrics = {"Severity": DecisionMetric(name="Severity",

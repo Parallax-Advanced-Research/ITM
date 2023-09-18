@@ -5,16 +5,13 @@ from .tinymed_enums import Casualty, Supplies, Actions, Locations, Tags, Injury,
     BreathingDescriptions, Demographics, Vitals
 import typing
 
-resolve_action = typing.Callable[[list[Casualty], dict[str, int], TinymedAction, random.Random], list[TinymedState]]
-resolve_injury = typing.Callable[[Casualty, dict[str, int], TinymedAction, random.Random], float]
-update_injury = typing.Callable[[Injury, float], None]
-
 
 def treatment_supply_match(action: TinymedAction) -> bool:
     if action.supply not in [Supplies.DECOMPRESSION_NEEDLE.value,
                              Supplies.NASOPHARYNGEAL_AIRWAY.value] or action.supply == Supplies.TOURNIQUET.value:
         return False
     return True
+
 
 def supply_injury_match(supply: str, injury: str) -> bool:
     if supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value, Supplies.TOURNIQUET.value]:
@@ -26,6 +23,7 @@ def supply_injury_match(supply: str, injury: str) -> bool:
             return True
         return False
     return True
+
 
 def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
                             action: TinymedAction, rng: random.Random) -> float:
@@ -56,16 +54,9 @@ def find_casualty(action: TinymedAction, casualties: list[Casualty]) -> Casualty
             return casualty
     return None
 
-# def find_injuries(action: TinymedAction, casualties: list[Casualty]) -> list[Injury] | None:
-#     c_id = action.casualty_id
-#     for casualty in casualties:
-#         if casualty.id == c_id:
-#             return casualty.injuries
-#     return None
-
 
 def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
+                            action: TinymedAction, rng: random.Random, start_time: float) -> list[TinymedState]:
     c = find_casualty(action, casualties)
     time_taken = treatment_map[action.supply](c, supplies, action, rng)
     supplies[action.supply] -= 1
@@ -75,26 +66,26 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
         casualty_injuries: list[Injury] = c2.injuries
         for ci in casualty_injuries:
             update_injury_map[ci.name](ci, time_taken)
-    new_state = TinymedState(casualties=casualties, supplies=supplies, time=time_taken)
+    new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
 
 def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
+                            action: TinymedAction, rng: random.Random, start_time: float) -> list[TinymedState]:
     if action.casualty_id is None:
         # Apply for all if not other instructions
         retlist = []
         for c in casualties:
             action.casualty_id = c.id
-            retlist.extend(apply_singlecaualty_action(casualties, supplies, action, rng))
+            retlist.extend(apply_singlecaualty_action(casualties, supplies, action, rng, start_time))
         action.casualty_id = None
         return retlist
     else:
-        return apply_singlecaualty_action(casualties, supplies, action, rng)
+        return apply_singlecaualty_action(casualties, supplies, action, rng, start_time)
 
 
 def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
+                            action: TinymedAction, rng: random.Random, start_time: float) -> list[TinymedState]:
     c1 = find_casualty(action, casualties)
     time_taken = rng.choice(MedicalOracle.TIME_TAKEN[action.action])
     c1.tag = action.tag
@@ -102,58 +93,25 @@ def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
             update_injury_map[ci.name](ci, time_taken)
-    new_state = TinymedState(casualties=casualties, supplies=supplies, time=time_taken)
+    new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
 
 def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
+                            action: TinymedAction, rng: random.Random, start_time: float) -> list[TinymedState]:
     time_taken = rng.choice(MedicalOracle.TIME_TAKEN[action.action])
     for c in casualties:
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
             update_injury_map[ci.name](ci, time_taken)
-    new_state = TinymedState(casualties=casualties, supplies=supplies, time=time_taken)
+    new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
 
 def default_action(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
-    same_state = TinymedState(casualties, supplies, time=0)
+                            action: TinymedAction, rng: random.Random, start_time: float) -> list[TinymedState]:
+    same_state = TinymedState(casualties, supplies, time=start_time)
     return [same_state]
-
-
-treatment_map: typing.Mapping[str, resolve_injury] = {
-    Supplies.PRESSURE_BANDAGE.value: apply_generic_treatment,
-    Supplies.HEMOSTATIC_GAUZE.value: apply_generic_treatment,
-    Supplies.TOURNIQUET.value: apply_generic_treatment,
-    Supplies.DECOMPRESSION_NEEDLE.value: apply_generic_treatment,
-    Supplies.NASOPHARYNGEAL_AIRWAY.value: apply_generic_treatment
-}
-
-update_injury_map: typing.Mapping[str, update_injury] = {
-    Injuries.LACERATION.value: update_generic_injury,
-    Injuries.EAR_BLEED.value: update_generic_injury,
-    Injuries.FOREHEAD_SCRAPE.value: update_generic_injury,
-    Injuries.ASTHMATIC.value: update_generic_injury,
-    Injuries.PUNCTURE.value: update_generic_injury,
-    Injuries.SHRAPNEL.value: update_generic_injury,
-    Injuries.CHEST_COLLAPSE.value: update_generic_injury,
-    Injuries.AMPUTATION.value: update_generic_injury,
-    Injuries.BURN.value: update_generic_injury,
-}
-
-action_map: typing.Mapping[str, resolve_action] = {
-    Actions.APPLY_TREATMENT.value: apply_treatment_mappers,
-    Actions.CHECK_ALL_VITALS.value: apply_singlecaualty_action,
-    Actions.CHECK_PULSE.value: apply_singlecaualty_action,
-    Actions.CHECK_RESPIRATION.value: apply_singlecaualty_action,
-    Actions.DIRECT_MOBILE_CASUALTY.value: default_action,
-    Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
-    Actions.TAG_CASUALTY.value: apply_casualtytag_action,
-    Actions.SITREP.value: apply_zeroornone_action,
-    Actions.UNKNOWN.value: default_action
-}
 
 
 def get_treatment_actions(casualties: list[Casualty], supplies: list[str]) -> list[tuple]:
@@ -289,7 +247,7 @@ def remove_non_injuries(state: TinymedState, tinymedactions: list[TinymedAction]
     return list(set(retlist))
 
 
-def get_starting_casualties():
+def get_TMNT_demo_casualties():
     wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
     minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=3.0)
     moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=5.0)
@@ -353,6 +311,42 @@ def get_starting_supplies():
         Supplies.NASOPHARYNGEAL_AIRWAY.value: 3
     }
     return supplies
+
+resolve_action = typing.Callable[[list[Casualty], dict[str, int], TinymedAction, random.Random, int], list[TinymedState]]
+resolve_injury = typing.Callable[[Casualty, dict[str, int], TinymedAction, random.Random], float]
+update_injury = typing.Callable[[Injury, float], None]
+
+treatment_map: typing.Mapping[str, resolve_injury] = {
+    Supplies.PRESSURE_BANDAGE.value: apply_generic_treatment,
+    Supplies.HEMOSTATIC_GAUZE.value: apply_generic_treatment,
+    Supplies.TOURNIQUET.value: apply_generic_treatment,
+    Supplies.DECOMPRESSION_NEEDLE.value: apply_generic_treatment,
+    Supplies.NASOPHARYNGEAL_AIRWAY.value: apply_generic_treatment
+}
+
+update_injury_map: typing.Mapping[str, update_injury] = {
+    Injuries.LACERATION.value: update_generic_injury,
+    Injuries.EAR_BLEED.value: update_generic_injury,
+    Injuries.FOREHEAD_SCRAPE.value: update_generic_injury,
+    Injuries.ASTHMATIC.value: update_generic_injury,
+    Injuries.PUNCTURE.value: update_generic_injury,
+    Injuries.SHRAPNEL.value: update_generic_injury,
+    Injuries.CHEST_COLLAPSE.value: update_generic_injury,
+    Injuries.AMPUTATION.value: update_generic_injury,
+    Injuries.BURN.value: update_generic_injury,
+}
+
+action_map: typing.Mapping[str, resolve_action] = {
+    Actions.APPLY_TREATMENT.value: apply_treatment_mappers,
+    Actions.CHECK_ALL_VITALS.value: apply_singlecaualty_action,
+    Actions.CHECK_PULSE.value: apply_singlecaualty_action,
+    Actions.CHECK_RESPIRATION.value: apply_singlecaualty_action,
+    Actions.DIRECT_MOBILE_CASUALTY.value: default_action,
+    Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
+    Actions.TAG_CASUALTY.value: apply_casualtytag_action,
+    Actions.SITREP.value: apply_zeroornone_action,
+    Actions.UNKNOWN.value: default_action
+}
 
 
 class MedicalOracle:
