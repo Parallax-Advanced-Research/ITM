@@ -1,6 +1,6 @@
 from domain.ta3 import TA3State
 from components.decision_selector.default import HumanDecisionSelector
-from components.decision_selector.sept_cbr import CSVDecisionSelector
+from components.decision_selector.conv_case.case_based_decision_selector import CaseBasedDecisionSelector
 from components.elaborator.default import TA3Elaborator
 from components.decision_analyzer.default import BaselineDecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
@@ -15,7 +15,7 @@ class TA3Driver(Driver):
         if args.human:
             selector = HumanDecisionSelector()
         else:
-            selector = CSVDecisionSelector("data/sept/case_base.csv")
+            selector = CaseBasedDecisionSelector("temp/case_base.csv")
         elaborator = TA3Elaborator()
         if args.ebd:
             analyzer1 = EventBasedDiagnosisAnalyzer()
