@@ -5,8 +5,7 @@ import argparse
 def test_endpoint(args):
     # args.model = 'bbn'
     # args.endpoint = '127.0.0.1:8080'
-    # args.variant = 'aligned'
-
+    args.variant = 'aligned'
     tad.api_test(args)
 
 
