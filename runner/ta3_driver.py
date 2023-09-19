@@ -18,8 +18,8 @@ class TA3Driver(Driver):
         
         mc = mca.MonteCarloAnalyzer()
         # ebd = EventBasedDiagnosisAnalyzer() # LISP REQUIREMENT NOT INCLUDED IN INSTALLATION INSTRUCTIONS
-        hra = HeuristicRuleAnalyzer()
-        analyzers = [mc, hra] # ebd]
+        hra = HeuristicRuleAnalyzer() # This isnt working, no temp/newfile.json
+        analyzers = [mc]  # , hra] # ebd]
         super().__init__(elaborator, selector, analyzers)
 
     def _extract_state(self, dict_state: dict):
