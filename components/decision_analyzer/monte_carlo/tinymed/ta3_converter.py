@@ -104,15 +104,15 @@ def _convert_action(act: Action) -> TinymedAction:
         supply = act.params['treatment']
     if 'location' in act.params.keys():
         location = act.params['location']
-    return TinymedAction(action=act.id, casualty_id=act.casualty,
+    return TinymedAction(action=act.type, casualty_id=act.casualty,
                          supply=supply, location=location)
 
 
-def _reverse_convert_action(internal_action: TinymedAction) -> Action:
-    id_action = internal_action.action
-    action: Action = Action(id_action, '', internal_action.casualty_id, {}, {'casualty': internal_action.casualty_id,
-                                                               'location': internal_action.location,
-                                                               'treatment': internal_action.supply})
+def _reverse_convert_action(internal_action: TinymedAction, action_num: int) -> Action:
+    action: Action = Action(id='action_%d' % action_num, type=internal_action.action, casualty=internal_action.casualty_id,
+                            kdmas={}, params={'casualty': internal_action.casualty_id,
+                                              'location': internal_action.location,
+                                              'treatment': internal_action.supply})
     return action
 
 

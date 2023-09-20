@@ -37,6 +37,7 @@ class TMNTClient:
         self.init_state: TinymedState = TinymedState(casualties, supplies, time=0.0,
                                                         unstructured="Turtles in a half shell, TURTLE POWER!!!")
         self.current_state: TinymedState = self.init_state
+        self.simulator = TinymedSim(init_state=self.init_state)
         self.probe_count: int = 0
         self.max_actions: int = max_actions
 
@@ -50,11 +51,10 @@ class TMNTClient:
         state = state if state is not None else self.init_state
 
         ta3_state = reverse_convert_state(state)
-        sim = TinymedSim(init_state=state)
-        actions: list[TinymedAction] = sim.actions(state)
+        actions: list[TinymedAction] = self.simulator.actions(state)
         ta3_actions: list[Action] = []
-        for internal_action in actions:
-            ta3_action = _reverse_convert_action(internal_action)
+        for i, internal_action in enumerate(actions):
+            ta3_action = _reverse_convert_action(internal_action, action_num=i)
             ta3_actions.append(ta3_action)
         supplies_as_dict = []
         for supply in ta3_state.supplies:
@@ -80,10 +80,10 @@ class TMNTClient:
         return probe
 
     def take_action(self, action: Action) -> Probe:
-        sim = TinymedSim(init_state=self.current_state, seed=42)
         tinymed_action = _convert_action(act=action)
-        sim_results: list[SimResult] = sim.exec(self.current_state, action=tinymed_action)
+        sim_results: list[SimResult] = self.simulator.exec(self.current_state, action=tinymed_action)
         new_state = sim_results[0].outcome  # This is fine
+        self.current_state = new_state
         new_probe = self.get_probe(new_state)
         return new_probe
 def main():

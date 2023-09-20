@@ -254,11 +254,11 @@ def remove_non_injuries(state: TinymedState, tinymedactions: list[TinymedAction]
 
 
 def get_TMNT_demo_casualties() -> list[Casualty]:
-    wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
-    minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=3.0)
-    moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=5.0)
-    major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=7.0)
-    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=9.0)
+    wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=0.1)
+    minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=0.3)
+    moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=0.5)
+    major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=0.7)
+    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=0.9)
 
     raphael_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
                             breathing=BreathingDescriptions.NORMAL.value, hrpmin=49)

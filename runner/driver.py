@@ -56,7 +56,7 @@ class Driver:
     @staticmethod
     def respond(decision: Decision[Action]) -> ext.Action:
         params = decision.value.params.copy()
-        casualty = params.pop('casualty')
+        casualty = params.pop('casualty') if 'casualty' in params.keys() else None  # Sitrep can take no casualty
         return ext.Action(decision.id_, decision.value.name, casualty, {}, params)
 
     def decide(self, ext_probe: ext.Probe) -> ext.Action:

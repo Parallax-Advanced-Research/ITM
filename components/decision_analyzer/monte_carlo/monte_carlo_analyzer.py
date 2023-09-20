@@ -31,7 +31,7 @@ def tinymedact_to_actstr(decision: mcnode.MCDecisionNode) -> str:
 
 
 class MonteCarloAnalyzer(DecisionAnalyzer):
-    def __init__(self, max_rollouts: int = 1600, max_depth: int = 2):
+    def __init__(self, max_rollouts: int = 500, max_depth: int = 2):
         super().__init__()
         self.max_rollouts: int = max_rollouts
         self.max_depth: int = max_depth
