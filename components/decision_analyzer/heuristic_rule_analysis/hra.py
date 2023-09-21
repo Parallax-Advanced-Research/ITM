@@ -782,7 +782,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 break
             
 
-        return {"casualty":{"id":next_casualty['id'], "name":data_injury['injury'], "system":data_injury['system']}}
+        return {"id":next_casualty['id'], "name":data_injury['injury'], "system":data_injury['system']}
         
     '''map between kdmas and treatment predictors (for future work may include casualty and scenario predictors)
     '''
@@ -1016,29 +1016,37 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         
         hra_results = self.hra_decision_analytics(new_file)
         # TODO: Sometimes Casualty Selected is empty/none??
-        casualty_selected = hra_results["casualty_selected"]["casualty"]
+        casualty_selected = hra_results["casualty_selected"]
         if casualty_selected and "id" in casualty_selected:
             priority_casualty = casualty_selected["id"]
         else:
             return {}
 
         analysis = {}
-        for ele in scen.state.casualties:
+
+        for decision in probe.decisions:
+            if "casualty" in decision.value.params:
+                metrics = {"priority":
+                    DecisionMetric("priority", "Casualty considered most important", bool, 
+                                   priority_casualty == decision.value.params.get("casualty"))}
+                decision.metrics.update(metrics)
+                analysis[decision.id_] = metrics
+            else:
+                continue
+            if casualty_selected["id"] == decision.value.params["casualty"]:
+                if decision.value.name == "CHECK_ALL_VITALS":
+                    self.update_metrics(decision, hra_results['decision_hra_dict'], 
+                                        decision.value.name, analysis)
+                elif decision.value.name == "APPLY_TREATMENT":
+                    self.update_metrics(decision, hra_results['decision_hra_dict'], 
+                                        decision.value.params.get('treatment', "").lower(), analysis)
             
-            for decision in probe.decisions:
-                if ele.id == decision.value.params.get('casualty', None):
-                    if decision.value.name == "CHECK_ALL_VITALS":
-                        self.update_metrics(decision, hra_results['decision_hra_dict'], decision.value.name, 
-                            ele.id == priority_casualty, analysis)
-                    elif decision.value.name == "APPLY_TREATMENT":
-                        self.update_metrics(decision, hra_results['decision_hra_dict'], decision.value.params.get('treatment', "").lower(),
-                            ele.id == priority_casualty, analysis)
         
         return analysis
 
 
     def update_metrics(self, decision: Decision, hra_results: dict, action_name: str, 
-                       is_priority: bool, analysis: dict[str, DecisionMetrics]):
+                       analysis: dict[str, DecisionMetrics]):
         if action_name == "":
             results = {strategy: 0 for strategy in HeuristicRuleAnalyzer.STRATEGIES}
             for treatment in ["hemostatic gauze", "tourniquet", "pressure bandage", 
@@ -1049,9 +1057,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             results = hra_results[action_name]
         metrics = {strategy: DecisionMetric(strategy, strategy, int, results[strategy]) 
                    for strategy in HeuristicRuleAnalyzer.STRATEGIES}
-        metrics["priority"] = DecisionMetric("priority", "Casualty considered most important", 
-                                             bool, is_priority)
-        analysis[decision.id_] = metrics
+        analysis[decision.id_].update(metrics)
         decision.metrics.update(metrics)
         
 
