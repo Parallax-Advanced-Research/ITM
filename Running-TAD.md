@@ -14,10 +14,10 @@ install the requirements via pip
 
 `pip install -r requirements.txt`
 
-A Lisp dependency must also be installed to support the Event-Based Diagnosis system. To do so:
+A Lisp dependency must also be installed to support the Event-Based Diagnosis system. To do so: 
 1. Install steel bank common lisp (sbcl) found at www.sbcl.org and available on Unix package managers
 2. Download quicklisp.lisp from https://beta.quicklisp.org/quicklisp.lisp.
-3. Open up a lisp command line with "sbcl" in the directory you put quicklisp.lisp .
+3. Open up a lisp command line with "sbcl" in the directory you put quicklisp.lisp
 4. Enter the following commands at the lisp command line, one at a time:
     a. (load "quicklisp.lisp")
     b. (quicklisp-quickstart:install)
