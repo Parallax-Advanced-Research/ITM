@@ -23,7 +23,10 @@ class TA3Driver(Driver):
             analyzer1 = BaselineDecisionAnalyzer()
         analyzer2 = HeuristicRuleAnalyzer()
         analyzer3 = BayesNetDiagnosisAnalyzer()
-        analyzer4 = MonteCarloAnalyzer(max_rollouts=10000, max_depth=2)
+        if args.mc:
+            analyzer4 = MonteCarloAnalyzer(max_rollouts=10000, max_depth=2)
+        else:
+            analyzer4 = BaselineDecisionAnalyzer()
 
         super().__init__(elaborator, selector, [analyzer1, analyzer2, analyzer3,analyzer4])
 

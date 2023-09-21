@@ -95,6 +95,7 @@ def main():
     parser.add_argument('--human', default=False, help="Allows human to give selections at command line", action='store_true')
     parser.add_argument('--verbose', action=argparse.BooleanOptionalAction, default=True, help="Turns logging on/off (default on)")
     parser.add_argument('--ebd', action=argparse.BooleanOptionalAction, default=True, help="Turns Event Based Diagnosis analyzer on/off (default on)")
+    parser.add_argument('--mc', action=argparse.BooleanOptionalAction, default=True, help="Turns Monte Carlo Analyzer on/off (default on)")
     args = parser.parse_args()
 
     test_endpoint(args)
