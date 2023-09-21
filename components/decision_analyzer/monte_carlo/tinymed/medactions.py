@@ -37,13 +37,15 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
         if ci.location == action.location and not fail and supply_location_logical and supply_injury_logical:
             ci.severity = MedicalOracle.SUCCESSFUL_SEVERITY[action.supply]
             ci.time_elapsed += time_taken
+            ci.treated = True
         else:
             update_injury_map[ci.name](ci, time_taken)
     return time_taken
 
 
 def update_generic_injury(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * MedicalOracle.INJURY_UPDATE_TIMES[i.name])
+    if not i.treated:
+        i.severity += (elapsed * MedicalOracle.INJURY_UPDATE_TIMES[i.name])
     i.time_elapsed += elapsed
 
 
@@ -135,6 +137,7 @@ def get_action_all(casualties: list[Casualty], action_str: str) -> list[tuple]:
     if action_str == Actions.SITREP.value:
         one_tuple = (Actions.SITREP.value,)
         actions.append(one_tuple)  # sitrep can be done on casualty or on scene
+
     return actions
 
 
@@ -199,8 +202,11 @@ def create_tm_actions(actions: list[tuple]) -> list[TinymedAction]:
         elif action == Actions.TAG_CASUALTY.value:
             casualty, tag = act_tuple[1:]
             tm_action = TinymedAction(action=action, casualty_id=casualty, tag=tag)
-        else:
-            tm_action = TinymedAction(action=action)
+        elif action == Actions.SITREP.value:
+            if len(act_tuple) == 1:  # Only sitrep
+                tm_action = TinymedAction(action=action)
+            else:
+                tm_action = TinymedAction(action=action, casualty_id=act_tuple[1])
         tm_actions.append(tm_action)
     return tm_actions
 
@@ -247,12 +253,12 @@ def remove_non_injuries(state: TinymedState, tinymedactions: list[TinymedAction]
     return list(set(retlist))
 
 
-def get_TMNT_demo_casualties():
-    wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
-    minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=3.0)
-    moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=5.0)
-    major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=7.0)
-    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=9.0)
+def get_TMNT_demo_casualties() -> list[Casualty]:
+    wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=0.1)
+    minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=0.3)
+    moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=0.5)
+    major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=0.7)
+    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=0.9)
 
     raphael_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
                             breathing=BreathingDescriptions.NORMAL.value, hrpmin=49)
@@ -302,7 +308,7 @@ def get_TMNT_demo_casualties():
     return casualties
 
 
-def get_starting_supplies():
+def get_TMNT_supplies() -> dict[str, int]:
     supplies = {
         Supplies.TOURNIQUET.value: 3,
         Supplies.PRESSURE_BANDAGE.value: 2,
