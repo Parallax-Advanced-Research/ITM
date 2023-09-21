@@ -7,6 +7,7 @@ def test_endpoint(args):
     # args.endpoint = '127.0.0.1:8080'
     args.variant = 'aligned'
     args.ebd = False
+    args.hra = True
     tad.api_test(args)
 
 

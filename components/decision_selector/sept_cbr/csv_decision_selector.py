@@ -97,7 +97,7 @@ class CSVDecisionSelector(DecisionSelector):
             return 0
 
         params = decision.value.params.copy()
-        params.pop('casualty')
+        params.pop('casualty') if 'casualty' in params.keys() else None  # Sitrep can take no casualty
 
         tot_sim = 1
         tot_count = 1

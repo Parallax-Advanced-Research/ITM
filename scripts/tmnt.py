@@ -91,6 +91,7 @@ def main():
         def __init__(self):
             self.human = False
             self.ebd = False
+            self.hra = False
             self.variant = 'aligned'
     tmnt_args = TMNTARGS()
 
