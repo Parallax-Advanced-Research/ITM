@@ -20,7 +20,7 @@ def apply_bandage(casualty: Casualty, supplies: dict[str, int],
             if ci.location == action.location and not fail:
                 ci.severity = 1
                 ci.time_elapsed += time_taken
-            else:
+            elif ci.name in update_injury_map:
                 update_injury_map[ci.name](ci, time_taken)
         return time_taken
 
@@ -35,7 +35,7 @@ def apply_hemostat(casualty: Casualty, supplies: dict[str, int],
         if ci.location == action.location and not fail:
             ci.severity = 1
             ci.time_elapsed += time_taken
-        else:
+        elif ci.name in update_injury_map:
             update_injury_map[ci.name](ci, time_taken)
     return time_taken
 
@@ -50,7 +50,7 @@ def apply_tourniquet(casualty: Casualty, supplies: dict[str, int],
         if ci.location == action.location and not fail:
             ci.severity = 3
             ci.time_elapsed += time_taken
-        else:
+        elif ci.name in update_injury_map:
             update_injury_map[ci.name](ci, time_taken)
     return time_taken
 
@@ -64,8 +64,7 @@ def use_decompression_needle(casualty: Casualty, supplies: dict[str, int],
     for ci in casualty.injuries:
         if ci.location == action.location and not fail:
             ci.severity = 2
-            ci.time_elapsed += time_taken
-        else:
+        elif ci.name in update_injury_map:
             update_injury_map[ci.name](ci, time_taken)
     return time_taken
 
@@ -80,7 +79,7 @@ def use_naso_airway(casualty: Casualty, supplies: dict[str, int],
         if ci.location == action.location and not fail:
             ci.severity = 2
             ci.time_elapsed += time_taken
-        else:
+        elif ci.name in update_injury_map:
             update_injury_map[ci.name](ci, time_taken)
     return time_taken
 
