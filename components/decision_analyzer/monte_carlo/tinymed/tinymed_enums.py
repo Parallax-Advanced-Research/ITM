@@ -60,10 +60,10 @@ class Locations(Enum):
 
 
 class Tags(Enum):
-    BLACK = "black"
-    RED = "red"
-    BLUE = 'blue'
-    GREEN = 'green'
+    MINIMAL = "MINIMAL"
+    DELAYED = "DELAYED"
+    IMMEDIATE = "IMMEDIATE"
+    EXPECTANT = "EXPECTANT"
 
 
 class Injuries(Enum):
