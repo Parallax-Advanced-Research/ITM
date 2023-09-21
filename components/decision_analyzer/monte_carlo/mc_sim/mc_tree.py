@@ -1,61 +1,43 @@
-import bisect
 from typing import Optional
 import random
 import typing
 
-import numpy as np
-
 from .sim import MCSim
 from .mc_node import MCStateNode, MCDecisionNode
+from .mc_state import MCState
 
 
 def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode]) -> MCStateNode | MCDecisionNode:
     return rand.choice(nodes)
 
 
-def score_merger_average_of_children(parent_scores: list[float]) -> float:
-    return sum(parent_scores) / len(parent_scores)
+def score_averager(scores: list[{str: float}]) -> {str: float}:
+    total_dict = {}
+    for score in scores:
+        for key in score:
+            cur = total_dict.get(key, 0)
+            total_dict[key] = cur + score[key]
+    for metric in total_dict:
+        total_dict[metric] = total_dict[metric] / len(scores)
+    return total_dict
 
 
-def select_node_eetrade(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode],
-                        explore_ratio=.15) -> MCStateNode | MCDecisionNode:
-    if rand.random() < explore_ratio:
-        return rand.choice(nodes)
-    exploit_ratio = 1 - explore_ratio
-    scores, visits = [], []
-    for node in nodes:
-        scores.append(node.score)  # Slowly it will learn life isnt leet.
-        visits.append(node.count)
-
-    # visits = [max(visits) - v for v in visits]  # high numbers mean less visited, 0 means most visited
-    scores = [s - min(scores) for s in scores]  # Compress the range of scores to make this more meaningful
-    sum_score, sum_visit = float(sum(scores)), float(sum(visits))
-    if not sum_visit:  # If it hasnt been anywhere, pick random
-        return rand.choice(nodes)
-    norm_scores = [x / sum_score for x in scores] if sum_score else [0 for score in scores]
-    norm_visits = [x / sum_visit for x in visits] if sum_visit else [0 for visit in visits]
-    weights = []
-    for ns, nv in zip(norm_scores, norm_visits):
-        weights.append((ns * exploit_ratio) + (nv * explore_ratio))
-    sum_weights = sum(weights)
-    norm_weights = [weight / sum_weights for weight in weights] if sum_weights else [1./len(weights) for weight in weights]
-    chosen = rand.choices(population=nodes, weights=norm_weights, k=1)[0]
-    return chosen
-
-
-Node_Selector = typing.Callable[[random.Random, list[MCStateNode | MCDecisionNode]], MCStateNode | MCDecisionNode]
-Score_Merger = typing.Callable[[list[float]], float]
+NodeSelector = typing.Callable[[random.Random, list[MCStateNode | MCDecisionNode]], MCStateNode | MCDecisionNode]
+ScoreMerger = typing.Callable[[list[float]], float]
+ScoreFunction = typing.Callable[[MCState], float]
 
 
 class MonteCarloTree:
-    def __init__(self, sim: MCSim, roots: list[MCStateNode] = (), seed: Optional[float] = None,
-                 node_selector: Node_Selector = select_random_node,
-                 score_merger: Score_Merger = score_merger_average_of_children):
+    def __init__(self, sim: MCSim, score_functions: {str: ScoreFunction},
+                 roots: list[MCStateNode] = (), seed: Optional[float] = None,
+                 node_selector: NodeSelector = select_random_node,
+                 score_merger: ScoreMerger = score_averager):
         self._sim: MCSim = sim
+        self.score_functions: {str: ScoreFunction} = score_functions
         self._roots: list[MCStateNode] = list(roots)
         self._rollouts: int = 0
-        self._node_selector: Node_Selector = node_selector
-        self._score_merger: Score_Merger = score_merger
+        self._node_selector: NodeSelector = node_selector
+        self._score_merger: ScoreMerger = score_merger
 
         # Setup a randomizer
         if seed is None:
@@ -75,7 +57,8 @@ class MonteCarloTree:
         self._sim.reset()
         root = self._node_selector(self._rand, self._roots)
         leaf_node = self._rollout(root, max_depth, 1)
-        MonteCarloTree.score_propagation(leaf_node, self._sim.score(leaf_node.state), self._score_merger)
+        score_types = {n: f(leaf_node.state) for n, f in self.score_functions.items()}
+        MonteCarloTree.score_propagation(leaf_node, score_types, self._score_merger)
         return leaf_node
 
     def _rollout(self, state: MCStateNode, max_depth: int, curr_depth: int) -> MCStateNode:
@@ -161,14 +144,14 @@ class MonteCarloTree:
         return to_return
 
     @staticmethod
-    def score_propagation(node: MCStateNode | MCDecisionNode, score: float, score_merger: Score_Merger):
+    def score_propagation(node: MCStateNode | MCDecisionNode, score: {str: float}, score_merger: ScoreMerger):
         # update the node's score
         node.score = score
-        node.scores.append(score)
+        node.children_scores.append(score)
 
         # propagate the node score up the parents
         parent = node.parent
         while parent is not None:
-            parent.scores.append(score)
-            parent.score = score_merger(parent.scores)
+            parent.children_scores.append(score)
+            parent.score = score_merger(parent.children_scores)
             parent = parent.parent

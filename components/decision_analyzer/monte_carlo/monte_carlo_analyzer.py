@@ -6,6 +6,7 @@ import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 import components.decision_analyzer.monte_carlo.tinymed.ta3_converter as ta3_conv
 import components.decision_analyzer.monte_carlo.mc_sim.mc_tree as mct
+from components.decision_analyzer.monte_carlo.tinymed.score_functions import tiny_med_severity_score
 import pickle as pkl
 import util.logger
 from domain.ta3 import TA3State
@@ -39,9 +40,11 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
     def analyze(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
         ta3_state: TA3State = scen.state
         tinymed_state: TinymedState = ta3_conv.convert_state(ta3_state)
+        # more score functions can be added here
+        score_functions = {'severity': tiny_med_severity_score}
         sim = TinymedSim(tinymed_state)
         root = mcsim.MCStateNode(tinymed_state)
-        tree = mcsim.MonteCarloTree(sim, [root], node_selector=mct.select_node_eetrade)
+        tree = mcsim.MonteCarloTree(sim, score_functions, [root])
         for rollout in range(self.max_rollouts):
             tree.rollout(max_depth=self.max_depth)
         logger.debug('MC Tree Trained')
@@ -50,7 +53,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         tree_hash = {}
         for dn in decision_node_list:
             dec_str = tinymedact_to_actstr(dn)
-            dec_severity = dn.score
+            dec_severity = dn.score['severity']
             tree_hash[dec_str] = dec_severity
         for decision in probe.decisions:
             probe_dec_str = decision_to_actstr(decision)
