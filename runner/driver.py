@@ -6,6 +6,8 @@ from util import logger
 
 
 class Driver:
+    actions_performed: list[Action] = []
+    treatments: dict[str, list[str]] = {}
     def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer]):
         self.session: str = ''
         self.scenario: typing.Optional[Scenario] = None
@@ -24,10 +26,21 @@ class Driver:
     def set_scenario(self, scenario: ext.Scenario):
         state = self._extract_state(scenario.state)
         self.scenario = Scenario(scenario.id, state)
+        self.actions_performed = []
+        
 
     def translate_probe(self, ext_probe: ext.Probe) -> Probe:
+        dict = ext_probe.state.copy()
+        for (casualty, treatment_list) in self.treatments.items():
+            for cas in dict["casualties"]:
+                if cas["id"] == casualty:
+                    cas["treatments"] = treatment_list
+        dict["actions_performed"] = self.actions_performed
+
         # Translate probe external state into internal state
         state = self._extract_state(ext_probe.state)
+            
+            
 
         # Extract the decisions
         decisions: list[Decision[Action]] = []
@@ -51,6 +64,12 @@ class Driver:
 
     def select(self, probe: Probe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
+        self.actions_performed.append(d.value)
+        if d.value.name == "APPLY_TREATMENT":
+            casualty_name = d.value.params["casualty"]
+            past_list: list[str] = self.treatments.get(casualty_name, [])
+            past_list.append(d.value.params["treatment"])
+            self.treatments[casualty_name] = past_list
         return d
 
     @staticmethod
