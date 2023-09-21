@@ -12,6 +12,7 @@ import random
 
 logger = util.logger
 
+
 class TinymedSim(MCSim):
 
     def __init__(self, init_state: TinymedState, seed: Optional[float] = None):
@@ -48,10 +49,3 @@ class TinymedSim(MCSim):
         self.current_casualties: list[Casualty] = deepcopy(self._init_casualties)
         self.current_supplies: dict[str, int] = deepcopy(self._init_supplies)
         pass
-
-    def score(self, state: TinymedState) -> float:
-        injury_score: float = 0.0
-        for casualty in state.casualties:
-            for injury in casualty.injuries:
-                injury_score += injury.severity
-        return injury_score
