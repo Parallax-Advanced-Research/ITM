@@ -15,3 +15,7 @@ def tiny_med_severity_score(state: MCState) -> float:
 def tiny_med_resources_remaining(state: MCState) -> int:
     resource_score: int = state.get_num_supplies()
     return resource_score
+
+
+def tiny_med_time_score(state: MCState) -> float:
+    return state.time
