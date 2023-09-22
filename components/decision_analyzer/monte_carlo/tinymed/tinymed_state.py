@@ -28,6 +28,12 @@ class TinymedState(MCState):
 
         return True
 
+    def get_num_supplies(self) -> int:
+        num_supplies: int = 0
+        for supply in list(self.supplies.keys()):
+            num_supplies += self.supplies[supply]
+        return num_supplies
+
 
 class TinymedAction(MCAction):
     def __init__(self, action: Actions, casualty_id: str | None = None, supply: str | None = None,

@@ -10,3 +10,12 @@ def tiny_med_severity_score(state: MCState) -> float:
         for injury in casualty.injuries:
             injury_score += injury.severity
     return injury_score
+
+
+def tiny_med_resources_remaining(state: MCState) -> int:
+    resource_score: int = state.get_num_supplies()
+    return resource_score
+
+
+def tiny_med_time_score(state: MCState) -> float:
+    return state.time
