@@ -7,6 +7,7 @@ RandVar = str
 Value = str
 TESTING = False
 
+# TODO- Remove notebook code from dev releases
 notebook = False
 try:
 	from IPython import get_ipython
@@ -22,6 +23,9 @@ class Bayesian_Net:
 	node_names: List[str]
 	values: Dict[str, List[str]] # in order of offset
 
+	#TODO- Consider making the Bayesian_Net wrapper class you created more readable. Using more descriptive variable
+	# names and seperating functions out from directly under the __init__ signature will make it easier to see the
+	# structure/use of the class for you and team members debugging code in future iterations
 	def __init__(self, json_fname: str) -> None:
 		def get_topological_order(j: Dict[str, Any]) -> List[str]:
 			# TODO: O(N^2), but that might be unavoidable

@@ -9,6 +9,7 @@ nodes: Dict[str, 'Node'] = {}
 
 verbose_mode = True
 
+#TODO- Use util.Logger
 def verbose(s: str) -> None:
 	if not verbose_mode: return
 	sys.stderr.write(s)
@@ -18,6 +19,7 @@ def verbose(s: str) -> None:
 def split_by_comma(s: str) -> List[str]:
 	return [a.strip() for a in s.split(',')]
 
+#TODO- This is not the most readable pair of functions, consider adding documentation or descriptive var names when typehints are "str" not Enums
 def possible_assignments(nodes: List['Node']) -> List[Dict[str,str]]:
 	results = []
 
@@ -40,9 +42,11 @@ def possible_assignments(nodes: List['Node']) -> List[Dict[str,str]]:
 
 class Node:
 	def is_root(self) -> bool:
+		#TODO- Use util.logger
 		verbose(f"{self.name}.is_root() -> basis_rows = {self.basis_rows} -> {len(self.basis_rows)}")
 		return 0 == len(self.basis_rows)
 
+	#TODO: Same comment as above, knowing the values of data is difficult without enums / descriptive var names
 	def __init__(self, name: str, data: Dict[str, Union[str, List[str]]]) -> None:
 		data = data.copy()
 		assert 'values' in data and type(data['values']) is list
@@ -53,7 +57,7 @@ class Node:
 		self.probability_table: Dict[str, Dict[str, float]] = {}
 		values_lst = data['values']
 		assert list == type(values_lst)
-
+		# TODO- Use util.logger
 		verbose(f"baseline = {self.baseline}, {type(self.baseline)}")
 		verbose(f"vals: {values_lst}")
 		offset = values_lst.index(self.baseline)
@@ -92,16 +96,18 @@ class Node:
 		del data['values']
 		del data['baseline']
 
+		# TODO- Use util.logger
 		verbose(f"# {name}")
 		verbose(f"Values: {self.values}\nParents: {self.parents}\n")
 		
 		self.basis_rows = {}
 		for parent in self.parents:
+			# TODO- Use util.logger
 			verbose(f"Add parent of {name}: {parent}")
 			assert parent in data, f"Missing row for P({name} | {parent})"
 			self.basis_rows[parent] = parse_row(parent, False)
 			del data[parent]
-				
+		# TODO- Use util.logger
 		verbose(f"Rows: {self.basis_rows}\n\n")
 		
 		self.probability_table = {}
@@ -112,6 +118,7 @@ class Node:
 		""" Fill in all the joint probabilities by assuming
 		    TODO: Copy over the assumptions from my notes """
 
+		# TODO- Use util.logger (for whole function)
 		if self.is_root(): return
 		verbose(f"\n\nnaive_estimation({self.name})")
 

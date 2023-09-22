@@ -1,0 +1,8 @@
+Ray-
+
+Nice! Having the bayesian network in so quick is no small task well done. I've added a few # TODOs as I went along,
+But mostly from a code quality and readability standpoint. Main recurring comment is code readability, and using ENUMs,
+Not hardcoding paths, and more descriptive variable names/documentation describing variable. Nothing unexpected here
+on our quick timeline. Good code, thank you for allowing me to review.
+
+JT

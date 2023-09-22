@@ -10,6 +10,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
 
     def __init__(self):
         super().__init__()
+        # TODO- Remove hardcoded path
         self.bn = Bayesian_Net("components/decision_analyzer/bayesian_network/bayes_net.json")
         
     def analyze(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
@@ -45,6 +46,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
             return None
         cas = self.find_casualty(patient, state)
         if cas is None:
+            # TODO: SITREP (no casualties) was a valid TA3 instruction I believe
             raise Exception("No casualty in state with name: " + patient)
         data = {
             'hrpmin': self.get_hrpmin(cas),
@@ -57,6 +59,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         
         return {name: value for (name, value) in data.items() if value is not None}
         
+    #TODO: Define the numbers (LOW_HR: int = 60, LOW_HR_VAL: str = "low") somewhere and load from there
     def get_hrpmin(self, c : Casualty):
         if c.vitals.hrpmin is None:
             return None
@@ -66,12 +69,14 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
             return "high"
         return "normal"
 
+    # TODO: verify logic, use constants (BURN: str = "Burn") and (SEVERITY_CUTOFF: float = .5) etc.
     def get_burns(self, c : Casualty):
         for i in c.injuries:
             if i.name == 'Burn':
                 return "true" if i.severity > 0.5 else "false"
         return None
 
+# TODO: use constants, consider borriowng from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums so you dont have to rededine things
     def get_trauma(self, c : Casualty):
         for i in c.injuries:
             if i.name == 'Amputation' and ('calf' in i.location or 'leg' in i.location 
@@ -79,12 +84,14 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
                 return "true"
         return "false"
 
+    # TODO
     def get_amputation(self, c : Casualty):
         for i in c.injuries:
             if i.name == 'Amputation':
                 return "true"
         return "false"
-        
+
+
     def get_pain(self, c : Casualty):
         if c.vitals.mental_status is None:
             return None
