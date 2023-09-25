@@ -35,7 +35,8 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
     for ci in casualty.injuries:
         supply_injury_logical = supply_injury_match(action.supply, ci.name)
         if ci.location == action.location and not fail and supply_location_logical and supply_injury_logical:
-            ci.severity = MedicalOracle.SUCCESSFUL_SEVERITY[action.supply]
+            existing_severity = ci.severity
+            ci.severity = min(MedicalOracle.SUCCESSFUL_SEVERITY[action.supply], existing_severity)
             ci.time_elapsed += time_taken
             ci.treated = True
         else:
@@ -379,11 +380,11 @@ class MedicalOracle:
     }
 
     SUCCESSFUL_SEVERITY = {
-        Supplies.PRESSURE_BANDAGE.value: 1,
-        Supplies.HEMOSTATIC_GAUZE.value: 1,
-        Supplies.TOURNIQUET.value: 3,
-        Supplies.DECOMPRESSION_NEEDLE.value: 2,
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: 2
+        Supplies.PRESSURE_BANDAGE.value: 1.0,
+        Supplies.HEMOSTATIC_GAUZE.value: 1.0,
+        Supplies.TOURNIQUET.value: 3.0,
+        Supplies.DECOMPRESSION_NEEDLE.value: 2.0,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 2.0
     }
 
     INJURY_UPDATE_TIMES = {
