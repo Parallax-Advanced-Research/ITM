@@ -13,27 +13,18 @@ from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAn
 
 class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 3
-    def __init__(self, csv_file: str, variant='aligned'):
+    def __init__(self, csv_file: str, variant='aligned', print_neighbors=True):
         self._csv_file_path: str = csv_file
         self.cb = self._read_csv()
         self.variant: str = variant
         self.analyzers: list[DecisionAnalyzer] = get_analyzers()
-        self.index = 0
+        self.print_neighbors = print_neighbors
 
     def select(self, scenario: Scenario, probe: Probe, target: KDMAs) -> (Decision, float):
-        f = open("temp/example_file" + str(self.index) + ".json", "w")
-        f.write(jsonpickle.encode(scenario))
-        f.write("\n")
-        f.write(jsonpickle.encode(probe))
-        f.write("\n")
-        f.write(jsonpickle.encode(target))
-        f.write("\n")
-        f.close()
-        self.index += 1
-
         default_weights = {key: 1 for key in self.cb[0].keys()}
         minDist: float = math.inf
         minDecision: Decision = None
+        misalign = self.variant.lower() == "misaligned"
         for cur_decision in probe.decisions:
             name = cur_decision.value.params.get("casualty", None)
             if name is None:
@@ -41,7 +32,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             else:
                 cur_casualty = [c for c in probe.state.casualties if c.id == name][0]
             cur_case = make_case(probe.state, cur_decision)
-            if target.kdmas[0].id_ == "Mission":
+            if target.kdmas[0].id_ == "Mission" and self.print_neighbors:
                 print(f"Decision: {cur_decision}")
             sqDist: float = 0.0
             weights = {'assessing': 3, 'treating': 3, 'tagging': 3, 'visited': 2, 'treatment': 3, 
@@ -66,14 +57,18 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                         weights = weights | {"relationship": 1, "priority": 1}
                     case _:
                         weights = default_weights
-                diff = kdma.value - self.estimate_KDMA(cur_case, weights, kdma.id_.lower())
+                target_val = kdma.value
+                if misalign:
+                    target_val = 10 - kdma.value
+                diff = target_val - self.estimate_KDMA(cur_case, weights, kdma.id_.lower())
                 sqDist += diff * diff
             if sqDist < minDist:
                 minDist = sqDist
                 minDecision = cur_decision
-            if target.kdmas[0].id_ == "Mission":
+            if target.kdmas[0].id_ == "Mission" and self.print_neighbors:
                 print(f"New dist: {sqDist} Best Dist: {minDist}")
-        print(f"Chosen Decision: {minDecision.value} Dist: {minDist}")
+        if self.print_neighbors:
+            print(f"Chosen Decision: {minDecision.value} Dist: {minDist}")
         return (minDecision, minDist)
                 
 
@@ -91,7 +86,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             kdma_val += case[kdma] * (total/max(sim, 0.01))
             divisor += total/max(sim, 0.01)
         kdma_val = kdma_val / divisor
-        print(f"kdma_val: {kdma_val}")
+        if self.print_neighbors:
+            print(f"kdma_val: {kdma_val}")
         return kdma_val
         
     def calculate_similarity(self, case1: dict[str, Any], case2: dict[str, Any], weights: dict[str, float]) -> float:
@@ -118,10 +114,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             lst = lst[:KDMAEstimationDecisionSelector.K]
         if len(lst) == 0:
             return lst
-        print(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
-        print(f"kdma: {kdma} weights: {weights}")
-        for i in range(0, len(lst)):
-            print(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
+        if self.print_neighbors:
+            print(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
+            print(f"kdma: {kdma} weights: {weights}")
+            for i in range(0, len(lst)):
+                print(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
         return lst
 
     def _read_csv(self):
