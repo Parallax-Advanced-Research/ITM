@@ -12,17 +12,26 @@ update_injury = typing.Callable[[Injury, float], None]
 
 def apply_bandage(casualty: Casualty, supplies: dict[str, int],
                   action: TinymedAction, rng: random.Random) -> float:
-        fail = rng.random() < .16
-        time_taken = rng.choice([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 3.0, 4.5])
-        if supplies[action.supply] <= 0:
-            fail = True
-        for ci in casualty.injuries:
-            if ci.location == action.location and not fail:
-                ci.severity = 1
-                ci.time_elapsed += time_taken
-            elif ci.name in update_injury_map:
-                update_injury_map[ci.name](ci, time_taken)
-        return time_taken
+    fail = rng.random() < .16
+    time_taken = rng.choice([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 3.0, 4.5])
+    if supplies[action.supply] <= 0:
+        fail = True
+    for ci in casualty.injuries:
+        if ci.location == action.location and not fail:
+            if ci.name in [Injuries.FOREHEAD_SCRAPE.value]:
+                ci.severity = 0
+            if ci.name in [Injuries.PUNCTURE.value]:
+                ci.severity = 0.1
+            if ci.name in [Injuries.SHRAPNEL.value]:
+                ci.severity = 0.3
+            if ci.name in [Injuries.EAR_BLEED.value]:
+                ci.severity = 0.3
+            if ci.name in [Injuries.LACERATION.value]:
+                ci.severity = 0.6
+            ci.time_elapsed += time_taken
+        elif ci.name in update_injury_map:
+            update_injury_map[ci.name](ci, time_taken)
+    return time_taken
 
 
 def apply_hemostat(casualty: Casualty, supplies: dict[str, int],
@@ -33,7 +42,16 @@ def apply_hemostat(casualty: Casualty, supplies: dict[str, int],
         fail = True
     for ci in casualty.injuries:
         if ci.location == action.location and not fail:
-            ci.severity = 1
+            if ci.name in [Injuries.FOREHEAD_SCRAPE.value]:
+                ci.severity = 0
+            if ci.name in [Injuries.PUNCTURE.value]:
+                ci.severity = 0.1
+            if ci.name in [Injuries.SHRAPNEL.value]:
+                ci.severity = 0.4
+            if ci.name in [Injuries.EAR_BLEED.value]:
+                ci.severity = 0.3
+            if ci.name in [Injuries.LACERATION.value]:
+                ci.severity = 0.6
             ci.time_elapsed += time_taken
         elif ci.name in update_injury_map:
             update_injury_map[ci.name](ci, time_taken)
@@ -48,7 +66,9 @@ def apply_tourniquet(casualty: Casualty, supplies: dict[str, int],
         fail = True
     for ci in casualty.injuries:
         if ci.location == action.location and not fail:
-            ci.severity = 3
+            if ci.name in [Injuries.AMPUTATION.value]:
+                ci.severity = 0.3
+            ci.severity = 0
             ci.time_elapsed += time_taken
         elif ci.name in update_injury_map:
             update_injury_map[ci.name](ci, time_taken)
@@ -62,8 +82,10 @@ def use_decompression_needle(casualty: Casualty, supplies: dict[str, int],
     if supplies[action.supply] <= 0:
         fail = True
     for ci in casualty.injuries:
+        if ci.name in [Injuries.CHEST_COLLAPSE.value]:
+            ci.severity = 0.3
         if ci.location == action.location and not fail:
-            ci.severity = 2
+            ci.time_elapsed += time_taken
         elif ci.name in update_injury_map:
             update_injury_map[ci.name](ci, time_taken)
     return time_taken
@@ -76,10 +98,7 @@ def use_naso_airway(casualty: Casualty, supplies: dict[str, int],
     if supplies[action.supply] <= 0:
         fail = True
     for ci in casualty.injuries:
-        if ci.location == action.location and not fail:
-            ci.severity = 2
-            ci.time_elapsed += time_taken
-        elif ci.name in update_injury_map:
+        if ci.name in update_injury_map:
             update_injury_map[ci.name](ci, time_taken)
     return time_taken
 
@@ -257,7 +276,8 @@ def trim_tm_actions(actions: list[TinymedAction]) -> list[TinymedAction]:
     for act in actions:
         if act.action == Actions.APPLY_TREATMENT.value:
             if act.supply == Supplies.DECOMPRESSION_NEEDLE.value:
-                if act.location in [Locations.UNSPECIFIED.value, Locations.LEFT_CHEST, Locations.RIGHT_CHEST]:
+                if act.location in [Locations.UNSPECIFIED.value, 
+                                    Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value]:
                     trimmed.append(act)
             if act.supply == Supplies.TOURNIQUET.value or act.supply == Supplies.PRESSURE_BANDAGE.value or act.supply == Supplies.HEMOSTATIC_GAUZE.value:
                 if act.location in [Locations.RIGHT_FOREARM.value, Locations.LEFT_FOREARM.value,
