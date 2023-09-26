@@ -1,11 +1,11 @@
-from components.decision_analyzer.monte_carlo.mc_sim import SimResult, MCState
+from components.decision_analyzer.monte_carlo.mc_sim import SimResult
 from components.decision_analyzer.monte_carlo.tinymed import TinymedState, TinymedSim, TinymedAction
 from components.decision_analyzer.monte_carlo.tinymed.medactions import get_TMNT_demo_casualties, get_TMNT_supplies
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
 from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import Probe, ProbeType, Scenario
 from runner import TA3Driver
-from domain.internal import KDMAs, KDMA
+from domain.internal import KDMAs
 from util import logger, dict_difference
 from domain.external import Action
 

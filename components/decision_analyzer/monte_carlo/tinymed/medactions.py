@@ -123,6 +123,8 @@ def get_treatment_actions(casualties: list[Casualty], supplies: list[str]) -> li
     for c in casualties:
         casualty_id: str = c.id
         for supply_str in supplies:
+            if supply_str not in supplies:  # Ouch this was a present bug a while
+                continue
             for loc in locations:
                 action_tuple: tuple[str, str, str, str] = (Actions.APPLY_TREATMENT.value, casualty_id, supply_str, loc)
                 treatments.append(action_tuple)
@@ -355,6 +357,32 @@ action_map: typing.Mapping[str, resolve_action] = {
     Actions.UNKNOWN.value: default_action
 }
 
+
+def get_simple_casualties():
+    bicep_tear = Injury(name=Injuries.PUNCTURE.value, location=Locations.LEFT_BICEP.value, severity=4)
+    jt_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
+                       breathing=BreathingDescriptions.NORMAL.value, hrpmin=69)
+    casualties = [
+        Casualty('JT', 'JT tore his bicep', name='JT',
+                       relationship='himself',
+                       demographics=Demographics(age=33, sex='M', rank='director of social media'),
+                       injuries=[bicep_tear],
+                       vitals=jt_vitals,
+                       complete_vitals=jt_vitals,
+                       assessed=False,
+                       tag="tag")]
+    return casualties
+
+
+def get_simple_supplies() -> dict[str, int]:
+    supplies = {
+        Supplies.TOURNIQUET.value: 0,
+        Supplies.PRESSURE_BANDAGE.value: 3,
+        Supplies.HEMOSTATIC_GAUZE.value: 0,
+        Supplies.DECOMPRESSION_NEEDLE.value: 0,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 0
+    }
+    return supplies
 
 class MedicalOracle:
     FAILURE_CHANCE = {

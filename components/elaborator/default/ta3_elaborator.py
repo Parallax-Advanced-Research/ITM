@@ -42,7 +42,14 @@ class TA3Elaborator(Elaborator):
                         sup_params['treatment'] = supply.type
                         treat_grounded.append(Decision(cas_action.id_, Action(action.name, sup_params), kdmas=cas_action.kdmas))
             else:
-                treat_grounded.append(cas_action)
+                num_supply: int = 0
+                supply_needed = cas_action.value.params.copy()['treatment']
+                for s in state.supplies:
+                    num_supply = s.quantity if s.type == supply_needed else num_supply
+                if num_supply:
+                    treat_grounded.append(cas_action)
+                else:
+                    pass
 
         # Ground the location
         grounded: list[Decision[Action]] = []
