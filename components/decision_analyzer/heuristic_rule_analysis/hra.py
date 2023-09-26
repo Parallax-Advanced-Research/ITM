@@ -758,9 +758,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(next_casualty_id) > 0:
             next_casualty = casualty_list[next_casualty_id[0]]
             if len(next_casualty['injuries']) == 0:
-                return next_casualty
+                return {"id":next_casualty['id'], "name":"", "system":""}
         else:
-            return "no casualties"
+            return None
  
     # get the injury body system
         data_injury = dict()
@@ -923,6 +923,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     # get next casualty to treat
         next_casualty = self.choose_next_casualty(data['casualty_list'], data['kdma'], data['injury_list'])
+        if next_casualty is None: 
+            return None
         data['casualty'] = next_casualty
         data['casualty']['injury'] = {'system':"unknown"}
 
@@ -996,15 +998,16 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         casualty_data = dict()
         for ele in scen.state.casualties:
-            casualty_data[ele.id] = {
-                "id":ele.id, 
-                "name":ele.name, 
-                "injuries":[l.name for l in ele.injuries], 
-                "demographics":{"age":ele.demographics.age, "sex":ele.demographics.sex, 
-                                "rank":ele.demographics.rank}, 
-                "vitals":{"breathing":ele.vitals.breathing, "hrpmin":ele.vitals.hrpmin}, 
-                "tag":ele.tag, "assessed":ele.assessed, "relationship":ele.relationship
-                }
+            if len([d for d in probe.decisions if d.value.params.get("casualty", "") == ele.id]) > 0:
+                casualty_data[ele.id] = {
+                    "id":ele.id, 
+                    "name":ele.name, 
+                    "injuries":[l.name for l in ele.injuries], 
+                    "demographics":{"age":ele.demographics.age, "sex":ele.demographics.sex, 
+                                    "rank":ele.demographics.rank}, 
+                    "vitals":{"breathing":ele.vitals.breathing, "hrpmin":ele.vitals.hrpmin}, 
+                    "tag":ele.tag, "assessed":ele.assessed, "relationship":ele.relationship
+                    }
     
         data['casualty_list'] = casualty_data
         json_object = json.dumps(data, indent=2)
@@ -1015,6 +1018,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         #print("HRA: initial state casualty  info",scen.state.casualties) debug
         
         hra_results = self.hra_decision_analytics(new_file)
+        if hra_results is None: # No casualties left
+            return {}
         # TODO: Sometimes Casualty Selected is empty/none??
         casualty_selected = hra_results["casualty_selected"]
         if casualty_selected and "id" in casualty_selected:
