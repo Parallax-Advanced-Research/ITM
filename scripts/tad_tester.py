@@ -5,8 +5,7 @@ import argparse
 def test_endpoint(args):
     # args.model = 'bbn'
     # args.endpoint = '127.0.0.1:8080'
-    # args.variant = 'aligned'
-
+    args.variant = 'aligned'
     tad.api_test(args)
 
 
@@ -97,6 +96,7 @@ def main():
     parser.add_argument('--ebd', action=argparse.BooleanOptionalAction, default=True, help="Turns Event Based Diagnosis analyzer on/off (default on)")
     parser.add_argument('--mc', action=argparse.BooleanOptionalAction, default=True, help="Turns Monte Carlo Analyzer on/off (default on)")
     parser.add_argument('--rollouts', type=int, default=10000, help="Monte Carlo rollouts to perform")
+    parser.add_argument('--endpoint', type=str, help="The URL of the TA3 api", default=None)
     args = parser.parse_args()
 
     test_endpoint(args)

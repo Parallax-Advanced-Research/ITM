@@ -22,7 +22,7 @@ def train(args):
     if args.verbose:
         logger.setLevel(VERBOSE_LEVEL)
     else:
-        logger.setLevel(LogLevel.ERROR)
+        logger.setLevel(LogLevel.INFO)
 
     ingestor: Ingestor = BBNIngestor(args.dir) if args.ta1 == 'bbn' else SOARIngestor(args.dir)
     logger.info(f"Building CaseBase for data at {args.dir} using {args.ta1} data formats")
@@ -37,7 +37,7 @@ def ltest(args):
     if args.verbose:
         logger.setLevel(VERBOSE_LEVEL)
     else:
-        logger.setLevel(LogLevel.ERROR)
+        logger.setLevel(LogLevel.INFO)
 
     kdma_lst = []
     # if args.kdma_association is not None:
@@ -87,10 +87,10 @@ def api_test(args):
     if args.verbose:
         logger.setLevel(VERBOSE_LEVEL)
     else:
-        logger.setLevel(LogLevel.ERROR)
+        logger.setLevel(LogLevel.INFO)
 
     driver = TA3Driver(args)
-    client = TA3Client()
+    client = TA3Client(args.endpoint)
     sid = client.start_session(f'TAD')
     logger.info(f"Started Session-{sid}")
     while True:
@@ -126,7 +126,7 @@ def generate(args):
     if args.verbose:
         logger.setLevel(VERBOSE_LEVEL)
     else:
-        logger.setLevel(LogLevel.ERROR)
+        logger.setLevel(LogLevel.INFO)
 
     ingestor: Ingestor = BBNIngestor(args.dir) if args.ta1 == 'bbn' else SOARIngestor(args.dir)
     expr_name = args.output or args.ta1
@@ -175,8 +175,8 @@ def main():
     # atester.add_argument('model', type=str,
     #                      help="The name of the TAD model to load (in data/mvp/models), without extension")
     # atester.add_argument('endpoint', type=str, help="The URL of the TA3 api")
-    # atester.add_argument('-variant', type=str, help="The version of TAD to run, default: aligned", choices=["baseline", "aligned", 'misaligned'],
-    #                      default="aligned")
+    atester.add_argument('-variant', type=str, help="The version of TAD to run, default: aligned", choices=["baseline", "aligned", 'misaligned'],
+                         default="aligned")
     atester.add_argument('--verbose', default=False, help="Turns on logging", action='store_true')
     atester.set_defaults(func=api_test)
 

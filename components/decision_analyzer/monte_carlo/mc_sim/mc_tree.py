@@ -172,4 +172,3 @@ class MonteCarloTree:
             parent.scores.append(score)
             parent.score = score_merger(parent.scores)
             parent = parent.parent
-

@@ -32,7 +32,6 @@ def _standardize_types(v: SimType) -> SimType:
     return v
 
 
-
 def _simple_dict(a: dict, b: dict) -> float:
     tot: float = 0
     keys = set(list(a.keys()) + list(b.keys()))

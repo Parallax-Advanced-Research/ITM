@@ -5,7 +5,9 @@ from domain.internal import KDMA, KDMAs
 
 
 class TA3Client:
-    def __init__(self, endpoint: str = "http://127.0.0.1:8080"):
+    def __init__(self, endpoint: str = None):
+        if endpoint is None:
+            endpoint = "http://127.0.0.1:8080"
         _config = ta3.Configuration()
         _config.host = endpoint
 
