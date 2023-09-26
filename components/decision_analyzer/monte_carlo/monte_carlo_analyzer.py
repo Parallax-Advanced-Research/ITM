@@ -51,7 +51,6 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             dec_str = tinymedact_to_actstr(dn)
             dec_severity = dn.score
             tree_hash[dec_str] = dec_severity
-        print("Tree hash: " + str(tree_hash))
         for decision in probe.decisions:
             probe_dec_str = decision_to_actstr(decision)
             if probe_dec_str in tree_hash.keys():
@@ -64,7 +63,6 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             else:
                 value = max(tree_hash.values())
 
-            print("Probe: " + str(probe_dec_str) + " Value: " + str(value))
             metrics: DecisionMetrics = \
                 {"Severity": DecisionMetric(name="Severity",
                                             description="Severity of all injuries across all casualties",
