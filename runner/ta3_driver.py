@@ -1,6 +1,8 @@
 from domain.ta3 import TA3State
 from components.decision_selector.default import HumanDecisionSelector
 from components.decision_selector.sept_cbr import CSVDecisionSelector
+from components.decision_selector.kdma_estimation import KDMAEstimationDecisionSelector
+from components.decision_selector.severity import SeverityDecisionSelector
 from components.elaborator.default import TA3Elaborator
 from components.decision_analyzer.default import BaselineDecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
@@ -12,19 +14,27 @@ from .driver import Driver
 
 class TA3Driver(Driver):
     def __init__(self, args):
+        elaborator = TA3Elaborator()
+        mda = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2) if args.mc else None
+
+        if args.variant.lower() == "severity-baseline":
+            super().__init__(elaborator, SeverityDecisionSelector(), [mda])
+            return
+
         if args.human:
             selector = HumanDecisionSelector()
-        elif False:
-            selector = KDMAEstimationDecisionSelector("temp/case_base.csv")
+        elif args.keds:
+            selector = KDMAEstimationDecisionSelector("temp/case_base.csv", 
+                                                      print_neighbors = args.verbose, 
+                                                      variant = args.variant)
         else:
-            selector = CSVDecisionSelector("data/sept/case_base.csv")
+            selector = CSVDecisionSelector("data/sept/case_base.csv", variant = args.variant)
         elaborator = TA3Elaborator()
 
 
         ebd = EventBasedDiagnosisAnalyzer() if args.ebd else None
         hra = HeuristicRuleAnalyzer()
         bnd = BayesNetDiagnosisAnalyzer()
-        mda = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2) if args.mc else None
         analyzers = [ebd, hra, bnd, mda]
         analyzers = [a for a in analyzers if a is not None]
 
