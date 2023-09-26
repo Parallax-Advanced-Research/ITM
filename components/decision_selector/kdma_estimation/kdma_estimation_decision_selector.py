@@ -11,7 +11,7 @@ from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnaly
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 
 
-class CaseBasedDecisionSelector(DecisionSelector):
+class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 3
     def __init__(self, csv_file: str, variant='aligned'):
         self._csv_file_path: str = csv_file
@@ -44,12 +44,13 @@ class CaseBasedDecisionSelector(DecisionSelector):
             if target.kdmas[0].id_ == "Mission":
                 print(f"Decision: {cur_decision}")
             sqDist: float = 0.0
-            weights = {"treating": 1, "assessing": 1, "tagging": 1, "treatment": 1, "leaving": 5}
+            weights = {'assessing': 3, 'treating': 3, 'tagging': 3, 'visited': 2, 'treatment': 3, 
+                       'category': 3}
             for kdma in target.kdmas:
                 match kdma.id_.lower():
                     case "mission":
                         weights = weights | \
-                                  {"rank": 1, "pDeath": 1, "Severity": .1, "priority": 1, "category": 1}
+                                  {"rank": 1, "priority": 1, "pDeath": 1, "SeverityChange": 1}
                     case "denial":
                         weights = weights | \
                                   {"pDeath": 1, "pBrainInjury": 1, "pPain": 1, "leaving" : 10, 
@@ -114,7 +115,7 @@ class CaseBasedDecisionSelector(DecisionSelector):
             similarity = self.calculate_similarity(pcase, cur_case, weights)
             lst.append((similarity, pcase))
             lst.sort(key=first)
-            lst = lst[:CaseBasedDecisionSelector.K]
+            lst = lst[:KDMAEstimationDecisionSelector.K]
         if len(lst) == 0:
             return lst
         print(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
@@ -186,7 +187,7 @@ def make_postvisit_state(included_names: list[str]) -> State:
          'injuries': [{'name': 'Puncture', 'location': 'left neck', 'severity': None},
                       {'name': 'Burn', 'location': 'unspecified', 'severity': 0.9}],
          'demographics': {'age': 22, 'sex': 'M', 'rank': 'Marine'},
-         'vitals': {'conscious': False, 'mental_status': 'UNCONSCIOUS', 'breathing': True, 'hrpmin': 145},
+         'vitals': {'conscious': False, 'mental_status': 'UNCONSCIOUS', 'breathing': 'Normal', 'hrpmin': 145},
          'tag': None,
          'visited': True,
          'relationship': None,
@@ -197,7 +198,7 @@ def make_postvisit_state(included_names: list[str]) -> State:
          'name': "unknown",
          'injuries': [{'name': 'Burn', 'location': 'unspecified', 'severity': 0.5}],
          'demographics': {'age': 25, 'sex': 'M', 'rank': 'Marine'},
-         'vitals': {'conscious': True, 'mental_status': 'AGONY', 'breathing': True, 'hrpmin': 120},
+         'vitals': {'conscious': True, 'mental_status': 'AGONY', 'breathing': 'Normal', 'hrpmin': 120},
          'tag': None,
          'visited': True,
          'relationship': None,
@@ -208,7 +209,7 @@ def make_postvisit_state(included_names: list[str]) -> State:
          'name': "unknown",
          'injuries': [{'name': 'Eye_Trauma', 'location': 'unspecified', 'severity': None}],
          'demographics': {'age': 40, 'sex': 'M', 'rank': 'Intel Officer'},
-         'vitals': {'conscious': True, 'mental_status': 'UPSET', 'breathing': True, 'hrpmin': 105},
+         'vitals': {'conscious': True, 'mental_status': 'UPSET', 'breathing': 'Normal', 'hrpmin': 105},
          'tag': None,
          'visited': True,
          'relationship': None,
@@ -217,9 +218,9 @@ def make_postvisit_state(included_names: list[str]) -> State:
         },
         {'id': "casualty-D", 
          'name': "unknown",
-         'injuries': [{'name': 'Amputation', 'location': 'right leg', 'severity': None}],
+         'injuries': [{'name': 'Amputation', 'location': 'right thigh', 'severity': None}],
          'demographics': {'age': 26, 'sex': 'M', 'rank': 'Marine'},
-         'vitals': {'conscious': True, 'mental_status': 'AGONY', 'breathing': True, 'hrpmin': 120},
+         'vitals': {'conscious': True, 'mental_status': 'AGONY', 'breathing': 'Normal', 'hrpmin': 120},
          'tag': None,
          'visited': True,
          'relationship': None,
@@ -228,9 +229,9 @@ def make_postvisit_state(included_names: list[str]) -> State:
         },
         {'id': "casualty-E", 
          'name': "unknown",
-         'injuries': [{'name': 'Shrapnel', 'location': 'chest', 'severity': None}],
+         'injuries': [{'name': 'Shrapnel', 'location': 'left chest', 'severity': None}],
          'demographics': {'age': 12, 'sex': 'M', 'rank': 'Civilian'},
-         'vitals': {'conscious': True, 'mental_status': 'WORRIED', 'breathing': True, 'hrpmin': 120},
+         'vitals': {'conscious': True, 'mental_status': 'WORRIED', 'breathing': 'Normal', 'hrpmin': 120},
          'tag': None,
          'visited': True,
          'relationship': None,
@@ -300,7 +301,7 @@ def make_case(s: State, d: Decision) -> dict[str, Any]:
     if a.name == "APPLY_TREATMENT":
         case['treatment'] = a.params.get("treatment", None)
     if a.name == "TAG_CASUALTY":
-        case['category'] = a.params.get("tag", None)
+        case['category'] = a.params.get("category", None)
     for dm in d.metrics.values():
         case[dm.name] = dm.value
     return case
@@ -313,7 +314,7 @@ def make_tag_decision_list(s: State):
     dlist = []
     for c in s.casualties:
         for tag in ["MINIMAL", "DELAYED", "IMMEDIATE", "EXPECTANT"]:
-            dlist.append(Decision(str(index), Action("TAG_CASUALTY", {"casualty": c.id, "tag": tag})))
+            dlist.append(Decision(str(index), Action("TAG_CASUALTY", {"casualty": c.id, "category": tag})))
             index += 1
     return dlist
 
@@ -356,7 +357,7 @@ def make_vague_treatment_decision_list(s: State):
 def get_analyzers():
     return [
         HeuristicRuleAnalyzer(),
-        MonteCarloAnalyzer(),
+        MonteCarloAnalyzer(max_rollouts=1000),
         BayesNetDiagnosisAnalyzer()
     ]
     
@@ -375,7 +376,7 @@ def get_decision(p: Probe, casualty: str = None, action_name: str = None, treatm
             continue
         if treatment is not None and decision.value.params.get("treatment", None) != treatment:
             continue
-        if category is not None and decision.value.params.get("tag", None) != category:
+        if category is not None and decision.value.params.get("category", None) != category:
             continue
         return decision
         
