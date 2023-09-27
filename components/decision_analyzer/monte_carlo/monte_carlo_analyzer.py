@@ -31,6 +31,33 @@ def tinymedact_to_actstr(decision: mcnode.MCDecisionNode) -> str:
     return retstr
 
 
+def is_scoreless(decision: mcnode.MCDecisionNode) -> bool:
+    return not bool(len(decision.score.keys()))
+
+
+def get_blank_scores() -> dict[str, int | None | float]:
+    return {'severity': None, 'resources_used': None, 'time_used': None, 'Average Injury Severity': None,
+            'Average Casualty Severity': None}
+
+
+def get_populated_scores(decision: mcnode.MCDecisionNode, tinymedstate: TinymedState) -> dict[str, int | None | float]:
+    time_avg = 0.0
+    num_casualties = float(len(tinymedstate.casualties))
+    injuries = 0.0
+    for c in tinymedstate.casualties:
+        for injury in c.injuries:
+            injuries += injury.severity
+    for cs in range(len(decision.children)):
+        child_time = 0.0
+        if 'time used' in decision.children[cs].score:
+            child_time = decision.children[cs].score['time used']
+        time_avg += child_time
+    time_avg /= len(decision.children_scores)
+    severity = decision.score['severity']
+    return {'severity': severity, 'resources_used': decision.score['resource_score'], 'time_used': time_avg,
+            'Average Injury Severity': severity / injuries, 'Average Casualty Severity': severity / num_casualties}
+
+
 class MonteCarloAnalyzer(DecisionAnalyzer):
     def __init__(self, max_rollouts: int = 500, max_depth: int = 2):
         super().__init__()
@@ -50,55 +77,33 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         score_functions = {'severity': tiny_med_severity_score,
                            'resource_score': tiny_med_resources_remaining,
                            'time used': tiny_med_time_score}
+
         sim = TinymedSim(tinymed_state)
         root = mcsim.MCStateNode(tinymed_state)
         tree = mcsim.MonteCarloTree(sim, score_functions, [root])
+
         for rollout in range(self.max_rollouts):
             tree.rollout(max_depth=self.max_depth)
+
         logger.debug('MC Tree Trained')
         analysis = {}
         decision_node_list: list[mcnode.MCDecisionNode] = tree._roots[0].children
         # Has each decision string -> list of {'sevrity': .69, 'resources used': 2...}
-        tree_hash: dict[str, dict[str, float]] = {}
-        supply_hash = {}
-        for dn in decision_node_list:
-            dec_str = tinymedact_to_actstr(dn)
-            dec_severity = dn.score['severity']
-            time_avg: float = 0.0
-            for cs in dn.children_scores:
-                time_avg += cs['time used']
-            time_avg /= len(dn.children_scores) if len(dn.children_scores) > 0 else time_avg
-            tree_hash[dec_str] = { 'severity': dec_severity,
-                                    'resources_used': int(self.start_supplies - dn.score['resource_score']),
-                                   'time_used': time_avg}
+        tree_hash: dict[str, dict[str, float | int | None]] = {}
+
+        for decision in decision_node_list:
+            dec_str = tinymedact_to_actstr(decision)
+            basic_stats = get_blank_scores() if is_scoreless(decision) else get_populated_scores(decision,
+                                                                                                 tinymed_state)
+            tree_hash[dec_str] = basic_stats
         for decision in probe.decisions:
-            probe_dec_str = decision_to_actstr(decision)
-            unknown_severity = False
-            if probe_dec_str in tree_hash.keys() and tree_hash[probe_dec_str]['severity'] != 0:
-                value = tree_hash[probe_dec_str]['severity']
-            else:
-                value = 9.9
-                unknown_severity = True
-            avg_casualty_severity = value / len(tinymed_state.casualties)
-            avg_injury_severity = value
-            num_injuries = 0
-            for c in tinymed_state.casualties:
-                for i in c.injuries:
-                    num_injuries += 1
-            if num_injuries:
-                avg_injury_severity = value / num_injuries
-            try:
-                supplies_used = tree_hash[probe_dec_str]['resources_used']
-            except KeyError:
-                supplies_used = None
-            try:
-                time_val = tree_hash[probe_dec_str]['time_used']
-            except KeyError:
-                time_val = None
-            if unknown_severity:
-                value = None
-                avg_casualty_severity = None
-                avg_injury_severity = None
+            basic_stats = tree_hash[decision_to_actstr(decision)]
+            value = basic_stats['severity']
+            avg_casualty_severity = basic_stats['Average Casualty Severity']
+            avg_injury_severity = basic_stats['Average Injury Severity']
+            supplies_used = basic_stats['resources_used']
+            time_val = basic_stats['time_used']
+
             metrics: DecisionMetrics = {"Severity": DecisionMetric(name="Severity",
                                         description="Severity of all injuries across all casualties", type=type(float),
                                                                    value=value)}
@@ -119,9 +124,9 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             decision.metrics.update(injury_metrics)
             decision.metrics.update(supply_metrics)
             decision.metrics.update(time_metrics)
-            analysis[probe_dec_str] = metrics  # decision id was not unique, only decision categories
-            analysis[probe_dec_str + "_casualtyAVG"] = casualty_metrics
-            analysis[probe_dec_str + "_injuryAVG"] = injury_metrics
-            analysis[probe_dec_str + "_supply used"] = supply_metrics
-            analysis[probe_dec_str + "_time used"] = time_metrics
+            analysis[dec_str] = metrics  # decision id was not unique, only decision categories
+            analysis[dec_str + "_casualtyAVG"] = casualty_metrics
+            analysis[dec_str + "_injuryAVG"] = injury_metrics
+            analysis[dec_str + "_supply used"] = supply_metrics
+            analysis[dec_str + "_time used"] = time_metrics
         return analysis

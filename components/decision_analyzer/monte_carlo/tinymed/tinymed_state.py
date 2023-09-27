@@ -45,6 +45,9 @@ class TinymedAction(MCAction):
         self.location: str | None = location
         self.tag: str | None = tag
 
+    def __str__(self):
+        return "%s %s %s %s %s" % (self.action, self.casualty_id, self.supply, self.location, self.tag)
+
     def lookup(self, attribute: str) -> str | None:
         if attribute == 'casualty_id':
             return self.casualty_id
