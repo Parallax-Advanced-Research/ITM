@@ -100,6 +100,10 @@ class Injury:
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
                 self.time_elapsed == other.time_elapsed) and (self.treated == other.treated)
 
+    def __str__(self):
+        return '%s_%s_%.2f_t=%.2f_%s' % (self.name, self.location, self.severity, self.time_elapsed,
+                                         'T' if self.treated else 'NT')
+
 
 class Vitals:
     def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int):
@@ -128,6 +132,13 @@ class Casualty:
         self.tag: str = tag
         self.time_elapsed: int = 0
         self.dead = False
+
+    def __str__(self):
+        retstr = "%s_" % self.name
+        for inj in self.injuries:
+            retstr += inj.__str__()
+            retstr += '_'
+        return retstr[:-1]
 
     def __eq__(self, other: 'Casualty'):
         same = False
