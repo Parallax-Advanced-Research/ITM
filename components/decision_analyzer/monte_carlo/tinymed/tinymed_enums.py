@@ -138,12 +138,12 @@ class Casualty:
             self.tag == other.tag and self.time_elapsed == other.time_elapsed and self.dead == other.dead):
             same = True
 
-        if len(self.injuries) == len(other.injuries):
+        if len(self.injuries) != len(other.injuries):
             same = False
             return same
 
-        self_inj_sorted = sorted(self.injuries, key=lambda x: x.hrpmin)
-        other_inj_sorted = sorted(other.injuries, key=lambda x: x.hrpmin)
-        if self_inj_sorted == other_inj_sorted:
-            same = True
+        self_inj_sorted = sorted(self.injuries, key=lambda x: x.severity)
+        other_inj_sorted = sorted(other.injuries, key=lambda x: x.severity)
+        if self_inj_sorted != other_inj_sorted:
+            same = False
         return same
