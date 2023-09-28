@@ -21,7 +21,6 @@ class TA3Elaborator(Elaborator):
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
 
-
         probe.decisions = to_return
         return to_return
 
@@ -42,14 +41,11 @@ class TA3Elaborator(Elaborator):
                         sup_params['treatment'] = supply.type
                         treat_grounded.append(Decision(cas_action.id_, Action(action.name, sup_params), kdmas=cas_action.kdmas))
             else:
-                num_supply: int = 0
                 supply_needed = cas_action.value.params.copy()['treatment']
                 for s in state.supplies:
-                    num_supply = s.quantity if s.type == supply_needed else num_supply
-                if num_supply:
-                    treat_grounded.append(cas_action)
-                else:
-                    pass
+                    if s.type == supply_needed and s.quantity > 0:
+                        treat_grounded.append(cas_action)
+                        break
 
         # Ground the location
         grounded: list[Decision[Action]] = []
