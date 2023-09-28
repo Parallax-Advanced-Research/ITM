@@ -47,10 +47,10 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
     def make_observation(self, scen: Scenario, a: Action):
         patient = a.params['casualty']
         if patient is None:
-            raise Error("No casualty in action: " + str(a))
+            raise Exception("No casualty in action: " + str(a))
         cas = self.find_casualty(patient, scen.state)
         if cas is None:
-            raise Error("No casualty in state with name: " + patient)
+            raise Exception("No casualty in state with name: " + patient)
         data = [
             #('rank', cas.demographics.rank, 4),
              ('hrpmin', self.get_hrpmin(cas), 5),
