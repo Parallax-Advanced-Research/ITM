@@ -1,12 +1,14 @@
 import pyAgrum
-#import pyAgrum.causal as csl
 import json
+#from typedefs import Node_Name, Node_Val, Probability
+FOO = 'BAR'
 from typing import Dict, Any, List, Set
+from utilities import include
+include('typedefs.py', ['Node_Name', 'Node_Val', 'Probability'])
 
-RandVar = str
-Value = str
-TESTING = False
+TESTING = True
 
+# notebook stuff is just for debugging and visualization
 notebook = False
 try:
 	from IPython import get_ipython
@@ -19,29 +21,29 @@ except:
 
 class Bayesian_Net:
 	bn: pyAgrum.BayesNet
-	node_names: List[str]
-	values: Dict[str, List[str]] # in order of offset
+	node_names: List[Node_Name]
+	values: Dict[Node_Name, List[Node_Val]] # values that each node can take, in order of offset
 
 	def __init__(self, json_fname: str) -> None:
-		def get_topological_order(j: Dict[str, Any]) -> List[str]:
+		def get_topological_order(j: Dict[Node_Name, Any]) -> List[Node_Name]:
 			# TODO: O(N^2), but that might be unavoidable
 			node_names = j.keys()
-			remaining: Set[str] = set(node_names)
-			def get_next() -> str:
+			remaining: Set[Node_Name] = set(node_names)
+			def get_next() -> Node_Name:
 				for node in remaining:
-					assert type(node) is str
+					assert type(node) is Node_Name
 					if all(parent not in remaining for parent in j[node]['parents']):
 						return node
 				assert False
 
-			result: List[str] = []
+			result: List[Node_Name] = []
 			while len(remaining):
 				node = get_next()
 				remaining.remove(node)
 				result.append(node)
 			return result
 
-		def add_node(name: str, defn: Dict[str, Any]) -> None:
+		def add_node(name: Node_Name, defn: Dict[str, Any]) -> None:
 			# put in order of offsets
 			assert ('|' not in name) and ('{' not in name) and ('}' not in name), \
 				f"Invalid node name: {name} (doesn't work with pyagrum's fast syntax"
@@ -97,10 +99,8 @@ class Bayesian_Net:
 			return
 		gnb.showBN(self.bn, size='9')
 
-	def predict(self, observation: Dict[RandVar, Value]) -> Dict[RandVar, Dict[Value, float]]:
-		""" RandVar and Value are both strings. And the float is a probability
-			Usage: bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
-		"""
+	def predict(self, observation: Dict[Node_Name, Node_Val]) -> Dict[Node_Name, Dict[Node_Val, Probability]]:
+		""" Usage: bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'}) """
 		ie = pyAgrum.LazyPropagation(self.bn)
 		ie.setEvidence(observation)
 		result = {}

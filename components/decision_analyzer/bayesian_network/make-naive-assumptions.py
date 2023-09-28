@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import yaml, sys, json
+from typedefs import Node_Name, Node_Val, Probability, Assignment
 from typing import Dict, List, Any, Union
 from utilities import hash_to_assignment, assignment_to_hash, include
 include('../../../util/logger.py')
@@ -9,10 +10,6 @@ nodes: Dict[str, 'Node'] = {}
 
 verbose_mode = True
 
-Node_Name = str
-Node_Value = str
-Probability = float
-Assignment = Dict[Node_Name, Node_Value]
 
 def verbose(s: str) -> None:
 	if not verbose_mode: return
@@ -81,7 +78,7 @@ class Node:
 			self.val2offset[val] = idx - offset
 			self.offset2val[idx - offset] = val
 
-		def parse_row(parent_name: Node_Name, is_root: bool) -> Dict[Node_Value, Probability]:
+		def parse_row(parent_name: Node_Name, is_root: bool) -> Dict[Node_Val, Probability]:
 			""" Row (data[parent_name]) is something like this: 0.7 A, 0.2 V, 0.05 P, 0.05 U. 
 			    PRE: row probabilities are normalized
 			    Output: the corresponding dict.  """
@@ -99,7 +96,7 @@ class Node:
 			assert abs(1.0 - z) < 0.00001, f"{name} doesn't sum to 1.0: {z}"
 			return prob
 			
-		self.basis_rows: Dict[Node_Name, Dict[Node_Value, Probability]] = {} # n.b. Node_Name is the *parent*, but Node_Value is the value of *self*.
+		self.basis_rows: Dict[Node_Name, Dict[Node_Val, Probability]] = {} # n.b. Node_Name is the *parent*, but Node_Val is the value of *self*.
 
 		if 'parents' not in data: # root node
 			assert type(data['probability']) is str
@@ -176,7 +173,7 @@ class Node:
 
 
 	# TODO: this function will replace simulate by computing the exact numbers.
-	def apply_multiple_influences(self, rows_to_apply: List[Dict[Node_Value,Probability]]) -> Dict[Node_Value, Probability]:
+	def apply_multiple_influences(self, rows_to_apply: List[Dict[Node_Val,Probability]]) -> Dict[Node_Val, Probability]:
 		""" rows_to_apply are the rows for all parents that are active/not at baseline.
 		    Each of them is a distribution over what effect the parent might have on self's distribution.
 		    We compute the final probability assuming that each parent has an independent chance of pushing
@@ -185,7 +182,7 @@ class Node:
 		min_offset = min(self.val2offset.values())
 		max_offset = max(self.val2offset.values())
 		offset_counts = { offset:0.0 for offset in range(min_offset, max_offset + 1) }
-		def aux(total_offset: int, probability: float, remaining_rows: List[Dict[Node_Value, Probability]]) -> None:
+		def aux(total_offset: int, probability: float, remaining_rows: List[Dict[Node_Val, Probability]]) -> None:
 			""" As we recurse, each parent selects a specific offset for each branch with nonzero probability.
 			    Once we reach the base case, a specific `total_offset` has been accumulated (which has not yet been bounded).
 			    `probability` is the probability that we end up in this leaf.
