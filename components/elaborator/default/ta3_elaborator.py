@@ -12,7 +12,7 @@ class TA3Elaborator(Elaborator):
             d.value.params = {k: v for k, v in d.value.params.items() if v is not None}
             if _name == 'APPLY_TREATMENT':
                 to_return += self._treatment(probe.state, d)
-            elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CASUALTIES':
+            elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CASUALTY':  # These need no param options
                 to_return += [d]
             elif _name == 'TAG_CASUALTY':
                 to_return += self._tag(probe.state.casualties, d)
@@ -22,7 +22,14 @@ class TA3Elaborator(Elaborator):
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
 
         probe.decisions = to_return
-        return to_return
+        final_list = []
+        for tr in to_return:
+            if tr.value.name == 'DIRECT_MOBILE_CASUALTY' and 'casualty' in tr.value.params:
+                pass
+            else:
+                final_list.append(tr)
+        # Needs direct mobile casualties no
+        return final_list
 
     def _treatment(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
         action = decision.value

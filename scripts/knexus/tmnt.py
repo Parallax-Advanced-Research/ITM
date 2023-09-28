@@ -51,7 +51,7 @@ class TMNTClient:
         ta3_state = reverse_convert_state(state)
         actions: list[TinymedAction] = self.simulator.actions(state)
         ta3_actions: list[Action] = []
-        for i, internal_action in enumerate(actions):
+        for i, internal_action in enumerate(actions):  # Only one direct mobile casualties in actions
             ta3_action = _reverse_convert_action(internal_action, action_num=i)
             ta3_actions.append(ta3_action)
         supplies_as_dict = []
@@ -75,7 +75,7 @@ class TMNTClient:
                          'supplies': supplies_as_dict, 'casualties': casualties_as_dict}
         probe: Probe = Probe(id='tmnt-probe', type=ProbeType.MC, prompt="what do?",
                              state=swagger_state, options=ta3_actions)
-        return probe
+        return probe  # Probe actions only has one dmc
 
     def take_action(self, action: Action) -> Probe:
         tinymed_action = _convert_action(act=action)
@@ -108,7 +108,7 @@ def main():
     while probe is not None:
 
         logger.info(f"Responding to probe-{probe.id}")
-        action = driver.decide(probe)
+        action = driver.decide(probe)  # Probe is good here
         logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)
 

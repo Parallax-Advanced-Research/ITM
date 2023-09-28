@@ -63,7 +63,7 @@ class Driver:
         probe: Probe = self.translate_probe(ext_probe)
 
         # Elaborate decisions, and analyze them
-        probe.decisions = self.elaborate(probe)
+        probe.decisions = self.elaborate(probe)  # Probe.decisions changes from valid to invalid here
         self.analyze(probe)
 
         # Print info affecting decisions
