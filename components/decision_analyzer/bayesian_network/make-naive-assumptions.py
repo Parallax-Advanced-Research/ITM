@@ -3,11 +3,15 @@
 import yaml, sys, random, time, json
 from collections import defaultdict
 from typing import Dict, List, Any, Union
-from util import hash_to_assignment, assignment_to_hash
+from utilities import hash_to_assignment, assignment_to_hash, include
+include('../../../util/logger.py')
 
 nodes: Dict[str, 'Node'] = {}
 
 verbose_mode = True
+
+Node_Value = str
+Probability = float
 
 def verbose(s: str) -> None:
 	if not verbose_mode: return
@@ -19,6 +23,18 @@ def split_by_comma(s: str) -> List[str]:
 	return [a.strip() for a in s.split(',')]
 
 def possible_assignments(nodes: List['Node']) -> List[Dict[str,str]]:
+	""" 
+	An "assignment" associates a valid value to each node a set.
+	Returns a list of all possible assignments for `nodes`
+	e.g. if nodes = [ shock, mmHg ], shock takes the values ['false', 'true'],
+	and mmHg takes the values ['low', 'normal', 'high'], then the output is:
+		[ { shock: 'false', mmHg: 'low' },
+		  { shock: 'false', mmHg: 'normal' },
+		  { shock: 'false', mmHg: 'high' },
+		  { shock: 'true', mmHg: 'low' },
+		  { shock: 'true', mmHg: 'normal' },
+		  { shock: 'true', mmHg: 'high' } ]
+	"""
 	results = []
 
 	def aux(assignments: Dict[str,str], remaining: List[Node]) -> None:
@@ -28,7 +44,7 @@ def possible_assignments(nodes: List['Node']) -> List[Dict[str,str]]:
 			results.append(assignments)
 			return
 		node = remaining[0]
-		for val in node.values.keys():
+		for val in node.val2offset.keys():
 			a = assignments.copy()
 			assert node.name not in a
 			a[node.name] = val
@@ -58,9 +74,11 @@ class Node:
 		verbose(f"vals: {values_lst}")
 		offset = values_lst.index(self.baseline)
 
-		self.values = {}
-		for idx, k in enumerate(values_lst):
-			self.values[k] = idx - offset
+		self.val2offset = {}
+		self.offset2val = {}
+		for idx, val in enumerate(values_lst):
+			self.val2offset[val] = idx - offset
+			self.offset2val[idx - offset] = val
 
 		def parse_row(key: str, is_root: bool) -> Dict[str, float]:
     		# Row is something like this: 0.7 A, 0.2 V, 0.05 P, 0.05 U. Outputs the corresponding dict. PRE: normalized
@@ -70,7 +88,7 @@ class Node:
 			assert type(field) is str
 			for entry in split_by_comma(field):
 				p, val = entry.split()
-				assert val in self.values
+				assert val in self.val2offset
 				prob[val] = float(p)
 				z += float(p)
 
@@ -93,7 +111,7 @@ class Node:
 		del data['baseline']
 
 		verbose(f"# {name}")
-		verbose(f"Values: {self.values}\nParents: {self.parents}\n")
+		verbose(f"Values: {self.val2offset}\nParents: {self.parents}\n")
 		
 		self.basis_rows = {}
 		for parent in self.parents:
@@ -133,7 +151,7 @@ class Node:
 			verbose(f"Relevant Lines: {relevant_lines}")
 
 			h = assignment_to_hash(assignment)
-			self.probability_table[h] = self.simulate(relevant_lines) # play 1M games with these basis probability rows and the rules in my notes. Output resulting distribution
+			self.probability_table[h] = self.apply_multiple_influences(relevant_lines) # play 1M games with these basis probability rows and the rules in my notes. Output resulting distribution
 
 			if 1 == len(relevant_lines):
 				included = [ parent for parent, value in assignment.items()
@@ -142,7 +160,7 @@ class Node:
 
 				estimate = self.probability_table[h]
 				truth = self.basis_rows[included[0]]
-				err = sum(abs(estimate[k] - truth[k]) for k in self.values)
+				err = sum(abs(estimate[k] - truth[k]) for k in self.val2offset)
 
 				# Not a small epsilon because we expect *some* estimation error.
 				# But if it exceeds 1%, something's up.
@@ -150,7 +168,53 @@ class Node:
 
 				self.probability_table[h] = self.basis_rows[included[0]]
 
-	def simulate(self, rows_to_apply: List[Dict[str,float]]) -> Dict[str, float]:
+
+	# TODO: this function will replace simulate by computing the exact numbers.
+	def apply_multiple_influences(self, rows_to_apply: List[Dict[Node_Value,Probability]]) -> Dict[Node_Value, Probability]:
+		""" rows_to_apply are the rows for all parents that are active/not at baseline.
+		    Each of them is a distribution over what effect the parent might have on self's distribution.
+		    We compute the final probability assuming that each parent has an independent chance of pushing
+		    the value away from the baseline by a certain amount. """
+
+		min_offset = min(self.val2offset.values())
+		max_offset = max(self.val2offset.values())
+		offset_counts = { offset:0.0 for offset in range(min_offset, max_offset + 1) }
+		def aux(total_offset: int, probability: float, remaining_rows: List[Dict[Node_Value, Probability]]) -> None:
+			""" As we recurse, each parent selects a specific offset for each branch with nonzero probability.
+			    Once we reach the base case, a specific `total_offset` has been accumulated (which has not yet been bounded).
+			    `probability` is the probability that we end up in this leaf.
+			    `remaining_rows` are the rows we still need to process before we reach the base case. """
+			if 0 == len(remaining_rows):
+				#print(f"Base case: {total_offset} += {probability}")
+				total_offset = max(min_offset, min(max_offset, total_offset)) # restrict to valid bounds
+				offset_counts[total_offset] += probability
+				return
+
+			for val, prob in remaining_rows[0].items():
+				aux(total_offset + self.val2offset[val], probability * prob, remaining_rows[1:])
+			
+	
+		aux(0, 1.0, rows_to_apply)
+		result = { self.offset2val[offset]: prob 
+			for offset, prob in offset_counts.items() }
+		
+		assert abs(1.0 - sum(offset_counts.values())) < 0.00001, f"Not normalized: {offset_counts}"
+
+		# TODO: remove. TEMPORARILY assert that it's within epsilon of the sim
+		ground_truth = self.simulate(rows_to_apply)
+		for val in result:
+			assert val in self.val2offset
+		for val in ground_truth:
+			assert val in result
+			err = abs(ground_truth[val] - result[val])
+			print(f"# APPROXIMATION ERROR: {err}")
+			assert err < 0.01, \
+				f"Calculation: {result}\nSimulation:  {ground_truth}\n"
+
+		return result
+				
+
+	def simulate(self, rows_to_apply: List[Dict[Node_Value, Probability]]) -> Dict[Node_Value, Probability]:
 		""" rows_to_apply are the rows for all parents that are active/not at baseline.
 		    Each of them is a distribution over what effect the parent might have on self's distribution.
 		    We play lots of rounds and output the aggregate distribution over self. """
@@ -159,11 +223,11 @@ class Node:
 		# Do it right once there's not a deadline.
 
 		# Much faster to do it in one call
-		N = 10_00_000
+		N = 10_000_000
 		selections = []
 		for row in rows_to_apply:
 			keys = list(row.keys())
-			options = [self.values[k] for k in keys]
+			options = [self.val2offset[k] for k in keys]
 			weights = [row[k] for k in keys]
 			selections.append(random.choices(options, weights, k=N))
 
@@ -176,10 +240,10 @@ class Node:
 			counts[offset] += 1
 
 		# Scale counts to proportion of N, convert offsets back into labels
-		results = { k:0.0 for k in self.values }
-		values_inverse = { v:k for k,v in self.values.items() }
-		min_offset = min(self.values.values())
-		max_offset = max(self.values.values())
+		results = { k:0.0 for k in self.val2offset }
+		values_inverse = { v:k for k,v in self.val2offset.items() }
+		min_offset = min(self.val2offset.values())
+		max_offset = max(self.val2offset.values())
 		for offset in counts:
 			if offset < min_offset:
 				results[values_inverse[min_offset]] += counts[offset] / float(N)
@@ -201,7 +265,7 @@ class Node:
 
 		return { # This will be placed in a dict with self.name as key
 			"parents": parents, # names
-			"values": self.values, # maps name -> offset
+			"values": self.val2offset, # maps name -> offset
 			"baseline": self.baseline, # not really needed after this stage, but meh.
 			"distribution": [{
 				"parent_assignment" : hash_to_assignment(k),
