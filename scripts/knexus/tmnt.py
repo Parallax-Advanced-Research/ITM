@@ -5,6 +5,7 @@ from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casua
 from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import Probe, ProbeType, Scenario
 from runner import TA3Driver
+from runner import simple_driver
 from domain.internal import KDMAs
 from util import logger, dict_difference
 from domain.external import Action
@@ -26,7 +27,7 @@ class TMNTClient:
                    'noise_peak': None}
     THREAT_STATE = {'threats': [{'severity': 0.4, 'type': 'Gunfire'}],
                     'unstructured': 'Gunfire and shouting heard at a distance; Participant appears in scene in crouched position under cover by trees'}
-    def __init__(self, alignment_target: KDMAs, max_actions=9):
+    def __init__(self, alignment_target: KDMAs, max_actions=4):  # 9 is overkill
         self.align_tgt: KDMAs = alignment_target
         self.actions: dict[str, Action] = {}
         self.probe_count = 1
@@ -96,6 +97,7 @@ def main():
     tmnt_args = TMNTARGS()
 
     driver = TA3Driver(tmnt_args)
+    driver = simple_driver.SimpleDriver(tmnt_args)
     client = TMNTClient(kdmas)
     driver.set_alignment_tgt(kdmas)
     logger.debug("Driver and TMNT Client loaded.")

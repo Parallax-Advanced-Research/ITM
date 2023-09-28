@@ -6,25 +6,41 @@ from .sim import MCSim
 from .mc_node import MCStateNode, MCDecisionNode
 from .mc_state import MCState
 
+ScoreT = int | float | dict[str, float]  # This is making me uncomfortable. Its almost self referencing
+MetricResultsT = dict[str, ScoreT]
+
 
 def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecisionNode]) -> MCStateNode | MCDecisionNode:
     return rand.choice(nodes)
 
 
-def score_averager(scores: list[{str: float}]) -> {str: float}:
+def score_averager(scores: list[{str: ScoreT}]) -> MetricResultsT:
     total_dict = {}
     for score in scores:
         for key in score:
-            cur = total_dict.get(key, 0)
-            total_dict[key] = cur + score[key]
+            if isinstance(score[key], dict):
+                scored_dict = score[key]
+                subtotal_dict = {}
+                for subkey in scored_dict:
+                    cur = subtotal_dict.get(subkey, 0)
+                    subtotal_dict[subkey] = cur + scored_dict[subkey]
+                total_dict[key] = subtotal_dict
+            else:
+                cur = total_dict.get(key, 0)
+                total_dict[key] = cur + score[key]
     for metric in total_dict:
-        total_dict[metric] = total_dict[metric] / len(scores)
+        if isinstance(total_dict[metric], dict):
+            scored_dict = total_dict[metric]
+            for subkey in scored_dict:
+                scored_dict[subkey] = scored_dict[subkey] / len(scores)
+        else:
+            total_dict[metric] = total_dict[metric] / len(scores)
     return total_dict
 
 
 NodeSelector = typing.Callable[[random.Random, list[MCStateNode | MCDecisionNode]], MCStateNode | MCDecisionNode]
-ScoreMerger = typing.Callable[[list[float]], float]
-ScoreFunction = typing.Callable[[MCState], float]
+ScoreMerger = typing.Callable[[list[dict[str, ScoreT]]], MetricResultsT]
+ScoreFunction = typing.Callable[[MCState], MetricResultsT]
 
 
 class MonteCarloTree:

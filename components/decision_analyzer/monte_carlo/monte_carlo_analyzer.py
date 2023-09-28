@@ -1,21 +1,26 @@
 from components.decision_analyzer.monte_carlo.tinymed import TinymedSim
 from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_state import TinymedAction, TinymedState
+from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 import components.decision_analyzer.monte_carlo.tinymed.ta3_converter as ta3_conv
-import components.decision_analyzer.monte_carlo.mc_sim.mc_tree as mct
+from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import MetricResultsT, ScoreT
 from components.decision_analyzer.monte_carlo.tinymed.score_functions import (tiny_med_severity_score,
                                                                               tiny_med_resources_remaining,
                                                                               tiny_med_time_score,
-                                                                              get_casualty_severity)
+                                                                              tiny_med_casualty_severity)
 from copy import deepcopy
 import util.logger
 from domain.ta3 import TA3State
 
 logger = util.logger
 
+
+def get_casualty_severity(casualty: Casualty) -> float:
+    severity: float = sum([inj.severity for inj in casualty.injuries])
+    return severity
 
 def decision_to_actstr(decision: Decision) -> str:
     action: Action = decision.value
@@ -43,22 +48,67 @@ def get_blank_scores() -> dict[str, int | None | float]:
             'Average Casualty Severity': None}
 
 
-def get_populated_scores(decision: mcnode.MCDecisionNode, tinymedstate: TinymedState) -> dict[str, int | None | float]:
+ # Change this to have the casualty_severity dict, and pass the dict in for new_state
+def get_populated_scores(decision: mcnode.MCDecisionNode, tinymedstate: TinymedState) -> MetricResultsT:
+    ret_dict: MetricResultsT = {}
     time_avg = 0.0
     num_casualties = float(len(tinymedstate.casualties))
     injuries = 0.0
+
     for c in tinymedstate.casualties:
         for injury in c.injuries:
             injuries += injury.severity
-    for cs in range(len(decision.children)):
-        child_time = 0.0
-        if 'time used' in decision.children[cs].score:
-            child_time = decision.children[cs].score['time used']
-        time_avg += child_time
+
     time_avg /= len(decision.children_scores)
     severity = decision.score['severity']
-    return {'severity': severity, 'resources_used': decision.score['resource_score'], 'time_used': time_avg,
-            'Average Injury Severity': severity / injuries, 'Average Casualty Severity': severity / num_casualties}
+    ret_dict['severity'] = severity
+    ret_dict['resources_used'] = decision.score['resource_score']
+    ret_dict['time_used'] = decision.score['time used']
+    ret_dict['Average Injury Severity'] = severity / injuries
+    ret_dict['Average Casualty Severity'] = severity / num_casualties
+    ret_dict['Casualty Severities'] = decision.score['individual casualty severity']
+    return ret_dict
+
+
+def get_better_temporal_scores(new_state: dict[str, int | None | float],
+                               previous_state: TinymedState) -> list[DecisionMetrics]:
+    def get_unkown_temporal_scores(previous_state: TinymedState) -> list[DecisionMetrics]:
+        return_metrics: list[DecisionMetrics] = []
+        return_metrics.append({'Severity Change': DecisionMetric(name='Severity Change', description='', type=type(float),
+                                                                 value=None)})
+        cas_sevs_new = {}
+        cas_sevs_dlt = {}
+        for casualty in previous_state.casualties:
+            cas_sevs_new[casualty.name] = None
+            cas_sevs_dlt[casualty.name] = None
+        return_metrics.append({'Casualty Severity': DecisionMetric(name='Casualty Severity', description='', type=type(cas_sevs_new),
+                                                                   value=cas_sevs_new)})
+        return_metrics.append({'Casualty Severity Changes': DecisionMetric(name='Casualty Severity Changes', description='', type=type(cas_sevs_dlt),
+                                                                           value=cas_sevs_dlt)})
+        return return_metrics
+
+    if new_state['severity'] is None:
+        return get_unkown_temporal_scores(previous_state=previous_state)
+
+    change = {}
+    for casualty in previous_state.casualties:
+        change[casualty.name] = new_state['Casualty Severities'][casualty.name] - get_casualty_severity(casualty)
+
+
+    previous_severity = 0.0
+    for casualty in previous_state.casualties:
+        previous_severity += get_casualty_severity(casualty)
+
+    return_metrics: list[DecisionMetrics] = []
+
+    return_metrics.append({'Severity Change': DecisionMetric(name='Severity Change', description='', type=type(float),
+                                                             value=new_state['severity'] - previous_severity)})
+    return_metrics.append({'Casualty Severity': DecisionMetric(name='Casualty Severity', description='', type=type(new_state['Casualty Severities']),
+                                                               value=new_state['Casualty Severities'])})
+    return_metrics.append({'Casualty Severity Changes': DecisionMetric(name='Casualty Severity Changes', description='', type=type(change),
+                                                                       value=change)})
+    return return_metrics
+
 
 
 def get_tempral_scores(this_state: TinymedState, previous_state: TinymedState | None) -> list[DecisionMetrics]:
@@ -87,19 +137,26 @@ def get_tempral_scores(this_state: TinymedState, previous_state: TinymedState | 
     return_metrics: list[DecisionMetrics] = []
 
     # 1- Even if no previous state, all casualties have a new severity to report
+    casualty_severity_value : dict[str, float | None] = {}
     for casualty in list(cas_sevs_this.keys()):
-        return_metrics.append({casualty + 'Severity': DecisionMetric(name='%s_severity' % casualty, description='',
-                                                                     type=type(float), value=cas_sevs_this[casualty])})
+        casualty_severity_value[casualty] = cas_sevs_this[casualty]
+    return_metrics.append({'Casualty Severity': DecisionMetric(name='Casualty Severity', description='',
+                                                                 type=type(casualty_severity_value),
+                                                               value=casualty_severity_value)})
+    # Problem:
     if prev_none:
         return return_metrics
     else:
         return_metrics.append({'Severity Change': DecisionMetric(name='Severity Change', description='',
                                                                  type=type(float), value=severity_delta)})
+        casualty_severity_change_value: dict[str, float | None] = {}
         for casualty in list(cas_sevs_delta.keys()):
-            return_metrics.append({casualty + 'Severity Change': DecisionMetric(name=casualty + 'Severity Change',
-                                                                                description='', type=type(float),
-                                                                                value=cas_sevs_delta[casualty])})
+            casualty_severity_change_value[casualty] = cas_sevs_delta[casualty]
+        return_metrics.append({'Casualty Severity Changes': DecisionMetric(name='Casualty Severity Changes',
+                                                                            description='', type=type(casualty_severity_change_value),
+                                                                            value=casualty_severity_change_value)})
     return return_metrics
+
 
 class MonteCarloAnalyzer(DecisionAnalyzer):
     def __init__(self, max_rollouts: int = 500, max_depth: int = 2):
@@ -108,11 +165,10 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         self.max_depth: int = max_depth
         self.start_supplies: int = 9001
         self.supplies_set: bool = False
-        self.previous_state: None | TinymedState = None
         self.previous_states:  list[TinymedState] = []
 
     def remember(self, state: TinymedState):
-        self.previous_states.append(state)
+        self.previous_states.append(deepcopy(state))
 
     def most_recent_state(self) -> TinymedState:
         return self.previous_states[-1] if len(self.previous_states) else None
@@ -127,10 +183,12 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         # more score functions can be added here
         score_functions = {'severity': tiny_med_severity_score,
                            'resource_score': tiny_med_resources_remaining,
-                           'time used': tiny_med_time_score}
+                           'time used': tiny_med_time_score,
+                           'individual casualty severity' : tiny_med_casualty_severity}
 
         sim = TinymedSim(tinymed_state)
         root = mcsim.MCStateNode(tinymed_state)
+        self.remember(tinymed_state)
         tree = mcsim.MonteCarloTree(sim, score_functions, [root])
 
         for rollout in range(self.max_rollouts):
@@ -171,8 +229,9 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
                                                                             type=type(float), value=time_val)}
 
             previous_state = self.most_recent_state()
-            temporal_metrics: list[DecisionMetrics] = get_tempral_scores(this_state=tinymed_state,
-                                                                         previous_state=previous_state)
+            new_state = 3
+            temporal_metrics: list[DecisionMetrics] = get_better_temporal_scores(new_state=basic_stats,
+                                                                                previous_state=previous_state)
             decision.metrics.update(metrics)
             decision.metrics.update(casualty_metrics)
             decision.metrics.update(injury_metrics)
