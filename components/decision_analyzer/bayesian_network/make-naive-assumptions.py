@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import yaml, sys, random, time, json
-from collections import defaultdict
+import yaml, sys, json
 from typing import Dict, List, Any, Union
 from utilities import hash_to_assignment, assignment_to_hash, include
 include('../../../util/logger.py')
@@ -250,7 +249,5 @@ def main(argv: List[str]) -> None:
 	# And I don't have that part coded in lisp, either.
 	# I'll need to output lisp code, but that's easy enough.
 
-seed = int(time.time())
-verbose(f"Seed: {seed}")
 main(sys.argv)
 
