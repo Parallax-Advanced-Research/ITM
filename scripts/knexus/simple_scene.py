@@ -1,5 +1,6 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult, MCState
 from components.decision_analyzer.monte_carlo.tinymed import TinymedState, TinymedSim, TinymedAction
+import components.decision_analyzer.monte_carlo.tinymed.tinymed_enums as tenums
 from components.decision_analyzer.monte_carlo.tinymed.medactions import get_simple_casualties, get_simple_supplies
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
 from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
@@ -11,13 +12,13 @@ from domain.external import Action
 
 
 class SimpleClient:
-    SUPPLIES = [{'quantity': 3, 'type': 'Hemostatic gauze'}, {'quantity': 3, 'type': 'Tourniquet'},
-                {'quantity': 3, 'type': 'Pressure bandage'}, {'quantity': 0, 'type': 'Decompression Needle'},
-                {'quantity': 0, 'type': 'Nasopharyngeal airway'}]
+    SUPPLIES = [{'quantity': 3, 'type': tenums.Supplies.HEMOSTATIC_GAUZE}, {'quantity': 3, 'type': tenums.Supplies.TOURNIQUET},
+                {'quantity': 3, 'type': tenums.Supplies.PRESSURE_BANDAGE}, {'quantity': 0, 'type': tenums.Supplies.DECOMPRESSION_NEEDLE},
+                {'quantity': 0, 'type': tenums.Supplies.NASOPHARYNGEAL_AIRWAY}]
     CASUALTIES = [{'id': 'JT', 'unstructured': 'JT has a minor eft bicep puncture',
                    'name': 'JT', 'relationship': None, 'demographics': {'age': 33, 'sex': 'M',
                                                                         'rank': 'director of social media'},
-                   'injuries': [{'name': 'Puncture', 'location': 'left bicep', 'severity': 0.8}],
+                   'injuries': [{'name': tenums.Injuries.LACERATION, 'location': tenums.Locations.LEFT_BICEP, 'severity': .4}],
                    'vitals': {'conscious': None, 'mental_status': None, 'breathing': None, 'hrpmin': None},
                    'complete_vitals': None, 'assessed': False, 'tag': None}]
     UNSTRUCTURED = 'JT has injured his left bicep lifting weights'
@@ -25,11 +26,11 @@ class SimpleClient:
     SCENARIO_COMPLETE = False
     MISSION = {'unstructured': 'Heal JTs ripped, injured muscles.', 'mission_type': 'Disaster Relief'}
     ENVIRONMENT = {'unstructured': 'Sewers under Rockville', 'weather': None, 'location': None, 'terrain': None,
-                   'flora': None, 'fauna': None, 'soundscape': None, 'aid_delay': None, 'temperature': None,
+                   'flora': None, 'fauna': 'Cat and Dog', 'soundscape': 'Janis Joplin', 'aid_delay': None, 'temperature': None,
                    'humidity': None, 'lighting': None, 'visibility': None, 'noise_ambient': None,
                    'noise_peak': None}
-    THREAT_STATE = {'threats': [{'severity': 0.4, 'type': 'Gunfire'}],
-                    'unstructured': 'Theres gunfire in the sewer'}
+    THREAT_STATE = {'threats': [{'severity': 0.1, 'type': 'Cat'}],
+                    'unstructured': 'Dmitri is peckish'}
 
     def __init__(self, alignment_target: KDMAs, max_actions=9):
         self.align_tgt: KDMAs = alignment_target
