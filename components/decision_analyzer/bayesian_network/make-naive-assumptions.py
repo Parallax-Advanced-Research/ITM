@@ -9,8 +9,10 @@ nodes: Dict[str, 'Node'] = {}
 
 verbose_mode = True
 
+Node_Name = str
 Node_Value = str
 Probability = float
+Assignment = Dict[Node_Name, Node_Value]
 
 def verbose(s: str) -> None:
 	if not verbose_mode: return
@@ -21,7 +23,7 @@ def verbose(s: str) -> None:
 def split_by_comma(s: str) -> List[str]:
 	return [a.strip() for a in s.split(',')]
 
-def possible_assignments(nodes: List['Node']) -> List[Dict[str,str]]:
+def possible_assignments(nodes: List['Node']) -> List[Assignment]:
 	""" 
 	An "assignment" associates a valid value to each node a set.
 	Returns a list of all possible assignments for `nodes`
@@ -36,7 +38,7 @@ def possible_assignments(nodes: List['Node']) -> List[Dict[str,str]]:
 	"""
 	results = []
 
-	def aux(assignments: Dict[str,str], remaining: List[Node]) -> None:
+	def aux(assignments: Assignment, remaining: List[Node]) -> None:
 		nonlocal results
 
 		if 0 == len(remaining):
@@ -58,7 +60,7 @@ class Node:
 		verbose(f"{self.name}.is_root() -> basis_rows = {self.basis_rows} -> {len(self.basis_rows)}")
 		return 0 == len(self.basis_rows)
 
-	def __init__(self, name: str, data: Dict[str, Union[str, List[str]]]) -> None:
+	def __init__(self, name: Node_Name, data: Dict[str, Union[str, List[str]]]) -> None:
 		data = data.copy()
 		assert 'values' in data and type(data['values']) is list
 		assert 'baseline' in data and type(data['baseline']) is str
@@ -79,11 +81,13 @@ class Node:
 			self.val2offset[val] = idx - offset
 			self.offset2val[idx - offset] = val
 
-		def parse_row(key: str, is_root: bool) -> Dict[str, float]:
-    		# Row is something like this: 0.7 A, 0.2 V, 0.05 P, 0.05 U. Outputs the corresponding dict. PRE: normalized
+		def parse_row(parent_name: Node_Name, is_root: bool) -> Dict[Node_Value, Probability]:
+			""" Row (data[parent_name]) is something like this: 0.7 A, 0.2 V, 0.05 P, 0.05 U. 
+			    PRE: row probabilities are normalized
+			    Output: the corresponding dict.  """
 			prob = {}
 			z = 0.0
-			field = data[key]
+			field = data[parent_name]
 			assert type(field) is str
 			for entry in split_by_comma(field):
 				p, val = entry.split()
@@ -91,12 +95,13 @@ class Node:
 				prob[val] = float(p)
 				z += float(p)
 
-			name = f"P({self.name} = {val})" if is_root else f"P({self.name} = {val} | {key})"
+			name = f"P({self.name} = {val})" if is_root else f"P({self.name} = {val} | {parent_name})"
 			assert abs(1.0 - z) < 0.00001, f"{name} doesn't sum to 1.0: {z}"
 			return prob
+			
+		self.basis_rows: Dict[Node_Name, Dict[Node_Value, Probability]] = {} # n.b. Node_Name is the *parent*, but Node_Value is the value of *self*.
 
 		if 'parents' not in data: # root node
-			self.basis_rows: Dict[str, Dict[str, float]] = {}
 			assert type(data['probability']) is str
 			self.probability_table[''] = parse_row('probability', True)
 			return
@@ -112,7 +117,6 @@ class Node:
 		verbose(f"# {name}")
 		verbose(f"Values: {self.val2offset}\nParents: {self.parents}\n")
 		
-		self.basis_rows = {}
 		for parent in self.parents:
 			verbose(f"Add parent of {name}: {parent}")
 			assert parent in data, f"Missing row for P({name} | {parent})"
@@ -126,8 +130,15 @@ class Node:
 		assert 0 == len(data), f"Unexpected keys in {name}: {data.keys()}"
 
 	def naive_estimation(self) -> None:
-		""" Fill in all the joint probabilities by assuming
-		    TODO: Copy over the assumptions from my notes """
+		""" Fill in all the joint probabilities by assuming the following:
+			* Each random variable has a discrete set of ordered values it can take.
+			* Each parent has a probability that it will move the value up or down by a
+			  certain amount (e.g. 20% chance it doesn't move it, 60% it moves it up 1,
+			  20% it moves it up 2). These should be assigned by a SME.
+			* The movement caused by each parent is applied independently of the others.
+			* If the total movement moves it out of the set of values, it's capped at
+			  the highest or lowest valid value.
+		"""
 
 		if self.is_root(): return
 		verbose(f"\n\nnaive_estimation({self.name})")
@@ -140,17 +151,14 @@ class Node:
 			# The same basic logic works; it's just that there'll be a row for every value other than the
 			# "normal" one.
 
-			verbose(f"Assignment: {assignment}")
 			relevant_lines = []
 			for parent, value in assignment.items():
-				verbose(f"p,v = {parent}, {value}")
 				if nodes[parent].baseline != value:
-					verbose("APPEND")
 					relevant_lines.append(self.basis_rows[parent])
-			verbose(f"Relevant Lines: {relevant_lines}")
+			verbose(f"Assignment: {assignment}\nRelevant Lines: {relevant_lines}")
 
 			h = assignment_to_hash(assignment)
-			self.probability_table[h] = self.apply_multiple_influences(relevant_lines) # play 1M games with these basis probability rows and the rules in my notes. Output resulting distribution
+			self.probability_table[h] = self.apply_multiple_influences(relevant_lines)
 
 			if 1 == len(relevant_lines):
 				included = [ parent for parent, value in assignment.items()
@@ -161,9 +169,8 @@ class Node:
 				truth = self.basis_rows[included[0]]
 				err = sum(abs(estimate[k] - truth[k]) for k in self.val2offset)
 
-				# Not a small epsilon because we expect *some* estimation error.
-				# But if it exceeds 1%, something's up.
-				assert err < 0.01, "Estimation error is a bit high. Use a bigger N for the simulation"
+				# It should be *exactly* 0, but some floating point error might conceivably happen
+				assert err < 0.0000001, f"Floating point rounding error is unusually high: err={err:.12f}" 
 
 				self.probability_table[h] = self.basis_rows[included[0]]
 
@@ -218,11 +225,12 @@ class Node:
 			} for k,v in self.probability_table.items()]
 		}
 
-def print_nodes(nodes: Dict[str, Node]) -> None:
+def print_nodes(nodes: Dict[Node_Name, Node]) -> None:
 	d = { k : v.to_dict() for k, v in nodes.items() }
 	print(json.dumps(d, sort_keys = True, indent = 4))
 
 def main(argv: List[str]) -> None:
+	# TODO: give it a -h|--help option
 	fname = argv[1] if len(argv) > 1 else 'scenario-bn.yaml'
 	with open(fname, encoding='utf-8') as fin:
 		y = yaml.load(fin, Loader=yaml.BaseLoader)
@@ -242,12 +250,6 @@ def main(argv: List[str]) -> None:
 		node.print_table()
 
 	print_nodes(nodes)
-
-	# TODO: Add the code to convert to observations here. It'll be quicker (for me) than writing in lisp,
-	# and python has the Fraction and Decimal libraries to do the rationalize step.
-	# although...I need the whole bayesian network for that...which I do *sort of* have here.
-	# And I don't have that part coded in lisp, either.
-	# I'll need to output lisp code, but that's easy enough.
 
 main(sys.argv)
 
