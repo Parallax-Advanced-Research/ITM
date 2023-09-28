@@ -197,62 +197,8 @@ class Node:
 		aux(0, 1.0, rows_to_apply)
 		result = { self.offset2val[offset]: prob 
 			for offset, prob in offset_counts.items() }
-		
 		assert abs(1.0 - sum(offset_counts.values())) < 0.00001, f"Not normalized: {offset_counts}"
-
-		# TODO: remove. TEMPORARILY assert that it's within epsilon of the sim
-		ground_truth = self.simulate(rows_to_apply)
-		for val in result:
-			assert val in self.val2offset
-		for val in ground_truth:
-			assert val in result
-			err = abs(ground_truth[val] - result[val])
-			print(f"# APPROXIMATION ERROR: {err}")
-			assert err < 0.01, \
-				f"Calculation: {result}\nSimulation:  {ground_truth}\n"
-
 		return result
-				
-
-	def simulate(self, rows_to_apply: List[Dict[Node_Value, Probability]]) -> Dict[Node_Value, Probability]:
-		""" rows_to_apply are the rows for all parents that are active/not at baseline.
-		    Each of them is a distribution over what effect the parent might have on self's distribution.
-		    We play lots of rounds and output the aggregate distribution over self. """
-
-		# TODO: it'd be straightforward to calculate the exact value, but would take slightly longer to code.
-		# Do it right once there's not a deadline.
-
-		# Much faster to do it in one call
-		N = 10_000_000
-		selections = []
-		for row in rows_to_apply:
-			keys = list(row.keys())
-			options = [self.val2offset[k] for k in keys]
-			weights = [row[k] for k in keys]
-			selections.append(random.choices(options, weights, k=N))
-
-		# Each row independently applies the offset that it drew this round
-		counts: Dict[int, int] = defaultdict(int)
-		for idx in range(N):
-			offset = 0
-			for jdx,_ in enumerate(rows_to_apply):
-				offset += selections[jdx][idx]
-			counts[offset] += 1
-
-		# Scale counts to proportion of N, convert offsets back into labels
-		results = { k:0.0 for k in self.val2offset }
-		values_inverse = { v:k for k,v in self.val2offset.items() }
-		min_offset = min(self.val2offset.values())
-		max_offset = max(self.val2offset.values())
-		for offset in counts:
-			if offset < min_offset:
-				results[values_inverse[min_offset]] += counts[offset] / float(N)
-			elif offset > max_offset:
-				results[values_inverse[max_offset]] += counts[offset] / float(N)
-			else:
-				results[values_inverse[offset]] += counts[offset] / float(N)
-
-		return results
 
 	def print_table(self) -> None:
 		for k,v in self.probability_table.items():
