@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import yaml, sys, json
-from typedefs import Node_Name, Node_Val, Probability, Assignment
 from typing import Dict, List, Any, Union
+from typedefs import Node_Name, Node_Val, Probability, Assignment
 from utilities import hash_to_assignment, assignment_to_hash, include
 include('../../../util/logger.py')
 

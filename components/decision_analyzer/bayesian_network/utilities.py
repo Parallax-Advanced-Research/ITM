@@ -29,7 +29,7 @@ def hash_to_assignment(key: str) -> Dict[str,str]:
 		result[a[0]] = a[1]
 	return result
 
-def include(path: str, fromlist: List[str] = [], *, module_name: Optional[str] = None) -> None:
+def include(path: str, fromlist: Optional[List[str]] = None, *, module_name: Optional[str] = None) -> None:
 	""" First argument is a relative or absolute path to a python file.
 		`fromlist` lets you import symbols into the calling module's globals:
 		e.g. include("foo.py", [ "bar", "baz" ]) is roughly equivalent to `from foo import bar, baz`
@@ -60,13 +60,19 @@ def include(path: str, fromlist: List[str] = [], *, module_name: Optional[str] =
 
 	if module_name not in sys.modules:
 		spec = spec_from_file_location(module_name, path)
+		assert spec is not None
 		module = module_from_spec(spec)
+		assert module is not None
+		assert spec.loader is not None
 		spec.loader.exec_module(module)
 		sys.modules[module_name] = module
 
-	for name in fromlist:
-		stack = inspect.stack()[1]
-		g = stack.frame.f_globals
-		if name in g and g[name] != getattr(module, name):
-			sys.stderr.write(f"\x1b[93mWARNING: {stack.code_context[0].strip()} clobbers variable {name} ({stack.filename}:{stack.lineno})\x1b[0m\n")
-		g[name] = getattr(module, name)
+	# TODO: Doesn't work with mypy
+	if fromlist is not None:
+		for name in fromlist:
+			frame = inspect.stack()[1]
+			g = frame.frame.f_globals
+			if name in g and g[name] != getattr(module, name):
+				assert frame.code_context is not None
+				sys.stderr.write(f"\x1b[93mWARNING: {frame.code_context[0].strip()} clobbers variable {name} ({frame.filename}:{frame.lineno})\x1b[0m\n")
+			g[name] = getattr(module, name)

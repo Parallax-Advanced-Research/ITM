@@ -1,14 +1,15 @@
+from typing import Dict, Optional
+from typedefs import Node_Name, Node_Val
 from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric
 from domain.internal.decision import Action
 from domain.ta3.ta3_state import Casualty, State
 from components import DecisionAnalyzer
-from statistics import mean, pstdev
 from .inference import Bayesian_Net
 
 class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
     bn: Bayesian_Net = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.bn = Bayesian_Net("components/decision_analyzer/bayesian_network/bayes_net.json")
         
@@ -37,13 +38,13 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
 
         return analysis
             
-    def make_observation(self, state: State, a: Action):
+    def make_observation(self, state: State, a: Action) -> Dict[Node_Name, Optional[Node_Val]]:
         patient = a.params['casualty']
         if patient is None:
-            raise Error("No casualty in action: " + str(a))
+            raise Exception("No casualty in action: " + str(a))
         cas = self.find_casualty(patient, state)
         if cas is None:
-            raise Error("No casualty in state with name: " + patient)
+            raise Exception("No casualty in state with name: " + patient)
         data = {
             'hrpmin': self.get_hrpmin(cas),
             'pain': self.get_pain(cas),
@@ -55,7 +56,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         
         return {name: value for (name, value) in data.items() if value is not None}
         
-    def get_hrpmin(self, c : Casualty):
+    def get_hrpmin(self, c : Casualty) -> Optional[Node_Val]:
         if c.vitals.hrpmin is None:
             return None
         if c.vitals.hrpmin < 60:
@@ -64,26 +65,26 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
             return "high"
         return "normal"
 
-    def get_burns(self, c : Casualty):
+    def get_burns(self, c : Casualty) -> Optional[Node_Val]:
         for i in c.injuries:
             if i.name == 'Burn':
                 return "true" if i.severity > 0.5 else "false"
         return None
 
-    def get_trauma(self, c : Casualty):
+    def get_trauma(self, c : Casualty) -> Node_Val:
         for i in c.injuries:
             if i.name == 'Amputation' and ('calf' in i.location or 'leg' in i.location 
                                            or 'arm' in i.location):
                 return "true"
         return "false"
 
-    def get_amputation(self, c : Casualty):
+    def get_amputation(self, c : Casualty) -> Node_Val:
         for i in c.injuries:
             if i.name == 'Amputation':
                 return "true"
         return "false"
         
-    def get_pain(self, c : Casualty):
+    def get_pain(self, c : Casualty) -> Optional[Node_Val]:
         if c.vitals.mental_status is None:
             return None
         if c.vitals.mental_status == "AGONY":
@@ -93,19 +94,21 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         return None
         
        
-    def get_AVPU(self, c: Casualty):
+    def get_AVPU(self, c: Casualty) -> Optional[Node_Val]:
         pain = self.get_pain(c) not in [None, "low_or_none"]
         conscious = c.vitals.conscious
         if conscious:
             return "A"
-        if pain and not conscious:
+        if pain and not conscious: # TODO: The P in AVPU isn't "They're in pain"; it's "They respond in some way if we jab them with a needle"
             return "P"
         if conscious is None: 
             return None
         if not pain and not conscious:
             return "U"
+        return None
 
-    def find_casualty(self, name: str, s: State):
+    def find_casualty(self, name: str, s: State) -> Optional[Casualty]:
         for cas in s.casualties:
             if cas.id == name:
                 return cas
+        return None

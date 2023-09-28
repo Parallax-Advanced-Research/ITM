@@ -1,10 +1,7 @@
 import pyAgrum
 import json
-#from typedefs import Node_Name, Node_Val, Probability
-FOO = 'BAR'
 from typing import Dict, Any, List, Set
-from utilities import include
-include('typedefs.py', ['Node_Name', 'Node_Val', 'Probability'])
+from typedefs import Node_Name, Node_Val, Probability
 
 TESTING = True
 
