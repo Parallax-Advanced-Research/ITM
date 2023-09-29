@@ -28,6 +28,7 @@ class Injury:
     location: str
     name: str
     severity: float
+    treated: bool
 
 
 Locations = {"right forearm", "left forearm", "right calf", "left calf", "right thigh", "left thigh", "right stomach",

@@ -67,7 +67,8 @@ class SimpleClient:
         for cas in ta3_state.casualties:
             injuries_as_dict = []
             for injury in cas.injuries:
-                inj_dict = {'location': injury.location, 'name': injury.name, 'severity': injury.severity}
+                inj_dict = {'location': injury.location, 'name': injury.name,
+                            'severity': injury.severity, 'treated': injury.treated}
                 injuries_as_dict.append(inj_dict)
             demographs_as_dict = {'age': cas.demographics.age, 'sex': cas.demographics.sex, 'rank': cas.demographics.rank}
             vitals_as_dict = {'conscious': cas.vitals.conscious, 'mental_status': cas.vitals.mental_status,

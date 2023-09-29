@@ -25,11 +25,13 @@ def _reverse_convert_vitals(internal_vitals: Vitals) -> TA_VIT:
 
 def _convert_injury(ta_injury: TA_INJ) -> Injury:
     severe = ta_injury.severity if ta_injury.severity is not None else .7
-    return Injury(name=ta_injury.name, location=ta_injury.location, severity=severe)
+    treated = False if ta_injury.treated is None else ta_injury.treated  # Just in  case a TA3 object says its None, its not treated
+    return Injury(name=ta_injury.name, location=ta_injury.location, severity=severe, treated=treated)
 
 
 def _reverse_convert_injury(internal_injury: Injury) -> TA_INJ:
-    return TA_INJ(location=internal_injury.location, name=internal_injury.name, severity=internal_injury.severity)
+    return TA_INJ(location=internal_injury.location, name=internal_injury.name,
+                  severity=internal_injury.severity, treated=internal_injury.treated)
 
 
 def _convert_casualty(ta_casualty: TA_CAS) -> Casualty:
