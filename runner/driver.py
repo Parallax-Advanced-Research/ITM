@@ -70,7 +70,7 @@ class Driver:
         index: int = 0
         not_simulated = list()
         for d in probe.decisions:
-            if d.metrics['Severity'].value is None:
+            if d.metrics['SEVERITY'].value is None:
                 not_simulated.append(str(d.value))
             else:
                 logger.debug(f"Available Action {index}: {d}")
