@@ -368,7 +368,7 @@ action_map: typing.Mapping[str, resolve_action] = {
 
 
 def get_simple_casualties():
-    bicep_tear = Injury(name=Injuries.PUNCTURE.value, location=Locations.LEFT_BICEP.value, severity=4)
+    bicep_tear = Injury(name=Injuries.PUNCTURE.value, location=Locations.LEFT_BICEP.value, severity=4, treated=False)
     jt_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
                        breathing=BreathingDescriptions.NORMAL.value, hrpmin=69)
     casualties = [

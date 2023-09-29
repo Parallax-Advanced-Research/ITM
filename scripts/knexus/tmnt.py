@@ -62,7 +62,8 @@ class TMNTClient:
         for cas in ta3_state.casualties:
             injuries_as_dict = []
             for injury in cas.injuries:
-                inj_dict = {'location': injury.location, 'name': injury.name, 'severity': injury.severity}
+                inj_dict = {'location': injury.location, 'name': injury.name,
+                            'severity': injury.severity, 'treated': injury.treated}
                 injuries_as_dict.append(inj_dict)
             demographs_as_dict = {'age': cas.demographics.age, 'sex': cas.demographics.sex, 'rank': cas.demographics.rank}
             vitals_as_dict = {'conscious': cas.vitals.conscious, 'mental_status': cas.vitals.mental_status,
@@ -85,7 +86,9 @@ class TMNTClient:
         self.current_state = new_state
         new_probe = self.get_probe(new_state)
         return new_probe
-def main():
+
+
+if __name__ == '__main__':
     kdmas: KDMAs = KDMAs([])
 
     class TMNTARGS:
@@ -96,7 +99,6 @@ def main():
             self.variant = 'aligned'
     tmnt_args = TMNTARGS()
 
-    driver = TA3Driver(tmnt_args)
     driver = simple_driver.SimpleDriver(tmnt_args)
     client = TMNTClient(kdmas)
     driver.set_alignment_tgt(kdmas)
