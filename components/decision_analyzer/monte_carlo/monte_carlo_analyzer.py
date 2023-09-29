@@ -64,9 +64,9 @@ def get_populated_scores(decision: mcnode.MCDecisionNode, tinymedstate: TinymedS
     ret_dict['severity'] = severity
     ret_dict['resources_used'] = decision.score['resource_score']
     ret_dict['time_used'] = decision.score['time used']
-    ret_dict['Average Injury Severity'] = severity / injuries
-    ret_dict['Average Casualty Severity'] = severity / num_casualties
-    ret_dict['Casualty Severities'] = decision.score['individual casualty severity']  # Wrong ?
+    ret_dict['Average Injury Severity'] = severity / injuries if injuries else severity
+    ret_dict['Average Casualty Severity'] = severity / num_casualties if num_casualties else severity
+    ret_dict['Casualty Severities'] = decision.score['individual casualty severity']
     return ret_dict
 
 

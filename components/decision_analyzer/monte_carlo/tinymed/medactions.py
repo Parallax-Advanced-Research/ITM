@@ -361,7 +361,9 @@ action_map: typing.Mapping[str, resolve_action] = {
     Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
     Actions.TAG_CASUALTY.value: apply_casualtytag_action,
     Actions.SITREP.value: apply_zeroornone_action,
-    Actions.UNKNOWN.value: default_action
+    Actions.UNKNOWN.value: default_action,
+    Actions.END_SCENARIO.value: default_action
+
 }
 
 
