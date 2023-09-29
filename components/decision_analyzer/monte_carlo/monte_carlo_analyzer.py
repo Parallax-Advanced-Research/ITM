@@ -132,34 +132,6 @@ def get_populated_scores(decision: mcnode.MCDecisionNode, tinymedstate: TinymedS
     return ret_dict
 
 
-def stats_to_metrics(basic_stats: MetricResultsT) -> list[DecisionMetrics]:
-    value = basic_stats['severity']
-    avg_casualty_severity = basic_stats['Average Casualty Severity']
-    avg_injury_severity = basic_stats['Average Injury Severity']
-    supplies_used = basic_stats['resources_used']
-    time_val = basic_stats['time_used']
-
-    metrics: DecisionMetrics = {"Severity": DecisionMetric(name="Severity",
-                                                           description="Severity of all injuries across all casualties",
-                                                           type=type(float),
-                                                           value=value)}
-    casualty_metrics: DecisionMetrics = {"Average Casualty Severity": DecisionMetric(name="Average Casualty Severity",
-                                                                                     description="Severity of all injuries across all casualties divided by num of casualties",
-                                                                                     type=type(float),
-                                                                                     value=avg_casualty_severity)}
-    injury_metrics: DecisionMetrics = {"Average Injury Severity": DecisionMetric(name="Average injury severity",
-                                                                                 description="Severity of all injuries divided by num injuries",
-                                                                                 type=type(float),
-                                                                                 value=avg_injury_severity)}
-    supply_metrics: DecisionMetrics = {"Supplies Remaining": DecisionMetric(name='Supplies Remaining',
-                                                                            description='Number of supplies Remaining',
-                                                                            type=type(int), value=supplies_used)}
-    time_metrics: DecisionMetrics = {"Time Metrics": DecisionMetric(name='Average Time Used', description='avg time',
-                                                                    type=type(float), value=time_val)}
-    basic_metrics: list[DecisionMetrics] = [metrics, casualty_metrics, injury_metrics, supply_metrics, time_metrics]
-    return basic_metrics
-
-
 def stat_metric_loop(basic_stats: MetricResultsT) -> list[DecisionMetrics]:
     metrics_out: list[DecisionMetrics] = list()
     for k in list(basic_stats.keys()):
