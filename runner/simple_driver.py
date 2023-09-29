@@ -17,7 +17,7 @@ class SimpleDriver(Driver):
         # ebd = EventBasedDiagnosisAnalyzer() if args.ebd else None
         # hra = HeuristicRuleAnalyzer() if args.hra else None  # Crashes in TMNT/differenct scenario
         # bnd = BayesNetDiagnosisAnalyzer()
-        mda = MonteCarloAnalyzer(max_rollouts=10, max_depth=2)
+        mda = MonteCarloAnalyzer(max_rollouts=100, max_depth=2)
         analyzers = [mda]
         analyzers = [a for a in analyzers if a is not None]
 

@@ -6,7 +6,7 @@ from .sim import MCSim
 from .mc_node import MCStateNode, MCDecisionNode
 from .mc_state import MCState
 
-ScoreT = int | float | dict[str, float]  # This is making me uncomfortable. Its almost self referencing
+ScoreT = None | int | float | dict[str, float]  # This is making me uncomfortable. Its almost self referencing
 MetricResultsT = dict[str, ScoreT]
 
 
@@ -32,7 +32,7 @@ def score_averager(scores: list[{str: ScoreT}]) -> MetricResultsT:
         if isinstance(total_dict[metric], dict):
             scored_dict = total_dict[metric]
             for subkey in scored_dict:
-                scored_dict[subkey] = scored_dict[subkey] / len(scores)
+                scored_dict[subkey] = scored_dict[subkey]
         else:
             total_dict[metric] = total_dict[metric] / len(scores)
     return total_dict

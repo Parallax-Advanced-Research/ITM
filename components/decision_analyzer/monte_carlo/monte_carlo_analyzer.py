@@ -66,40 +66,69 @@ def get_populated_scores(decision: mcnode.MCDecisionNode, tinymedstate: TinymedS
     ret_dict['time_used'] = decision.score['time used']
     ret_dict['Average Injury Severity'] = severity / injuries
     ret_dict['Average Casualty Severity'] = severity / num_casualties
-    ret_dict['Casualty Severities'] = decision.score['individual casualty severity']
+    ret_dict['Casualty Severities'] = decision.score['individual casualty severity']  # Wrong ?
     return ret_dict
 
 
-def get_better_temporal_scores(new_state: dict[str, int | None | float],
-                               previous_state: TinymedState) -> list[DecisionMetrics]:
-    def get_unkown_temporal_scores(previous_state: TinymedState) -> list[DecisionMetrics]:
-        return_metrics: list[DecisionMetrics] = []
-        return_metrics.append({'Severity Change': DecisionMetric(name='Severity Change', description='', type=type(float),
-                                                                 value=None)})
-        cas_sevs_new = {}
-        cas_sevs_dlt = {}
-        for casualty in previous_state.casualties:
-            cas_sevs_new[casualty.name] = None
-            cas_sevs_dlt[casualty.name] = None
-        return_metrics.append({'Casualty Severity': DecisionMetric(name='Casualty Severity', description='', type=type(cas_sevs_new),
-                                                                   value=cas_sevs_new)})
-        return_metrics.append({'Casualty Severity Changes': DecisionMetric(name='Casualty Severity Changes', description='', type=type(cas_sevs_dlt),
-                                                                           value=cas_sevs_dlt)})
-        return return_metrics
+def stats_to_metrics(basic_stats: MetricResultsT) -> list[DecisionMetrics]:
+    value = basic_stats['severity']
+    avg_casualty_severity = basic_stats['Average Casualty Severity']
+    avg_injury_severity = basic_stats['Average Injury Severity']
+    supplies_used = basic_stats['resources_used']
+    time_val = basic_stats['time_used']
 
+    metrics: DecisionMetrics = {"Severity": DecisionMetric(name="Severity",
+                                                           description="Severity of all injuries across all casualties",
+                                                           type=type(float),
+                                                           value=value)}
+    casualty_metrics: DecisionMetrics = {"Average Casualty Severity": DecisionMetric(name="Average Casualty Severity",
+                                                                                     description="Severity of all injuries across all casualties divided by num of casualties",
+                                                                                     type=type(float),
+                                                                                     value=avg_casualty_severity)}
+    injury_metrics: DecisionMetrics = {"Average Injury Severity": DecisionMetric(name="Average injury severity",
+                                                                                 description="Severity of all injuries divided by num injuries",
+                                                                                 type=type(float),
+                                                                                 value=avg_injury_severity)}
+    supply_metrics: DecisionMetrics = {"Supplies Remaining": DecisionMetric(name='Supplies Remaining',
+                                                                            description='Number of supplies Remaining',
+                                                                            type=type(int), value=supplies_used)}
+    time_metrics: DecisionMetrics = {"Time Metrics": DecisionMetric(name='Average Time Used', description='avg time',
+                                                                    type=type(float), value=time_val)}
+    basic_metrics: list[DecisionMetrics] = [metrics, casualty_metrics, injury_metrics, supply_metrics, time_metrics]
+    return basic_metrics
+
+
+
+def get_unkown_temporal_scores(previous_state: TinymedState) -> list[DecisionMetrics]:
+    return_metrics: list[DecisionMetrics] = []
+    return_metrics.append({'Severity Change': DecisionMetric(name='Severity Change', description='', type=type(float),
+                                                                 value=None)})
+    cas_sevs_new = {}
+    cas_sevs_dlt = {}
+    for casualty in previous_state.casualties:
+        cas_sevs_new[casualty.name] = None
+        cas_sevs_dlt[casualty.name] = None
+    return_metrics.append({'Casualty Severity': DecisionMetric(name='Casualty Severity', description='', type=type(cas_sevs_new),
+                                                               value=cas_sevs_new)})
+    return_metrics.append({'Casualty Severity Changes': DecisionMetric(name='Casualty Severity Changes', description='', type=type(cas_sevs_dlt),
+                                                                       value=cas_sevs_dlt)})
+    return return_metrics
+
+
+def get_temporal_scores(new_state: MetricResultsT, previous_state: TinymedState) -> list[DecisionMetrics]:
     if new_state['severity'] is None:
         return get_unkown_temporal_scores(previous_state=previous_state)
 
     change = {}
     for casualty in previous_state.casualties:
-        change[casualty.name] = new_state['Casualty Severities'][casualty.name] - get_casualty_severity(casualty)
-
+        new_sev, old_sev = new_state['Casualty Severities'][casualty.name], get_casualty_severity(casualty)
+        change[casualty.name] = new_sev - old_sev
 
     previous_severity = 0.0
     for casualty in previous_state.casualties:
         previous_severity += get_casualty_severity(casualty)
 
-    return_metrics: list[DecisionMetrics] = []
+    return_metrics: list[DecisionMetrics] = list()
 
     return_metrics.append({'Severity Change': DecisionMetric(name='Severity Change', description='', type=type(float),
                                                              value=new_state['severity'] - previous_severity)})
@@ -107,54 +136,6 @@ def get_better_temporal_scores(new_state: dict[str, int | None | float],
                                                                value=new_state['Casualty Severities'])})
     return_metrics.append({'Casualty Severity Changes': DecisionMetric(name='Casualty Severity Changes', description='', type=type(change),
                                                                        value=change)})
-    return return_metrics
-
-
-
-def get_tempral_scores(this_state: TinymedState, previous_state: TinymedState | None) -> list[DecisionMetrics]:
-    prev_none = True if previous_state is None else False
-
-    # 1 Change in severity
-    if not prev_none:
-        severity_delta = tiny_med_severity_score(this_state) - tiny_med_severity_score(previous_state)
-    else:
-        severity_delta = None
-
-    # 2 Severity of all casualties
-    cas_sevs_this = {}
-    cas_sevs_delta = {}
-    for casualty in this_state.casualties:
-        cas_sevs_this[casualty.name] = get_casualty_severity(casualty)
-        cas_sevs_delta[casualty.name] = None  # Will get overriden if not prev_none
-
-    # 3 Change in severity of all casualties
-    if prev_none:
-        pass
-    else:
-        for prev_casualty, this_casualty in zip(previous_state.casualties, this_state.casualties):
-            prev_sev, this_sev = get_casualty_severity(prev_casualty), get_casualty_severity(this_casualty)
-            cas_sevs_delta[prev_casualty.id] = this_sev - prev_sev
-    return_metrics: list[DecisionMetrics] = []
-
-    # 1- Even if no previous state, all casualties have a new severity to report
-    casualty_severity_value : dict[str, float | None] = {}
-    for casualty in list(cas_sevs_this.keys()):
-        casualty_severity_value[casualty] = cas_sevs_this[casualty]
-    return_metrics.append({'Casualty Severity': DecisionMetric(name='Casualty Severity', description='',
-                                                                 type=type(casualty_severity_value),
-                                                               value=casualty_severity_value)})
-    # Problem:
-    if prev_none:
-        return return_metrics
-    else:
-        return_metrics.append({'Severity Change': DecisionMetric(name='Severity Change', description='',
-                                                                 type=type(float), value=severity_delta)})
-        casualty_severity_change_value: dict[str, float | None] = {}
-        for casualty in list(cas_sevs_delta.keys()):
-            casualty_severity_change_value[casualty] = cas_sevs_delta[casualty]
-        return_metrics.append({'Casualty Severity Changes': DecisionMetric(name='Casualty Severity Changes',
-                                                                            description='', type=type(casualty_severity_change_value),
-                                                                            value=casualty_severity_change_value)})
     return return_metrics
 
 
@@ -198,7 +179,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         analysis = {}
         decision_node_list: list[mcnode.MCDecisionNode] = tree._roots[0].children
         # Has each decision string -> list of {'sevrity': .69, 'resources used': 2...}
-        tree_hash: dict[str, dict[str, float | int | None]] = {}
+        tree_hash: MetricResultsT = {}
 
         for decision in decision_node_list:
             dec_str = tinymedact_to_actstr(decision)
@@ -207,46 +188,20 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             tree_hash[dec_str] = basic_stats
         for decision in probe.decisions:
             basic_stats = tree_hash[decision_to_actstr(decision)]
-            value = basic_stats['severity']
-            avg_casualty_severity = basic_stats['Average Casualty Severity']
-            avg_injury_severity = basic_stats['Average Injury Severity']
-            supplies_used = basic_stats['resources_used']
-            time_val = basic_stats['time_used']
-
-            metrics: DecisionMetrics = {"Severity": DecisionMetric(name="Severity",
-                                        description="Severity of all injuries across all casualties", type=type(float),
-                                                                   value=value)}
-            casualty_metrics: DecisionMetrics = {"Average Casualty Severity": DecisionMetric(name="Average Casualty Severity",
-                                                 description="Severity of all injuries across all casualties divided by num of casualties",
-                                                 type=type(float), value=avg_casualty_severity)}
-            injury_metrics: DecisionMetrics = {"Average Injury Severity": DecisionMetric(name="Average injury severity",
-                                               description="Severity of all injuries divided by num injuries",
-                                               type=type(float), value=avg_injury_severity)}
-            supply_metrics: DecisionMetrics = {"Supplies Used": DecisionMetric(name='Supplies Used',
-                                                                               description='Number of supplies used',
-                                                                               type=type(int), value=supplies_used)}
-            time_metrics: DecisionMetrics = {"Time Metrics": DecisionMetric(name='Average Time Used', description='avg time',
-                                                                            type=type(float), value=time_val)}
-
+            basic_metrics: list[DecisionMetrics] = stats_to_metrics(basic_stats)
             previous_state = self.most_recent_state()
-            new_state = 3
-            temporal_metrics: list[DecisionMetrics] = get_better_temporal_scores(new_state=basic_stats,
-                                                                                previous_state=previous_state)
-            decision.metrics.update(metrics)
-            decision.metrics.update(casualty_metrics)
-            decision.metrics.update(injury_metrics)
-            decision.metrics.update(supply_metrics)
-            decision.metrics.update(time_metrics)
+            temporal_metrics: list[DecisionMetrics] = get_temporal_scores(new_state=basic_stats,
+                                                                          previous_state=previous_state)
+            for bm in basic_metrics:
+                decision.metrics.update(bm)
+                for k in list(bm.keys()):
+                    analysis[k] = bm[k]
+
             for tm in temporal_metrics:
                 decision.metrics.update(tm)
-            analysis[dec_str] = metrics  # decision id was not unique, only decision categories
-            analysis[dec_str + "_casualtyAVG"] = casualty_metrics
-            analysis[dec_str + "_injuryAVG"] = injury_metrics
-            analysis[dec_str + "_supply used"] = supply_metrics
-            analysis[dec_str + "_time used"] = time_metrics
-            for tm in temporal_metrics:
                 tmkeys = list(tm.keys())
                 for tmk in tmkeys:
                     analysis[dec_str + "_%s" % tmk] = tm[tmk]
+
         self.remember(tinymed_state)
         return analysis
