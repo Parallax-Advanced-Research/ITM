@@ -1,6 +1,8 @@
 from enum import Enum
 
 
+
+
 class Actions(Enum):
     APPLY_TREATMENT = "APPLY_TREATMENT"
     CHECK_ALL_VITALS = "CHECK_ALL_VITALS"
@@ -11,6 +13,7 @@ class Actions(Enum):
     TAG_CASUALTY = "TAG_CASUALTY"
     SITREP = "SITREP"
     UNKNOWN = "UNKNOWN"
+    END_SCENARIO = 'END_SCENARIO'
 
 
 class MentalStates(Enum):
@@ -60,10 +63,10 @@ class Locations(Enum):
 
 
 class Tags(Enum):
-    BLACK = "black"
-    RED = "red"
-    BLUE = 'blue'
-    GREEN = 'green'
+    MINIMAL = 'MINIMAL'
+    DELAYED = 'DELAYED'
+    IMMEDIATE = 'IMMEDIATE'
+    EXPECTANT = 'EXPECTANT'
 
 
 class Injuries(Enum):

@@ -27,8 +27,6 @@ class TinymedSim(MCSim):
     def exec(self, state: TinymedState, action: TinymedAction) -> list[SimResult]:
         supplies: dict[str, int] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
-        if 'action_' in action.action:
-            return 3
         new_state = action_map[action.action](casualties, supplies, action, self._rand, state.time)
         outcomes = []
         for new_s in new_state:
@@ -43,6 +41,7 @@ class TinymedSim(MCSim):
         tinymed_actions: list[TinymedAction] = create_tm_actions(actions)
         tinymed_actions_trimmed: list[TinymedAction] = trim_tm_actions(tinymed_actions)
         tinymed_actions_trimmed = remove_non_injuries(state, tinymed_actions_trimmed)
+        tinymed_actions_trimmed.append(TinymedAction(action=Actions.END_SCENARIO.value))
         return tinymed_actions_trimmed
 
     def reset(self):
