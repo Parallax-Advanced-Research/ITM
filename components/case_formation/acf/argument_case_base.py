@@ -4,7 +4,7 @@ import yaml
 import domain.internal as internal
 import domain.external as external
 import domain.ta3 as ta3
-import openpyxl
+
 FAILED_INT = 999
 FAILED_FLOAT = 0.0
 

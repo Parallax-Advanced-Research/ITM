@@ -1,4 +1,4 @@
-from components.case_formation.acf.argument_case_base import CaseBase
+from components.case_formation.acf.multicas_case_base import CaseBase
 from components.decision_analyzer import *
 from components.decision_analyzer import heuristic_rule_analysis
 from components.decision_analyzer import event_based_diagnosis
@@ -12,7 +12,7 @@ import pandas as pd
 from components.case_formation.acf.acf_preprocess import data_preprocessing, weight_learning, create_argument_case, probe_to_dict
 
 # convert each line in the csv to a case and extract the starting state
-case_base = CaseBase("data/sept/case_base.csv", "data/sept/scenario.yaml")
+case_base = CaseBase("data/sept/case_base_multicas.csv", "data/sept/scenario.yaml")
 
 #### decision analysis
 monte_carlo_analyzer = MonteCarloAnalyzer(max_rollouts=10, max_depth=2)

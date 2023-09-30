@@ -98,12 +98,12 @@ class CSVReader:
                         "rr": casualty_group.pop("RR"),
                         "spo2": casualty_group.pop("Spo2"),
                         "pain": casualty_group.pop("Pain"),
-                        }                
-                case["casualties"] = casualty_data
-
-            
-            
+                        }               
+                
+                    casualty_data.append(casualty_group) 
+                case["casualties"] = casualty_data           
                 csv_cases.append(case)
+        return csv_cases
                 
     @staticmethod
     def _replace(case: dict, headers: list[str], name_: str) -> dict[str, any]:
