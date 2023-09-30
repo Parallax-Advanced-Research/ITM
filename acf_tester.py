@@ -65,14 +65,23 @@ for test_case in case_base.cases:
         # logger.info(f"Severity Change: {metric['Severity Change'].value}") for multicas
         
     hra_metrics = heuristc_rule_analyzer.analyze(test_case.scenario, test_case.probe)    
-        
-    if hra_metrics is not None:
+    if len(hra_metrics) > 0:    
         logger.info(f"HRA Metrics for {test_case.case_no}")
         for metric_name, metric in hra_metrics.items():
             for key, value in metric.items():
                 logger.info(f"{key}: {value.value}")
+        else:
+            logger.debug("No HRA Metrics")
                 
-                        
+    bayes_metrics = bayesian_analyzer.analyze(test_case.scenario, test_case.probe)
+    if len(bayes_metrics) > 0:
+        logger.info(f"Bayes Metrics for {test_case.case_no}")
+        for metric_name, metric in bayes_metrics.items():
+            for key, value in metric.items():
+                logger.info(f"{key}: {value.value}")
+        else:
+            logger.debug("No Bayes Metrics")
+        
             
 """
 
