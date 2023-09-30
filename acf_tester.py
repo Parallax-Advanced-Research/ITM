@@ -20,14 +20,15 @@ bayesian_analyzer = bayesian_network.BayesNetDiagnosisAnalyzer()
 
 # keep track of the columns to add to the csv
 monte_carlo_columns = {}
-hra_columns = []
+hra_columns = {}
 bayes_columns = {}
+event_based_diagnosis_columns = {}
 
 logger.info("Skipping cases with no KDMA values!!!")
 logger.info(f"Total Cases: {str(len(case_base.cases))}")
 for test_case in case_base.cases:
+    logger.info(f"-> Analyzing case {test_case.case_no}")
     test_case.scenario.state = test_case.probe.state
-
     # injury cannont be NA
     tinymed_injuries = [item.value for item in monte_carlo.tinymed.tinymed_enums.Injuries]
     # injuries need a location
@@ -62,8 +63,9 @@ for test_case in case_base.cases:
         test_case.scenario, test_case.probe
     )
     
-    logger.info(f"Monte Carlo Metrics for {test_case.case_no}")
+    #### Monte Carlo Metrics
     if len(monte_carlo_metrics) > 0:
+        logger.info(f"Monte Carlo Metrics for {test_case.case_no}")
         for metric_name, metric in monte_carlo_metrics.items():
             # print severity and severity change from metric        
             logger.info(f"{metric_name}")
@@ -72,17 +74,22 @@ for test_case in case_base.cases:
             # create a dictionary with the case number and severity for the csv
             monte_carlo_columns["case" + test_case.case_no] = severity_metric
             
-        else:
-            logger.debug("No Monte Carlo Metrics")
+    else:
+        logger.debug(f"No Monte Carlo Metrics for {test_case.case_no}")
         
+    #### HRA Metrics
     hra_metrics = heuristc_rule_analyzer.analyze(test_case.scenario, test_case.probe)    
     if len(hra_metrics) > 0:    
         logger.info(f"HRA Metrics for {test_case.case_no}")
         for metric_name, metric in hra_metrics.items():
+            output_values = {}
             for key, value in metric.items():
-                logger.info(f"{key}: {value.value}")
-        else:
-            logger.debug("No HRA Metrics")
+                logger.info(f"\t{key}: {value.value}")
+                output_values[key] = value.value
+            # add the case number to the output values and save for the csv
+            hra_columns['case' + test_case.case_no] = output_values
+    else:
+        logger.debug(f"No HRA Metrics for {test_case.case_no}")
                 
     bayes_metrics = bayesian_analyzer.analyze(test_case.scenario, test_case.probe)
     if len(bayes_metrics) > 0:
@@ -90,24 +97,17 @@ for test_case in case_base.cases:
         for metric_name, metric in bayes_metrics.items():
             output_values = {}
             for key, value in metric.items():
-                logger.info(f"{key}: {value.value}")                
+                logger.info(f"\t{key}: {value.value}")                
                 output_values[key] = value.value
-            # add the case number to the output values                        
-            bayes_columns['case' + test_case.case_no] = output_values
-            
-        else:
-            logger.debug("No Bayes Metrics")
-        
-'''
-we'll move this to a separte file
-'''
-for row in bayes_columns:
-    print(row)
-    for key, value in bayes_columns[row].items():
-        print(key, value)
+            # add the case number to the output values and save for the csv                       
+            bayes_columns['case' + test_case.case_no] = output_values            
+    else:
+        logger.debug(f"No Bayes Metrics for {test_case.case_no}")
 
+######### create the csv for weight learning TODO: move this to a separate file           
+PROBABILITIES = ['pDeath','pPain','pBrainInjury','pAirwayBlocked','pInternalBleeding']  
+HEURISTICS = ['priority', 'take-the-best', 'exhaustive','tallying','satisfactory','one-bounce']
 
-PROBABILITIES = ['pDeath','pPain','pBrainInjury','pAirwayBlocked','pInternalBleeding']
 with open('data/sept/case_base.csv','r') as csvinput:
     with open('data/sept/extended_case_base.csv', 'w') as csvoutput:
         writer = csv.writer(csvoutput, lineterminator='\n')
@@ -118,6 +118,8 @@ with open('data/sept/case_base.csv','r') as csvinput:
         row.append('MC Severity')
         for prob in PROBABILITIES:
             row.append(prob)
+        for heuristic in HEURISTICS:
+            row.append(heuristic)
         all.append(row)
 
         for row in reader:
@@ -133,25 +135,15 @@ with open('data/sept/case_base.csv','r') as csvinput:
                 row.append(bayes_columns["case" + row[0]]['pInternalBleeding'])
             else:
                 for prob in PROBABILITIES:
-                    row.append('')                
+                    row.append('')
+            if "case" + row[0] in hra_columns:
+                for heuristic in HEURISTICS:
+                    if heuristic in hra_columns["case" + row[0]]:
+                        row.append(hra_columns["case" + row[0]][heuristic])
+                    else:
+                        row.append('')
             all.append(row)
-
         writer.writerows(all)
 
 
-
-
-"""
-
-    print(case)
-    monte_carlo_analyzer = MonteCarloAnalyzer(max_rollouts=10, max_depth=2)
-    case.scenario.state = case.probe.state
-    monte_carlo_metrics = monte_carlo_analyzer.analyze(case.scenario, case.probe)
-
-    print(case.probe)
-    print(case.response)
-    print(case.kdmas)
-    print(case.additional_data)
-    print(case.csv_data)
-    print()
-"""
+logger.info("\twrote case base with analysis to data/sept/extended_case_base.csv") 
