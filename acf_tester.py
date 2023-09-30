@@ -7,6 +7,7 @@ from domain.ta3.ta3_state import Supply as TA3Supply
 import random
 from util import logger
 from components.elaborator.default.ta3_elaborator import TA3Elaborator
+import csv
 
 # convert each line in the csv to a case and extract the starting state
 case_base = CaseBase("data/sept/case_base.csv", "data/sept/scenario.yaml")
@@ -17,7 +18,10 @@ heuristc_rule_analyzer = heuristic_rule_analysis.HeuristicRuleAnalyzer()
 bayesian_analyzer = bayesian_network.BayesNetDiagnosisAnalyzer()
 #event_based_diagnosis_analyzer = event_based_diagnosis.EventBasedDiagnosisAnalyzer() # still having lisp problems
 
-
+# keep track of the columns to add to the csv
+monte_carlo_columns = {}
+hra_columns = []
+bayes_columns = {}
 
 logger.info("Skipping cases with no KDMA values!!!")
 logger.info(f"Total Cases: {str(len(case_base.cases))}")
@@ -52,17 +56,24 @@ for test_case in case_base.cases:
         ):
             decision.value.params["treatment"] = random.choice(tinymed_supplies)
 
+    # some probes have no decisions, so we need to add one
     TA3Elaborator().elaborate(test_case.scenario, test_case.probe)
     monte_carlo_metrics = monte_carlo_analyzer.analyze(
         test_case.scenario, test_case.probe
     )
     
     logger.info(f"Monte Carlo Metrics for {test_case.case_no}")
-    for metric_name, metric in monte_carlo_metrics.items():
-        # print severity and severity change from metric
-        logger.info(f"{metric_name}")
-        logger.info(f"Severity: {metric['Severity'].value}")
-        # logger.info(f"Severity Change: {metric['Severity Change'].value}") for multicas
+    if len(monte_carlo_metrics) > 0:
+        for metric_name, metric in monte_carlo_metrics.items():
+            # print severity and severity change from metric        
+            logger.info(f"{metric_name}")
+            severity_metric = metric["Severity"].value
+            logger.info(f"Severity: {severity_metric}")
+            # create a dictionary with the case number and severity for the csv
+            monte_carlo_columns["case" + test_case.case_no] = severity_metric
+            
+        else:
+            logger.debug("No Monte Carlo Metrics")
         
     hra_metrics = heuristc_rule_analyzer.analyze(test_case.scenario, test_case.probe)    
     if len(hra_metrics) > 0:    
@@ -77,12 +88,59 @@ for test_case in case_base.cases:
     if len(bayes_metrics) > 0:
         logger.info(f"Bayes Metrics for {test_case.case_no}")
         for metric_name, metric in bayes_metrics.items():
+            output_values = {}
             for key, value in metric.items():
-                logger.info(f"{key}: {value.value}")
+                logger.info(f"{key}: {value.value}")                
+                output_values[key] = value.value
+            # add the case number to the output values                        
+            bayes_columns['case' + test_case.case_no] = output_values
+            
         else:
             logger.debug("No Bayes Metrics")
         
-            
+'''
+we'll move this to a separte file
+'''
+for row in bayes_columns:
+    print(row)
+    for key, value in bayes_columns[row].items():
+        print(key, value)
+
+
+PROBABILITIES = ['pDeath','pPain','pBrainInjury','pAirwayBlocked','pInternalBleeding']
+with open('data/sept/case_base.csv','r') as csvinput:
+    with open('data/sept/extended_case_base.csv', 'w') as csvoutput:
+        writer = csv.writer(csvoutput, lineterminator='\n')
+        reader = csv.reader(csvinput)
+
+        all = []
+        row = next(reader)
+        row.append('MC Severity')
+        for prob in PROBABILITIES:
+            row.append(prob)
+        all.append(row)
+
+        for row in reader:
+            if "case" + row[0] in monte_carlo_columns:
+                row.append(monte_carlo_columns["case" + row[0]])                
+            else:
+                row.append('')
+            if "case" + row[0] in bayes_columns:
+                row.append(bayes_columns["case" + row[0]]['pDeath'])
+                row.append(bayes_columns["case" + row[0]]['pPain'])
+                row.append(bayes_columns["case" + row[0]]['pBrainInjury'])
+                row.append(bayes_columns["case" + row[0]]['pAirwayBlocked'])
+                row.append(bayes_columns["case" + row[0]]['pInternalBleeding'])
+            else:
+                for prob in PROBABILITIES:
+                    row.append('')                
+            all.append(row)
+
+        writer.writerows(all)
+
+
+
+
 """
 
     print(case)
