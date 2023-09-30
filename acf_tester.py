@@ -8,6 +8,8 @@ import random
 from util import logger
 from components.elaborator.default.ta3_elaborator import TA3Elaborator
 import csv
+import pandas as pd
+from components.case_formation.acf.acf_preprocess import data_preprocessing, weight_learning, create_argument_case, probe_to_dict
 
 # convert each line in the csv to a case and extract the starting state
 case_base = CaseBase("data/sept/case_base.csv", "data/sept/scenario.yaml")
@@ -108,8 +110,11 @@ for test_case in case_base.cases:
 PROBABILITIES = ['pDeath','pPain','pBrainInjury','pAirwayBlocked','pInternalBleeding']  
 HEURISTICS = ['priority', 'take-the-best', 'exhaustive','tallying','satisfactory','one-bounce']
 
-with open('data/sept/case_base.csv','r') as csvinput:
-    with open('data/sept/extended_case_base.csv', 'w') as csvoutput:
+input_file = "data/sept/case_base.csv"
+output_file = "data/sept/extended_case_base.csv"
+
+with open(input_file,'r') as csvinput:
+    with open(output_file, 'w') as csvoutput:
         writer = csv.writer(csvoutput, lineterminator='\n')
         reader = csv.reader(csvinput)
 
@@ -145,5 +150,18 @@ with open('data/sept/case_base.csv','r') as csvinput:
             all.append(row)
         writer.writerows(all)
 
-
 logger.info("\twrote case base with analysis to data/sept/extended_case_base.csv") 
+
+# send the csv with analytics to the weight learning algorithm
+df_argument_case_base = pd.read_csv(output_file)
+
+# process the data for weight learning
+df_preprocessed = data_preprocessing(df_argument_case_base)
+
+# learn the weights
+feature_weights = weight_learning(df_preprocessed)
+
+logger.info(f"learned feature weights:\n {feature_weights}")
+ # write the argument case base to a csv called "argument_case_base.csv"
+df_argument_case = create_argument_case(df_preprocessed, feature_weights)
+
