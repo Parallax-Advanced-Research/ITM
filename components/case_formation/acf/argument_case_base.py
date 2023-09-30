@@ -23,8 +23,6 @@ class CaseBase:
         csv_rows: list[dict] = []
         with open(self._csv_file_path, "r") as f:
             reader = csv.reader(f, delimiter=",")
-            total_rows = sum(1 for row in reader)
-
             headers: list[str] = next(reader)
             for i in range(len(headers)):
                 headers[i] = headers[i].strip().replace("'", "").replace('"', "")
@@ -281,7 +279,7 @@ class CaseBase:
                 decisions.append(decision)
 
             case_no = csv_case["Case_#"]
-            id = csv_case["idx"]
+            
             prompt = csv_case["prompt"]
             state: ta3.TA3State = self._convert_csv_ta3state(csv_case)
 
