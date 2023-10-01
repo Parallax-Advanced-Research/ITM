@@ -350,16 +350,40 @@ class CaseBase:
             )
 
             self.scenario.probes.append(probe)
+
             # extras
             probe_type = csv_case["Probe Type"]
+
             # casualty assessed will be in single casualty data but for each casualty in multicas
             if "casualty_assessed" in csv_case:
                 if casualty_assessed == "NA":
                     casualty_assessed = False
+                else:
+                    casualty_assessed = csv_case["casualty_assessed"]
+            else:
+                casualty_assessed = False
 
-            # casualty_assessed = csv_case["casualty_assessed"]
             action_text = csv_case["Action text"]
-            extended_vitals = csv_case["vitals"]
+            # extended_vitals = csv_case["vitals"]
+
+            argument_case = ArgumentCase(
+                id=id,
+                case_no=case_no,
+                csv_data=csv_case,
+                scenario=self.scenario,
+                probe=probe,
+                response=decisions[0]
+                if len(decisions) > 0
+                else internal.Decision("None", []),
+                additional_data={
+                    "probe_type": probe_type,
+                    # "casualty_assessed": casualty_assessed,
+                    "action_text": action_text,
+                    # "extended_vitals": extended_vitals,
+                },
+                kdmas=csv_case["kdmas"],
+            )
+            self.cases.append(argument_case)
 
     def _create_internal_cases(self):
         for csv_case in self._csv_cases:
