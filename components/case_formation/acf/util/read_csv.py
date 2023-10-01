@@ -1,12 +1,12 @@
 from typing import Any, Dict, List, Optional, Union
 import csv
 
+
 class CSVReader:
     def __init__(self, input_file) -> None:
-        self._csv_file_path: str = input_file  
-        self._csv_rows: list[dict] = []        
-    
-   
+        self._csv_file_path: str = input_file
+        self._csv_rows: list[dict] = []
+
     def read_csv_multi(self):
         csv_cases: list[dict] = []
         with open(self._csv_file_path, "r") as f:
@@ -14,18 +14,18 @@ class CSVReader:
             headers: list[str] = next(reader)
             # the first header had some special characters in it
             headers[0] = "Case_#"
-            
+
             for i in range(len(headers)):
                 headers[i] = headers[i].strip().replace("'", "").replace('"', "")
 
             kdmas = headers[
                 headers.index("mission-Ave") : headers.index("timeurg-M-A") + 1
             ]
-            
+
             for line in reader:
                 case = {}
                 for i, entry in enumerate(line):
-                    case[headers[i]] = entry.strip().replace("'", "").replace('"', "")                
+                    case[headers[i]] = entry.strip().replace("'", "").replace('"', "")
                 # Clean KDMAs
                 _kdmas = self._replace(case, kdmas, "kdmas")
                 for kdma in list(_kdmas.keys()):
@@ -40,7 +40,7 @@ class CSVReader:
                 sup_type = case.pop("Supplies: type")
                 sup_quant = case.pop("Supplies: quantity")
                 case["supplies"] = {sup_type: sup_quant}
-            
+
                 # Clean action
                 case["action"] = {
                     "type": case.pop("Action type"),
@@ -53,13 +53,13 @@ class CSVReader:
                 casualty_data = []
                 for i in range(5):
                     casualty_group = {}
-                    
+
                     for j in range(19):
                         casualty_group[headers[21 + i * 19 + j]] = line[21 + i * 19 + j]
-                    
-                    # Clean casualty data                        
-                    cas_id = casualty_group.pop("Casualty_id")    
-                    cas_name = casualty_group.pop("casualty name")                        
+
+                    # Clean casualty data
+                    cas_id = casualty_group.pop("Casualty_id")
+                    cas_name = casualty_group.pop("casualty name")
                     cas_unstructured = casualty_group.pop("Casualty unstructured")
                     cas_relation = casualty_group.pop("casualty_relationship")
                     casualty_group["casualty"] = {
@@ -68,17 +68,17 @@ class CSVReader:
                         "unstructured": cas_unstructured,
                         "relation": cas_relation,
                     }
-                    
+
                     # Clean demographics
                     demo_age = casualty_group.pop("age")
                     demo_sex = casualty_group.pop("IndividualSex")
                     demo_rank = casualty_group.pop("IndividualRank")
                     casualty_group["demographics"] = {
                         "age": demo_age,
-                        "sex" : demo_sex,
-                        "rank" : demo_rank,
+                        "sex": demo_sex,
+                        "rank": demo_rank,
                     }
-                    
+
                     # Clean Injury
                     injury_name = casualty_group.pop("Injury name")
                     injury_location = casualty_group.pop("Injury location")
@@ -88,7 +88,7 @@ class CSVReader:
                         "location": injury_location,
                         "severity": injury_severity,
                     }
-                    
+
                     # Clean vitals
                     casualty_group["vitals"] = {
                         "responsive": casualty_group.pop("vitals:responsive"),
@@ -98,13 +98,37 @@ class CSVReader:
                         "rr": casualty_group.pop("RR"),
                         "spo2": casualty_group.pop("Spo2"),
                         "pain": casualty_group.pop("Pain"),
-                        }               
-                
-                    casualty_data.append(casualty_group) 
-                case["casualties"] = casualty_data           
+                    }
+
+                    casualty_data.append(casualty_group)
+                case["casualties"] = casualty_data
+                # clean up the casualty data from the last group
+                items_to_remove = [
+                    "Casualty_id",
+                    "casualty name",
+                    "Casualty unstructured",
+                    "age",
+                    "IndividualSex",
+                    "casualty_relationship",
+                    "IndividualRank",
+                    "Injury name",
+                    "Injury location",
+                    "severity",
+                    "vitals:responsive",
+                    "vitals:breathing",
+                    "hrpmin",
+                    "mmHg",
+                    "RR",
+                    "Spo2",
+                    "Pain",
+                    "casualty_assessed",
+                    "triage category",
+                ]
+                for item in items_to_remove:
+                    del case[item]
                 csv_cases.append(case)
         return csv_cases
-                
+
     @staticmethod
     def _replace(case: dict, headers: list[str], name_: str) -> dict[str, any]:
         sub_dict = {}
@@ -113,5 +137,7 @@ class CSVReader:
             del case[header]
         case[name_] = sub_dict
         return sub_dict
+
+
 csv_reader = CSVReader("data/sept/case_base_multicas.csv")
 csv_reader.read_csv_multi()
