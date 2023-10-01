@@ -81,23 +81,15 @@ def retrieval(X_test, y_test, X_train, y_train, weights, k=1, threshold=10):
     X_train = X_train.values
     X_test = X_test.values[0]
     for i, cc in enumerate(X_train):
-        # print(X_test)
-        # print(cc)
         local_sim = local_similarity(X_test, cc, feature_type)
-        # print(local_sim)
-        # print(weights)
-        # print(weights * local_sim)
-        # print((weights * local_sim)**2)
-        # print(sum((weights * local_sim) ** 2))
-        # print(np.sqrt(sum((weights * local_sim) ** 2)))
 
         # Calculate the global similarity as the square root of the sum of squared values
         global_sim_val = np.sqrt(sum((weights * local_sim) ** 2))
         global_sim.append(global_sim_val)
-    # print(global_sim)
+
     y_pred = y_train[global_sim.index(max(global_sim))]
     x_pred = X_train_df.iloc[global_sim.index(max(global_sim))]
-    # print(max(global_sim), y_pred)
+
     if y_pred == y_test:
         dec = 1
     else:
@@ -286,23 +278,15 @@ def retrieval(X_test, y_test, X_train, y_train, weights, k=1, threshold=10):
     X_train = X_train.values
     X_test = X_test.values[0]
     for i, cc in enumerate(X_train):
-        # print(X_test)
-        # print(cc)
         local_sim = local_similarity(X_test, cc, feature_type)
-        # print(local_sim)
-        # print(weights)
-        # print(weights * local_sim)
-        # print((weights * local_sim)**2)
-        # print(sum((weights * local_sim) ** 2))
-        # print(np.sqrt(sum((weights * local_sim) ** 2)))
 
         # Calculate the global similarity as the square root of the sum of squared values
         global_sim_val = np.sqrt(sum((weights * local_sim) ** 2))
         global_sim.append(global_sim_val)
-    # print(global_sim)
+
     y_pred = y_train[global_sim.index(max(global_sim))]
     x_pred = X_train_df.iloc[global_sim.index(max(global_sim))]
-    # print(max(global_sim), y_pred)
+
     if y_pred == y_test:
         dec = 1
     else:
@@ -360,80 +344,3 @@ def create_argument_case(df, feature_weights):
     df_argument_case_base.to_csv("data/sept/argument_case_base.csv", index=False)
     print("Create argument case base finish")
     return df_argument_case_base
-
-
-def probe_to_dict(probe):
-    # expand decisions
-    decisions_elements = []
-    for decision in probe.decisions:
-        decisions_elements.append(
-            {
-                "id": decision.id_,
-                "value": decision.value,
-                "justifications": decision.justifications,
-                "metrics": decision.metrics,
-                "kdmas": decision.kdmas,
-            }
-        )
-    # breakdown decision_elements for columns
-    decisions_id = []
-    decisions_value = []
-    decisions_justifications = []
-    decisions_metrics = []
-    decisions_kdmas = []
-    for decision in decisions_elements:
-        decisions_id.append(decision["id"])
-        decisions_value.append(decision["value"])
-        decisions_justifications.append(decision["justifications"])
-        decisions_metrics.append(decision["metrics"])
-        decisions_kdmas.append(decision["kdmas"])
-
-    result = {
-        "Case_#": probe.id_,
-        "prompt": probe.prompt,
-        "Probe Type": probe.probe_type,
-        "Supplies: type": probe.state.supplies[0].type,
-        "Supplies: quantity": probe.state.supplies[0].quantity,
-        "Casualty_id": probe.state.casualties[0].id,
-        "casualty name": probe.state.casualties[0].name,
-        "Casualty unstructured": probe.state.casualties[0].unstructured,
-        "age": probe.state.casualties[0].demographics.age,
-        "IndividualSex": probe.state.casualties[0].demographics.sex,
-        "IndividualRank": probe.state.casualties[0].demographics.rank,
-        "Injury": probe.state.casualties[0].injuries[0].name,
-        "Injury location": probe.state.casualties[0].injuries[0].location,
-        "severity": probe.state.casualties[0].injuries[0].severity,
-        "casualty_assessed": probe.state.casualties[0].assessed,
-        "vitals:responsive": probe.state.casualties[0].vitals.conscious,
-        "vitals:breathing": probe.state.casualties[0].vitals.breathing,
-        "hrpmin": probe.state.casualties[0].vitals.hrpmin,
-        "mmHg": probe.state.casualties[0].vitals.mmHg,
-        "RR": probe.state.casualties[0].vitals.RR,
-        "Spo2": probe.state.casualties[0].vitals.Spo2,
-        "Pain": probe.state.casualties[0].vitals.Pain,
-        "triage category": probe.state.casualties[0].tag,
-        "casualty_relationship": probe.state.casualties[0].relationship,
-    }
-    # create a set of dictionaries from the kdmas
-    # split the decision kdmas into columns
-    for i, decision_kdma in enumerate(decisions_kdmas):
-        for kdma in decision_kdma.kdmas:
-            result[f"{kdma.id_}"] = kdma.value
-
-    # add Actions to result
-    result["Action"] = decisions_value[0]
-
-    result["Action type"] = probe.decisions[0].value
-
-    result["Action text"] = str(probe.decisions[0].value) + probe.state.supplies[0].type
-
-    # add montecarlo results to the end
-    result["MonteCarlo Results"] = probe.metrics["Severity"]
-
-    """
-    demographics = probe.state.casualties[0].demographics
-    # for every attribute of the demographics object, create a new column
-    for attribute in demographics.__dict__.keys():
-        result[attribute] = demographics.__dict__[attribute]
-    """
-    return result
