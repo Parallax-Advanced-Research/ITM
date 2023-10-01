@@ -13,7 +13,6 @@ from components.case_formation.acf.multicas_preprocess import (
     data_preprocessing,
     weight_learning,
     create_argument_case,
-    probe_to_dict,
 )
 
 # convert each line in the csv to a case and extract the starting state
