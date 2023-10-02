@@ -116,7 +116,7 @@ def get_populated_scores(decision: mcnode.MCDecisionNode, tinymedstate: TinymedS
 
     injuries = treated_injuries + untreated_injuries
 
-    time_avg /= len(decision.children_scores)
+    time_avg /= len(decision.children)
     severity = decision.score['severity']
     ret_dict[Metric.SEVERITY.value] = severity
     ret_dict[Metric.SUPPLIES_REMAINING.value] = decision.score['resource_score']
