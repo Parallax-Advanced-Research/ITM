@@ -1,0 +1,60 @@
+Knexus ITM TAD Changelog
+Produced by Damask Holdings
+
+V JT.1.1 (10/3/23 Internal Merge)
+=======
+Monte Carlo Changes-
+> Visualizer implemented
+> Nested score propogation implemented
+=======
+Tinymed Simulator-
+> Large overhaul medactions, very generic functions
+> Made fixes
+=======
+Ingestors-
+> TA3 converters written
+=======
+Sumo-
+> Medical Oracle excel generated
+
+=======================
+
+V JT.1.0 (Sept-Demo)
+=======
+Monte Carlo Changes-
+> Monte Carlo created
+> Random + explore/exploit node selectors implemented
+> Score averager implemented
+> What else did John do?
+=======
+Tinymed Simulator-
+> Simulator created
+> Tinymed_enums created
+=======
+Ingestors-
+> TA3 converters written
+=======
+Sumo-
+> Did time tests, sumo work discontinued
+
+=======================
+V JT.0.0 (MVP)
+=======
+Monte Carlo Changes-
+> Not Present
+=======
+Tinymed Simulator-
+> Not Present
+=======
+Ingestors-
+> Justin did stuff
+=======
+Sumo-
+> Creatd Wumpus rules
+
+'Cause these things will change, Can you feel it now?
+These walls that they put up to hold us back will fall down.
+This revolution, the time will come, For us to finally win;
+And we'll sing hallelujah"
+
+~Taylor Swift, "Change"
