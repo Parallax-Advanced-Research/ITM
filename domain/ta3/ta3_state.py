@@ -88,7 +88,8 @@ class TA3State(State):
         sdatas = data['supplies'] if 'supplies' in data else []
         for c in cdatas:
             for ci in c['injuries']:
-                ci['treated'] = False  # An addition so we can treat injuries
+                if 'treated' not in ci.keys():
+                    ci['treated'] = False  # An addition so we can treat injuries
         casualties = [Casualty.from_ta3(c) for c in cdatas]
         supplies = [Supply(**s) for s in sdatas]
         ta3s = TA3State(unstr, stime, casualties, supplies)

@@ -1,8 +1,6 @@
 from enum import Enum
 
 
-
-
 class Actions(Enum):
     APPLY_TREATMENT = "APPLY_TREATMENT"
     CHECK_ALL_VITALS = "CHECK_ALL_VITALS"
