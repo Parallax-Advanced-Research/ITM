@@ -264,11 +264,11 @@ def remove_non_injuries(state: TinymedState, tinymedactions: list[TinymedAction]
 
 
 def get_TMNT_demo_casualties() -> list[Casualty]:
-    wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=0.1)
-    minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=0.3)
-    moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=0.5)
-    major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=0.7)
-    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=0.9)
+    wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
+    minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=3.0)
+    moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=5.0)
+    major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=7.0)
+    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=8.0)
 
     raphael_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
                             breathing=BreathingDescriptions.NORMAL.value, hrpmin=49)
@@ -368,7 +368,7 @@ action_map: typing.Mapping[str, resolve_action] = {
 
 
 def get_simple_casualties():
-    bicep_tear = Injury(name=Injuries.PUNCTURE.value, location=Locations.LEFT_BICEP.value, severity=4, treated=False)
+    bicep_tear = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_BICEP.value, severity=4.0, treated=False)
     jt_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
                        breathing=BreathingDescriptions.NORMAL.value, hrpmin=69)
     casualties = [
@@ -425,15 +425,15 @@ class MedicalOracle:
     }
 
     INJURY_UPDATE_TIMES = {
-        Injuries.LACERATION.value: .049,
-        Injuries.BURN.value: .042,
-        Injuries.PUNCTURE.value: .036,
-        Injuries.SHRAPNEL.value: .016,
-        Injuries.AMPUTATION.value: .064,
-        Injuries.ASTHMATIC.value: .004,
-        Injuries.CHEST_COLLAPSE.value: .064,
-        Injuries.EAR_BLEED.value: .003,
-        Injuries.FOREHEAD_SCRAPE.value: .003
+        Injuries.LACERATION.value: .49,
+        Injuries.BURN.value: .42,
+        Injuries.PUNCTURE.value: .36,
+        Injuries.SHRAPNEL.value: .16,
+        Injuries.AMPUTATION.value: .64,
+        Injuries.ASTHMATIC.value: .04,
+        Injuries.CHEST_COLLAPSE.value: .64,
+        Injuries.EAR_BLEED.value: .03,
+        Injuries.FOREHEAD_SCRAPE.value: .03
     }
 
     TREATABLE_AREAS = {
