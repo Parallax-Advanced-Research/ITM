@@ -122,7 +122,3 @@ if __name__ == '__main__':
             difference = dict_difference(new_probe.state, probe.state, {'id', 'type'})
             logger.debug(f"-State Removals: {difference}")
         probe = new_probe
-
-
-if __name__ == '__main__':
-    main()
