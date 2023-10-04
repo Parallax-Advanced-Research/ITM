@@ -1,8 +1,6 @@
 from domain.ta3 import TA3State
 from components.decision_selector.default import HumanDecisionSelector
 from components.decision_selector.sept_cbr import CSVDecisionSelector
-from components.decision_selector.kdma_estimation import KDMAEstimationDecisionSelector
-from components.decision_selector.severity import SeverityDecisionSelector
 from components.elaborator.default import TA3Elaborator
 from components.decision_analyzer.default import BaselineDecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
@@ -17,16 +15,8 @@ class TA3Driver(Driver):
         elaborator = TA3Elaborator()
         mda = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2) if args.mc else None
 
-        if args.variant.lower() == "severity-baseline":
-            super().__init__(elaborator, SeverityDecisionSelector(), [mda])
-            return
-
         if args.human:
             selector = HumanDecisionSelector()
-        elif args.keds:
-            selector = KDMAEstimationDecisionSelector("data/sept/extended_case_base.csv", 
-                                                      variant = args.variant,
-                                                      print_neighbors = args.verbose)
         else:
             selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
                                            variant = args.variant,
