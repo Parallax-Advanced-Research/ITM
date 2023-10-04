@@ -34,11 +34,11 @@ class TA1Client:
         # The designated hitter is wrong
         return self.instance.post_new_session_id_api_v1_new_session_post()
 
-    def post_probe_response(self, probe_response: models.ProbeResponse = openapi_client.ProbeResponse()):
+    def post_probe_response(self, probe_response: models.ProbeResponse):
         r = self.instance.post_probe_response_api_v1_response_post(probe_response)
         return r
 
-    def post_probe_response_batch(self, probe_response_batch: models.ProbeResponseBatch = openapi_client.ProbeResponseBatch()):
+    def post_probe_response_batch(self, probe_response_batch: models.ProbeResponseBatch):
         r = self.instance.post_probe_responses_api_v1_responses_post(probe_response_batch)
         return r
 
