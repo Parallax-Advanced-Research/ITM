@@ -24,11 +24,11 @@ class TA3Driver(Driver):
         if args.human:
             selector = HumanDecisionSelector()
         elif args.keds:
-            selector = KDMAEstimationDecisionSelector("temp/case_base.csv", 
+            selector = KDMAEstimationDecisionSelector("data/sept/extended_case_base.csv", 
                                                       print_neighbors = args.verbose, 
                                                       variant = args.variant)
         else:
-            selector = CSVDecisionSelector("data/sept/case_base.csv", variant = args.variant)
+            selector = CSVDecisionSelector("data/sept/extended_case_base.csv", variant = args.variant)
         elaborator = TA3Elaborator()
 
 
