@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from domain.internal import State
+from domain.internal import State, Action
 
 
 @dataclass
@@ -47,6 +47,7 @@ class Casualty:
     demographics: Demographics
     vitals: Vitals
     tag: str
+    treatments: list[str]
     assessed: bool = False
     unstructured: str = ''
     relationship: str = ''
@@ -60,9 +61,10 @@ class Casualty:
             demographics=Demographics(**data['demographics']),
             vitals=Vitals(**data['vitals']),
             tag=data['tag'],
-            assessed=data.get('assessed', None),
+            assessed=data.get('assessed', data.get('visited', False)),
             unstructured=data['unstructured'],
-            relationship=data['relationship']
+            relationship=data['relationship'],
+            treatments=data.get('treatments', list())
         )
 
 
@@ -73,11 +75,12 @@ class Supply:
 
 
 class TA3State(State):
-    def __init__(self, unstructured: str, time_: int, casualties: list[Casualty], supplies: list[Supply]):
+    def __init__(self, unstructured: str, time_: int, casualties: list[Casualty], supplies: list[Supply], actions_performed: list[Action]):
         super().__init__(id_='TA3State', time_=time_)
         self.unstructured: str = unstructured
         self.casualties: list[Casualty] = casualties
         self.supplies: list[Supply] = supplies
+        self.actions_performed = actions_performed
 
     @staticmethod
     def from_dict(data: dict) -> 'TA3State':
@@ -85,7 +88,8 @@ class TA3State(State):
         stime = data['time'] if 'time' in data else 0
         cdatas = data['casualties'] if 'casualties' in data else []
         sdatas = data['supplies'] if 'supplies' in data else []
+        ap = data['actions_performed'] if 'actions_performed' in data else []
 
         casualties = [Casualty.from_ta3(c) for c in cdatas]
         supplies = [Supply(**s) for s in sdatas]
-        return TA3State(unstr, stime, casualties, supplies)
+        return TA3State(unstr, stime, casualties, supplies, ap)

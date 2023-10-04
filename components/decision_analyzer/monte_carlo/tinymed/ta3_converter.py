@@ -1,6 +1,6 @@
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
-from .tinymed_enums import Demographics, Vitals, Injury, Casualty
+from .tinymed_enums import Demographics, Vitals, Injury, Injuries, Casualty
 from .tinymed_state import TinymedState
 
 
@@ -14,7 +14,26 @@ def _convert_vitals(ta_vitals: TA_VIT) -> Vitals:
 
 
 def _convert_injury(ta_injury: TA_INJ) -> Injury:
-    severe = ta_injury.severity if ta_injury.severity is not None else .7
+    if ta_injury.severity is None: 
+        if ta_injury.name == Injuries.FOREHEAD_SCRAPE.value:
+            severe = 0.1
+        elif ta_injury.name == Injuries.PUNCTURE.value:
+            severe = 0.3
+        elif ta_injury.name == Injuries.SHRAPNEL.value:
+            severe = 0.4
+        elif ta_injury.name == Injuries.LACERATION.value:
+            severe = 0.6
+        elif ta_injury.name == Injuries.EAR_BLEED.value:
+            severe = 0.8
+        elif ta_injury.name == Injuries.CHEST_COLLAPSE.value:
+            severe = 0.9
+        elif ta_injury.name == Injuries.AMPUTATION.value:
+            severe = 1.0
+        else: 
+            severe = 0.7
+    else:
+        severe = ta_injury.severity
+    
     return Injury(name=ta_injury.name, location=ta_injury.location, severity=severe)
 
 

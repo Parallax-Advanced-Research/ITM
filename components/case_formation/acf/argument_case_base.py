@@ -1,272 +1,341 @@
-import json
-import os
-import sys
-import warnings
-
-import numpy as np
-import pandas as pd
+import csv
+from components.case_formation.acf.argument_case import ArgumentCase
 import yaml
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import LeaveOneOut
-from skrebate import ReliefF
+import domain.internal as internal
+import domain.external as external
+import domain.ta3 as ta3
 
-# this will be imports relative to the module once it is a module
-sys.path.append('.')
-from components import DecisionAnalyzer
-from components.decision_analyzer import *
-from components.decision_selector.cbr.cbr_decision_selector import Case
-from domain.internal import *
+FAILED_INT = 999
+FAILED_FLOAT = 0.0
 
-warnings.filterwarnings('ignore')
-def get_data_dir():
-    return os.path.join(os.path.dirname(__file__), 'data')
 
-def get_output_dir():
-    return os.path.join(os.path.dirname(__file__), 'output')
+class CaseBase:
+    def __init__(self, _input_file, _yaml_file) -> None:
+        self._csv_file_path = _input_file
+        self._yaml_file_path = _yaml_file
+        self._csv_cases = self._read_csv()
+        self.scenario = self._import_scenario()
+        self.cases: list[ArgumentCase] = []
+        self._create_internal_cases()
 
-CASUALTY_LIST = [f"Casualty {c}" for c in ['A', 'B', 'C', 'D', 'E', 'F']]
-TREATMENT_LIST = ['Treatment 1', 'Treatment 2', 'Treatment 3', 'Treatment 4', 'Treatment 5', 'Treatment 6']
+    def _read_csv(self):
+        """Convert the csv into a list of dictionaries"""
+        csv_rows: list[dict] = []
+        with open(self._csv_file_path, "r") as f:
+            reader = csv.reader(f, delimiter=",")
+            headers: list[str] = next(reader)
+            for i in range(len(headers)):
+                headers[i] = headers[i].strip().replace("'", "").replace('"', "")
 
-'''
-in the scenario, there are two sets of casualties, one for each vehicle
-if we are going to use the supplied data, this is a separate set of probes
+            kdmas = headers[
+                headers.index("mission-Ave") : headers.index("timeurg-M-A") + 1
+            ]
+            for line in reader:
+                case = {}
+                for i, entry in enumerate(line):
+                    case[headers[i]] = entry.strip().replace("'", "").replace('"', "")
 
-TREATMENT_LIST = ['NeedleDecomp', 'HemorrhageControl', 'IvFluids', 'IntraossDevice', 'BloodProducts','TranexamicAcid', 'ChestSeal', 'SalineLock', 'Medications', 'Airway']
-# We could read these from the yaml file or the data file
-'''
-labels = yaml.load(open(os.path.join(get_data_dir() + '/scenario.yaml'), 'r'), Loader=yaml.Loader)
+                # Clean KDMAs
+                _kdmas = self._replace(case, kdmas, "kdmas")
+                for kdma in list(_kdmas.keys()):
+                    if kdma.endswith("-Ave"):
+                        _kdmas[kdma.split("-")[0]] = _kdmas[kdma]
+                    del _kdmas[kdma]
+                # Skip any entires that don't have KDMA values
+                if list(_kdmas.values())[0].lower() == "na":
+                    continue
 
-class ArgumentCaseProbe:
-    
-    def __init__(self, data):
-        self.data = data        
-        #print(self.data.columns)
-        self.probes = []
+                # Clean supplies
+                sup_type = case.pop("Supplies: type")
+                sup_quant = case.pop("Supplies: quantity")
+                case["supplies"] = {sup_type: sup_quant}
 
-    # we can replace this with ingesting the data as internal    
-    # create the mvp2 probes in the format of the internal Probe
-    def create_mvp2_probes(self):
-        probes = []
-        for index, row in self.data.iterrows():
-            # Probe parameters: id_, state, prompt            
-            probe = Probe(id_=row['session_id'], state=row['probe_id'], prompt=row['probe_id'])
-            
-            kdmas_row = str(row['mission']) + " " +  str(row['denial']) + " " +  str(row['risktol']) + str(row['timeurg'])
-            probe.decisions = [Decision(id_=1, value=row['choice'], kdmas=kdmas_row,)]
-            probes.append(probe)
-        return probes
+                # Clean casualty
+                cas_id = case.pop("Casualty_id")
+                cas_name = case.pop("casualty name")
+                cas_uns = case.pop("Casualty unstructured")
+                cas_relation = case.pop("casualty_relationship")
+                case["casualty"] = {
+                    "id": cas_id,
+                    "name": cas_name,
+                    "unstructured": cas_uns,
+                    "relationship": cas_relation,
+                }
 
-    def create_argument_case_probes(self):        
-        probes = []
-        # Background, Treatment, Scenario, Decision, Mission, Risk aversion
-        for index, row in self.data.iterrows():
-            # Probe parameters: id_, state, prompt            
-            probe = Probe(id_=row['CaseNumber'], state=row['Background'], prompt=row['Scenario'])
-            kdmas_row = str(row['Mission']) + " " +  str(row['Risk aversion'])
-            probe.decisions = [Decision(id_=row['CaseNumber'], value=row['Decision'], kdmas=kdmas_row,)]
-            probes.append(probe)
-        return probes
+                # Clean demographics
+                demo_age = case.pop("age")
+                demo_sex = case.pop("IndividualSex")
+                demo_rank = case.pop("IndividualRank")
+                case["demographics"] = {
+                    "age": demo_age,
+                    "sex": demo_sex,
+                    "rank": demo_rank,
+                }
 
-def partial_cases():
-    df_partial_cases = pd.read_csv(get_data_dir() + r"/ACF-input.csv")
-    df_partial_cases.insert(loc=0, column = 'CaseNumber', value = np.arange(df_partial_cases.shape[0])) 
-    df_partial_cases.to_csv(get_output_dir() + r"/partial_cases.csv", index=False)
-    return df_partial_cases
+                # Clean injury
+                case["injury"] = {
+                    "name": case.pop("Injury name"),
+                    "location": case.pop("Injury location"),
+                    "severity": case.pop("severity"),
+                }
 
-def elab_cases(df_partial_cases):
-    #Description: Takes the partial_cases and add six features as per file DSE.json 
-    #elab_cases = json.load(open(r"\itm-develop\components\acf\data\DSE.json"))        
-    #create for loop over de_partial cases instead of df
-    #add 1 to all rows of all cases under the 6 new features (eg columns)
-        
-    #take the df_partial_cases and add six features as per file DSE.json     
-    possible_decisions = json.load(open(get_data_dir() + r"/DSE.json"))
-    decision_name = TREATMENT_LIST
-    df_elab_cases = []
+                # Clean vitals
+                case["vitals"] = {
+                    "responsive": case.pop("vitals:responsive"),
+                    "breathing": case.pop("vitals:breathing"),
+                    "hrpm": case.pop("hrpmin"),
+                    "mmhg": case.pop("mmHg"),
+                    "rr": case.pop("RR"),
+                    "spo2": case.pop("Spo2"),
+                    "pain": case.pop("Pain"),
+                }
 
-    #do for loop in the df_partial_cases instead of df
-    for index, row in df_partial_cases.iterrows():
-        features = []
-        #add 1 to all rows of all cases under the 6 new features (eg columns)
-        features.extend(possible_decisions["possible-decisions"]["summary"])
-        df_elab_cases.append(features)
+                # Clean action
+                case["action"] = {
+                    "type": case.pop("Action type"),
+                    "params": [
+                        param.strip() for param in case.pop("Action").split(",")
+                    ][1:],
+                }
 
-    df_elab_cases = pd.DataFrame(df_elab_cases, columns= decision_name)
-    df_elab_cases = pd.concat([df_partial_cases, df_elab_cases], axis=1)
-    
-    
+                csv_rows.append(case)
+        return csv_rows
 
-    df_elab_cases.to_csv(get_data_dir() + r"/elab_cases.csv", index=False)
-    #consider obtaining from DSE info on which feature label corresponds to the decision (i.e., output) and change it to Decisions
-    #print(df_elab_cases)
+    # convert a case to internal representation
+    def _import_scenario(self):
+        scenario_from_file = yaml.load(open(self._yaml_file_path), Loader=yaml.Loader)
 
-    decisions = TREATMENT_LIST
-    
-    return df_elab_cases
+        state_from_file = self._convert_state(scenario_from_file["state"])
 
-def case_expansion(df_elab_cases):
-    applicable_decisions = json.load(open(get_data_dir() + r"/applicable_decisions.json"))
-    scenario = json.load(open(get_data_dir() + r"/scenario.json"))
-    survival_rate = json.load(open(get_data_dir() + r"/survival_rate.json"))
-    df_extended_cases = []
+        scenario = external.Scenario(
+            name=scenario_from_file["name"],
+            id=scenario_from_file["id"],
+            state=state_from_file,
+            probes=[],
+        )
+        return scenario
 
-    #these are the names of the columns to be added in df_extended_cases csv file
-    decision_name = ["Treatment 1", "Treatment 2", "Treatment 3", "Treatment 4", "Treatment 5", "Treatment 6"]
-    treatment_rules = ["if Casualty A then treatment 1, treatment 2, treatment 3","if Casualty B then treatment 1, treatment 2, treatment 3", "if Casualty C then treatment 1, treatment 2, treatment 3", "if Casualty D then treatment 4, treatment 5, treatment 6", "if Casualty E then treatment 4, treatment 5, treatment 6","if Casualty F then treatment 2, treatment 3, treatment 4, treatment 5, treatment 6"]
-    survival_rate_name = ["if safe area then treatment 1 survival rate is high"]
-    scenario_name = ["if safe then exclude the highest", "if danger then exclude the lowest", "if low risk then favor higher", "if high risk then favor lower"]
-    df_elab_cases = df_elab_cases.drop(decision_name, axis=1)
-    
-    for index, row in df_elab_cases.iterrows():
-        new_features = []
-        #this is specific to our data 
-        patient = row['PatientTreated']
-        new_features.extend(applicable_decisions[patient]["summary"])
-        applied_rule = [0, 0, 0, 0, 0, 0]
-        applied_rule[CASUALTY_LIST.index(patient)] = 1
-        new_features.extend(applied_rule) 
-        new_features.extend([survival_rate["Treatment 1"][row["Scenario"]]["Survival rate"]])
-        if row["Scenario"] == "safe area":
-            new_features.extend([1 if scenario["safe area"][patient].get("Treatment 6")== None else 1,  0])
+    def _convert_state(self, state: dict):
+        state["scenario_complete"] = False
+        state["elapsed_time"] = 0.0
+        # rename dictionary key from aidDelay to aid_delay
+        state["environment"]["aid_delay"] = state["environment"].pop("aidDelay")
+        state["environment"]["weather"] = None
+        state["environment"]["location"] = None
+        state["environment"]["terrain"] = None
+        state["environment"]["flora"] = None
+        state["environment"]["fauna"] = None
+        state["environment"]["soundscape"] = None
+        state["environment"]["temperature"] = None
+        state["environment"]["humidity"] = None
+        state["environment"]["lighting"] = None
+        state["environment"]["visibility"] = None
+        state["environment"]["noise_ambient"] = None
+        state["environment"]["noise_peak"] = None
+        for casualty in state["casualties"]:
+            casualty["name"] = casualty["id"]
+            casualty["injuries"] = []
+            casualty["relationship"] = None
+            casualty["vitals"] = {
+                "conscious": None,
+                "mental_status": None,
+                "breathing": None,
+                "hrpmin": None,
+            }
+            casualty["visited"] = False
+            casualty["tag"] = None
+
+        return state
+
+    def _convert_csv_ta3vitals(self, data: dict) -> ta3.Vitals:
+        ta3_concious = bool(data["responsive"])
+        ta3_mental_status = "responsive" if ta3_concious else "unresponsive"
+        ta3_breathing = data["breathing"]
+        ta3_hrpmin = self._convert_to_int(data["hrpm"])
+        return ta3.Vitals(
+            conscious=ta3_concious,
+            mental_status=ta3_mental_status,
+            breathing=ta3_breathing,
+            hrpmin=ta3_hrpmin,
+        )
+
+    def _convert_csv_ta3casualties(self, data: dict) -> ta3.Casualty:
+        injuries = [ta3.Injury(**i) for i in data["injuries"]]
+        demographics = ta3.Demographics(**data["demographics"])
+        vitals = ta3.Vitals(**data["vitals"])
+        return ta3.Casualty(
+            data["id"],
+            data["name"],
+            injuries,
+            demographics,
+            vitals,
+            data["tag"],
+            data["treatments"],
+            data["assessed"],
+            data["unstructured"],
+            data["relationship"],
+        )
+
+    def _convert_ta3injury(self, data: dict) -> ta3.Injury:
+        if "location" in data:
+            injury_location = data["location"]
         else:
-            new_features.extend([0, 1 if scenario["danger"][patient].get("Treatment 6") == None else 1])
-        new_features.extend([1,0] if row["Risk aversion"]>=6 else [0,1])
-        df_extended_cases.append(new_features)
-        
-    df_extended_cases = pd.DataFrame(df_extended_cases, columns= decision_name + treatment_rules  + survival_rate_name + scenario_name)
-    df_elab_cases["Background"] = pd.factorize(df_elab_cases["Background"])[0]
-    df_elab_cases["PatientTreated"] = df_elab_cases["PatientTreated"].map(CASUALTY_LIST.index)
-    df_elab_cases["Scenario"] = pd.factorize(df_elab_cases["Scenario"])[0]
-    df_elab_cases["Decision"] = df_elab_cases["Decision"].map(TREATMENT_LIST.index)
-    df_extended_cases = pd.concat([df_elab_cases,df_extended_cases], axis=1) #extend_df
+            injury_location = "unspecified"
+        if "name" in data:
+            injury_name = data["name"]
+        else:
+            injury_name = "unspecified"
+        if "severity" in data:
+            injury_severity = self._convert_to_float(data["severity"])
+        else:
+            injury_severity = FAILED_FLOAT
+        ta3_injury = ta3.Injury(
+            location=injury_location, name=injury_name, severity=injury_severity
+        )
+        return [ta3_injury]
 
-    df_extended_cases.to_csv(get_output_dir() + r"/train_cases.csv", index=False)
-    return df_extended_cases
+    def _convert_csv_single_casualty(self, data: dict) -> ta3.Casualty:
+        ta3_id = data["casualty"]["id"]
+        ta3_name = data["casualty"]["name"]
+        ta3_unstructured = data["casualty"]["unstructured"]
+        ta3_relationship = data["casualty"]["relationship"]
+        ta3_injuries = self._convert_ta3injury(data["injury"])
+        ta3_demographics = ta3.Demographics(**data["demographics"])
+        ta3_vitals = self._convert_csv_ta3vitals(data["vitals"])
 
-def weight_learning(df_extended_cases):
-    '''
-               Description: Takes a DataFrame and computes RelifF algorithm on it
+        ta3_tag = ""
+        ta3_treatments = []
+        ta3_assessed = False
 
-               Inputs:
-                       df:     DataFrame
+        ta3_casualty = ta3.Casualty(
+            id=ta3_id,
+            name=ta3_name,
+            injuries=ta3_injuries,
+            demographics=ta3_demographics,
+            vitals=ta3_vitals,
+            tag=ta3_tag,
+            unstructured=ta3_unstructured,
+            relationship=ta3_relationship,
+            treatments=ta3_treatments,
+            assessed=ta3_assessed,
+        )
+        return ta3_casualty
 
-               Outputs:
-                      rff.feature_importances_: Feature Weights from ReliefF
+    def _convert_csv_ta3supply(self, supply_data: dict) -> ta3.Supply:
+        # get the first key and value in the dictionary
+        supply_type = list(supply_data.keys())[0]
+        supply_quantity = list(supply_data.values())[0]
+        ta3_supply = ta3.Supply(supply_type, supply_quantity)
+        return ta3_supply
 
-               Caveats:
-           '''
-    column_to_drop = 'CaseNumber'  # Replace with the name of the column you want to drop
-    if column_to_drop in df_extended_cases.columns:
-        df_extended_cases = df_extended_cases.drop(columns=[column_to_drop])
-    rff = ReliefF(n_features_to_select=len(df_extended_cases.columns), n_neighbors=3)
-    rff.fit(df_extended_cases.drop("Decision", axis=1).values, df_extended_cases["Decision"].values)
-    return  rff.feature_importances_
+    def _convert_csv_ta3state(self, data: dict) -> ta3.TA3State:
+        unstructured = data["unstructured"] if "unstructured" in data else ""
+        start_time = data["time"] if "time" in data else 0
+        casualty_data = data["casualties"] if "casualties" in data else []
+        actions_performed = []
+        supplies = []
 
-def weighted_distance(sample_x, sample_y, feature_weights):
-    '''
-                Description: For two points and a corresponding weight, calculate the weighted Euclidean distance
-                Inputs:
-                        sample_x: Datapoint 1
-                        sample_y: Datapoint 2
-                        feature_weights: multiplicative weight
-                Outputs:
-                        Weighted Euclidean Distance
-        '''
-    return np.sqrt(sum((w * (x - y) ** 2 for w, x, y in zip(feature_weights, sample_x, sample_y))))
+        if "actions_performed" in data:
+            actions_performed = data["actions_performed"]
+        elif "action" in data:
+            actions_performed = [data["action"]]
 
-def local_similarity(new_case, candidate_case, feature_type):
-    local_sim = []
-    i=0
-    for new_case_f, candidate_case_f in zip(new_case, candidate_case):
-        if feature_type[i][0] == "Categorical":
-            if new_case_f == candidate_case_f:
-                local_sim.append(1)
+        if "casualty" in data:
+            casualty = self._convert_csv_single_casualty(data)
+            casualty_data = [casualty]
+        else:
+            casualty_data = [self._convert_csv_ta3casualties(c) for c in casualty_data]
+
+        # if there is only one supply in the csv
+        if "supplies" in data:
+            if len(data["supplies"]) == 1:
+                supplies = [self._convert_csv_ta3supply(data["supplies"])]
             else:
-                local_sim.append(0)
+                supplies = [ta3.Supply(**s) for s in data["supplies"]]
         else:
-            temp = 1- (abs(new_case_f - candidate_case_f)/feature_type[i][1])
-            local_sim.append(temp)
-        i+=1
-    return local_sim
+            # create a default supply
+            data["supplies"] = {"test": 1}
+            supplies = [ta3.Supply(**data["supplies"])]
 
-def retrieval(X_test, y_test, X_train, y_train, weights, k=1, threshold=10):
-    feature_type = []
-    X_train = X_train.drop("CaseNumber", axis = 1)
-    X_test = X_test.drop("CaseNumber", axis=1)
-    for col in X_train.columns:
-        unique_values = X_train[col].unique()
-        if len(unique_values)<=threshold:
-            feature_type.append(["Categorical"])
-        else:
-            feature_type.append(["Numerical", X_train[col].max()-X_train[col].min()])
-    global_sim = []
-    X_train_df = X_train.copy()
-    X_train = X_train.values
-    X_test = X_test.values[0]
-    for i, cc in enumerate(X_train):
-        local_sim = local_similarity(X_test, cc, feature_type)
+        return ta3.TA3State(
+            unstructured, start_time, casualty_data, supplies, actions_performed
+        )
 
+    def _to_internal(self, case: dict) -> ArgumentCase:
+        return ArgumentCase(case)
 
-    # Calculate the global similarity as the square root of the sum of squared values
-        global_sim_val =  np.sqrt(sum((weights * local_sim) ** 2))
-        global_sim.append(global_sim_val)
-    
-    y_pred = y_train[global_sim.index(max(global_sim))]
-    x_pred = X_train_df.iloc[global_sim.index(max(global_sim))]
+    def _create_internal_cases(self):
+        for csv_case in self._csv_cases:
+            decisions: list[internal.Decision] = []
+            # if decisions are in data
+            if "action" in csv_case:
+                decision = internal.Decision(
+                    id_=csv_case["Case_#"],
+                    value=internal.Action(
+                        name_=csv_case["action"]["type"],
+                        params=({"action1": csv_case["action"]["params"]}),
+                    ),
+                )
+                decisions.append(decision)
+
+            case_no = csv_case["Case_#"]
             
-    if y_pred == y_test:
-        dec = 1
-    else:
-        dec = 0
-    return dec, y_pred,x_pred
+            prompt = csv_case["prompt"]
+            state: ta3.TA3State = self._convert_csv_ta3state(csv_case)
 
-def create_argument_case(df, feature_weights):
-    '''
-                Description: Takes a DataFrame and trains XGBoost algorithm
+            probe = internal.Probe(
+                id_=id, state=state, prompt=prompt, decisions=decisions
+            )
 
-                Inputs:
-                        df:     DataFrame
-                        feature_weights: computed ReliefF weights
+            # some analytics look for probes in the scenario
+            self.scenario.probes.append(probe)
 
-                Outputs:
-                        weights: Feature Weights from XGBoost
+            # extras
+            probe_type = csv_case["Probe Type"]
+            casualty_assessed = csv_case["casualty_assessed"]
+            action_text = csv_case["Action text"]
+            extended_vitals = csv_case["vitals"]
 
-                Caveats:
-        '''
-    loo = LeaveOneOut()
-    predictions = []
-    gt = []
-    y = np.array(df["Decision"].tolist())
-    X = df.drop("Decision", axis=1)  # removes the decision column
-    argument_cases = []
-    for train_index, test_index in loo.split(X):
-        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-        y_train, y_test = y[train_index], y[test_index]
+            argument_case = ArgumentCase(
+                id=id,
+                case_no=case_no,
+                csv_data=csv_case,
+                scenario=self.scenario,
+                probe=probe,
+                response=decisions[0]
+                if len(decisions) > 0
+                else internal.Decision("None", []),
+                additional_data={
+                    "probe_type": probe_type,
+                    "casualty_assessed": casualty_assessed,
+                    "action_text": action_text,
+                    "extended_vitals": extended_vitals,
+                },
+                kdmas=csv_case["kdmas"],
+            )
+            self.cases.append(argument_case)
 
-        #knn = KNeighborsClassifier(n_neighbors=3, metric=weighted_distance, metric_params={'feature_weights': feature_weights})
-        #knn.fit(X_train, y_train)
-        #       y_pred = knn.predict(X_test)
+    @staticmethod
+    def _replace(case: dict, headers: list[str], name_: str) -> dict[str, any]:
+        sub_dict = {}
+        for header in headers:
+            sub_dict[header] = case[header]
+            del case[header]
+        case[name_] = sub_dict
+        return sub_dict
 
-        dec, y_pred, x_pred = retrieval(X_test, y_test, X_train, y_train, feature_weights, k=1, threshold=10)
-        #indices = knn.kneighbors(X_test)[0][0]
-        #selected_neighbors = X_train.iloc[indices]
+    @staticmethod
+    # convert input to integer if possible else return 999
+    def _convert_to_int(input):
+        try:
+            return int(input)
+        except ValueError:
+            return FAILED_INT
 
-        new_case = X_test.copy()
-        new_case["M Risk aversion"] = x_pred["Risk aversion"]
-        new_case["M Mission"] = x_pred["Mission"]
-        new_case["Average difference"] = np.linalg.norm(
-             np.array([new_case["M Risk aversion"], new_case["M Mission"]]) - np.array(
-                 [new_case["Risk aversion"], new_case["Mission"]]))
-        new_case["new Decision"] = y_pred
-        new_case["Decision"] = y_test
-        argument_cases.append(new_case)
-        # accuracy = accuracy_score(y_test, y_pred)
-        predictions.append(y_pred)
-        gt.append(y_test)
-    accuracy = accuracy_score(np.array(gt), np.array(predictions))
-    print("Average Accuracy:", accuracy)
-
-    df_argument_case_base = pd.concat(argument_cases, ignore_index=True)
-    df_argument_case_base.to_csv(get_data_dir() + '/argument_case_base.csv', index=False)
-    print("Create argument case base finish")
-    return df_argument_case_base
+    @staticmethod
+    # convert to float if possible else return 0.0
+    def _convert_to_float(input):
+        try:
+            return float(input)
+        except ValueError:
+            return FAILED_FLOAT
