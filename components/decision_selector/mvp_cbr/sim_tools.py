@@ -8,12 +8,12 @@ SimType = Union[dict, float, int, str]
 def similarity(a: SimType, b: SimType) -> float:
     a = _standardize_types(a)
     b = _standardize_types(b)
-    if type(a) != type(b):
+    if type(a) != type(b) and not (isinstance(a, float) and isinstance(b, float)):
         return 0
 
     if type(a) == dict:
         return _simple_dict(a, b)
-    elif type(a) == float or type(a) == int:
+    elif isinstance(a, float) or isinstance(a, int):
         return _unnormalized_float(a, b)
     elif type(a) == str:
         return _simple_str(a, b)
