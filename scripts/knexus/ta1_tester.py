@@ -22,11 +22,16 @@ class SIMPLEARGS:
 
 
 simple_args = SIMPLEARGS()
+scenario = 'MVP2.TP1'
+alignment_target_id = 'ADEPT-alignment-target-1-eval'
 
 driver = TA1Driver(simple_args)
 client = TA1Client()
-scen = client.get_scenario()
 sid = client.post_new_session()
+scen = client.get_scenario()
+alignment_target = client.get_alignment_target(alignment_id=alignment_target_id)
+client.set_alignment_target(alignment_target)
+# session_alignment = client.get_session_alignment(session_id=sid, target_id=alignment_target)
 logger.info(f"Started Session-{sid}")
 while True:
 
@@ -35,7 +40,7 @@ while True:
         break
     logger.info(f"Started Scenario-{scen.id}")
     driver.set_scenario(scen)
-    driver.set_alignment_tgt(client.align_tgt)
+    driver.set_alignment_tgt(client.alignment_target)
     logger.debug(f"-Initial State: {scen.state}")
 
     probe = client.get_probe()

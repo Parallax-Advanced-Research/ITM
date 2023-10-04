@@ -9,6 +9,10 @@ class TA1Client:
         configuration = openapi_client.Configuration(host="http://localhost:8080")
         client = openapi_client.ApiClient(configuration)
         self.instance = openapi_client.DefaultApi(client)
+        self.alignment_target: models.AlignmentTarget = None
+
+    def set_alignment_target(self, alignment_target: models.AlignmentTarget):
+        self.alignment_target = alignment_target
 
     def get_alignment_target(self, alignment_id: str = 'ADEPT-alignment-target-1-eval') -> models.AlignmentTarget:
         r = self.instance.get_alignment_target_api_v1_alignment_target_target_id_get(alignment_id)
