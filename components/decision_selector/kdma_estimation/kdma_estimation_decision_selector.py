@@ -13,12 +13,13 @@ from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAn
 
 class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 3
-    def __init__(self, csv_file: str, variant='aligned', print_neighbors=True):
+    def __init__(self, csv_file: str, variant='aligned', print_neighbors=True, use_drexel_format=True):
         self._csv_file_path: str = csv_file
         self.cb = self._read_csv()
         self.variant: str = variant
         self.analyzers: list[DecisionAnalyzer] = get_analyzers()
         self.print_neighbors = print_neighbors
+        self.use_drexel_format = use_drexel_format
 
     def select(self, scenario: Scenario, probe: Probe, target: KDMAs) -> (Decision, float):
         default_weights = {key: 1 for key in self.cb[0].keys()}
@@ -31,17 +32,26 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 cur_casualty = None
             else:
                 cur_casualty = [c for c in probe.state.casualties if c.id == name][0]
-            cur_case = make_case(probe.state, cur_decision)
+            if self.use_drexel_format:
+                cur_case = make_case_drexel(probe.state, cur_decision)
+            else:
+                cur_case = make_case(probe.state, cur_decision)
             if target.kdmas[0].id_ == "Mission" and self.print_neighbors:
                 print(f"Decision: {cur_decision}")
             sqDist: float = 0.0
-            weights = {'assessing': 3, 'treating': 3, 'tagging': 3, 'visited': 2, 'treatment': 3, 
-                       'category': 3}
+            if self.use_drexel_format:
+                weights = {'ActionType': 5, 'casualty_assessed': 2, 'Supplies: type': 3, 
+                           'triage category': 3}
+            else:
+                weights = {'assessing': 3, 'treating': 3, 'tagging': 3, 'visited': 2, 'treatment': 3, 
+                           'category': 3}
             for kdma in target.kdmas:
                 match kdma.id_.lower():
                     case "mission":
                         weights = weights | \
-                                  {"rank": 1, "priority": 1, "pDeath": 1, "SeverityChange": 1}
+                                  ({"IndividualRank": 1, "priority": 1, "pDeath": 1}
+                                   if self.use_drexel_format else
+                                   {"rank": 1, "priority": 1, "pDeath": 1, "SeverityChange": 1})
                     case "denial":
                         weights = weights | \
                                   {"pDeath": 1, "pBrainInjury": 1, "pPain": 1, "leaving" : 10, 
@@ -83,7 +93,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             if kdma not in case:
                 breakpoint()
                 raise Exception()
-            kdma_val += case[kdma] * (total/max(sim, 0.01))
+            if self.use_drexel_format:
+                kdma_val = case[kdma + "-Ave"]
+            else:
+                kdma_val = case[kdma] 
+            kdma_total += kdma_val * (total/max(sim, 0.01))
             divisor += total/max(sim, 0.01)
         kdma_val = kdma_val / divisor
         if self.print_neighbors:
@@ -302,15 +316,70 @@ def make_case(s: State, d: Decision) -> dict[str, Any]:
     for dm in d.metrics.values():
         case[dm.name] = dm.value
     return case
-    
-TREATMENTS = ["Hemostatic gauze", "Decompression Needle", "Pressure bandage", "Tourniquet", "Nasopharyngeal airway"]
 
+CASE_INDEX = 1000
+
+def make_case_drexel(s: State, d: Decision) -> dict[str, Any]:
+    global CASE_INDEX
+    global TAGS
+    case = {}
+    case['Case_#'] = CASE_INDEX
+    CASE_INDEX += 1
+    c: Casualty = None
+    for cas in s.casualties:
+        if cas.id == d.value.params.get("casualty", None):
+            c = cas
+            break
+    if c is None:
+        case['unvisited_count'] = len([co for co in s.casualties if not co.assessed])
+        case['injured_count'] = len([co for co in s.casualties if len(co.injuries) > 0])
+        case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
+                                                       for co in s.casualties])
+    else:
+        case['age'] = c.demographics.age
+        case['IndividualSex'] = c.demographics.sex
+        case['Injury name'] = c.injuries[0].name if len(c.injuries) > 0 else None
+        case['Injury location'] = c.injuries[0].location if len(c.injuries) > 0 else None
+        case['severity'] = c.injuries[0].severity if len(c.injuries) > 0 else None
+        case['casualty_assessed'] = c.assessed
+        case['casualty_relationship'] = c.relationship
+        case['IndividualRank'] = c.demographics.rank
+        case['conscious'] = c.vitals.conscious
+        case['vitals:responsive'] = c.vitals.mental_status not in ["UNCONSCIOUS", "UNRESPONSIVE"]
+        case['vitals:breathing'] = c.vitals.breathing
+        case['hrpmin'] = c.vitals.hrpmin
+        case['unvisited_count'] = len([co for co in s.casualties if not co.assessed and not co.id == c.id])
+        case['injured_count'] = len([co for co in s.casualties if len(co.injuries) > 0 and not co.id == c.id])
+        case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
+                                                       for co in s.casualties if not co.id == c.id])
+
+    a: Action = d.value
+    case['Action type'] = a.name
+    case['Action'] = [a.name] + list(a.params.values())
+    if a.name == "APPLY_TREATMENT":
+        supply = [supp for supp in s.supplies if supp.type == a.params.get("treatment", None)]
+        if len(supply) != 1:
+            breakpoint()
+            raise Exception("Malformed supplies: " + str(s.supplies)) 
+        case['Supplies: type'] = supply[0].type
+        case['Supplies: quantity'] = supply[0].quantity
+    if a.name == "TAG_CASUALTY":
+        case['triage category'] = TAGS.index(a.params.get("category", None))
+    for dm in d.metrics.values():
+        if dm.name == "severity":
+            case["MC Severity"] = dm.value
+        else:
+            case[dm.name] = dm.value
+    return case
+    
+TAGS = ["MINIMAL", "DELAYED", "IMMEDIATE", "EXPECTANT"]
+TREATMENTS = ["Hemostatic gauze", "Decompression Needle", "Pressure bandage", "Tourniquet", "Nasopharyngeal airway"]
 
 def make_tag_decision_list(s: State):
     index = 100
     dlist = []
     for c in s.casualties:
-        for tag in ["MINIMAL", "DELAYED", "IMMEDIATE", "EXPECTANT"]:
+        for tag in TAGS:
             dlist.append(Decision(str(index), Action("TAG_CASUALTY", {"casualty": c.id, "category": tag})))
             index += 1
     return dlist
