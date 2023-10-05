@@ -16,7 +16,9 @@ from components.case_formation.acf.multicas_preprocess import (
 )
 
 # convert each line in the csv to a case and extract the starting state
-case_base = CaseBase("data/sept/case_base_multicas.csv", "data/sept/scenario.yaml")
+case_base = CaseBase(
+    "data/sept/input/case_base_multicas.csv", "data/sept/input/scenario.yaml"
+)
 
 #### decision analysis
 monte_carlo_analyzer = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
@@ -133,8 +135,8 @@ HEURISTICS = [
     "one-bounce",
 ]
 
-input_file = "data/sept/case_base_multicas.csv"
-output_file = "data/sept/extended_case_base_multicas.csv"
+input_file = "data/sept/input/case_base_multicas.csv"
+output_file = "data/sept/output/extended_case_base_multicas.csv"
 
 with open(input_file, "r") as csvinput:
     with open(output_file, "w") as csvoutput:

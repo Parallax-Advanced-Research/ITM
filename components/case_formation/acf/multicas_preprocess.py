@@ -24,7 +24,7 @@ def data_preprocessing(preprocessed_case_base):
             preprocessed_case_base[column] = preprocessed_case_base[column].astype(int)
 
     preprocessed_case_base.to_csv(
-        "data/sept/preprocessed_case_base_multicas.csv", index=False
+        "data/sept/scratch/preprocessed_case_base_multicas.csv", index=False
     )
     # print(preprocessed_case_base)
     return preprocessed_case_base
@@ -145,7 +145,7 @@ def create_argument_case(df, feature_weights):
 
     df_argument_case_base = pd.concat(argument_cases, ignore_index=True)
     df_argument_case_base.to_csv(
-        "data/sept/argument_case_base_multicas.csv", index=False
+        "data/sept/scratch/argument_case_base_multicas.csv", index=False
     )
     print("Create argument case base finish")
     return df_argument_case_base
@@ -222,7 +222,9 @@ def data_preprocessing(preprocessed_case_base):
         if preprocessed_case_base[column].dtype == "bool":
             preprocessed_case_base[column] = preprocessed_case_base[column].astype(int)
 
-    preprocessed_case_base.to_csv("data/sept/preprocessed_case_base.csv", index=False)
+    preprocessed_case_base.to_csv(
+        "data/sept/scratch/preprocessed_case_base.csv", index=False
+    )
     # print(preprocessed_case_base)
     return preprocessed_case_base
 
@@ -341,6 +343,8 @@ def create_argument_case(df, feature_weights):
     print("Average Accuracy:", accuracy)
 
     df_argument_case_base = pd.concat(argument_cases, ignore_index=True)
-    df_argument_case_base.to_csv("data/sept/argument_case_base.csv", index=False)
+    df_argument_case_base.to_csv(
+        "data/sept/scratch/argument_case_base.csv", index=False
+    )
     print("Create argument case base finish")
     return df_argument_case_base
