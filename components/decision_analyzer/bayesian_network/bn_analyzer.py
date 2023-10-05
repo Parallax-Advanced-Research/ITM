@@ -7,7 +7,7 @@ from components import DecisionAnalyzer
 from .inference import Bayesian_Net
 
 class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
-    bn: Bayesian_Net = None
+    bn: Bayesian_Net
 
     def __init__(self) -> None:
         super().__init__()
@@ -30,8 +30,8 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
                                           float, predictions['airway_blocked']['true']))
             metrics.append(DecisionMetric("pInternalBleeding", "Posterior probability of internal bleeding",
                                           float, predictions['internal_hemorrhage']['true']))
-            metrics.append(DecisionMetric("pInternalBleeding", "Posterior probability of internal bleeding",
-                                          float, predictions['internal_hemorrhage']['true']))
+            metrics.append(DecisionMetric("pExternalBleeding", "Posterior probability of external bleeding",
+                                          float, predictions['external_hemorrhage']['true']))
             mdict = {m.name: m for m in metrics}
             decision.metrics.update(mdict)
             analysis[decision.id_] = mdict
@@ -52,7 +52,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
             'severe_burns': self.get_burns(cas),
             'visible_trauma_to_extremities': self.get_trauma(cas),
             'amputation': self.get_amputation(cas),
-            }
+        }
         
         return {name: value for (name, value) in data.items() if value is not None}
         

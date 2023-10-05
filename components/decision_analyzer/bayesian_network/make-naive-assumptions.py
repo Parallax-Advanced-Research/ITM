@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
+# Run directly to generate bayes_net.json. Not called as part of TAD.
 
 import yaml, sys, json
 from typing import Dict, List, Any, Union
 from typedefs import Node_Name, Node_Val, Probability, Assignment
 from utilities import hash_to_assignment, assignment_to_hash, include
-include('../../../util/logger.py')
 
 nodes: Dict[str, 'Node'] = {}
-
-verbose_mode = True
-
+VERBOSE_MODE = False
 
 def verbose(s: str) -> None:
-	if not verbose_mode: return
+	if not VERBOSE_MODE: return
+	sys.stdout.flush()
 	sys.stderr.write(s)
 	sys.stderr.write("\n")
 	sys.stderr.flush()
