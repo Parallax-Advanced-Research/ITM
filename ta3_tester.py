@@ -11,9 +11,15 @@ def main():
 
     # Initialize the drivers
     #  NOTE: Update TA3 Driver with any updated components you want used (e.g., analyzers)
-    driver = TA3Driver()
+    args = type("Args", (), {})()
+    args.human = True
+    args.variant = "all"
+    args.ebd = False
+    args.mc = None
+    args.keds = False
+    driver = TA3Driver(args)
     client = TA3Client()
-    sid = client.start_session(f'TAD-Manual')
+    sid = client.start_session(f"TAD-Manual")
 
     # Iterate over all TA3 sessions until complete
     #  NOTE: If a session is interrupted, the TA3 server must be restarted
@@ -68,11 +74,13 @@ def main():
             new_probe = client.take_action(action)
             if new_probe:
                 # Calculate and show the change in the state based on this decision
-                difference = dict_difference(probe.state, new_probe.state, {'id', 'type'})
+                difference = dict_difference(
+                    probe.state, new_probe.state, {"id", "type"}
+                )
                 logger.debug(f"-State Changes: {json.dumps(difference, indent=4)}")
             probe = new_probe
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
     main()

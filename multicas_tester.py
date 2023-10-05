@@ -19,7 +19,7 @@ from components.case_formation.acf.multicas_preprocess import (
 case_base = CaseBase("data/sept/case_base_multicas.csv", "data/sept/scenario.yaml")
 
 #### decision analysis
-monte_carlo_analyzer = MonteCarloAnalyzer(max_rollouts=10, max_depth=2)
+monte_carlo_analyzer = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
 heuristc_rule_analyzer = heuristic_rule_analysis.HeuristicRuleAnalyzer()
 bayesian_analyzer = bayesian_network.BayesNetDiagnosisAnalyzer()
 # event_based_diagnosis_analyzer = event_based_diagnosis.EventBasedDiagnosisAnalyzer() # still having lisp problems
