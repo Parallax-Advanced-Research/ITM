@@ -136,7 +136,7 @@ HEURISTICS = [
 ]
 
 input_file = "data/sept/input/case_base_multicas.csv"
-output_file = "data/sept/output/extended_case_base_multicas.csv"
+output_file = "data/sept/output/decision_selector_casebase_multicas.csv"
 
 with open(input_file, "r") as csvinput:
     with open(output_file, "w") as csvoutput:
