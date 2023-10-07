@@ -3,6 +3,7 @@ import sys
 sys.path.append(".")
 from components import CaseGenerator, DecisionAnalyzer, DecisionSelector, Elaborator
 import csv
+import pprint
 
 
 class ArgumentCaseGenerator(CaseGenerator):
@@ -66,9 +67,7 @@ class ArgumentCaseGenerator(CaseGenerator):
         Generates counterfactuals for the given case.
         """
         columns_to_vary = [
-            column
-            for column in self.categorical_columns
-            if case[column].lower() != None
+            column for column in self.categorical_columns if column in case
         ]
 
         possible_values = []
@@ -76,13 +75,22 @@ class ArgumentCaseGenerator(CaseGenerator):
             # list of unique possible values
             possible_values.append(list(set([case[column] for case in self.cases])))
 
-        for column in columns_to_vary:
-            case[column] = None
-            yield case
+        # list of possible new cases that can be generated with possible values and the given case
+        new_cases = []
+        for possible_value in possible_values:
+            for value in possible_value:
+                new_case = case.copy()
+                new_case[column] = value
+                new_cases.append(new_case)
+
+        # yield the result
+        for new_case in new_cases:
+            yield new_case
 
 
 acg = ArgumentCaseGenerator("data/sept/output/decision_selector_casebase_multicas.csv")
 acg.set_categorical_columns(["action", "supplies", "casualties", "kdmas"])
 acg.print_categorical_columns()
 output = acg.generate_counterfactuals(acg.cases[0])
-print(output)
+for case in output:
+    pprint.pprint(case)
