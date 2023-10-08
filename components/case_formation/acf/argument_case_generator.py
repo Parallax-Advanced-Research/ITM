@@ -89,8 +89,19 @@ class ArgumentCaseGenerator(CaseGenerator):
 
 
 acg = ArgumentCaseGenerator("data/sept/output/decision_selector_casebase_multicas.csv")
-acg.set_categorical_columns(["action", "supplies", "casualties", "kdmas"])
+acg.set_categorical_columns(["action type", "supplies", "casualties", "kdmas"])
 acg.print_categorical_columns()
 output = acg.generate_counterfactuals(acg.cases[0])
 for case in output:
     pprint.pprint(case)
+
+# add the new cases
+for case in output:
+    acg.cases.append(case)
+
+# write to file
+with open("data/sept/output/casebase_multicas_expanded.csv", "w") as f:
+    writer = csv.DictWriter(f, fieldnames=acg.cases[0].keys())
+    writer.writeheader()
+    for case in acg.cases:
+        writer.writerow(case)
