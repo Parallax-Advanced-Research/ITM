@@ -1,5 +1,9 @@
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Column, Integer, String, DateTime
+from typing import Optional
+from sqlalchemy.dialects.postgresql import JSONB
+from pydantic import BaseModel, Field, parse_obj_as
+from pydantic.json import pydantic_encoder
 
 
 class Base(DeclarativeBase):
