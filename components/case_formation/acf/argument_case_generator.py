@@ -79,9 +79,10 @@ class ArgumentCaseGenerator(CaseGenerator):
         new_cases = []
         for possible_value in possible_values:
             for value in possible_value:
-                new_case = case.copy()
-                new_case[column] = value
-                new_cases.append(new_case)
+                if value not in case.values():
+                    new_case = case.copy()
+                    new_case[column] = value
+                    new_cases.append(new_case)
 
         # yield the result
         for new_case in new_cases:
