@@ -1,25 +1,36 @@
 Knexus ITM TAD Changelog
 Produced by Damask Holdings
 
-V JT.1.1 (10/3/23 Internal Merge)
+
+VERSIONING SCHEME
+
+V KR (Knexus Research) X.Y.Z
+X = External entity release
+Y = Paralax Release
+Z = Internal versioning
+
+V KR 1.1.2 (10/7 to Paralax)
 =======
 Monte Carlo Changes-
 > Visualizer implemented
 > Nested score propogation implemented
+
 =======
 Tinymed Simulator-
 > Large overhaul medactions, very generic functions
 > Made fixes
+
 =======
 Ingestors-
 > TA3 converters written
+
 =======
 Sumo-
 > Medical Oracle excel generated
 
 =======================
 
-V JT.1.0 (Sept-Demo)
+V KR.1.0.0 (Sept-Demo)
 =======
 Monte Carlo Changes-
 > Monte Carlo created
@@ -38,7 +49,7 @@ Sumo-
 > Did time tests, sumo work discontinued
 
 =======================
-V JT.0.0 (MVP)
+V KR.0.0.0 (MVP)
 =======
 Monte Carlo Changes-
 > Not Present
