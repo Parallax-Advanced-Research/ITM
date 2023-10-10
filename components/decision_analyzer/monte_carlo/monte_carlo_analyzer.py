@@ -59,9 +59,12 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
                  and decision.value.params.get("treatment", None) is None:
                 possibles = [tree_hash[real_dec_str] for real_dec_str in tree_hash.keys() 
                                                      if real_dec_str.startswith(probe_dec_str)]
-                value = min(possibles)
+                if len(possibles) == 0:
+                    value = None
+                else:
+                    value = min(possibles)
             else:
-                value = max(tree_hash.values())
+                value = None
 
             metrics: DecisionMetrics = \
                 {"Severity": DecisionMetric(name="Severity",
@@ -69,7 +72,9 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
                                             type=type(float), value=value),
                  "SeverityChange": DecisionMetric(name="SeverityChange",
                                             description="Change in severity due to action",
-                                            type=type(float), value=float(max(tree_hash.values()) - value))}
+                                            type=type(float), 
+                                            value=None if value is None 
+                                                       else float(max(tree_hash.values()) - value))}
             decision.metrics.update(metrics)
             analysis[probe_dec_str] = metrics  # decision id was not unique, only decision categories
         return analysis
