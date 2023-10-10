@@ -59,7 +59,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
                 value = 9.9
             metrics: DecisionMetrics = {"Severity": DecisionMetric(name="Severity",
                                                                    description="Severity of all injuries across all casualties",
-                                                                   type=type(float), value=value)}
+                                                                   type=float, value=value)}
             decision.metrics.update(metrics)
             analysis[probe_dec_str] = metrics  # decision id was not unique, only decision categories
         return analysis
