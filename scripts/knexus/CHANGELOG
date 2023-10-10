@@ -9,6 +9,12 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
+V KR 1.1.3 (10/10 Internal changes)
+=======
+Monte Carlo Changes-
+> replace score averager with weighted average
+> children nodes that are chosen more frequently have a greater affect on the node's score
+
 V KR 1.1.2 (10/7 to Paralax)
 =======
 Monte Carlo Changes-

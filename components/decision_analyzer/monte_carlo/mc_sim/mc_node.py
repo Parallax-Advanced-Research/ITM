@@ -9,7 +9,6 @@ class MCStateNode:
         self.children: list['MCDecisionNode'] = []
         self.count: int = 0
         self.score: {str: float} = {}
-        self.children_scores: list[{str: float}] = []
 
 
 class MCDecisionNode:
@@ -19,4 +18,3 @@ class MCDecisionNode:
         self.children: list[MCStateNode] = []
         self.count: int = 0
         self.score: {str: float} = {}
-        self.children_scores: list[{str: float}] = []
