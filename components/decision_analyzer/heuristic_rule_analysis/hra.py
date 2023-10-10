@@ -53,6 +53,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
             return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+        elif len(treatment_idx) == 0:
+            return ("no preference", "")
 
         # if search_path then return as part of output the order of pairs and their scores
         if search_path:
@@ -79,10 +81,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     #if (treatment0[predictor] == "all") and \
                     #        not (treatment1[predictor] == "all"):
                     if (
-                    #        treatment0[predictor] == data['casualty']['injury']['system'] or
+                            treatment0[predictor] == data['casualty']['injury']['system'] or
                             treatment0[predictor] == "all") and \
                             not (
-                    #                    treatment1[predictor] == data['casualty']['injury']['system'] or
+                                        treatment1[predictor] == data['casualty']['injury']['system'] or
                                         treatment1[predictor] == "all"):
                         treatment_sums[battle[0]] += 1
                         if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(
@@ -92,10 +94,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                         break
 
                     elif (
-                            #treatment1[predictor] == data['casualty']['injury']['system'] or
+                            treatment1[predictor] == data['casualty']['injury']['system'] or
                             treatment1[predictor] == "all") and \
                             not (
-                                    #treatment0[predictor] == data['casualty']['injury']['system'] or
+                                    treatment0[predictor] == data['casualty']['injury']['system'] or
                                     treatment0[predictor] == "all"):
                         treatment_sums[battle[1]] += 1
                         if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(
@@ -205,6 +207,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
             return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+        elif len(treatment_idx) == 0:
+            return ("no preference", "")
 
         # create corresponding array to hold treatment scores
         all_treatment_sum = list()
@@ -221,7 +225,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 # - - - special case for system predictor
                 if predictor == "system":
                     if (
-                            #data['treatment'][treatment][predictor] == data['casualty']['injury']['system'] or \
+                            data['treatment'][treatment][predictor] == data['casualty']['injury']['system'] or \
                             data['treatment'][treatment][predictor] == "all"):
                         treatment_sum += 1
 
@@ -334,6 +338,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
             return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+        elif len(treatment_idx) == 0:
+            return ("no preference", "")
 
         # if search_path then return as part of output the order of pairs and their scores
         if search_path:
@@ -373,12 +379,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 # - - - - special case for system predictor
                 if predictor == "system":
                     if (
-                            #treatment0[predictor] == data['casualty']['injury']['system'] or
+                            treatment0[predictor] == data['casualty']['injury']['system'] or
                             treatment0[predictor] == "all"):
                         treatment_predictor_sums[0] += 1
 
                     if (
-                            #treatment1[predictor] == data['casualty']['injury']['system'] or
+                            treatment1[predictor] == data['casualty']['injury']['system'] or
                             treatment1[predictor] == "all"):
                         treatment_predictor_sums[1] += 1
 
@@ -417,12 +423,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     # - - - - - special case for system predictor
                     if rpredictor == "system":
                         if (
-                                #treatment0[rpredictor] == data['casualty']['injury']['system'] or
+                                treatment0[rpredictor] == data['casualty']['injury']['system'] or
                                 treatment0[rpredictor] == "all"):
                             treatment_predictor_sums[0] += 1
 
                         if (
-                                #treatment1[rpredictor] == data['casualty']['injury']['system'] or
+                                treatment1[rpredictor] == data['casualty']['injury']['system'] or
                                 treatment1[rpredictor] == "all"):
                             treatment_predictor_sums[1] += 1
 
@@ -543,6 +549,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
             return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+        elif len(treatment_idx) == 0:
+            return ("no preference", "")
 
         # if search_path then return as part of output the order of pairs and their scores
         if search_path:
@@ -581,10 +589,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 # - - - - special case for system predictor
                 if predictor == "system":
                     if (
-                            #treatment0[predictor] == data['casualty']['injury']['system'] or
+                            treatment0[predictor] == data['casualty']['injury']['system'] or
                             treatment0[predictor] == "all") and \
                             not (
-                                    #treatment1[predictor] == data['casualty']['injury']['system'] or
+                                    treatment1[predictor] == data['casualty']['injury']['system'] or
                                     treatment1[predictor] == "all"):
                         treatment_sums[battle[0]] += 1
                         winner = True
@@ -594,10 +602,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                         break
 
                     elif (
-                            #treatment1[predictor] == data['casualty']['injury']['system'] or
+                            treatment1[predictor] == data['casualty']['injury']['system'] or
                             treatment1[predictor] == "all") and \
                             not (
-                                    #treatment0[predictor] == data['casualty']['injury']['system'] or
+                                    treatment0[predictor] == data['casualty']['injury']['system'] or
                                     treatment0[predictor] == "all"):
                         treatment_sums[battle[1]] += 1
                         winner = True
@@ -642,10 +650,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     if rpredictor == "system":
 
                         if (
-                                #treatment0[rpredictor] == data['casualty']['injury']['system'] or
+                                treatment0[rpredictor] == data['casualty']['injury']['system'] or
                                 treatment0[rpredictor] == "all") and \
                                 not (
-                                        #treatment1[rpredictor] == data['casualty']['injury']['system'] or
+                                        treatment1[rpredictor] == data['casualty']['injury']['system'] or
                                         treatment1[rpredictor] == "all"):
                             treatment_sums[battle[0]] += 1
                             # winner = True
@@ -655,10 +663,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                             break
 
                         elif (
-                                #treatment1[rpredictor] == data['casualty']['injury']['system'] or
+                                treatment1[rpredictor] == data['casualty']['injury']['system'] or
                                 treatment1[rpredictor] == "all") and \
                                 not (
-                                        #treatment0[rpredictor] == data['casualty']['injury']['system'] or
+                                        treatment0[rpredictor] == data['casualty']['injury']['system'] or
                                         treatment0[rpredictor] == "all"):
                             treatment_sums[battle[1]] += 1
                             # winner = True
@@ -728,7 +736,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                         if 0 <= injury['severity'] <= 1: return {person: info}
 
         # if no casualty that satisfies requirements return first in list
-        return list(casualty_dict.values())[0]
+        return {list(casualty_dict.keys())[0]:list(casualty_dict.values())[0]}
 
     '''
     One-Bounce: If there is a randomly ordered sequence of decisions, when two decisions are compared against all predictors,
@@ -758,8 +766,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (
-            treatment_idx[0], data['treatment'][treatment_idx[0]])  # NOTE: update to reflect more complex return type
+            return (treatment_idx[0], data['treatment'][treatment_idx[0]])  # NOTE: update to reflect more complex return type
+        elif len(treatment_idx) == 0:
+            return ("no preference", "")
 
         # if search_path then return as part of output the order of pairs and their scores
         if search_path:
@@ -819,12 +828,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 # - - - - special case for system predictor
                 if predictor == "system":
                     if (
-                            #treatment0[predictor] == data['casualty']['injury']['system'] or
+                            treatment0[predictor] == data['casualty']['injury']['system'] or
                             treatment0[predictor] == "all"):
                         treatment_predictor_sums[0] += 1
 
                     if (
-                            #treatment1[predictor] == data['casualty']['injury']['system'] or
+                            treatment1[predictor] == data['casualty']['injury']['system'] or
                             treatment1[predictor] == "all"):
                         treatment_predictor_sums[1] += 1
 
@@ -901,12 +910,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     # - - - - special case for system predictor
                     if predictor == "system":
                         if (
-                                #treatment0[predictor] == data['casualty']['injury']['system'] or
+                                treatment0[predictor] == data['casualty']['injury']['system'] or
                                 treatment0[predictor] == "all"):
                             treatment_predictor_sums[0] += 1
 
                         if (
-                                #treatment1[predictor] == data['casualty']['injury']['system'] or
+                                treatment1[predictor] == data['casualty']['injury']['system'] or
                                 treatment1[predictor] == "all"):
                             treatment_predictor_sums[1] += 1
 
@@ -1157,6 +1166,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     # for now convert functions are stubs, they will be flushed out later
     def convert_between_kdma_risk_reward_ratio(self, mission, denial, predictor):
+        """
         if mission == None and denial == None and predictor != None:  # later only return kdma set from its own function
             return {'mission': 5, 'denial': 3}
         elif predictor == None and mission != None and denial != None:
@@ -1166,9 +1176,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 return "low"
         else:
             return "incorrect args, no result calculated"
+        """
+        return "low"
 
     def convert_between_kdma_resources(self, mission, denial, predictor):
         # return self.convert_between_kdma_risk_reward_ratio(mission, denial, predictor)
+        """
         if mission == None and denial == None and predictor != None:  # later only return kdma set from its own function
             return {'mission': 5, 'denial': 3}
         elif predictor == None and mission != None and denial != None:
@@ -1178,9 +1191,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 return
         else:
             return "incorrect args, no result calculated"
+        """
+        return "few"
 
     def convert_between_kdma_time(self, mission, denial, predictor):
         # return self.convert_between_kdma_risk_reward_ratio(mission, denial, predictor)
+        """
         if mission == None and denial == None and predictor != None:  # later only return kdma set from its own function
             return {'mission': 5, 'denial': 3}
         elif predictor == None and mission != None and denial != None:
@@ -1190,9 +1206,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 return
         else:
             return "incorrect args, no result calculated"
+        """
+        return "minutes"
 
     def convert_between_kdma_system(self, mission, denial, predictor):
         # return self.convert_between_kdma_risk_reward_ratio(mission, denial, predictor)
+        """
         if mission == None and denial == None and predictor != None:  # later only return kdma set from its own function
             return {'mission': 5, 'denial': 3}
         elif predictor == None and mission != None and denial != None:
@@ -1202,12 +1221,14 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 return
         else:
             return "incorrect args, no result calculated"
+        """
+        return "equal"
 
     ''' placeholder data needed by hra strategies until functionality is implemented. Currently creates a scenario file
         with kdma associated predictor values (should be learned), predictor values for possible decisions (will be educated guess), kdma values (should be learned)
     '''
 
-    def preprocess(self) -> str:
+    def preprocess(self, decision_list:list) -> str:
         file = dict()
 
         # file["scenario"] = {"danger":"high", "urgency":"high", "error_prone":"high"}
@@ -1216,7 +1237,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # file["predictors"] = {"relevance":{"risk_reward_ratio":"low", "time":"seconds", "system":"equal", "resources":"few"}},
 
-        file["treatment"] = {
+        temp_file = dict()
+        temp_file["treatment"] = {
             # "airway":{"risk_reward_ratio":"med", "resources":"few", "time":"seconds", "system":"respiratory"},
             # "chest seal":{"risk_reward_ratio":"med", "resources":"many", "time":"hours", "system":"respiratory"},
             # "saline lock":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"cariovascular"},
@@ -1238,7 +1260,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 "nasopharyngeal airway": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
                                           "system": "respiratory"}},
             "CHECK_ALL_VITALS": {
-                "CHECK_ALL_VITALS": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
+                "CHECK_ALL_VITALS": {"risk_reward_ratio": "low", "resources": "some", "time": "seconds",
                                      "system": "all"}},
             "CHECK_PULSE": {
                 "CHECK_PULSE": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
@@ -1254,8 +1276,20 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             "TAG_CASUALTY": {
                 "TAG_CASUALTY": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "none"}},
             "SITREP": {
-                "SITREP": {"risk_reward_ratio": "high", "resources": "many", "time": "hours", "system": "none"}},
+                "SITREP": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all"}},
         }
+        file['treatment'] = {}
+        file['treatment']["APPLY_TREATMENT"] = dict()
+        for decision_complete in decision_list:
+            decision = decision_complete.value.name
+            if decision == 'END_SCENARIO': continue
+            if decision == "APPLY_TREATMENT":
+                #file['treatment']["APPLY_TREATMENT"] = dict()
+                for ele in temp_file['treatment']['APPLY_TREATMENT']:
+                    if ele in str(decision_complete.value).lower():
+                        file['treatment']["APPLY_TREATMENT"][ele] = temp_file['treatment']['APPLY_TREATMENT'][ele]
+            else:
+                file['treatment'][decision] = temp_file['treatment'][decision]
 
         # file["casualty"] = {"injury":{"name":"broken arm", "system":"skeleton", "severity":"serious"}}
 
@@ -1274,6 +1308,22 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             outfile.write(json_object)
 
         return new_file
+
+    ''' determines the system likely to be impacted by the injury, by extension the important treatment
+    '''
+    def guess_injury_body_system(self, location: str, injury: str) -> str:
+
+        if location == "unspecified" or any(ele in injury for ele in ['amputation']):
+            return 'cardiovascular'
+        elif any(ele in location.lower() for ele in ['calf', 'thigh', 'bicep', 'shoulder', 'forearm', 'wrist']) or\
+                any(ele in injury.lower() for ele in ['forehead scrape', 'laceration', 'puncture', 'shrapnel', 'burn']):
+            return 'integumentary'
+        elif any(ele in location.lower() for ele in ['head', 'face', 'neck']) or any(ele in injury.lower() for ele in ['ear bleed']):
+            return 'neural'
+        elif any(ele in location.lower() for ele in ['chest']) or any(ele in injury.lower() for ele in ['asthmatic', 'chest collapse']):
+            return 'respiratory'
+        elif any(ele in location.lower() for ele in ['stomach']):
+            return 'gastrointestinal'
 
     '''
     Call each HRA strategy with scenario info and return a dict of dictionaries, each dictionary 
@@ -1391,7 +1441,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     def analyze(self, scen: Scenario, probe) -> dict[str, DecisionMetrics]:
 
         # create scenario file
-        new_file = self.preprocess()
+        new_file = self.preprocess(probe.decisions)
         with open(new_file, 'r+') as f:
             data = json.load(f)
 
@@ -1428,14 +1478,19 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         temp_data = copy.deepcopy(data)
         casualty_analytics = []
         for casualty in casualty_data:
-            temp_data['casualty'] = casualty
+            injury_cnt = min(1, len(casualty_data[casualty]['injuries']))
+            injury_cnt = range(injury_cnt)
+            casualty_data[casualty]['injury'] = {'system':"None"}
+            for i in injury_cnt:
+                casualty_data[casualty]['injury']['system'] = self.guess_injury_body_system(casualty_data[casualty]['injuries'][i]['location'], casualty_data[casualty]['injuries'][i]['name'])
+            temp_data['casualty'] = casualty_data[casualty]
             temp_data['treatment'] = {}
 
             for treatment in data['treatment']:
-            #    if (treatment == 'CHECK_ALL_VITALS' or treatment == 'SITREP') and casualty['assessed'] == True:
-            #        continue
-            #    elif treatment == 'TAG_CASUALTY' and casualty['tag'] != None:
-            #        continue
+                #if (treatment == 'CHECK_ALL_VITALS' or treatment == 'SITREP') and casualty_data[casualty]['assessed'] == True:
+                #    continue
+                #elif treatment == 'TAG_CASUALTY' and casualty_data[casualty]['tag'] != None:
+                #    continue
                 for name, val in data['treatment'][treatment].items():
                 #for val in data['treatment'][treatment].values():
                 #    for name1, val1 in val:
@@ -1447,6 +1502,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         analysis = {}
         for decision_complete in probe.decisions:
             decision = decision_complete.value.name
+            if decision == "APPLY_TREATMENT":
+                for ele in data['treatment']['APPLY_TREATMENT']:
+                    if ele in str(decision_complete.value).lower():
+                        decision = ele
+                        break
             hra_strategy = {}
             #for casualty in casualty_data:
             #    hra_strategy[casualty] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
@@ -1456,6 +1516,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 ele_val = list(ele.values())[0]
                 if not(ele_key in str(decision_complete.value)): continue
                     #print("the casualty is contained")
+                ele_key = str(decision_complete.value)
                 hra_strategy[ele_key] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0, 'one-bounce': 0}
 
                 hra_strategy[ele_key]['take-the-best'] = ele_val['decision_hra_dict'][decision]['take-the-best']
@@ -1469,19 +1530,19 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                                type=type(dict), value=hra_strategy), \
                 "Take-The-Best Priority": DecisionMetric(name="Take-The-Best Priority",
                                                          description="Priority for take-the-best strategy",
-                                                         type=type(dict), value=priority_take_the_best), \
+                                                         type=type(dict), value=list(priority_take_the_best.keys())[0]), \
                 "Exhaustive Priority": DecisionMetric(name="Exhaustive Priority",
                                                       description="Priority for exhaustive strategy", type=type(dict),
-                                                      value=priority_exhaustive), \
+                                                      value=list(priority_exhaustive.keys())[0]), \
                 "Tallying Priority": DecisionMetric(name="Tallying Priority",
                                                     description="Priority for tallying strategy", type=type(dict),
-                                                    value=priority_tallying), \
+                                                    value=list(priority_tallying.keys())[0]), \
                 "Satisfactory Priority": DecisionMetric(name="Satisfactory Priority",
                                                         description="Priority for satisfactory strategy",
-                                                        type=type(dict), value=priority_satisfactory), \
+                                                        type=type(dict), value=list(priority_satisfactory.keys())[0]), \
                 "One-Bounce Priority": DecisionMetric(name="One-Bounce Priority",
                                                       description="Priority for one-bounce strategy", type=type(dict),
-                                                      value=priority_one_bounce)
+                                                      value=list(priority_one_bounce.keys())[0])
                 }
             # Update the metrics in the decision with our currently calculated metrics
             decision_complete.metrics.update(metrics)
