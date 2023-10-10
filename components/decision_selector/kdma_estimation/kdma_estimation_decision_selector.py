@@ -12,7 +12,7 @@ from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAn
 
 class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 3
-    def __init__(self, csv_file: str, variant='aligned', print_neighbors=True, use_drexel_format=True):
+    def __init__(self, csv_file: str, variant='aligned', print_neighbors=True, use_drexel_format=False):
         self._csv_file_path: str = csv_file
         self.cb = self._read_csv()
         self.variant: str = variant
@@ -39,7 +39,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 print(f"Decision: {cur_decision}")
             sqDist: float = 0.0
             if self.use_drexel_format:
-                weights = {'ActionType': 5, 'casualty_assessed': 2, 'Supplies: type': 3, 
+                weights = {'Action type': 5, 'casualty_assessed': 2, 'Supplies: type': 3, 
                            'triage category': 3}
             else:
                 weights = {'assessing': 3, 'treating': 3, 'tagging': 3, 'visited': 2, 'treatment': 3, 
@@ -48,7 +48,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 match kdma.id_.lower():
                     case "mission":
                         weights = weights | \
-                                  ({"IndividualRank": 1, "priority": 1, "pDeath": 1}
+                                  ({"IndividualRank": 1, "priority": 1, "pDeath": 11}
                                    if self.use_drexel_format else
                                    {"rank": 1, "priority": 1, "pDeath": 1, "SeverityChange": 1})
                     case "denial":
@@ -82,23 +82,22 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 
 
     def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str) -> float:
+        if self.use_drexel_format:
+            kdma = kdma + "-Ave"
         topk = self.top_K(cur_case, weights, kdma)
         if len(topk) == 0:
             return 0
         total = sum([max(sim, 0.01) for (sim, case) in topk])
         divisor = 0
-        kdma_val = 0
+        kdma_total = 0
         for (sim, case) in topk:
             if kdma not in case:
                 breakpoint()
                 raise Exception()
-            if self.use_drexel_format:
-                kdma_val = case[kdma + "-Ave"]
-            else:
-                kdma_val = case[kdma] 
-            kdma_total += kdma_val * (total/max(sim, 0.01))
+            kdma_val = case[kdma] 
+            kdma_total += kdma_val * total/max(sim, 0.01)
             divisor += total/max(sim, 0.01)
-        kdma_val = kdma_val / divisor
+        kdma_val = kdma_total / divisor
         if self.print_neighbors:
             print(f"kdma_val: {kdma_val}")
         return kdma_val
@@ -158,9 +157,11 @@ def relevant_fields(case: dict[str, Any], weights: dict[str, Any], kdma: str):
 def convert(feature_name: str, val: str):
     if val == 'None':
         return None
-    if val == 'True':
+    if val == '':
+        return None
+    if val.lower() == 'true':
         return True
-    if val == 'False':
+    if val.lower() == 'false':
         return False
     if val.isnumeric():
         return int(val)
@@ -176,7 +177,11 @@ def isFloat(val: str):
         return False    
             
 def compare(val1: Any, val2: Any, feature: str):
-    if val1 is None or val2 is None:
+    if val1 is None and val2 is not None:
+        return 1
+    if val2 is None and val1 is not None:
+        return 1
+    if val1 is None and val2 is None:
         return None
     t = type(val1)
     if not t == type(val2):
@@ -657,7 +662,7 @@ def first(seq : Sequence):
     
 def main():
     cb: list[dict[str, Any]] = make_soartech_case_base()
-    write_case_base("temp/case_base.csv", cb)
+    write_case_base("data/sept/alternate_case_base.csv", cb)
 
 
 if __name__ == '__main__':
