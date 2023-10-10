@@ -59,26 +59,21 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             probe_dec_str = decision_to_actstr(decision)
             if probe_dec_str in tree_hash.keys() and tree_hash[probe_dec_str] != 0:
                 value = tree_hash[probe_dec_str]
+            elif decision.value.name == "APPLY_TREATMENT" \
+                 and decision.value.params.get("treatment", None) is None:
+                possibles = [tree_hash[real_dec_str] for real_dec_str in tree_hash.keys() 
+                                                     if real_dec_str.startswith(probe_dec_str)]
+                value = min(possibles)
             else:
-                value = 9.9
-            avg_casualty_severity = value / len(tinymed_state.casualties)
-            avg_injury_severity = value
-            num_injuries = 0
-            for c in tinymed_state.casualties:
-                for i in c.injuries:
-                    num_injuries += 1
-            if num_injuries:
-                avg_injury_severity = value / num_injuries
-            metrics: DecisionMetrics = {"Severity": DecisionMetric(name="Severity",
-                                        description="Severity of all injuries across all casualties", type=type(float),
-                                                                   value=value)}
-            casualty_metrics: DecisionMetrics = {"Average Casualty Severity": DecisionMetric(name="Average Casualty Severity",
-                                                 description="Severity of all injuries across all casualties divided by num of casualties",
-                                                 type=type(float), value=avg_casualty_severity)}
-            injury_metrics: DecisionMetrics = {"Average Injury Severity": DecisionMetric(name="Average injury severity",
-                                               description="Severity of all injuries divided by num injuries",
-                                               type=type(float), value=avg_injury_severity)}
+                value = max(tree_hash.values())
 
+            metrics: DecisionMetrics = \
+                {"Severity": DecisionMetric(name="Severity",
+                                            description="Severity of all injuries across all casualties",
+                                            type=type(float), value=value),
+                 "SeverityChange": DecisionMetric(name="SeverityChange",
+                                            description="Change in severity due to action",
+                                            type=type(float), value=float(max(tree_hash.values()) - value))}
             decision.metrics.update(metrics)
             decision.metrics.update(casualty_metrics)
             decision.metrics.update(injury_metrics)

@@ -317,3 +317,4 @@ $RECYCLE.BIN/
 temp/newfile.json
 
 temp/scene.json
+/temp/*

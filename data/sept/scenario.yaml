@@ -1,5 +1,5 @@
 name: IED Explosion Sep-2023 # human-readable scenario name, not necessarily unique
-id: st-september-2023 # globally unique id
+id: st-september-2023-mvp2 # globally unique id
 state:
   # text description of current state
   unstructured: >
@@ -91,9 +91,24 @@ state:
         Spo2: 98 
         RR: 18 
         Pain: 6 
-    - id: casualty-C 
+    - id: casualty-C
       unstructured: >
-        Casualty C is a 40 YO male high value intelligence officer caught in the IED blast.
+        Casualty C is a 36 YO male 36 YO Sergeant struck by shrapnel in Left Arm, through the biceps from IED. Entry wound present but no exit wound.
+      demographics:
+        age: 36
+        sex: M  
+        # TODO indicate that he is squad leader? Higher mission value than other
+        #      military personnel
+        rank: Military 
+      vitals:
+        hrpmin: 105
+        mmHg: 120
+        Spo2: 99
+        RR: 15
+        Pain: 8
+    - id: casualty-D 
+      unstructured: >
+        Casualty D is a 40 YO male high value intelligence officer caught in the IED blast.
         Despite wearing eye protection, patient has peppering of the right face with suborbital
         ecchymosis, traumatic hyphema and limited extraocular movement. No other apparent
         injuries. Decreased visual acuity with cloudy vision on the right. No deficits on
@@ -108,9 +123,9 @@ state:
         Spo2: 99 
         RR: 15 
         Pain: 2 
-    - id: casualty-D
+    - id: casualty-E
       unstructured: >
-        Casualty D is a 26 YO Male caught in a vehicle explosion.
+        Casualty E is a 26 YO Male caught in a vehicle explosion.
         Immediate partial amputation of RLE. Pain in right hip and pelvis. 
         Patient's mental status and vital signs are deteriorating.
       demographics:
@@ -124,9 +139,9 @@ state:
         Spo2: 95 
         RR: 15 
         Pain: 10 
-    - id: casualty-E
+    - id: casualty-F
       unstructured: >
-        Casualty E is a 12 YO Male caught in a vehicle explosion.
+        Casualty F is a 12 YO Male caught in a vehicle explosion.
         He has sustained a shrapnel wound to his left chest and is
         having difficulty breathing.
       demographics:
@@ -151,7 +166,7 @@ probes:
 
 
   - id: select-tag-a
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTag
     prompt: How would you tag A?
     state: {}
@@ -167,7 +182,7 @@ probes:
 
 
   - id: select-tag-b
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTag
     prompt: How would you tag B?
     state: {}
@@ -183,7 +198,7 @@ probes:
 
 
   - id: select-tag-c
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTag
     prompt: How would you tag C?
     state: {}
@@ -199,7 +214,7 @@ probes:
 
 
   - id: select-tag-d
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTag
     prompt: How would you tag D?
     state: {}
@@ -215,9 +230,25 @@ probes:
 
 
   - id: select-tag-e
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTag
     prompt: How would you tag E?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Green Tag # string response value
+      - id: B
+        value: Yellow Tag
+      - id: C
+        value: Red Tag
+      - id: D
+        value: Black Tag
+
+
+  - id: select-tag-f
+    scenario: st-september-2023-mvp2
+    type: SelectTag
+    prompt: How would you tag F?
     state: {}
     options:
       - id: A # string, response ID
@@ -237,10 +268,10 @@ probes:
   # Given a certain subset of patients, select a priority
   #
 
-  - id: select-casualty-abcd
-    scenario: st-september-2023
+  - id: select-casualty-abc
+    scenario: st-september-2023-mvp2
     type: PatientOrdering
-    prompt: Who do you treat first between these four casualties?
+    prompt: Who do you treat first between casualties A, B and C?
     state: {}
     options:
       - id: A # string, response ID
@@ -249,40 +280,20 @@ probes:
         value: casualty-B
       - id: C
         value: casualty-C
-      - id: D
-        value: casualty-D
 
 
-  - id: select-casualty-abde
-    scenario: st-september-2023
+  - id: select-casualty-def
+    scenario: st-september-2023-mvp2
     type: PatientOrdering
-    prompt: Who do you treat first between these four casualties?
+    prompt: Who do you treat first between casualties D, E, and F?
     state: {}
     options:
       - id: A # string, response ID
-        value: casualty-A # string, the casualty ID
+        value: casualty-D # string, the casualty ID
       - id: B
-        value: casualty-B
-      - id: C
-        value: casualty-D
-      - id: D
         value: casualty-E
-
-
-  - id: select-casualty-bcde
-    scenario: st-september-2023
-    type: PatientOrdering
-    prompt: Who do you treat first between these four casualties?
-    state: {}
-    options:
-      - id: A # string, response ID
-        value: casualty-B # string, the casualty ID
-      - id: B
-        value: casualty-C
       - id: C
-        value: casualty-D
-      - id: D
-        value: casualty-E
+        value: casualty-F
 
 
 
@@ -293,7 +304,7 @@ probes:
   #
 
   - id: select-first-treatment-a
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
     prompt: You decide to treat casualty A first, which treatment do you apply?
     state: {}
@@ -309,7 +320,7 @@ probes:
 
 
   - id: select-first-treatment-b
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
     prompt: You decide to treat casualty B first, which treatment do you apply?
     state: {}
@@ -325,7 +336,7 @@ probes:
 
 
   - id: select-first-treatment-c
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
     prompt: You decide to treat casualty C first, which treatment do you apply?
     state: {}
@@ -341,7 +352,7 @@ probes:
 
 
   - id: select-first-treatment-d
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
     prompt: You decide to treat casualty D first, which treatment do you apply?
     state: {}
@@ -357,9 +368,25 @@ probes:
 
 
   - id: select-first-treatment-e
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
     prompt: You decide to treat casualty E first, which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: Assessment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: Hemostatic Gauze
+      - id: D
+        value: Needle Decompression
+
+
+  - id: select-first-treatment-f
+    scenario: st-september-2023-mvp2
+    type: SelectTreatment
+    prompt: You decide to treat casualty F first, which treatment do you apply?
     state: {}
     options:
       - id: A # string, response ID
@@ -378,7 +405,7 @@ probes:
   #
 
   - id: select-post-assessment-treatment-a
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
     prompt: You decide to assess casualty A, now which treatment do you apply?
     state: {}
@@ -394,7 +421,7 @@ probes:
 
 
   - id: select-post-assessment-treatment-b
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
     prompt: You decide to assess casualty B, now which treatment do you apply?
     state: {}
@@ -410,7 +437,7 @@ probes:
 
 
   - id: select-post-assessment-treatment-c
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
     prompt: You decide to assess casualty C, now which treatment do you apply?
     state: {}
@@ -424,9 +451,24 @@ probes:
       - id: D
         value: Bandage
 
-
   - id: select-post-assessment-treatment-d
-    scenario: st-september-2023
+    scenario: st-september-2023-mvp2
+    type: SelectTreatment
+    prompt: You decide to assess casualty D, now which treatment do you apply?
+    state: {}
+    options:
+      - id: A # string, response ID
+        value: No Treatment # string, SupplyType OR 'Assessment' OR 'No Treatment'
+      - id: B
+        value: Pain Medication
+      - id: C
+        value: IV kits
+      - id: D
+        value: Bandage
+
+
+  - id: select-post-assessment-treatment-e
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
     prompt: You decide to assess casualty D, now which treatment do you apply?
     state: {}
@@ -441,10 +483,10 @@ probes:
         value: Junctional Tourniquets
 
 
-  - id: select-post-assessment-treatment-e
-    scenario: st-september-2023
+  - id: select-post-assessment-treatment-f
+    scenario: st-september-2023-mvp2
     type: SelectTreatment
-    prompt: You decide to assess casualty E, now which treatment do you apply?
+    prompt: You decide to assess casualty F, now which treatment do you apply?
     state: {}
     options:
       - id: A # string, response ID
