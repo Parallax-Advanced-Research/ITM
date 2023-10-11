@@ -1527,21 +1527,21 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
             metrics: DecisionMetrics = {
                 "HRA Strategy": DecisionMetric(name="HRA Strategy", description="Applicable hra strategies",
-                                               type=type(dict), value=hra_strategy), \
+                                               type=dict, value=hra_strategy), \
                 "Take-The-Best Priority": DecisionMetric(name="Take-The-Best Priority",
                                                          description="Priority for take-the-best strategy",
-                                                         type=type(dict), value=list(priority_take_the_best.keys())[0]), \
+                                                         type=dict, value=list(priority_take_the_best.keys())[0]), \
                 "Exhaustive Priority": DecisionMetric(name="Exhaustive Priority",
-                                                      description="Priority for exhaustive strategy", type=type(dict),
+                                                      description="Priority for exhaustive strategy", type=dict,
                                                       value=list(priority_exhaustive.keys())[0]), \
                 "Tallying Priority": DecisionMetric(name="Tallying Priority",
-                                                    description="Priority for tallying strategy", type=type(dict),
+                                                    description="Priority for tallying strategy", type=dict,
                                                     value=list(priority_tallying.keys())[0]), \
                 "Satisfactory Priority": DecisionMetric(name="Satisfactory Priority",
                                                         description="Priority for satisfactory strategy",
-                                                        type=type(dict), value=list(priority_satisfactory.keys())[0]), \
+                                                        type=dict, value=list(priority_satisfactory.keys())[0]), \
                 "One-Bounce Priority": DecisionMetric(name="One-Bounce Priority",
-                                                      description="Priority for one-bounce strategy", type=type(dict),
+                                                      description="Priority for one-bounce strategy", type=dict,
                                                       value=list(priority_one_bounce.keys())[0])
                 }
             # Update the metrics in the decision with our currently calculated metrics

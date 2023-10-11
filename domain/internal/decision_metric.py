@@ -1,4 +1,5 @@
 from util.dict_tools import Dict_No_Overwrite
+import builtins
 import typing
 
 T = typing.TypeVar('T')
@@ -14,7 +15,7 @@ class DecisionMetric(typing.Generic[T]):
         # TODO: Why are we taking type as an argument instead of just doing type(self.value)
         # when we need it?
         assert isinstance(self.value, self.type),\
-            f"type of value ({type(self.value)}) does not match declared type ({self.type})"
+            f"type of value ({builtins.type(self.value)}) does not match declared type ({self.type})"
 
 
 DecisionName = str
