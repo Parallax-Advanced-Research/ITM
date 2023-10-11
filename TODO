@@ -1,0 +1,4 @@
+* Central test script that calls all tests
+* --seed argument at toplevel. Other modules don't set their own seed.
+* local copy of HEMS with everything exported
+* install script for HEMS dependencies
