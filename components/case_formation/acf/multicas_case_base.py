@@ -5,6 +5,9 @@ import domain.internal as internal
 import domain.external as external
 import domain.ta3 as ta3
 
+# from components.case_formation.acf.util.read_csv import CSVReader # TODO: move the csv conversion to the CSVReader class
+
+# set the numbers to return when conversion fails
 FAILED_INT = 999
 FAILED_FLOAT = 0.0
 
@@ -13,28 +16,30 @@ class CaseBase:
     def __init__(self, _input_file, _yaml_file) -> None:
         self._csv_file_path = _input_file
         self._yaml_file_path = _yaml_file
-        self._csv_cases = self._read_csv()
+        self._csv_cases = self._read_csv_multi()
         self.scenario = self._import_scenario()
         self.cases: list[ArgumentCase] = []
-        self._create_internal_cases()
+        self._create_internal_multicas_cases()
 
-    def _read_csv(self):
-        """Convert the csv into a list of dictionaries"""
+    def _read_csv_multi(self):
         csv_rows: list[dict] = []
         with open(self._csv_file_path, "r") as f:
             reader = csv.reader(f, delimiter=",")
             headers: list[str] = next(reader)
+            # the first header had some special characters in it
+            headers[0] = "Case_#"
+
             for i in range(len(headers)):
                 headers[i] = headers[i].strip().replace("'", "").replace('"', "")
 
             kdmas = headers[
                 headers.index("mission-Ave") : headers.index("timeurg-M-A") + 1
             ]
+
             for line in reader:
                 case = {}
                 for i, entry in enumerate(line):
                     case[headers[i]] = entry.strip().replace("'", "").replace('"', "")
-
                 # Clean KDMAs
                 _kdmas = self._replace(case, kdmas, "kdmas")
                 for kdma in list(_kdmas.keys()):
@@ -50,46 +55,6 @@ class CaseBase:
                 sup_quant = case.pop("Supplies: quantity")
                 case["supplies"] = {sup_type: sup_quant}
 
-                # Clean casualty
-                cas_id = case.pop("Casualty_id")
-                cas_name = case.pop("casualty name")
-                cas_uns = case.pop("Casualty unstructured")
-                cas_relation = case.pop("casualty_relationship")
-                case["casualty"] = {
-                    "id": cas_id,
-                    "name": cas_name,
-                    "unstructured": cas_uns,
-                    "relationship": cas_relation,
-                }
-
-                # Clean demographics
-                demo_age = case.pop("age")
-                demo_sex = case.pop("IndividualSex")
-                demo_rank = case.pop("IndividualRank")
-                case["demographics"] = {
-                    "age": demo_age,
-                    "sex": demo_sex,
-                    "rank": demo_rank,
-                }
-
-                # Clean injury
-                case["injury"] = {
-                    "name": case.pop("Injury name"),
-                    "location": case.pop("Injury location"),
-                    "severity": case.pop("severity"),
-                }
-
-                # Clean vitals
-                case["vitals"] = {
-                    "responsive": case.pop("vitals:responsive"),
-                    "breathing": case.pop("vitals:breathing"),
-                    "hrpm": case.pop("hrpmin"),
-                    "mmhg": case.pop("mmHg"),
-                    "rr": case.pop("RR"),
-                    "spo2": case.pop("Spo2"),
-                    "pain": case.pop("Pain"),
-                }
-
                 # Clean action
                 case["action"] = {
                     "type": case.pop("Action type"),
@@ -97,6 +62,95 @@ class CaseBase:
                         param.strip() for param in case.pop("Action").split(",")
                     ][1:],
                 }
+
+                # the casualties are 5 groups of 19 columns starting from column 21
+                casualty_data = []
+                for i in range(5):
+                    casualty_group = {}
+
+                    for j in range(19):
+                        casualty_group[headers[21 + i * 19 + j]] = line[21 + i * 19 + j]
+
+                    # Clean casualty data
+                    cas_id = casualty_group.pop("Casualty_id")
+                    cas_name = casualty_group.pop("casualty name")
+                    cas_unstructured = casualty_group.pop("Casualty unstructured")
+                    cas_relation = casualty_group.pop("casualty_relationship")
+                    casualty_group["casualty"] = {
+                        "id": cas_id,
+                        "name": cas_name,
+                        "unstructured": cas_unstructured,
+                        "relationship": cas_relation,
+                    }
+
+                    # Clean tag
+                    TRIAGE_CATEGORIES = ["MINIMAL", "DELAYED", "IMMEDIATE", "EXPECTANT"]
+                    cas_triage_category = self._convert_to_int(
+                        casualty_group.pop("triage category")
+                    )
+                    # some triage categories in the data exceed the index
+                    if cas_triage_category == 4:
+                        cas_triage_category = 3
+                    if cas_triage_category <= 3:
+                        casualty_group["tag"] = TRIAGE_CATEGORIES[cas_triage_category]
+                    else:
+                        casualty_group["tag"] = None
+                    # Clean demographics
+                    demo_age = casualty_group.pop("age")
+                    demo_sex = casualty_group.pop("IndividualSex")
+                    demo_rank = casualty_group.pop("IndividualRank")
+                    casualty_group["demographics"] = {
+                        "age": demo_age,
+                        "sex": demo_sex,
+                        "rank": demo_rank,
+                    }
+
+                    # Clean Injury
+                    injury_name = casualty_group.pop("Injury name")
+                    injury_location = casualty_group.pop("Injury location")
+                    injury_severity = casualty_group.pop("severity")
+                    casualty_group["injury"] = {
+                        "name": injury_name,
+                        "location": injury_location,
+                        "severity": injury_severity,
+                    }
+
+                    # Clean vitals
+                    casualty_group["vitals"] = {
+                        "responsive": casualty_group.pop("vitals:responsive"),
+                        "breathing": casualty_group.pop("vitals:breathing"),
+                        "hrpm": casualty_group.pop("hrpmin"),
+                        "mmhg": casualty_group.pop("mmHg"),
+                        "rr": casualty_group.pop("RR"),
+                        "spo2": casualty_group.pop("Spo2"),
+                        "pain": casualty_group.pop("Pain"),
+                    }
+                    casualty_data.append(casualty_group)
+                case["casualties"] = casualty_data
+                # clean up the casualty data from the last group
+                items_to_remove = [
+                    "Casualty_id",
+                    "casualty name",
+                    "Casualty unstructured",
+                    "age",
+                    "IndividualSex",
+                    "casualty_relationship",
+                    "IndividualRank",
+                    "Injury name",
+                    "Injury location",
+                    "severity",
+                    "vitals:responsive",
+                    "vitals:breathing",
+                    "hrpmin",
+                    "mmHg",
+                    "RR",
+                    "Spo2",
+                    "Pain",
+                    "casualty_assessed",
+                    "triage category",
+                ]
+                for item in items_to_remove:
+                    del case[item]
 
                 csv_rows.append(case)
         return csv_rows
@@ -159,21 +213,21 @@ class CaseBase:
             hrpmin=ta3_hrpmin,
         )
 
-    def _convert_csv_ta3casualties(self, data: dict) -> ta3.Casualty:
-        injuries = [ta3.Injury(**i) for i in data["injuries"]]
-        demographics = ta3.Demographics(**data["demographics"])
-        vitals = ta3.Vitals(**data["vitals"])
+    def _convert_csv_ta3casualties(self, casualty_data: dict) -> ta3.Casualty:
+        injuries = [ta3.Injury(**i) for i in casualty_data["injuries"]]
+        demographics = ta3.Demographics(**casualty_data["demographics"])
+        vitals = ta3.Vitals(**casualty_data["vitals"])
         return ta3.Casualty(
-            data["id"],
-            data["name"],
+            casualty_data["id"],
+            casualty_data["name"],
             injuries,
             demographics,
             vitals,
-            data["tag"],
-            data["treatments"],
-            data["assessed"],
-            data["unstructured"],
-            data["relationship"],
+            casualty_data["tag"],
+            casualty_data["treatments"],
+            casualty_data["assessed"],
+            casualty_data["unstructured"],
+            casualty_data["relationship"],
         )
 
     def _convert_ta3injury(self, data: dict) -> ta3.Injury:
@@ -203,7 +257,7 @@ class CaseBase:
         ta3_demographics = ta3.Demographics(**data["demographics"])
         ta3_vitals = self._convert_csv_ta3vitals(data["vitals"])
 
-        ta3_tag = ""
+        ta3_tag = data["tag"] if "tag" in data else None
         ta3_treatments = []
         ta3_assessed = False
 
@@ -243,8 +297,14 @@ class CaseBase:
         if "casualty" in data:
             casualty = self._convert_csv_single_casualty(data)
             casualty_data = [casualty]
+        elif "casualties" in data:
+            casualty_data = [
+                self._convert_csv_single_casualty(c) for c in data["casualties"]
+            ]
         else:
-            casualty_data = [self._convert_csv_ta3casualties(c) for c in casualty_data]
+            # create a default casualty
+            data["casualties"] = {"test": 1}
+            casualty_data = [ta3.Casualty(**data["casualties"])]
 
         # if there is only one supply in the csv
         if "supplies" in data:
@@ -264,6 +324,67 @@ class CaseBase:
     def _to_internal(self, case: dict) -> ArgumentCase:
         return ArgumentCase(case)
 
+    def _create_internal_multicas_cases(self):
+        for csv_case in self._csv_cases:
+            decisions: list[internal.Decision] = []
+            # if decisions are in data
+            if "action" in csv_case:
+                decision = internal.Decision(
+                    id_=csv_case["Case_#"],
+                    value=internal.Action(
+                        name_=csv_case["action"]["type"],
+                        params=({"action1": csv_case["action"]["params"]}),
+                    ),
+                )
+                decisions.append(decision)
+
+            case_no = csv_case["Case_#"]
+            id = case_no
+            prompt = csv_case["prompt"]
+
+            prompt = csv_case["prompt"]
+            state = self._convert_csv_ta3state(csv_case)
+
+            probe = internal.Probe(
+                id_=id, state=state, prompt=prompt, decisions=decisions
+            )
+
+            self.scenario.probes.append(probe)
+
+            # extras
+            probe_type = csv_case["Probe Type"]
+
+            # casualty assessed will be in single casualty data but for each casualty in multicas
+            if "casualty_assessed" in csv_case:
+                if casualty_assessed == "NA":
+                    casualty_assessed = False
+                else:
+                    casualty_assessed = csv_case["casualty_assessed"]
+            else:
+                casualty_assessed = False
+
+            action_text = csv_case["Action text"]
+            # extended_vitals = csv_case["vitals"]
+
+            argument_case = ArgumentCase(
+                id=id,
+                case_no=case_no,
+                csv_data=csv_case,
+                scenario=self.scenario,
+                probe=probe,
+                response=decisions[0]
+                if len(decisions) > 0
+                else internal.Decision("None", []),
+                additional_data={
+                    "probe_type": probe_type,
+                    # "casualty_assessed": casualty_assessed,
+                    "action_text": action_text,
+                    # "extended_vitals": extended_vitals,
+                },
+                kdmas=csv_case["kdmas"],
+            )
+            self.cases.append(argument_case)
+
     def _create_internal_cases(self):
         for csv_case in self._csv_cases:
             decisions: list[internal.Decision] = []
@@ -279,7 +400,7 @@ class CaseBase:
                 decisions.append(decision)
 
             case_no = csv_case["Case_#"]
-            
+
             prompt = csv_case["prompt"]
             state: ta3.TA3State = self._convert_csv_ta3state(csv_case)
 

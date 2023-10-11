@@ -19,15 +19,19 @@ W_KDMA_SIM = 3
 
 
 class CSVDecisionSelector(DecisionSelector):
-    def __init__(self, csv_file: str, variant='aligned'):
+    def __init__(self, csv_file: str, variant='aligned', verbose = False):
         self._csv_file_path: str = csv_file
         self.cb = self._read_csv()
         self.variant: str = variant
+        self.verbose: bool = verbose
 
     def select(self, scenario: Scenario, probe: Probe, target: KDMAs) -> (Decision, float):
         """ Find the best decision from the probe by comparing to individual rows in the case base """
         max_sim: float = -math.inf
         max_decision: Decision[Action] = None
+
+        if self.verbose:
+            print(f"State: {probe.state}")
 
         # Compute raw similarity of each decision to the case base, return decision that is most similar
         for decision in probe.decisions:
@@ -35,6 +39,9 @@ class CSVDecisionSelector(DecisionSelector):
             if dsim > max_sim:
                 max_sim = dsim
                 max_decision = decision
+        
+        if self.verbose:
+            print(f"Best Decision: {max_decision}")
 
         return max_decision, max_sim
 
@@ -42,6 +49,8 @@ class CSVDecisionSelector(DecisionSelector):
         casualties = {cas.id: cas for cas in state.casualties}
         best_score = 0
         best_case = None
+        if self.verbose:
+            print(f"Decision: {decision}")
         for case in self.cb:
             supply_sim = self._supply_sim(state.supplies, case['supplies'])
 
@@ -57,10 +66,19 @@ class CSVDecisionSelector(DecisionSelector):
 
             score = self._weighted_avg([supply_sim, casualty_sim, action_sim, metric_sim, kdma_sim],
                                             [W_SUPPLY_SIM, W_CASUALTY_SIM, W_ACTION_SIM, W_METRIC_SIM, W_KDMA_SIM])
+
             if score > best_score:
                 best_score = score
                 best_case = case
-
+        if self.verbose:
+            print(f"Closest Case: {best_case}")
+            print(f"Score: {best_score:.2f} \
+                    Supply: {self._supply_sim(state.supplies, best_case['supplies']):.2f} \
+                    Casualty: {self._casualty_sim(self._casualty_relevant(casualties, decision), best_case):.2f} \
+                    Action: {self._action_sim(decision, best_case):.2f} \
+                    Metric: {self._metric_sim(decision, best_case):.2f} \
+                    KDMAs: {self._kdma_sim(target, best_case['kdmas']):.2f}")
+        
         return best_score
 
     @staticmethod
@@ -82,10 +100,9 @@ class CSVDecisionSelector(DecisionSelector):
         tot_sim = 0
         tot_count = 0
         for metric in decision.metrics.values():
-            if metric.name in case:
-                tot_sim += similarity(metric.value, case[metric.name])
+            if metric.name.replace("Severity", "MC Severity") in case:
+                tot_sim += similarity(metric.value, case[metric.name.replace("Severity", "MC Severity")])
                 tot_count += 1
-
         if tot_count <= 0:
             return 0
         return tot_sim / tot_count

@@ -61,10 +61,10 @@ class Locations(Enum):
 
 
 class Tags(Enum):
-    MINIMAL = 'MINIMAL'
-    DELAYED = 'DELAYED'
-    IMMEDIATE = 'IMMEDIATE'
-    EXPECTANT = 'EXPECTANT'
+    MINIMAL = "MINIMAL"
+    DELAYED = "DELAYED"
+    IMMEDIATE = "IMMEDIATE"
+    EXPECTANT = "EXPECTANT"
 
 
 class Injuries(Enum):
