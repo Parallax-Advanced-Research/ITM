@@ -90,5 +90,11 @@ def main() -> None:
 		assert f'test_dict_tools.py:{f1_lineno}' in str(e)
 	assert raised
 	assert a == { 'f0': 10, 'f1': 11, 'g0': 20, 'g1': 21, 'h0': 30, 'h1': 31, 'i0': 40, 'i1': 41, 'k0': 60, 'k1': 61}
+	
+	a.update_overwrite(bad_update)
+	assert a == { 'f0': 10, 'f1': 61, 'g0': 20, 'g1': 21, 'h0': 30, 'h1': 31, 'i0': 40, 'i1': 41, 'k0': 60, 'k1': 61, 'k2': 62}
+
+	a.overwrite('f0', 60)
+	assert a == { 'f0': 60, 'f1': 61, 'g0': 20, 'g1': 21, 'h0': 30, 'h1': 31, 'i0': 40, 'i1': 41, 'k0': 60, 'k1': 61, 'k2': 62}
 
 main()

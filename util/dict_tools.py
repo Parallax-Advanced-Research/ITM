@@ -56,21 +56,23 @@ class Dict_No_Overwrite(dict[K,V]):
         
     # NOTE: We don't support the kwargs method of calling update, since that doesn't
     # permit us to make type assertions.
-    def _update(self, other: Optional[UpdateOtherType[K,V]], call_depth: int) -> None: # type: ignore[override]
+    def _update(self, other: Optional[UpdateOtherType[K,V]], call_depth: int, permit_overwrite = False) -> None: # type: ignore[override]
         """ If any of the keys would clobber existing values, we don't change the dictionary at all. """
         if other is None:
             return
 
         if hasattr(other, 'keys') and hasattr(other, '__getitem__'):
-            for k in other.keys():
-                self._check_key(k)
+            if not permit_overwrite:
+                for k in other.keys():
+                    self._check_key(k)
 
             for k in other.keys():
                 self._set(k, other[k], call_depth=call_depth + 1)
 
         elif hasattr(other, '__iter__'): # iterable of tuple
-            for k in other.keys():
-                self._check_key(k)
+            if not permit_overwrite:
+                for k in other.keys():
+                    self._check_key(k)
 
             for k,v in other:
                 self._set(k, v, call_depth=call_depth + 1)
@@ -81,6 +83,9 @@ class Dict_No_Overwrite(dict[K,V]):
 
     def overwrite(self, key: K, val: V) -> None:
         self._set(key, val, call_depth=1)
+
+    def update_overwrite(self, other: Optional[UpdateOtherType[K,V]]) -> None: # type: ignore[override]
+        self._update(other, call_depth=1, permit_overwrite=True)
     
     # NOTE: need to disable some type errors because we introduce the additional restriction that
     # the K,V of other match this one's. dict doesn't impose that restriction. (I'm
