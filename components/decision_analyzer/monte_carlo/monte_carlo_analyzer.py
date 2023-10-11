@@ -227,11 +227,24 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
 
         for decision in decision_node_list:
             dec_str = tinymedact_to_actstr(decision)
-            basic_stats = get_blank_scores() if is_scoreless(decision) else get_populated_scores(decision,
-                                                                                                 tinymed_state)
+            basic_stats = get_blank_scores() if is_scoreless(decision) \
+                                             else get_populated_scores(decision, tinymed_state)
             tree_hash[dec_str] = basic_stats
         for decision in probe.decisions:
-            basic_stats = tree_hash[decision_to_actstr(decision)]
+            decision_str = decision_to_actstr(decision)
+            basic_stats = tree_hash.get(decision_str, None)
+            if basic_stats is None and decision.value.name == "APPLY_TREATMENT" \
+                 and decision.value.params.get("treatment", None) is None:
+                possibles = [tree_hash[real_dec_str] for real_dec_str in tree_hash.keys() 
+                                                     if real_dec_str.startswith(decision_str)]
+                
+                if len(possibles) == 0:
+                    continue
+                else:
+                    basic_stats = min(possibles, key = lambda x: x[Metric.SEVERITY.value])
+            elif basic_stats is None:
+                continue
+
             basic_metrics: list[DecisionMetrics] = stat_metric_loop(basic_stats)
             previous_state = self.most_recent_state()
             temporal_metrics: list[DecisionMetrics] = get_temporal_scores(new_state=basic_stats,
