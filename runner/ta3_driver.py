@@ -15,7 +15,6 @@ from .driver import Driver
 class TA3Driver(Driver):
     def __init__(self, args):
         elaborator = TA3Elaborator()
-        mda = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2) if args.mc else None
 
         if args.variant.lower() == "severity-baseline":
             super().__init__(elaborator, SeverityDecisionSelector(), [mda])
@@ -42,9 +41,9 @@ class TA3Driver(Driver):
         ebd = EventBasedDiagnosisAnalyzer() if args.ebd else None
         hra = HeuristicRuleAnalyzer() if args.hra else None  # Crashes in TMNT/differenct scenario
         bnd = BayesNetDiagnosisAnalyzer()
-        mda = MonteCarloAnalyzer(max_rollouts=10, max_depth=2)
+        mca = MonteCarloAnalyzer(max_rollouts=args.rollouts, max_depth=2) if args.mc else None
 
-        analyzers = [ebd, hra, bnd, mda]
+        analyzers = [ebd, hra, bnd, mca]
         analyzers = [a for a in analyzers if a is not None]
 
         super().__init__(elaborator, selector, analyzers)
