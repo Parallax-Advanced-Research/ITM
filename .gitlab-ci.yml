@@ -27,9 +27,11 @@ include:
 
 run_test:
   stage: test
-  - python run_tests.py
+  script:
+    - python run_tests.py
 
 tad_tester:
   stage: test
-  - python -m scripts.tad_tester --no-ebd --no-verbose # TODO: remove --no-ebd once that works
+  script:
+    - python -m scripts.tad_tester --no-ebd --no-verbose # TODO: remove --no-ebd once that works
 
