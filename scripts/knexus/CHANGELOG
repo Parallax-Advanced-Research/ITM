@@ -36,6 +36,7 @@ Sumo-
 
 Misc-
 > TA3 States updated to work with kdma rules
+> Updated tad_tester to run with new kdma deciders
 
 =======================
 
