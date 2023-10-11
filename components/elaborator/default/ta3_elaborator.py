@@ -12,16 +12,24 @@ class TA3Elaborator(Elaborator):
             d.value.params = {k: v for k, v in d.value.params.items() if v is not None}
             if _name == 'APPLY_TREATMENT':
                 to_return += self._treatment(probe.state, d)
-            elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CASUALTIES':
+            elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CASUALTY':  # These need no param options
                 to_return += [d]
             elif _name == 'TAG_CASUALTY':
                 to_return += self._tag(probe.state.casualties, d)
+            elif _name == 'END_SCENARIO':
+                to_return += [d]
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
 
-
         probe.decisions = to_return
-        return to_return
+        final_list = []
+        for tr in to_return:
+            if tr.value.name == 'DIRECT_MOBILE_CASUALTY' and 'casualty' in tr.value.params:
+                pass
+            else:
+                final_list.append(tr)
+        # Needs direct mobile casualties no
+        return final_list
 
     def _treatment(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
         action = decision.value
@@ -40,7 +48,11 @@ class TA3Elaborator(Elaborator):
                         sup_params['treatment'] = supply.type
                         treat_grounded.append(Decision(cas_action.id_, Action(action.name, sup_params), kdmas=cas_action.kdmas))
             else:
-                treat_grounded.append(cas_action)
+                supply_needed = cas_action.value.params.copy()['treatment']
+                for s in state.supplies:
+                    if s.type == supply_needed and s.quantity > 0:
+                        treat_grounded.append(cas_action)
+                        break
 
         # Ground the location
         grounded: list[Decision[Action]] = []
@@ -49,6 +61,8 @@ class TA3Elaborator(Elaborator):
             if 'location' not in treat_action.value.params:
                 cas_id = treat_action.value.params['casualty']
                 cas = [c for c in state.casualties if c.id == cas_id][0]
+                if cas.assessed and not cas.tag:
+                    continue
                 for injury in cas.injuries:
                     treat_params = treat_action.value.params.copy()
                     treat_params['location'] = injury.location
@@ -63,7 +77,7 @@ class TA3Elaborator(Elaborator):
         cas_grounded: list[Decision[Action]] = []
         if 'casualty' not in action.params:
             for cas in casualties:
-                if not cas.tag:
+                if not cas.tag and cas.assessed:
                     # Copy the casualty into the params dict
                     cas_params = action.params.copy()
                     cas_params['casualty'] = cas.id

@@ -1,5 +1,5 @@
 from domain.mvp import MVPState
-from components.decision_selector.cbr import CBRDecisionSelector, Case
+from components.decision_selector.mvp_cbr import CBRDecisionSelector, Case
 from components.elaborator.default import BaselineElaborator
 from components.decision_analyzer.default import BaselineDecisionAnalyzer
 from .driver import Driver

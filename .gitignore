@@ -313,3 +313,8 @@ $RECYCLE.BIN/
 
 /temp/cue.hems
 /temp/*.json
+
+temp/newfile.json
+
+temp/scene.json
+/temp/*

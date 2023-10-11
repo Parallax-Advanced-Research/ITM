@@ -1,6 +1,7 @@
 from .wumpus_state import WumpusAction, WumpusState
 from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from .wumpus_sim import WumpusSim
+from util import logger
 
 
 class WumpusSquare:
@@ -69,6 +70,8 @@ class WumpusGrid:
             new_direction = WumpusGrid.DIR_FACING[action][start_direction]
             self.agent_face = new_direction
             self.board[start_x][start_y].agent = new_direction
+        elif action == 'shoot':
+            pass  # handled in Sim not grid, but dont walk
         else:
             x, y = int(self.sumo_str_loc[1]), int(self.sumo_str_loc[2])
             x = x + 1 if start_direction in ['left', 'right'] and start_direction == 'right' else x - 1
@@ -120,6 +123,13 @@ class PyWumpusSim(MCSim):
         super().__init__()
         self.grid = WumpusGrid()
         self.dirty = True
+        self.arrow = 1
+        self.breezes_felt = 0
+        self.stenches_felt = 0
+        self.deaths = 0
+        self.glitters = 0
+        self.gold_carried = 0  # not yet implemented
+        self.woeful_screams = 0
 
     def exec(self, state: WumpusState, action: WumpusAction) -> list[SimResult]:
         """
@@ -135,8 +145,9 @@ class PyWumpusSim(MCSim):
         # These should be known by state?
         if self.dirty:
             # logger.debug('inserting dirty state location %s facing %s time %d' % (location, facing, time))
-
-            self.grid = WumpusGrid(start_x=0, start_y=0, agent_face=facing, time=time)
+            x, y = int(location[1]), int(location[2])
+            self.arrow = state.arrows
+            self.grid = WumpusGrid(start_x=x, start_y=y, agent_face=facing, time=time)
             self.dirty = False
 
         act = action.action
@@ -155,13 +166,31 @@ class PyWumpusSim(MCSim):
         stench_precept = new_status['stench']
         breeze_precept = new_status['breeze']
         death_precept = new_status['dead']
+        if act == 'shoot' and self.wumpus_in_path(new_x, new_y, new_facing) and self.arrow == 1:
+            self.woeful_screams += 1
+        if act == 'shoot':
+            self.arrow -= 1
 
-        outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time, glitter=glitter_precept,
-                              stench=stench_precept, breeze=breeze_precept, dead=death_precept)
+        if glitter_precept == 'glitter':
+            self.glitters += 1
+        if stench_precept == 'stench':
+            self.stenches_felt += 1
+        if breeze_precept == 'breeze':
+            self.breezes_felt += 1
+        if death_precept:
+            self.deaths += 1
+
+        outcome = WumpusState(start_x=new_x, start_y=new_y, facing=new_facing, time=new_time,
+                              num_glitters=self.glitters, num_stench=self.stenches_felt, num_breeze=self.breezes_felt,
+                              num_dead=self.deaths, num_woeful=self.woeful_screams, num_gold=self.gold_carried,
+                              num_arrows=self.arrow)
 
         sim_result = SimResult(action=action, outcome=outcome)
         return_list.append(sim_result)
-        score = self.score(outcome)
+
+        if glitter_precept and act == 'pickup':
+            logger.debug("Gold was got at time %d" % new_time)
+
         return return_list
 
     def actions(self, state: WumpusState) -> list[WumpusAction]:
@@ -173,21 +202,46 @@ class PyWumpusSim(MCSim):
 
         location = state.sumo_str_location
         orientation = state.facing
-
+        # Do logic on location here? Pass Time information here?
         actions = [WumpusAction(action='walk'), WumpusAction(action='cw'), WumpusAction(action='ccw')]
+        if state.glitter:
+            actions.append(WumpusAction(action='pickup'))
+        if self.arrow == 1:
+            actions.append(WumpusAction(action='shoot'))
         return actions
 
     def reset(self):
         self.dirty = True
+        self.breezes_felt = 0
+        self.stenches_felt = 0
+        self.deaths = 0
+        self.glitters = 0
+        self.gold_carried = 0  # not yet implemented
+        self.woeful_screams = 0
 
     def score(self, state: WumpusState) -> float:
-        score = 1000 if state.woeful_scream_perceived else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.LEFT_BOUNDARY and state.facing == 'left' else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.BOT_BOUNDARY and state.facing == 'bot' else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.RIGHT_BOUNDARY and state.facing == 'right' else 0
-        score -= 10 if state.sumo_str_location in WumpusSim.TOP_BOUNDARY and state.facing == 'top' else 0
+        score = 100 + (1000 * state.woeful_screams)
+        score += (15 * state.glitter) + (7 * state.stench) - (3 * state.breeze) - (50 * state.dead)
         score += 15 if state.glitter else 0
         score += 7 if state.stench else 0
         score -= 3 if state.breeze else 0
         score -= 50 if state.dead else 0
         return score
+
+    def wumpus_in_path(self, x, y, face):
+        square = self.grid.board[x][y]
+        in_line = [square]
+        while True:
+            x = x + 1 if face == 'right' else x
+            x = x - 1 if face == 'left' else x
+            y = y + 1 if face == 'top' else y
+            y = y - 1 if face == 'bot' else y
+            try:
+                new_square = self.grid.board[x][y]
+                in_line.append(new_square)
+            except:
+                break
+        for candidate_square in in_line:
+            if candidate_square.wump:
+                return True
+        return False

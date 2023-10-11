@@ -1,4 +1,4 @@
-from components.decision_selector.cbr import Case
+from components.decision_selector.mvp_cbr import Case
 from domain import Scenario
 
 
