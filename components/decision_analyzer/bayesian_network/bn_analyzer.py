@@ -1,10 +1,10 @@
 from typing import Dict, Optional
-from typedefs import Node_Name, Node_Val
 from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric
 from domain.internal.decision import Action
 from domain.ta3.ta3_state import Casualty, State
 from components import DecisionAnalyzer
 from .inference import Bayesian_Net
+from .typedefs import Node_Name, Node_Val
 
 class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
     bn: Bayesian_Net

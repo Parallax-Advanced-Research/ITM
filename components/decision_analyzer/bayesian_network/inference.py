@@ -1,7 +1,13 @@
 import pyAgrum
 import json, sys
 from typing import Dict, Any, List, Set
-from typedefs import Node_Name, Node_Val, Probability
+
+# Workaround for python's stupid, stupid import system. TODO: Find a better way.
+try:
+	from typedefs import Node_Name, Node_Val, Probability
+except:
+	from .typedefs import Node_Name, Node_Val, Probability
+
 
 # notebook stuff is just for debugging and visualization
 notebook = False
