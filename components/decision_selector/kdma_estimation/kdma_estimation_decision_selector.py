@@ -19,12 +19,16 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.analyzers: list[DecisionAnalyzer] = get_analyzers()
         self.print_neighbors = print_neighbors
         self.use_drexel_format = use_drexel_format
+        self.index = 0
+        
 
     def select(self, scenario: Scenario, probe: Probe, target: KDMAs) -> (Decision, float):
         default_weights = {key: 1 for key in self.cb[0].keys()}
         minDist: float = math.inf
         minDecision: Decision = None
         misalign = self.variant.lower() == "misaligned"
+        new_cases: list[dict[str, Any]] = list()
+        self.index += 1
         for cur_decision in probe.decisions:
             name = cur_decision.value.params.get("casualty", None)
             if name is None:
@@ -35,8 +39,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 cur_case = make_case_drexel(probe.state, cur_decision)
             else:
                 cur_case = make_case(probe.state, cur_decision)
-            if target.kdmas[0].id_ == "Mission" and self.print_neighbors:
+            new_cases.append(cur_case)
+            if target.kdmas[0].id_.lower() == "mission" and self.print_neighbors:
                 print(f"Decision: {cur_decision}")
+                for (key, value) in cur_case.items():
+                    print(f"  {key}: {value}")
             sqDist: float = 0.0
             if self.use_drexel_format:
                 weights = {'Action type': 5, 'casualty_assessed': 2, 'Supplies: type': 3, 
@@ -45,7 +52,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 weights = {'assessing': 3, 'treating': 3, 'tagging': 3, 'visited': 2, 'treatment': 3, 
                            'category': 3}
             for kdma in target.kdmas:
-                match kdma.id_.lower():
+                kdma_name = kdma.id_.lower()
+                match kdma_name:
                     case "mission":
                         weights = weights | \
                                   ({"IndividualRank": 1, "priority": 1, "pDeath": 11}
@@ -66,18 +74,24 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                         weights = weights | {"relationship": 1, "priority": 1}
                     case _:
                         weights = default_weights
-                target_val = kdma.value
-                if misalign:
-                    target_val = 10 - kdma.value
-                diff = target_val - self.estimate_KDMA(cur_case, weights, kdma.id_.lower())
+                estimate = self.estimate_KDMA(cur_case, weights, kdma_name)
+                cur_case[kdma_name] = estimate
+                if not misalign:
+                    diff = kdma.value - estimate
+                else:
+                    diff = (10 - kdma.value) - estimate
                 sqDist += diff * diff
             if sqDist < minDist:
                 minDist = sqDist
                 minDecision = cur_decision
             if target.kdmas[0].id_ == "Mission" and self.print_neighbors:
                 print(f"New dist: {sqDist} Best Dist: {minDist}")
+            cur_case["distance"] = sqDist
         if self.print_neighbors:
             print(f"Chosen Decision: {minDecision.value} Dist: {minDist}")
+        fname = "temp/live_cases" + str(self.index) + ".csv"
+        write_case_base(fname, new_cases)
+        
         return (minDecision, minDist)
                 
 
@@ -199,57 +213,57 @@ def make_postvisit_state(included_names: list[str]) -> State:
     casualties=[
         {'id': "casualty-A", 
          'name': "unknown",
-         'injuries': [{'name': 'Puncture', 'location': 'left neck', 'severity': None},
-                      {'name': 'Burn', 'location': 'unspecified', 'severity': 0.9}],
+         'injuries': [{'name': 'Puncture', 'location': 'left neck', 'severity': None, 'treated': False},
+                      {'name': 'Burn', 'location': 'unspecified', 'severity': 0.9, 'treated': False}],
          'demographics': {'age': 22, 'sex': 'M', 'rank': 'Marine'},
          'vitals': {'conscious': False, 'mental_status': 'UNCONSCIOUS', 'breathing': 'Normal', 'hrpmin': 145},
          'tag': None,
          'visited': True,
-         'relationship': None,
+         'relationship': 'NONE',
          'unstructured': "",
          'treatments': []
         },
         {'id': "casualty-B", 
          'name': "unknown",
-         'injuries': [{'name': 'Burn', 'location': 'unspecified', 'severity': 0.5}],
+         'injuries': [{'name': 'Burn', 'location': 'unspecified', 'severity': 0.5, 'treated': False}],
          'demographics': {'age': 25, 'sex': 'M', 'rank': 'Marine'},
          'vitals': {'conscious': True, 'mental_status': 'AGONY', 'breathing': 'Normal', 'hrpmin': 120},
          'tag': None,
          'visited': True,
-         'relationship': None,
+         'relationship': 'NONE',
          'unstructured': "",
          'treatments': []
         },
         {'id': "casualty-C", 
          'name': "unknown",
-         'injuries': [{'name': 'Eye_Trauma', 'location': 'unspecified', 'severity': None}],
+         'injuries': [{'name': 'Eye_Trauma', 'location': 'unspecified', 'severity': None, 'treated': False}],
          'demographics': {'age': 40, 'sex': 'M', 'rank': 'Intel Officer'},
          'vitals': {'conscious': True, 'mental_status': 'UPSET', 'breathing': 'Normal', 'hrpmin': 105},
          'tag': None,
          'visited': True,
-         'relationship': None,
+         'relationship': 'NONE',
          'unstructured': "",
          'treatments': []
         },
         {'id': "casualty-D", 
          'name': "unknown",
-         'injuries': [{'name': 'Amputation', 'location': 'right thigh', 'severity': None}],
+         'injuries': [{'name': 'Amputation', 'location': 'right thigh', 'severity': None, 'treated': False}],
          'demographics': {'age': 26, 'sex': 'M', 'rank': 'Marine'},
          'vitals': {'conscious': True, 'mental_status': 'AGONY', 'breathing': 'Normal', 'hrpmin': 120},
          'tag': None,
          'visited': True,
-         'relationship': None,
+         'relationship': 'NONE',
          'unstructured': "",
          'treatments': []
         },
         {'id': "casualty-E", 
          'name': "unknown",
-         'injuries': [{'name': 'Shrapnel', 'location': 'left chest', 'severity': None}],
+         'injuries': [{'name': 'Shrapnel', 'location': 'left chest', 'severity': None, 'treated': False}],
          'demographics': {'age': 12, 'sex': 'M', 'rank': 'Civilian'},
          'vitals': {'conscious': True, 'mental_status': 'WORRIED', 'breathing': 'Normal', 'hrpmin': 120},
          'tag': None,
          'visited': True,
-         'relationship': None,
+         'relationship': 'NONE',
          'unstructured': "",
          'treatments': []
         }
@@ -318,7 +332,11 @@ def make_case(s: State, d: Decision) -> dict[str, Any]:
     if a.name == "TAG_CASUALTY":
         case['category'] = a.params.get("category", None)
     for dm in d.metrics.values():
-        case[dm.name] = dm.value
+        if type(dm.value) is not dict:
+            case[dm.name] = dm.value
+        else:
+            for (inner_key, inner_value) in dm.value.items():
+                case[dm.name + "." + inner_key] = inner_value
     return case
 
 CASE_INDEX = 1000
@@ -430,6 +448,11 @@ def get_analyzers():
         MonteCarloAnalyzer(max_rollouts=1000),
         BayesNetDiagnosisAnalyzer()
     ]
+def get_analyzers_without_HRA():
+    return [
+        MonteCarloAnalyzer(max_rollouts=1000),
+        BayesNetDiagnosisAnalyzer()
+    ]
     
 def perform_analysis(s: State, dlist: list[Decision], analyzers: list[DecisionAnalyzer]) -> Probe:
     scen: Scenario = Scenario("1", s)
@@ -452,6 +475,7 @@ def get_decision(p: Probe, casualty: str = None, action_name: str = None, treatm
         
     
 def make_soartech_case_base() -> list[dict[str, Any]]:
+    analyzers_without_HRA = get_analyzers_without_HRA()
     analyzers = get_analyzers()
     cb: list[dict[str, Any]] = []
     
@@ -460,7 +484,7 @@ def make_soartech_case_base() -> list[dict[str, Any]]:
     # "CHECK_ALL_VITALS" or "TAG_CASUALTY". Correct.
 
     st: State = make_previsit_state(["casualty-A", "casualty-B", "casualty-C", "casualty-D"])
-    p: Probe = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers)
+    p: Probe = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers_without_HRA)
     cb.append(make_case(st, get_decision(p, casualty="casualty-A")) 
               | {"mission": 2, "denial": 3.5, "risktol": 6.5, "urgency": 3.25})
     cb.append(make_case(st, get_decision(p, casualty="casualty-B")) 
@@ -471,7 +495,7 @@ def make_soartech_case_base() -> list[dict[str, Any]]:
               | {"mission": 5.25, "denial": 3.75, "risktol": 6, "urgency": 4.25})
 
     st = make_previsit_state(["casualty-A", "casualty-B", "casualty-D", "casualty-E"])
-    p = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers)
+    p = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers_without_HRA)
     cb.append(make_case(st, get_decision(p, casualty="casualty-A")) 
               | {"mission": 2, "denial": 3.5, "risktol": 6.5, "urgency": 3.25})
     cb.append(make_case(st, get_decision(p, casualty="casualty-B")) 
@@ -482,7 +506,7 @@ def make_soartech_case_base() -> list[dict[str, Any]]:
               | {"mission": 2.5, "denial": 2.75, "risktol": 5, "urgency": 2.5})
    
     st = make_previsit_state(["casualty-B", "casualty-C", "casualty-D", "casualty-E"])
-    p = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers)
+    p = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers_without_HRA)
     cb.append(make_case(st, get_decision(p, casualty="casualty-B")) 
               | {"mission": 5.75, "denial": 3.5, "risktol": 6.25, "urgency": 3.25})
     cb.append(make_case(st, get_decision(p, casualty="casualty-C")) 
@@ -650,8 +674,10 @@ def write_case_base(fname: str, cb: list[dict[str, Any]]):
     for case in cb:
         line = ""
         for key in keys:
-            line += str(case.get(key, None))
-            line += ","
+            value = str(case.get(key, None))
+            if "," in value:
+                value= '"' + value + '"'
+            line += value + ","
         csv_file.write(line[:-1])
         csv_file.write("\n")
     csv_file.close()
