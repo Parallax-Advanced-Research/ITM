@@ -8,8 +8,15 @@ import typing
 
 
 def treatment_supply_match(action: TinymedAction) -> bool:
-    if action.supply not in [Supplies.DECOMPRESSION_NEEDLE.value,
-                             Supplies.NASOPHARYNGEAL_AIRWAY.value] or action.supply == Supplies.TOURNIQUET.value:
+    if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value, Supplies.TOURNIQUET.value]:
+        return True
+    if action.supply == Supplies.DECOMPRESSION_NEEDLE:
+        if action.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.UNSPECIFIED.value]:
+            return True
+        return False
+    if action.supply == Supplies.NASOPHARYNGEAL_AIRWAY:
+        if action.location in [Locations.LEFT_NECK.value, Locations.RIGHT_NECK.value, Locations.UNSPECIFIED.value]:
+            return True
         return False
     return True
 
@@ -40,15 +47,16 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
     for ci in casualty.injuries:
         supply_injury_logical = supply_injury_match(action.supply, ci.name)
         if ci.location == action.location and not fail and supply_location_logical and supply_injury_logical:
-            ci.severity = MedicalOracle.SUCCESSFUL_SEVERITY[action.supply]
+            existing_severity = ci.severity
+            ci.severity = min(MedicalOracle.SUCCESSFUL_SEVERITY[action.supply], existing_severity)
             ci.time_elapsed += time_taken
-        elif ci.name in update_injury_map:
-            update_injury_map[ci.name](ci, time_taken)
+        else:
+            get_update_function_for_injury(ci.name)(ci, time_taken)
     return time_taken
 
 
 def update_generic_injury(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * MedicalOracle.INJURY_UPDATE_TIMES[i.name])
+    i.severity += (elapsed * get_injury_update_time(i.name))
     i.time_elapsed += elapsed
 
 
@@ -70,7 +78,7 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
             continue  # already updated, casualty of action
         casualty_injuries: list[Injury] = c2.injuries
         for ci in casualty_injuries:
-            update_injury_map[ci.name](ci, time_taken)
+            get_update_function_for_injury(ci.name)(ci, time_taken)
     new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
@@ -97,7 +105,7 @@ def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int
     for c in casualties:
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
-            update_injury_map[ci.name](ci, time_taken)
+            get_update_function_for_injury(ci.name)(ci, time_taken)
     new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
@@ -108,7 +116,7 @@ def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, i
     for c in casualties:
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
-            update_injury_map[ci.name](ci, time_taken)
+            get_update_function_for_injury(ci.name)(ci, time_taken)
     new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
@@ -127,7 +135,7 @@ def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int
     for c in casualties:
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
-            update_injury_map[ci.name](ci, time_taken)
+            get_update_function_for_injury(ci.name)(ci, time_taken)
     new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
@@ -138,7 +146,7 @@ def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, i
     for c in casualties:
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
-            update_injury_map[ci.name](ci, time_taken)
+            get_update_function_for_injury(ci.name)(ci, time_taken)
     new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
@@ -155,6 +163,8 @@ def get_treatment_actions(casualties: list[Casualty], supplies: list[str]) -> li
     for c in casualties:
         casualty_id: str = c.id
         for supply_str in supplies:
+            if supply_str not in supplies:  # Ouch this was a present bug a while
+                continue
             for loc in locations:
                 action_tuple: tuple[str, str, str, str] = (Actions.APPLY_TREATMENT.value, casualty_id, supply_str, loc)
                 treatments.append(action_tuple)
@@ -170,6 +180,7 @@ def get_action_all(casualties: list[Casualty], action_str: str) -> list[tuple]:
     if action_str == Actions.SITREP.value:
         one_tuple = (Actions.SITREP.value,)
         actions.append(one_tuple)  # sitrep can be done on casualty or on scene
+
     return actions
 
 
@@ -234,8 +245,11 @@ def create_tm_actions(actions: list[tuple]) -> list[TinymedAction]:
         elif action == Actions.TAG_CASUALTY.value:
             casualty, tag = act_tuple[1:]
             tm_action = TinymedAction(action=action, casualty_id=casualty, tag=tag)
-        else:
-            tm_action = TinymedAction(action=action)
+        elif action == Actions.SITREP.value:
+            if len(act_tuple) == 1:  # Only sitrep
+                tm_action = TinymedAction(action=action)
+            else:
+                tm_action = TinymedAction(action=action, casualty_id=act_tuple[1])
         tm_actions.append(tm_action)
     return tm_actions
 
@@ -283,12 +297,12 @@ def remove_non_injuries(state: TinymedState, tinymedactions: list[TinymedAction]
     return list(set(retlist))
 
 
-def get_TMNT_demo_casualties():
+def get_TMNT_demo_casualties() -> list[Casualty]:
     wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
     minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=3.0)
     moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=5.0)
     major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=7.0)
-    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=9.0)
+    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=8.0)
 
     raphael_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
                             breathing=BreathingDescriptions.NORMAL.value, hrpmin=49)
@@ -337,7 +351,8 @@ def get_TMNT_demo_casualties():
     ]
     return casualties
 
-def get_starting_supplies():
+
+def get_TMNT_supplies() -> dict[str, int]:
     supplies = {
         Supplies.TOURNIQUET.value: 3,
         Supplies.PRESSURE_BANDAGE.value: 2,
@@ -379,9 +394,40 @@ action_map: typing.Mapping[str, resolve_action] = {
     Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
     Actions.TAG_CASUALTY.value: apply_casualtytag_action,
     Actions.SITREP.value: apply_zeroornone_action,
-    Actions.UNKNOWN.value: default_action
+    Actions.UNKNOWN.value: default_action,
+    Actions.END_SCENARIO.value: default_action
+
 }
 
+def get_update_function_for_injury(injury_name: str):
+    return update_generic_injury
+
+
+def get_simple_casualties():
+    bicep_tear = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_BICEP.value, severity=4.0, treated=False)
+    jt_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
+                       breathing=BreathingDescriptions.NORMAL.value, hrpmin=69)
+    casualties = [
+        Casualty('JT', 'JT tore his bicep', name='JT',
+                       relationship='himself',
+                       demographics=Demographics(age=33, sex='M', rank='director of social media'),
+                       injuries=[bicep_tear],
+                       vitals=jt_vitals,
+                       complete_vitals=jt_vitals,
+                       assessed=False,
+                       tag="tag")]
+    return casualties
+
+
+def get_simple_supplies() -> dict[str, int]:
+    supplies = {
+        Supplies.TOURNIQUET.value: 0,
+        Supplies.PRESSURE_BANDAGE.value: 3,
+        Supplies.HEMOSTATIC_GAUZE.value: 0,
+        Supplies.DECOMPRESSION_NEEDLE.value: 0,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 0
+    }
+    return supplies
 
 class MedicalOracle:
     FAILURE_CHANCE = {
@@ -407,23 +453,23 @@ class MedicalOracle:
     }
 
     SUCCESSFUL_SEVERITY = {
-        Supplies.PRESSURE_BANDAGE.value: 1,
-        Supplies.HEMOSTATIC_GAUZE.value: 1,
-        Supplies.TOURNIQUET.value: 3,
-        Supplies.DECOMPRESSION_NEEDLE.value: 2,
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: 2
+        Supplies.PRESSURE_BANDAGE.value: 1.0,
+        Supplies.HEMOSTATIC_GAUZE.value: 1.0,
+        Supplies.TOURNIQUET.value: 3.0,
+        Supplies.DECOMPRESSION_NEEDLE.value: 2.0,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 2.0
     }
 
     INJURY_UPDATE_TIMES = {
-        Injuries.LACERATION.value: .049,
-        Injuries.BURN.value: .042,
-        Injuries.PUNCTURE.value: .036,
-        Injuries.SHRAPNEL.value: .016,
-        Injuries.AMPUTATION.value: .064,
-        Injuries.ASTHMATIC.value: .004,
-        Injuries.CHEST_COLLAPSE.value: .064,
-        Injuries.EAR_BLEED.value: .003,
-        Injuries.FOREHEAD_SCRAPE.value: .003
+        Injuries.LACERATION.value: .49,
+        Injuries.BURN.value: .42,
+        Injuries.PUNCTURE.value: .36,
+        Injuries.SHRAPNEL.value: .16,
+        Injuries.AMPUTATION.value: .64,
+        Injuries.ASTHMATIC.value: .04,
+        Injuries.CHEST_COLLAPSE.value: .64,
+        Injuries.EAR_BLEED.value: .03,
+        Injuries.FOREHEAD_SCRAPE.value: .03
     }
 
     TREATABLE_AREAS = {
@@ -437,3 +483,10 @@ class MedicalOracle:
                                Locations.UNSPECIFIED.value],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value, Locations.LEFT_NECK.value,
                                    Locations.RIGHT_NECK.value, Locations.UNSPECIFIED.value]}
+
+def get_injury_update_time(injury_name: str):
+    if injury_name in MedicalOracle.INJURY_UPDATE_TIMES:
+        return MedicalOracle.INJURY_UPDATE_TIMES[injury_name]
+    else:
+        return .003
+            

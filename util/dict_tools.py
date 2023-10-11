@@ -2,6 +2,9 @@ import inspect
 from typing import Mapping, TypeVar, Iterable, Union, Any, Optional
 from typing_extensions import Self
 
+# NOTE: Any refactoring of the code needs to consider whether _set_origins
+# needs to look at a different level of the stack to get the original caller.
+
 K = TypeVar('K')
 V = TypeVar('V')
 UpdateOtherType = Union[Mapping[K,V], Iterable[tuple[K,V]]]
@@ -21,56 +24,83 @@ class Dict_No_Overwrite(dict[K,V]):
     track_origin = True 
     origins: dict[K,str] = {}
 
-    def _set_origin(self, key: K) -> None:
+    def _set(self, key: K, val: V, call_depth: int) -> None:
+        """ call_depth says how far up the stack we need to go before we leave
+            dict_tools (not counting _set's frame) """
+        # I suppose we could explicitly test the filename to find the stack depth, 
+        # but if we did that, someone would end up naming a file in a different
+        # directory "dict_tools.py" and end up with a really weird bug.
         if self.track_origin:
             try: # might fail if it's in a repl or something.
-                frame = inspect.stack()[2] # [1] is the function in *this* object that called _set_origin.
+                frame = inspect.stack()[call_depth + 1]
                 origin = f"{frame.frame.f_code.co_filename}:{frame.frame.f_lineno}"
+                #origin = '\n' + '\n'.join([f"\t{frame.frame.f_code.co_filename}:{frame.frame.f_lineno}"
+                #    for frame in inspect.stack() ])
             except:
                 origin = "???"
             self.origins[key] = origin
-   
-    def __setitem__(self, key: K, val: V) -> None:
+        dict.__setitem__(self, key, val)
+
+    def _check_key(self, key: K) -> None:
         if key in self:
             raise Exception(f"Key `{key}` already set by {self.origins.get(key, '???')}")
-        dict.__setitem__(self, key, val)
-        self._set_origin(key)
+   
+    def __setitem__(self, key: K, val: V) -> None:
+        self._check_key(key)
+        self._set(key, val, call_depth=1)
     
     def __delitem__(self, key: K) -> None:
         dict.__delitem__(self, key)
         if key in self.origins:
             del self.origins[key]
         
-    def overwrite(self, key: K, val: V) -> None:
-        dict.__setitem__(self, key, val)
-        self._set_origin(key)
- 
     # NOTE: We don't support the kwargs method of calling update, since that doesn't
     # permit us to make type assertions.
-    def update(self, other: Optional[UpdateOtherType[K,V]]) -> None: # type: ignore[override]
-        if other is not None:
-            if hasattr(other, 'keys') and hasattr(other, '__getitem__'):
-                for k in other.keys():
-                    self[k] = other[k]
-            elif hasattr(other, '__iter__'): # iterable of tuple
-                for k,v in other:
-                    self[k] = v
-            else:
-                assert False
+    def _update(self, other: Optional[UpdateOtherType[K,V]], call_depth: int) -> None: # type: ignore[override]
+        """ If any of the keys would clobber existing values, we don't change the dictionary at all. """
+        if other is None:
+            return
 
-    # NOTE: need to disable errors because we introduce the additional resetriction that
+        if hasattr(other, 'keys') and hasattr(other, '__getitem__'):
+            for k in other.keys():
+                self._check_key(k)
+
+            for k in other.keys():
+                self._set(k, other[k], call_depth=call_depth + 1)
+
+        elif hasattr(other, '__iter__'): # iterable of tuple
+            for k in other.keys():
+                self._check_key(k)
+
+            for k,v in other:
+                self._set(k, v, call_depth=call_depth + 1)
+        else:
+            assert False
+
+    # public interface starts here
+
+    def overwrite(self, key: K, val: V) -> None:
+        self._set(key, val, call_depth=1)
+    
+    # NOTE: need to disable some type errors because we introduce the additional restriction that
     # the K,V of other match this one's. dict doesn't impose that restriction. (I'm
     # subclassing for the sake of inheriting the functions I don't need to change; I do
     # not care about the Liskov substitution principle.)
+    def update(self, other: Optional[UpdateOtherType[K,V]]) -> None: # type: ignore[override]
+        self._update(other, call_depth=1)
 
     def __or__(self, other: Mapping[K,V]) -> 'Dict_No_Overwrite[K,V]': # type: ignore[override]
         cp = Dict_No_Overwrite[K,V]()
-        cp.update(self)
-        cp.update(other)
+        dict.update(cp, self)
+        cp.track_origin = self.track_origin
+        if self.track_origin:
+            for k in self:
+                cp.origins[k] = self.origins[k]
+        cp._update(other, call_depth=1)
         return cp
 
     def __ior__(self, other: UpdateOtherType[K,V]) -> Self: # type: ignore[override]
-        self.update(other)
+        self._update(other, call_depth=1)
         return self
     
 

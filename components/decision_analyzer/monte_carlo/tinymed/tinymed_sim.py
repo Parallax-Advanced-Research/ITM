@@ -2,7 +2,7 @@ from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty, Supplies, Actions
 from components.decision_analyzer.monte_carlo.tinymed.medactions import (supply_dict_to_list, get_possible_actions,
                                                                          create_tm_actions, trim_tm_actions, action_map,
-                                                                         get_starting_supplies, get_TMNT_demo_casualties,
+                                                                         get_TMNT_supplies, get_TMNT_demo_casualties,
                                                                          remove_non_injuries, MedicalOracle)
 from copy import deepcopy
 from .tinymed_state import TinymedState, TinymedAction
@@ -11,6 +11,7 @@ from typing import Optional
 import random
 
 logger = util.logger
+
 
 class TinymedSim(MCSim):
 
@@ -40,16 +41,10 @@ class TinymedSim(MCSim):
         tinymed_actions: list[TinymedAction] = create_tm_actions(actions)
         tinymed_actions_trimmed: list[TinymedAction] = trim_tm_actions(tinymed_actions)
         tinymed_actions_trimmed = remove_non_injuries(state, tinymed_actions_trimmed)
+        tinymed_actions_trimmed.append(TinymedAction(action=Actions.END_SCENARIO.value))
         return tinymed_actions_trimmed
 
     def reset(self):
         self.current_casualties: list[Casualty] = deepcopy(self._init_casualties)
         self.current_supplies: dict[str, int] = deepcopy(self._init_supplies)
         pass
-
-    def score(self, state: TinymedState) -> float:
-        injury_score: float = 0.0
-        for casualty in state.casualties:
-            for injury in casualty.injuries:
-                injury_score += injury.severity
-        return injury_score

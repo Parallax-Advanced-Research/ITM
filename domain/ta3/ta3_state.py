@@ -28,6 +28,7 @@ class Injury:
     location: str
     name: str
     severity: float
+    treated: bool
 
 
 Locations = {"right forearm", "left forearm", "right calf", "left calf", "right thigh", "left thigh", "right stomach",
@@ -88,8 +89,11 @@ class TA3State(State):
         stime = data['time'] if 'time' in data else 0
         cdatas = data['casualties'] if 'casualties' in data else []
         sdatas = data['supplies'] if 'supplies' in data else []
-        ap = data['actions_performed'] if 'actions_performed' in data else []
-
+        for c in cdatas:
+            for ci in c['injuries']:
+                if 'treated' not in ci.keys():
+                    ci['treated'] = False  # An addition so we can treat injuries
         casualties = [Casualty.from_ta3(c) for c in cdatas]
         supplies = [Supply(**s) for s in sdatas]
-        return TA3State(unstr, stime, casualties, supplies, ap)
+        ta3s = TA3State(unstr, stime, casualties, supplies, list())
+        return ta3s
