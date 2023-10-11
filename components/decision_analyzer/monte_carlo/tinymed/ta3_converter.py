@@ -74,7 +74,8 @@ def _reverse_convert_casualty(internal_casualty: Casualty) -> TA_CAS:
     ta_vitals = _reverse_convert_vitals(internal_casualty.vitals)
     return TA_CAS(id=internal_casualty.id, name=internal_casualty.name, injuries=ta_injuries, demographics=ta_demos,
                   vitals=ta_vitals, tag=internal_casualty.tag, assessed=internal_casualty.assessed,
-                  unstructured=internal_casualty.unstructured, relationship=internal_casualty.relationship)
+                  unstructured=internal_casualty.unstructured, relationship=internal_casualty.relationship,
+                  treatments=list())
 
 
 def convert_casualties(ta_casualties: list[TA_CAS]) -> list[Casualty]:
@@ -116,8 +117,10 @@ def convert_state(ta3_state: TA3State) -> TinymedState:
 def reverse_convert_state(tinymedstate: TinymedState) -> TA3State:
     cas = reverse_convert_casualties(tinymedstate.casualties)
     sup = reverse_convert_supplies(tinymedstate.supplies)
-    ta3 = TA3State(casualties=cas, supplies=sup, unstructured=tinymedstate.unstructured, time_=int(tinymedstate.time))
+    ta3 = TA3State(casualties=cas, supplies=sup, unstructured=tinymedstate.unstructured, time_=int(tinymedstate.time),
+                   actions_performed=list())
     return ta3
+
 
 def _convert_action(act: Action) -> TinymedAction:
     supply, location = None, None

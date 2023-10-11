@@ -95,5 +95,5 @@ class TA3State(State):
                     ci['treated'] = False  # An addition so we can treat injuries
         casualties = [Casualty.from_ta3(c) for c in cdatas]
         supplies = [Supply(**s) for s in sdatas]
-        ta3s = TA3State(unstr, stime, casualties, supplies)
+        ta3s = TA3State(unstr, stime, casualties, supplies, list())
         return ta3s
