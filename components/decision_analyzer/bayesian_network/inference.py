@@ -1,9 +1,7 @@
 import pyAgrum
-import json
+import json, sys
 from typing import Dict, Any, List, Set
 from typedefs import Node_Name, Node_Val, Probability
-
-TESTING = True
 
 # notebook stuff is just for debugging and visualization
 notebook = False
@@ -106,7 +104,8 @@ class Bayesian_Net:
 			result[node] = { a[0]: a[1] for a in zip(self.values[node], ie.posterior(node)[:]) }
 		return result
 
-if TESTING:
+if '__main__' ==  __name__ and 2 == len(sys.argv) and 'TEST' == sys.argv[1]:
+	# TODO: need some tests I can assert, so I can put this in tests.commands
 	bn = Bayesian_Net('bayes_net.json')
 
 	bn.display()
