@@ -176,8 +176,8 @@ def get_temporal_scores(new_state: MetricResultsT, previous_state: TinymedState)
 
     return_metrics.append({Metric.SEVERITY_CHANGE.value: DecisionMetric(name=Metric.SEVERITY_CHANGE.value, description=description_hash[Metric.SEVERITY_CHANGE.value],
                                                                         type=type(float), value=new_state[Metric.SEVERITY.value] - previous_severity)})
-    return_metrics.append({Metric.CASUALTY_SEVERITY.value: DecisionMetric(name=Metric.CASUALTY_SEVERITY.value, description=description_hash[Metric.CASUALTY_SEVERITY.value],
-                                                                          type=type(new_state[Metric.CASUALTY_SEVERITY.value]), value=new_state[Metric.CASUALTY_SEVERITY.value])})
+    # return_metrics.append({Metric.CASUALTY_SEVERITY.value: DecisionMetric(name=Metric.CASUALTY_SEVERITY.value, description=description_hash[Metric.CASUALTY_SEVERITY.value],
+    #                                                                       type=type(new_state[Metric.CASUALTY_SEVERITY.value]), value=new_state[Metric.CASUALTY_SEVERITY.value])})
     return_metrics.append({'Casualty Severity Changes': DecisionMetric(name=Metric.CASUALTY_SEVERITY_CHANGE.value, description=description_hash[Metric.CASUALTY_SEVERITY_CHANGE.value], type=type(change),
                                                                        value=change)})
     return return_metrics
