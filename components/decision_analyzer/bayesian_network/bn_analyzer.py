@@ -21,25 +21,25 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
                 continue
             predictions = self.bn.predict(ob)
 
-            metrics = []
-            metrics.append(DecisionMetric("pDeath", "Posterior probability of death with no action", 
-                                          float, predictions['death']['true']))
-            metrics.append(DecisionMetric("pPain", "Posterior probability of severe pain", 
-                                          float, predictions['pain']['high']))
-            metrics.append(DecisionMetric("pBrainInjury", "Posterior probability of a brain injury",
-                                          float, predictions['brain_injury']['true']))
-            metrics.append(DecisionMetric("pAirwayBlocked", "Posterior probability of airway blockage",
-                                          float, predictions['airway_blocked']['true']))
-            metrics.append(DecisionMetric("pInternalBleeding", "Posterior probability of internal bleeding",
-                                          float, predictions['internal_hemorrhage']['true']))
-            metrics.append(DecisionMetric("pExternalBleeding", "Posterior probability of external bleeding",
-                                          float, predictions['external_hemorrhage']['true']))
+            metrics: list[DecisionMetric[float]] = []
+            metrics.append(DecisionMetric[float]("pDeath", "Posterior probability of death with no action",
+                                          predictions['death']['true']))
+            metrics.append(DecisionMetric[float]("pPain", "Posterior probability of severe pain",
+                                          predictions['pain']['high']))
+            metrics.append(DecisionMetric[float]("pBrainInjury", "Posterior probability of a brain injury",
+                                          predictions['brain_injury']['true']))
+            metrics.append(DecisionMetric[float]("pAirwayBlocked", "Posterior probability of airway blockage",
+                                          predictions['airway_blocked']['true']))
+            metrics.append(DecisionMetric[float]("pInternalBleeding", "Posterior probability of internal bleeding",
+                                          predictions['internal_hemorrhage']['true']))
+            metrics.append(DecisionMetric[float]("pExternalBleeding", "Posterior probability of external bleeding",
+                                          predictions['external_hemorrhage']['true']))
             mdict = {m.name: m for m in metrics}
             decision.metrics.update(mdict)
             analysis[decision.id_] = mdict
 
         return analysis
-            
+    
     def make_observation(self, state: State, a: Action) -> Optional[Dict[Node_Name, Optional[Node_Val]]]:
         patient = a.params.get('casualty',None)
         if patient is None:

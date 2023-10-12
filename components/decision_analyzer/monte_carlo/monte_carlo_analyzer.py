@@ -137,7 +137,7 @@ def stat_metric_loop(basic_stats: MetricResultsT) -> list[DecisionMetrics]:
     for k in list(basic_stats.keys()):
         v = basic_stats[k]
         metrics: DecisionMetrics = {k: DecisionMetric(name=k, description=description_hash[k],
-                                                      type=type(v), value=v)}
+                                                      value=v)}
         metrics_out.append(metrics)
     return metrics_out
 
@@ -146,16 +146,16 @@ def get_unkown_temporal_scores(previous_state: TinymedState) -> list[DecisionMet
     return_metrics: list[DecisionMetrics] = list()
     return_metrics.append({Metric.SEVERITY_CHANGE.value: DecisionMetric(name=Metric.SEVERITY_CHANGE.value,
                                                                         description=description_hash[Metric.SEVERITY_CHANGE.value],
-                                                                        type=type(None), value=None)})
-    cas_sevs_new = {}
-    cas_sevs_dlt = {}
+                                                                        value=None)})
+    cas_sevs_new: dict[str, None] = {}
+    cas_sevs_dlt: dict[str, None] = {}
     for casualty in previous_state.casualties:
         cas_sevs_new[casualty.name] = None
         cas_sevs_dlt[casualty.name] = None
     return_metrics.append({Metric.CASUALTY_SEVERITY.value: DecisionMetric(name=Metric.CASUALTY_SEVERITY.value, description=description_hash[Metric.CASUALTY_SEVERITY.value],
-                                                                          type=type(cas_sevs_new), value=cas_sevs_new)})
+                                                                          value=cas_sevs_new)})
     return_metrics.append({Metric.CASUALTY_SEVERITY_CHANGE.value: DecisionMetric(name=Metric.CASUALTY_SEVERITY.value, description=description_hash[Metric.CASUALTY_SEVERITY.value],
-                                                                                 type=type(cas_sevs_dlt), value=cas_sevs_dlt)})
+                                                                                 value=cas_sevs_dlt)})
     return return_metrics
 
 
@@ -175,10 +175,10 @@ def get_temporal_scores(new_state: MetricResultsT, previous_state: TinymedState)
     return_metrics: list[DecisionMetrics] = list()
 
     return_metrics.append({Metric.SEVERITY_CHANGE.value: DecisionMetric(name=Metric.SEVERITY_CHANGE.value, description=description_hash[Metric.SEVERITY_CHANGE.value],
-                                                                        type=float, value=new_state[Metric.SEVERITY.value] - previous_severity)})
+                                                                        value=new_state[Metric.SEVERITY.value] - previous_severity)})
     # return_metrics.append({Metric.CASUALTY_SEVERITY.value: DecisionMetric(name=Metric.CASUALTY_SEVERITY.value, description=description_hash[Metric.CASUALTY_SEVERITY.value],
-    #                                                                       type=type(new_state[Metric.CASUALTY_SEVERITY.value]), value=new_state[Metric.CASUALTY_SEVERITY.value])})
-    return_metrics.append({'Casualty Severity Changes': DecisionMetric(name=Metric.CASUALTY_SEVERITY_CHANGE.value, description=description_hash[Metric.CASUALTY_SEVERITY_CHANGE.value], type=type(change),
+    #                                                                       value=new_state[Metric.CASUALTY_SEVERITY.value])})
+    return_metrics.append({'Casualty Severity Changes': DecisionMetric(name=Metric.CASUALTY_SEVERITY_CHANGE.value, description=description_hash[Metric.CASUALTY_SEVERITY_CHANGE.value],
                                                                        value=change)})
     return return_metrics
 
@@ -192,7 +192,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         self.supplies_set: bool = False
         self.previous_states:  list[TinymedState] = []
 
-    def remember(self, state: TinymedState):
+    def remember(self, state: TinymedState) -> None:
         self.previous_states.append(deepcopy(state))
 
     def most_recent_state(self) -> TinymedState:
