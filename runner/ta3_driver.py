@@ -56,14 +56,11 @@ class TA3Driver(Driver):
         super().__init__(elaborator, selector, analyzers)
 
     def _extract_state(self, dict_state: dict):
+        for casualty in dict_state['casualties']:
+            casulty_id = casualty['id']
+            if casulty_id in self.treatments.keys():
+                casualty['treatments'] = self.treatments[casulty_id]
+            else:
+                casualty['treatments'] = list()
+        dict_state['actions_performed'] = self.actions_performed
         return TA3State.from_dict(dict_state)
-
-    def translate_probe(self, ext_probe: ext.Probe) -> Probe:
-        dict = ext_probe.state.copy()
-        for (casualty, treatment_list) in self.treatments.items():
-            for cas in dict["casualties"]:
-                if cas["id"] == casualty:
-                    cas["treatments"] = treatment_list
-        dict["actions_performed"] = self.actions_performed
-        probe: Probe = super().translate_probe(ext_probe)
-        return probe

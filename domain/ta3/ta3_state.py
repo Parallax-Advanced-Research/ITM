@@ -48,6 +48,7 @@ class Casualty:
     demographics: Demographics
     vitals: Vitals
     tag: str
+    treatments: list[str]
     assessed: bool = False
     unstructured: str = ''
     relationship: str = ''
@@ -64,6 +65,7 @@ class Casualty:
             assessed=data.get('assessed', data.get('visited', False)),
             unstructured=data['unstructured'],
             relationship=data['relationship'],
+            treatments=data['treatments']
         )
 
 
