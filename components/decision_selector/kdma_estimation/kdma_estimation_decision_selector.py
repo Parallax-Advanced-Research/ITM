@@ -1,6 +1,7 @@
 import csv
 import math
 from typing import Any, Sequence
+from numbers import Real
 from domain.internal import Scenario, Probe, KDMA, KDMAs, Decision, Action, State
 from domain.ta3 import TA3State, Casualty, Supply
 from components import DecisionSelector, DecisionAnalyzer
@@ -12,13 +13,14 @@ from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAn
 
 class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 3
-    def __init__(self, csv_file: str, variant='aligned', print_neighbors=True, use_drexel_format=False):
+    def __init__(self, csv_file: str, variant='aligned', print_neighbors=True, use_drexel_format=False, force_uniform_weights=True):
         self._csv_file_path: str = csv_file
         self.cb = self._read_csv()
         self.variant: str = variant
         self.analyzers: list[DecisionAnalyzer] = get_analyzers()
         self.print_neighbors = print_neighbors
         self.use_drexel_format = use_drexel_format
+        self.force_uniform_weights = force_uniform_weights
         self.index = 0
         
 
@@ -74,6 +76,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                         weights = weights | {"relationship": 1, "priority": 1}
                     case _:
                         weights = default_weights
+                if self.force_uniform_weights:
+                    weights = default_weights
                 estimate = self.estimate_KDMA(cur_case, weights, kdma_name)
                 cur_case[kdma_name] = estimate
                 if not misalign:
@@ -199,13 +203,13 @@ def compare(val1: Any, val2: Any, feature: str):
         return None
     t = type(val1)
     if not t == type(val2):
-        if not isinstance(val1, float) or not isinstance(val2, float):
+        if not isinstance(val1, Real) or not isinstance(val2, Real):
             breakpoint()
             raise Exception(f"Two cases have different types for feature {feature}: {val1} ({t}) vs. {val2} ({type(val2)})")
     
     if val1 == val2:
         return 0
-    if t in [int, float]:
+    if isinstance(val1, Real):
         return abs(val1-val2)
     return 1
 
