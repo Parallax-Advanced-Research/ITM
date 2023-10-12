@@ -1,10 +1,10 @@
 from domain.ta3 import TA3State, Casualty, TagCategory
-from domain.internal import Decision, Action, Scenario, Probe
+from domain.internal import Decision, Action, Scenario, TADProbe
 from components import Elaborator
 
 
 class TA3Elaborator(Elaborator):
-    def elaborate(self, scenario: Scenario, probe: Probe) -> list[Decision[Action]]:
+    def elaborate(self, scenario: Scenario, probe: TADProbe) -> list[Decision[Action]]:
         d: Decision[Action]
         to_return: list[Decision[Action]] = []
         for d in probe.decisions:

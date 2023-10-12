@@ -1,7 +1,7 @@
 from enum import Enum
 
 from components.decision_analyzer.monte_carlo.tinymed import TinymedSim
-from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
+from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_state import TinymedAction, TinymedState
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
 from components import DecisionAnalyzer
@@ -198,7 +198,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
     def most_recent_state(self) -> TinymedState:
         return self.previous_states[-1] if len(self.previous_states) else None
 
-    def analyze(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
+    def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         ta3_state: TA3State = probe.state
         tinymed_state: TinymedState = ta3_conv.convert_state(ta3_state)
         if not self.supplies_set:

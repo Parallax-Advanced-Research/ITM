@@ -2,7 +2,7 @@ import csv
 import math
 from typing import Any, Sequence
 from numbers import Real
-from domain.internal import Scenario, Probe, KDMA, KDMAs, Decision, Action, State
+from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State
 from domain.ta3 import TA3State, Casualty, Supply
 from components import DecisionSelector, DecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
@@ -24,7 +24,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.index = 0
         
 
-    def select(self, scenario: Scenario, probe: Probe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         default_weights = {key: 1 for key in self.cb[0].keys()}
         minDist: float = math.inf
         minDecision: Decision = None
@@ -458,14 +458,14 @@ def get_analyzers_without_HRA():
         BayesNetDiagnosisAnalyzer()
     ]
     
-def perform_analysis(s: State, dlist: list[Decision], analyzers: list[DecisionAnalyzer]) -> Probe:
+def perform_analysis(s: State, dlist: list[Decision], analyzers: list[DecisionAnalyzer]) -> TADProbe:
     scen: Scenario = Scenario("1", s)
-    p: Probe = Probe("0", s, "What Next?", dlist)
+    p: TADProbe = TADProbe("0", s, "What Next?", dlist)
     for analyzer in analyzers:
         analyzer.analyze(scen, p)
     return p
 
-def get_decision(p: Probe, casualty: str = None, action_name: str = None, treatment: str = None, category: str = None):
+def get_decision(p: TADProbe, casualty: str = None, action_name: str = None, treatment: str = None, category: str = None):
     for decision in p.decisions:
         if casualty is not None and decision.value.params.get("casualty", None) != casualty:
             continue
@@ -488,7 +488,7 @@ def make_soartech_case_base() -> list[dict[str, Any]]:
     # "CHECK_ALL_VITALS" or "TAG_CASUALTY". Correct.
 
     st: State = make_previsit_state(["casualty-A", "casualty-B", "casualty-C", "casualty-D"])
-    p: Probe = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers_without_HRA)
+    p: TADProbe = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers_without_HRA)
     cb.append(make_case(st, get_decision(p, casualty="casualty-A")) 
               | {"mission": 2, "denial": 3.5, "risktol": 6.5, "urgency": 3.25})
     cb.append(make_case(st, get_decision(p, casualty="casualty-B")) 

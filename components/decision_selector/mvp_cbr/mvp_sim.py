@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from domain.internal import Scenario, Decision, Probe, KDMA, KDMAs
+from domain.internal import Scenario, Decision, TADProbe, KDMA, KDMAs
 from domain.mvp import MVPState, Casualty
 from .sim_tools import similarity
 
@@ -46,7 +46,7 @@ def scen_sim(s1: Scenario, s2: Scenario) -> float:
     return state_sim(s1.state, s2.state)
 
 
-def probe_sim(p1: Probe, p2: Probe) -> float:
+def probe_sim(p1: TADProbe, p2: TADProbe) -> float:
     # TODO: Handle probe states
     return similarity(p1.prompt, p2.prompt)
 
