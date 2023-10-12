@@ -9,11 +9,17 @@ from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
+from domain.internal import Probe
+import domain.external as ext
 from .driver import Driver
 
 
 class TA3Driver(Driver):
     def __init__(self, args):
+        # Instantiating empty, and then filling as needed
+        self.actions_performed: list[Action] = []
+        self.treatments: dict[str, list[str]] = {}
+
         elaborator = TA3Elaborator()
         mda = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2) if args.mc else None
 
@@ -42,7 +48,7 @@ class TA3Driver(Driver):
         ebd = EventBasedDiagnosisAnalyzer() if args.ebd else None
         hra = HeuristicRuleAnalyzer() if args.hra else None  # Crashes in TMNT/differenct scenario
         bnd = BayesNetDiagnosisAnalyzer()
-        mda = MonteCarloAnalyzer(max_rollouts=10, max_depth=2)
+        mda = MonteCarloAnalyzer(max_rollouts=100, max_depth=2)
 
         analyzers = [ebd, hra, bnd, mda]
         analyzers = [a for a in analyzers if a is not None]
@@ -51,3 +57,13 @@ class TA3Driver(Driver):
 
     def _extract_state(self, dict_state: dict):
         return TA3State.from_dict(dict_state)
+
+    def translate_probe(self, ext_probe: ext.Probe) -> Probe:
+        dict = ext_probe.state.copy()
+        for (casualty, treatment_list) in self.treatments.items():
+            for cas in dict["casualties"]:
+                if cas["id"] == casualty:
+                    cas["treatments"] = treatment_list
+        dict["actions_performed"] = self.actions_performed
+        probe: Probe = super().translate_probe(ext_probe)
+        return probe

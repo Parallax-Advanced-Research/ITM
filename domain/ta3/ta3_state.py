@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from domain.internal import State, Action
 
 
@@ -48,7 +48,6 @@ class Casualty:
     demographics: Demographics
     vitals: Vitals
     tag: str
-    treatments: list[str]
     assessed: bool = False
     unstructured: str = ''
     relationship: str = ''
@@ -65,7 +64,6 @@ class Casualty:
             assessed=data.get('assessed', data.get('visited', False)),
             unstructured=data['unstructured'],
             relationship=data['relationship'],
-            treatments=data.get('treatments', list())
         )
 
 
@@ -76,12 +74,14 @@ class Supply:
 
 
 class TA3State(State):
-    def __init__(self, unstructured: str, time_: int, casualties: list[Casualty], supplies: list[Supply], actions_performed: list[Action]):
+    def __init__(self, unstructured: str, time_: int, casualties: list[Casualty], supplies: list[Supply],
+                 actions_performed: list[Action] = [], treatments: dict[str, list[str]] = {}):
         super().__init__(id_='TA3State', time_=time_)
         self.unstructured: str = unstructured
         self.casualties: list[Casualty] = casualties
         self.supplies: list[Supply] = supplies
-        self.actions_performed = actions_performed
+        self.actions_performed: list[Action] = actions_performed
+        self.treatments: dict[str, list[str]] = treatments
 
     @staticmethod
     def from_dict(data: dict) -> 'TA3State':
@@ -93,7 +93,14 @@ class TA3State(State):
             for ci in c['injuries']:
                 if 'treated' not in ci.keys():
                     ci['treated'] = False  # An addition so we can treat injuries
+        actions_performed: list[Action] = []
+        treatments: dict[str, list[str]] = {}
+        if 'actions_performed' in data.keys():
+            actions_performed = data['actions_performed']
+        if 'treatments' in data.keys():
+            treatments = data['treatments']
+
         casualties = [Casualty.from_ta3(c) for c in cdatas]
         supplies = [Supply(**s) for s in sdatas]
-        ta3s = TA3State(unstr, stime, casualties, supplies, list())
+        ta3s = TA3State(unstr, stime, casualties, supplies, actions_performed, treatments)
         return ta3s
