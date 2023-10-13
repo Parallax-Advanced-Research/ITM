@@ -3,4 +3,5 @@ import sys
 sys.path.append(".")
 from components.case_formation.acf.app import app
 
-app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -66,16 +66,19 @@ class ArgumentCaseGenerator(CaseGenerator):
         """
         Generates counterfactuals for the given case.
         """
+
+        # these are the categorical columns passed in that we can vary
         columns_to_vary = [
             column for column in self.categorical_columns if column in case
         ]
 
+        # possible values is the list of unique values for each selected categorical column
         possible_values = []
         for column in columns_to_vary:
             # list of unique possible values
             possible_values.append(list(set([case[column] for case in self.cases])))
 
-        # list of possible new cases that can be generated with possible values and the given case
+        # list of new cases that will be generated with possible values and the given case
         new_cases = []
         for possible_value in possible_values:
             for value in possible_value:
