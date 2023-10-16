@@ -9,15 +9,20 @@ from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
+import domain.external as ext
 from .driver import Driver
 
 
 class TA3Driver(Driver):
     def __init__(self, args):
+        # Instantiating empty, and then filling as needed
+        self.actions_performed: list[Action] = []
+        self.treatments: dict[str, list[str]] = {}
+
         elaborator = TA3Elaborator()
 
         if args.variant.lower() == "severity-baseline":
-            super().__init__(elaborator, SeverityDecisionSelector(), [mda])
+            super().__init__(elaborator, SeverityDecisionSelector(), [mda])  # ?This is not declared will error
             return
 
         if args.human:
@@ -49,4 +54,11 @@ class TA3Driver(Driver):
         super().__init__(elaborator, selector, analyzers)
 
     def _extract_state(self, dict_state: dict):
+        for casualty in dict_state['casualties']:
+            casulty_id = casualty['id']
+            if casulty_id in self.treatments.keys():
+                casualty['treatments'] = self.treatments[casulty_id]
+            else:
+                casualty['treatments'] = list()
+        dict_state['actions_performed'] = self.actions_performed
         return TA3State.from_dict(dict_state)

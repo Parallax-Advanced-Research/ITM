@@ -6,8 +6,7 @@ from util import logger
 
 
 class Driver:
-    actions_performed: list[Action] = []
-    treatments: dict[str, list[str]] = {}
+
     def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer]):
         self.session: str = ''
         self.scenario: typing.Optional[Scenario] = None
@@ -16,6 +15,7 @@ class Driver:
         self.elaborator: Elaborator = elaborator
         self.selector: DecisionSelector = selector
         self.analyzers: list[DecisionAnalyzer] = analyzers
+
 
     def new_session(self, session_id: str):
         self.session = session_id
@@ -26,21 +26,11 @@ class Driver:
     def set_scenario(self, scenario: ext.Scenario):
         state = self._extract_state(scenario.state)
         self.scenario = Scenario(scenario.id, state)
-        self.actions_performed = []
-        
+
 
     def translate_probe(self, itm_probe: ext.ITMProbe) -> TADProbe:
-        dict = itm_probe.state.copy()
-        for (casualty, treatment_list) in self.treatments.items():
-            for cas in dict["casualties"]:
-                if cas["id"] == casualty:
-                    cas["treatments"] = treatment_list
-        dict["actions_performed"] = self.actions_performed
-
         # Translate probe external state into internal state
         state = self._extract_state(itm_probe.state)
-            
-            
 
         # Extract the decisions
         decisions: list[Decision[Action]] = []

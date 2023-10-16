@@ -9,7 +9,15 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
-V KR 1.1.3 (10/10 Internal changes)
+V KR 1.2.3 (10/17 changes)
+=========================
+Changes:
+> Monte Carlo Decision Analyzer is no longer calculating casualty severity twice.
+> Probe names refactored
+> TA3 past action / treatments are refactored out of driver class
+
+=========================
+V KR 1.1.3A (oops) (10/10 Internal changes)
 =======
 Monte Carlo Changes-
 > replace score averager with weighted average
