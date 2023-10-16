@@ -1,23 +1,23 @@
-from domain.internal import Scenario, Probe, Decision, KDMAs, DecisionMetrics
+from domain.internal import Scenario, TADProbe, Decision, KDMAs, DecisionMetrics
 
 
 class DecisionAnalyzer:
-    def analyze(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
+    def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         """ Adds the decision metrics directly to the probe decisions, and returns them as a map (see baseline) """
         raise NotImplementedError
 
-    def train(self, team_id: str, scen: Scenario, probe: Probe):
+    def train(self, team_id: str, scen: Scenario, probe: TADProbe):
         """ Trains on TA1 data, if necessary """
         pass
 
 
 class DecisionSelector:
-    def select(self, scenario: Scenario, probe: Probe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         raise NotImplementedError
 
 
 class Elaborator:
-    def elaborate(self, scenario: Scenario, probe: Probe) -> list[Decision]:
+    def elaborate(self, scenario: Scenario, probe: TADProbe) -> list[Decision]:
         raise NotImplementedError
 
 
@@ -27,5 +27,5 @@ class CaseGenerator:
         self.elaborator: Elaborator = elaborator
         self.analyzers: list[DecisionAnalyzer] = list(analyzers)
 
-    def train(self, team_id: str, scenario: Scenario, probe: Probe):
+    def train(self, team_id: str, scenario: Scenario, probe: TADProbe):
         raise NotImplementedError

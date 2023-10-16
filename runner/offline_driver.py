@@ -1,6 +1,6 @@
 import typing
 from components import Elaborator, DecisionSelector, DecisionAnalyzer, CaseGenerator
-from domain.internal import Scenario, Probe
+from domain.internal import Scenario, TADProbe
 
 
 class OfflineDriver:
@@ -11,7 +11,7 @@ class OfflineDriver:
         self.selector: DecisionSelector = selector
         self.analyzers: list[DecisionAnalyzer] = analyzers
 
-    def train(self, team_id: str, scen: Scenario, probe: Probe):
+    def train(self, team_id: str, scen: Scenario, probe: TADProbe):
         probe.decisions = self.elaborator.elaborate(scen, probe)
 
         # Train analyzers

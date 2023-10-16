@@ -8,7 +8,7 @@ class ArgumentCase:
         id: str,
         case_no: str,
         scenario: Scenario,
-        probe: Probe,
+        probe: TADProbe,
         response: Decision,
         kdmas: KDMAs = None,
         additional_data: dict = {},
@@ -18,7 +18,7 @@ class ArgumentCase:
         self.id = id
         self.case_no: str = case_no
         self.scenario: Scenario = scenario
-        self.probe: Probe = probe
+        self.probe: TADProbe = probe
         self.response: Decision = response
         self.additional_data: dict = additional_data
         self.kdmas: KDMAs = kdmas

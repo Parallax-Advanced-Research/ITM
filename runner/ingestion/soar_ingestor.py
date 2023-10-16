@@ -7,7 +7,7 @@ from pydantic.tools import parse_obj_as
 
 
 import domain as ext
-from domain.internal import Scenario, Probe, Decision, KDMA, KDMAs
+from domain.internal import Scenario, TADProbe, Decision, KDMA, KDMAs
 from domain.mvp import MVPState, Casualty
 from components.decision_selector.mvp_cbr import Case
 from .ingestor import Ingestor
@@ -31,7 +31,7 @@ class SOARIngestor(Ingestor):
             cases.append(Case(scen, probe, choice))
         return cases
 
-    def ingest_as_internal(self) -> (Scenario, list[Probe]):
+    def ingest_as_internal(self) -> (Scenario, list[TADProbe]):
         prompt1 = "Which casualty do you treat first?"
         prompt2 = "What treatment do you give to"
 
@@ -62,7 +62,7 @@ class SOARIngestor(Ingestor):
                             decisions.append(Decision(cas.id, cas.id))
                         choice = Decision(patient, patient, kdmas=kdmas)
                         decisions.append(choice)
-                        probe = Probe(f"{scen.id_}-who", state, prompt1, decisions)
+                        probe = TADProbe(f"{scen.id_}-who", state, prompt1, decisions)
                         probes.append(probe)
 
                     decisions = []
@@ -70,7 +70,7 @@ class SOARIngestor(Ingestor):
                         decisions.append(Decision(toption, toption))
                     choice = Decision(treatment, treatment, kdmas=kdmas)
                     decisions.append(choice)
-                    probe = Probe(f"{scen.id_}-how-{patient}", state, f"{prompt2} {patient}?", decisions)
+                    probe = TADProbe(f"{scen.id_}-how-{patient}", state, f"{prompt2} {patient}?", decisions)
                     probes.append(probe)
                     prev_user = user
         return scen, probes
@@ -82,12 +82,12 @@ class SOARIngestor(Ingestor):
         scen = parse_obj_as(ext.Scenario, yaml.load(open(f"{self.data_dir}/scenario.yaml", 'r'), Loader=yaml.Loader))
         casualties = [Casualty(**c) for c in scen.state['casualties']]
         scen.probes = [
-            ext.Probe(str(uuid.uuid4()), prompt=prompt1, state={}, options=[
+            ext.ITMProbe(str(uuid.uuid4()), prompt=prompt1, state={}, options=[
                 ext.ProbeChoice(f"choice{i}", c.id) for i, c in enumerate(casualties)
             ])]
 
         for cas in casualties:
-            scen.probes.append(ext.Probe(str(uuid.uuid4()), prompt=f"{prompt2} {cas.id}?", state={}, options=[
+            scen.probes.append(ext.ITMProbe(str(uuid.uuid4()), prompt=f"{prompt2} {cas.id}?", state={}, options=[
                 ext.ProbeChoice(f"choice{i}", t) for i, t in enumerate(SOARIngestor.TREATMENT_LIST)
             ]))
 

@@ -1,4 +1,4 @@
-from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric
+from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric
 from components import DecisionAnalyzer
 import random
 
@@ -7,7 +7,7 @@ class BaselineDecisionAnalyzer(DecisionAnalyzer):
     def __init__(self):
         super().__init__()
 
-    def analyze(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
+    def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         analysis = {}
         for decision in probe.decisions:
             metrics: DecisionMetrics = {"Random": DecisionMetric(name="Random", description="A random value",

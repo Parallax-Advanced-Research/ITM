@@ -2,7 +2,7 @@ import cl4py
 from cl4py import Symbol
 from cl4py import List as lst
 
-from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric
+from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric
 from domain.internal.decision import Action
 from domain.ta3.ta3_state import Casualty, State
 from components import DecisionAnalyzer
@@ -22,7 +22,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         self._hems = self._lisp.find_package("HEMS")
         self.train(None)
 
-    def analyze(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
+    def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         analysis = {}
         for decision in probe.decisions:
             cue = self.make_observation(scen, decision.value)
