@@ -15,6 +15,7 @@ Changes:
 > Monte Carlo Decision Analyzer is no longer calculating casualty severity twice.
 > Probe names refactored
 > TA3 past action / treatments are refactored out of driver class
+> Removed non-working metrics while target/worst severity metrics are being built
 
 =========================
 V KR 1.1.3A (oops) (10/10 Internal changes)

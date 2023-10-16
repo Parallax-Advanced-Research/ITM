@@ -78,10 +78,10 @@ def is_scoreless(decision: mcnode.MCDecisionNode) -> bool:
 
 def get_blank_scores() -> dict[str, int | None | float]:
     return {Metric.SEVERITY.value: None, Metric.SUPPLIES_REMAINING.value: None, Metric.AVERAGE_TIME_USED.value: None,
-            Metric.AVERAGE_INJURY_SEVERITY.value: None, Metric.AVERAGE_CASUALTY_SEVERITY.value: None,
-            Metric.UNTREATED_INJURIES.value: None, Metric.TREATED_INJURIES.value: None,
-            Metric.HEALTHY_CASUALTIES.value: None, Metric.PARTIALLY_HEALTHY_CASUALTIES.value: None,
-            Metric.UNTREATED_CASUALTIES.value: None}
+            Metric.AVERAGE_INJURY_SEVERITY.value: None, Metric.AVERAGE_CASUALTY_SEVERITY.value: None}
+            # Metric.UNTREATED_INJURIES.value: None, Metric.TREATED_INJURIES.value: None,
+            # Metric.HEALTHY_CASUALTIES.value: None, Metric.PARTIALLY_HEALTHY_CASUALTIES.value: None,
+            # Metric.UNTREATED_CASUALTIES.value: None}
 
 
  # Change this to have the casualty_severity dict, and pass the dict in for new_state
@@ -124,11 +124,11 @@ def get_populated_scores(decision: mcnode.MCDecisionNode, tinymedstate: TinymedS
     ret_dict[Metric.AVERAGE_INJURY_SEVERITY.value] = severity / injuries if injuries else severity
     ret_dict[Metric.AVERAGE_CASUALTY_SEVERITY.value] = severity / num_casualties if num_casualties else severity
     ret_dict[Metric.CASUALTY_SEVERITY.value] = decision.score['individual casualty severity']
-    ret_dict[Metric.TREATED_INJURIES.value] = treated_injuries
-    ret_dict[Metric.UNTREATED_INJURIES.value] = untreated_injuries
-    ret_dict[Metric.HEALTHY_CASUALTIES.value] = healthy_casualties
-    ret_dict[Metric.PARTIALLY_HEALTHY_CASUALTIES.value] = partially_healthy_casualties
-    ret_dict[Metric.UNTREATED_CASUALTIES.value] = untreated_casualties
+    # ret_dict[Metric.TREATED_INJURIES.value] = treated_injuries
+    # ret_dict[Metric.UNTREATED_INJURIES.value] = untreated_injuries
+    # ret_dict[Metric.HEALTHY_CASUALTIES.value] = healthy_casualties
+    # ret_dict[Metric.PARTIALLY_HEALTHY_CASUALTIES.value] = partially_healthy_casualties
+    # ret_dict[Metric.UNTREATED_CASUALTIES.value] = untreated_casualties
     return ret_dict
 
 
