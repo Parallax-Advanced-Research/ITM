@@ -32,5 +32,5 @@ def tiny_med_casualty_severity(state: MCState) -> ScoreT:
         this_guys_severity = 0.0
         for injury in casualty.injuries:
             this_guys_severity += injury.severity
-        injury_scores[casualty.name] = this_guys_severity
+        injury_scores[casualty.id] = this_guys_severity
     return injury_scores

@@ -1,5 +1,6 @@
 from components.decision_analyzer.monte_carlo.mc_sim import MCAction, MCState
 from .tinymed_enums import Casualty, Supplies, Actions
+import numpy as np
 
 
 class TinymedState(MCState):
@@ -34,6 +35,17 @@ class TinymedState(MCState):
             num_supplies += self.supplies[supply]
         return num_supplies
 
+    def get_most_severe(self) -> Casualty | None :
+        most_severe, max_severity = None, -np.inf
+        for cas in self.casualties:
+            casualty_severity = 0.
+            for injury in cas.injuries:
+                casualty_severity += injury.severity
+            if casualty_severity > max_severity:
+                most_severe = cas
+                max_severity = casualty_severity
+        return most_severe
+
 
 class TinymedAction(MCAction):
     def __init__(self, action: Actions, casualty_id: str | None = None, supply: str | None = None,
@@ -47,6 +59,9 @@ class TinymedAction(MCAction):
 
     def __str__(self):
         return "%s %s %s %s %s" % (self.action, self.casualty_id, self.supply, self.location, self.tag)
+
+    def get_action_target(self) -> None | str:
+        return self.casualty_id
 
     def lookup(self, attribute: str) -> str | None:
         if attribute == 'casualty_id':

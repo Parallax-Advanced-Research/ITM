@@ -135,7 +135,7 @@ class Casualty:
         self.dead = False
 
     def __str__(self):
-        retstr = "%s_" % self.name
+        retstr = "%s_" % self.id
         for inj in self.injuries:
             retstr += inj.__str__()
             retstr += '_'

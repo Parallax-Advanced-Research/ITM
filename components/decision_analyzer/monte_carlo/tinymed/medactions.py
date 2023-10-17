@@ -259,7 +259,7 @@ def trim_tm_actions(actions: list[TinymedAction]) -> list[TinymedAction]:
     for act in actions:
         if act.action == Actions.APPLY_TREATMENT.value:
             if act.supply == Supplies.DECOMPRESSION_NEEDLE.value:
-                if act.location in [Locations.UNSPECIFIED.value, 
+                if act.location in [Locations.UNSPECIFIED.value,
                                     Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value]:
                     trimmed.append(act)
             if act.supply == Supplies.TOURNIQUET.value or act.supply == Supplies.PRESSURE_BANDAGE.value or act.supply == Supplies.HEMOSTATIC_GAUZE.value:
@@ -449,7 +449,8 @@ class MedicalOracle:
         Actions.CHECK_ALL_VITALS.value: [1.5],
         Actions.SITREP.value: [1.0],
         Actions.TAG_CASUALTY.value: [1.0],
-        Actions.MOVE_TO_EVAC.value: [1.0]
+        Actions.MOVE_TO_EVAC.value: [1.0],
+        Actions.DIRECT_MOBILE_CASUALTY.value: [1.0]
     }
 
     SUCCESSFUL_SEVERITY = {
