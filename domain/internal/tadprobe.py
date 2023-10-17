@@ -3,7 +3,7 @@ from .state import StateType
 from .decision import Decision
 
 
-class Probe(typing.Generic[StateType]):
+class TADProbe(typing.Generic[StateType]):
     def __init__(self, id_: str, state: StateType, prompt: str, decisions: list[Decision] = ()):
         self.id_: str = id_
         self.state: StateType = state

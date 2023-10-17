@@ -1,5 +1,5 @@
 from typing import Dict, Optional
-from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric
+from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric
 from domain.internal.decision import Action
 from domain.ta3.ta3_state import Casualty, State
 from components import DecisionAnalyzer
@@ -13,7 +13,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         super().__init__()
         self.bn = Bayesian_Net("components/decision_analyzer/bayesian_network/bayes_net.json")
         
-    def analyze(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
+    def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         analysis = {}
         for decision in probe.decisions:
             ob = self.make_observation(probe.state, decision.value)

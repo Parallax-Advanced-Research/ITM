@@ -345,7 +345,7 @@ class CaseBase:
             prompt = csv_case["prompt"]
             state = self._convert_csv_ta3state(csv_case)
 
-            probe = internal.Probe(
+            probe = internal.TADProbe(
                 id_=id, state=state, prompt=prompt, decisions=decisions
             )
 
@@ -404,7 +404,7 @@ class CaseBase:
             prompt = csv_case["prompt"]
             state: ta3.TA3State = self._convert_csv_ta3state(csv_case)
 
-            probe = internal.Probe(
+            probe = internal.TADProbe(
                 id_=id, state=state, prompt=prompt, decisions=decisions
             )
 

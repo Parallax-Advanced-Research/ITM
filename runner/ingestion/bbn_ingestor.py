@@ -5,7 +5,7 @@ from pydantic.tools import parse_obj_as
 
 import domain as ext
 from components.decision_selector.mvp_cbr import Case
-from domain.internal import Scenario, Decision, Probe, KDMA, KDMAs
+from domain.internal import Scenario, Decision, TADProbe, KDMA, KDMAs
 from domain.mvp import MVPState
 
 from .ingestor import Ingestor
@@ -24,7 +24,7 @@ class BBNIngestor(Ingestor):
 
         cases = []
         for fprobe in os.listdir(self._probe_dir):
-            ext_probe = parse_obj_as(ext.Probe, json.load(open(f'{self._probe_dir}/{fprobe}', 'r')))
+            ext_probe = parse_obj_as(ext.ITMProbe, json.load(open(f'{self._probe_dir}/{fprobe}', 'r')))
 
             decisions = []
             for pchoice in ext_probe.options:
@@ -33,19 +33,19 @@ class BBNIngestor(Ingestor):
                     choice_kdmas.append(KDMA(kdma, value))
                 decisions.append(Decision(pchoice.id, pchoice.value, kdmas=KDMAs(choice_kdmas)))
 
-            probe: Probe[MVPState] = Probe(ext_probe.id, state, ext_probe.prompt, decisions)
+            probe: TADProbe[MVPState] = TADProbe(ext_probe.id, state, ext_probe.prompt, decisions)
             for i in range(len(decisions)):
                 cases.append(Case(scen, probe, decisions[i]))
         return cases
 
-    def ingest_as_internal(self) -> (Scenario, list[Probe]):
+    def ingest_as_internal(self) -> (Scenario, list[TADProbe]):
         ext_scen = parse_obj_as(ext.Scenario, json.load(open(self._scen_json, 'r')))
         state = MVPState.from_dict(ext_scen.state)
         scen = Scenario[MVPState](ext_scen.id, state)
 
         probes = []
         for fprobe in os.listdir(self._probe_dir):
-            ext_probe = parse_obj_as(ext.Probe, json.load(open(f'{self._probe_dir}/{fprobe}', 'r')))
+            ext_probe = parse_obj_as(ext.ITMProbe, json.load(open(f'{self._probe_dir}/{fprobe}', 'r')))
 
             decisions = []
             for pchoice in ext_probe.options:
@@ -54,7 +54,7 @@ class BBNIngestor(Ingestor):
                     choice_kdmas.append(KDMA(kdma, value))
                 decisions.append(Decision(pchoice.id, pchoice.value, kdmas=KDMAs(choice_kdmas)))
 
-            probe: Probe[MVPState] = Probe(ext_probe.id, state, ext_probe.prompt, decisions)
+            probe: TADProbe[MVPState] = TADProbe(ext_probe.id, state, ext_probe.prompt, decisions)
             probes.append(probe)
         return scen, probes
 
@@ -62,7 +62,7 @@ class BBNIngestor(Ingestor):
         scen = parse_obj_as(ext.Scenario, json.load(open(self._scen_json, 'r')))
 
         for fprobe in os.listdir(self._probe_dir):
-            probe = parse_obj_as(ext.Probe, json.load(open(f'{self._probe_dir}/{fprobe}', 'r')))
+            probe = parse_obj_as(ext.ITMProbe, json.load(open(f'{self._probe_dir}/{fprobe}', 'r')))
             for option in probe.options:
                 option.kdma_association = {}
             scen.probes.append(probe)
