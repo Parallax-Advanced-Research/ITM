@@ -1,4 +1,4 @@
 # Lines where the *first* non-space character is # are comments.
 # See Testing-README.md for more details
 python run_tests.py test_self
-python util/test_dict_tools.py
+python -m util.test_dict_tools

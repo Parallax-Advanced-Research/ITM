@@ -318,3 +318,7 @@ temp/newfile.json
 
 temp/scene.json
 /temp/*
+
+# directory with "this script was last delinted at time t" files for pycheck script
+.python_check
+
