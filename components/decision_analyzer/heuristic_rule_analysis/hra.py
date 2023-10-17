@@ -1,3 +1,4 @@
+import itertools
 import json
 import random
 import copy
@@ -27,6 +28,26 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             return d
         else:
             return "error, size mismatch"
+
+    ''' Given the maximal predictor set with values, genrate all combinations sets of size set size
+
+        inputs: 
+        - predictor_set_arg, maximal predictor set
+        - set_sz, the size of each combination set returned
+
+        outputs:
+        - a list of all predictor combination dictionaries
+    '''
+
+    def gen_predictor_combo(self, predictor_set_arg: dict, set_sz: int):
+
+        results = itertools.combinations(predictor_set_arg, set_sz)
+        all_predictors_sets = []
+        for predictor_set in results:
+            pred_dict = {predictor_set[p]: predictor_set_arg[predictor_set[p]] for p in range(len(predictor_set))}
+            all_predictors_sets.append(pred_dict)
+
+        return all_predictors_sets
 
     '''
     Take-the-best: Given a set of predictors ranked by validity, and n treatments in the decision space, return the treatment that performs 
