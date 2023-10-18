@@ -29,7 +29,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         else:
             return "error, size mismatch"
 
-    ''' Given the maximal predictor set with values, genrate all combinations sets of size set size
+    ''' Given the maximal predictor set with values, generate all combinations sets of size set_sz
 
         inputs: 
         - predictor_set_arg, maximal predictor set
@@ -1037,6 +1037,13 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     '''
 
     # for now convert functions are stubs, they will be flushed out later
+
+    def convert_kdma_predictor(self, mission, denial, predictor):
+        if predictor == 'risk_reward_ratio': return 'low'
+        elif predictor == 'resources': return 'few'
+        elif predictor == 'time': return 'minutes'
+        elif predictor == 'system': return 'equal'
+        else: raise Exception("not a valid predictor")
     def convert_between_kdma_risk_reward_ratio(self, mission, denial, predictor):
         """
         if mission == None and denial == None and predictor != None:  # later only return kdma set from its own function
@@ -1231,12 +1238,16 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         time = 'time'
         system = 'system'
 
+        '''
         predictors = {risk_reward_ratio: self.convert_between_kdma_risk_reward_ratio(mission, denial, None), \
                       resources: self.convert_between_kdma_resources(mission, denial, None), \
                       time: self.convert_between_kdma_time(mission, denial, None), \
                       system: self.convert_between_kdma_system(mission, denial, None)}
 
         data['predictors'] = {'relevance': predictors}
+        '''
+        for predictor in data['predictors']['relevance']:
+            self.convert_kdma_predictor(mission, denial, predictor)
 
         # get next casualty to treat
         # next_casualty = self.choose_next_casualty(data['casualty_list'], data['kdma'], data['injury_list'])
@@ -1295,7 +1306,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             return {
                 "decision_hra_dict": decision_hra,
                 "learned_kdma_set": {'mission': mission, 'denial': denial},
-                "learned_predictors": predictors,
+                #"learned_predictors": predictors,
                 # "casualty_selected": next_casualty,
                 "decision_comparison_order": search_tree
             }
@@ -1303,7 +1314,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             return {
                 "decision_hra_dict": decision_hra,
                 "learned_kdma_set": {'mission': mission, 'denial': denial},
-                "learned_predictors": predictors,
+                #"learned_predictors": predictors,
                 # "casualty_selected":next_casualty
             }
 
@@ -1346,9 +1357,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         priority_satisfactory = self.satisfactory_priority(casualty_data)
         priority_one_bounce = self.one_bounce_priority(casualty_data)
 
-        #  for each casualty get the hra analytics
+        #  for each casualty and each predictor set combination get the hra analytics
         temp_data = copy.deepcopy(data)
+        all_predictors = {'time': 'seconds', 'resources': 'few', 'risk_reward_ratio': 'low', 'system': 'equal'}
+        predictor_combos = self.gen_predictor_combo(all_predictors,2)  # run hra for each of the possible combinations of predictors
         casualty_analytics = []
+
         for casualty in casualty_data:
             injury_cnt = min(1, len(casualty_data[casualty]['injuries']))
             injury_cnt = range(injury_cnt)
@@ -1358,17 +1372,27 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             temp_data['casualty'] = casualty_data[casualty]
             temp_data['treatment'] = {}
 
-            for treatment in data['treatment']:
-                #if (treatment == 'CHECK_ALL_VITALS' or treatment == 'SITREP') and casualty_data[casualty]['assessed'] == True:
-                #    continue
-                #elif treatment == 'TAG_CASUALTY' and casualty_data[casualty]['tag'] != None:
-                #    continue
-                for name, val in data['treatment'][treatment].items():
-                #for val in data['treatment'][treatment].values():
-                #    for name1, val1 in val:
-                    temp_data['treatment'][name] = val
-            result = {casualty:self.hra_decision_analytics(new_file, data=temp_data)}
-            casualty_analytics.append({casualty:self.hra_decision_analytics(new_file, data=temp_data)})
+# LEFT OFF
+            result = {}
+            for pred in predictor_combos:
+
+                temp_data['predictors'] = {'relevance': pred}
+                for treatment in data['treatment']:
+                    #if (treatment == 'CHECK_ALL_VITALS' or treatment == 'SITREP') and casualty_data[casualty]['assessed'] == True:
+                    #    continue
+                    #elif treatment == 'TAG_CASUALTY' and casualty_data[casualty]['tag'] != None:
+                    #    continue
+                    for name, val in data['treatment'][treatment].items():
+                    #for val in data['treatment'][treatment].values():
+                    #    for name1, val1 in val:
+                        temp_data['treatment'][name] = {}#val
+                        for vpred in val:
+                            if vpred in pred:
+                                temp_data['treatment'][name][vpred] = val[vpred]
+                hash_ele = '-'.join(x for x in pred)
+                result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data)
+            casualty_analytics.append({casualty: result})
+                #casualty_analytics.append({casualty:self.hra_decision_analytics(new_file, data=temp_data)})
 
         # package decision metrics by decision
         analysis = {}
@@ -1389,13 +1413,16 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 if not(ele_key in str(decision_complete.value)): continue
                     #print("the casualty is contained")
                 ele_key = str(decision_complete.value)
-                hra_strategy[ele_key] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0, 'one-bounce': 0}
+                hra_strategy[ele_key] = {vp: {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
+                                    'one-bounce': 0} for vp in ele_val}
+                for val_predictor in ele_val:
+                    #hra_strategy[ele_key] = {val_predictor: {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0, 'one-bounce': 0}}
 
-                hra_strategy[ele_key]['take-the-best'] = ele_val['decision_hra_dict'][decision]['take-the-best']
-                hra_strategy[ele_key]['exhaustive'] = ele_val['decision_hra_dict'][decision]['exhaustive']
-                hra_strategy[ele_key]['tallying'] = ele_val['decision_hra_dict'][decision]['tallying']
-                hra_strategy[ele_key]['satisfactory'] = ele_val['decision_hra_dict'][decision]['satisfactory']
-                hra_strategy[ele_key]['one-bounce'] = ele_val['decision_hra_dict'][decision]['one-bounce']
+                    hra_strategy[ele_key][val_predictor]['take-the-best'] = ele_val[val_predictor]['decision_hra_dict'][decision]['take-the-best']
+                    hra_strategy[ele_key][val_predictor]['exhaustive'] = ele_val[val_predictor]['decision_hra_dict'][decision]['exhaustive']
+                    hra_strategy[ele_key][val_predictor]['tallying'] = ele_val[val_predictor]['decision_hra_dict'][decision]['tallying']
+                    hra_strategy[ele_key][val_predictor]['satisfactory'] = ele_val[val_predictor]['decision_hra_dict'][decision]['satisfactory']
+                    hra_strategy[ele_key][val_predictor]['one-bounce'] = ele_val[val_predictor]['decision_hra_dict'][decision]['one-bounce']
 
             match len(hra_strategy.values()):
                 case 0:
