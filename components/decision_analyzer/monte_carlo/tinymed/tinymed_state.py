@@ -46,6 +46,12 @@ class TinymedState(MCState):
                 max_severity = casualty_severity
         return most_severe
 
+    def get_state_severity(self) -> float:
+        severity = 0.
+        for cas in self.casualties:
+            for inj in cas.injuries:
+                severity += inj.severity
+        return severity
 
 class TinymedAction(MCAction):
     def __init__(self, action: Actions, casualty_id: str | None = None, supply: str | None = None,

@@ -9,6 +9,10 @@ import typing
 
 def treatment_supply_match(action: TinymedAction) -> bool:
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value, Supplies.TOURNIQUET.value]:
+        if action.supply == Supplies.TOURNIQUET.value:
+            if action.location in [Locations.LEFT_NECK.value, Locations.RIGHT_NECK.value]:
+                return False
+            return True
         return True
     if action.supply == Supplies.DECOMPRESSION_NEEDLE:
         if action.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.UNSPECIFIED.value]:
