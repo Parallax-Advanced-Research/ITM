@@ -5,71 +5,20 @@ import numpy as np
 from components.decision_analyzer.monte_carlo.tinymed import TinymedSim
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_state import TinymedAction, TinymedState
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
+from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Metric, metric_description_hash
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 import components.decision_analyzer.monte_carlo.tinymed.ta3_converter as ta3_conv
-from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import MetricResultsT, ScoreT
+from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import MetricResultsT
 from components.decision_analyzer.monte_carlo.tinymed.score_functions import (tiny_med_severity_score,
                                                                               tiny_med_resources_remaining,
                                                                               tiny_med_time_score,
                                                                               tiny_med_casualty_severity)
-from copy import deepcopy
 import util.logger
 from domain.ta3 import TA3State
 
 logger = util.logger
-
-class Metric(Enum):
-    SEVERITY = 'SEVERITY'
-    AVERAGE_CASUALTY_SEVERITY = 'AVERAGE_CASUALTY_SEVERITY'
-    AVERAGE_INJURY_SEVERITY = 'AVERAGE_INJURY_SEVERITY'
-    SUPPLIES_REMAINING = 'SUPPLIES_REMAINING'
-    AVERAGE_TIME_USED = 'AVERAGE_TIME_USED'
-    TARGET_SEVERITY = 'ACTION_TARGET_SEVERITY'
-    TARGET_SEVERITY_CHANGE = 'ACTION_TARGET_SEVERITY_CHANGE'
-    SEVEREST_SEVERITY = 'SEVREEST_SEVERITY'
-    SEVEREST_SEVERITY_CHANGE = 'SEVEREST_SEVERITY_CHANGE'
-    TIME_BETWEEN_STATE = 'TIME_BETWEEN_STATES'
-    SEVERITY_CHANGE = 'SEVERITY_CHANGE'
-    CASUALTY_SEVERITY = 'CASUALTY_SEVERITY'
-    CASUALTY_SEVERITY_CHANGE = 'CASUALTY_SEVERITY_CHANGE'
-    TREATED_INJURIES = 'TREATED_INJURIES'
-    UNTREATED_INJURIES = 'UNTREATED_INJURIES'
-    HEALTHY_CASUALTIES = 'HEALTHY_CASUALTIES'
-    PARTIALLY_HEALTHY_CASUALTIES = 'PARTIALLY_HEALTHY_CASUALTIES'
-    UNTREATED_CASUALTIES = 'UNTREATED_CASUALTIES'
-    SUPPLIES_USED = 'SUPPLIES_USED'
-    NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
-
-
-description_hash: dict[str, str] = {
-    Metric.SEVERITY.value: 'Sum of all Severities for all Injuries for all Casualties',
-    Metric.AVERAGE_CASUALTY_SEVERITY.value: 'Severity / num casualties',
-    Metric.AVERAGE_INJURY_SEVERITY.value: 'Severity / num injuries',
-    Metric.SUPPLIES_REMAINING.value: 'Supplies remaining',
-    Metric.TIME_BETWEEN_STATE.value: 'Time in between state',
-    Metric.AVERAGE_TIME_USED.value: 'Average time used in action',
-    Metric.TARGET_SEVERITY.value: 'The severity of the target',
-    Metric.TARGET_SEVERITY_CHANGE.value: 'how much the target of the actions severity changes',
-    Metric.SEVEREST_SEVERITY.value: 'what the most severe targets severity is',
-    Metric.SEVEREST_SEVERITY_CHANGE.value: 'What the change in the severest severity target is',
-    Metric.SEVERITY_CHANGE.value: 'Change in severity from previous state normalized for time.',
-    Metric.CASUALTY_SEVERITY.value: 'Dictionary of severity of all casualties',
-    Metric.SUPPLIES_USED.value: 'Supplies used in between current state and projected state',
-    Metric.CASUALTY_SEVERITY_CHANGE.value: 'Dictionary of casualty severity changes normalized for time',
-    Metric.TREATED_INJURIES.value: 'Number of injuries no longer increasing in severity',
-    Metric.UNTREATED_INJURIES.value: 'Number of untreated injuries still increasing in severity',
-    Metric.HEALTHY_CASUALTIES.value: 'Casualties with zero untreated injuries',
-    Metric.PARTIALLY_HEALTHY_CASUALTIES.value: 'Casualties with at least one treated and nontreated injury',
-    Metric.UNTREATED_CASUALTIES.value: 'Casualties with zero treated injuries, and at least one not treated injury'
-}
-
-
-def get_casualty_severity(casualty: Casualty) -> float:
-    severity: float = sum([inj.severity for inj in casualty.injuries])
-    return severity
 
 
 def decision_to_actstr(decision: Decision) -> str:
@@ -93,11 +42,11 @@ def is_scoreless(decision: mcnode.MCDecisionNode) -> bool:
     return not bool(len(decision.score.keys()))
 
 
-def stat_metric_loop(basic_stats: MetricResultsT) -> list[DecisionMetrics]:
+def dict_to_decisionmetrics(basic_stats: MetricResultsT) -> list[DecisionMetrics]:
     metrics_out: list[DecisionMetrics] = list()
     for k in list(basic_stats.keys()):
         v = basic_stats[k]
-        metrics: dict[str, DecisionMetric] = {k: DecisionMetric(name=k, description=description_hash[k], value=v)}
+        metrics: dict[str, DecisionMetric] = {k: DecisionMetric(name=k, description=metric_description_hash[k], value=v)}
         metrics_out.append(metrics)
     return metrics_out
 
@@ -167,6 +116,7 @@ def get_future_and_change_metrics(current_state: TinymedState, future_states: mc
 
     return most_severe_metrics
 
+
 def get_target_metrics(new_metrics: MetricResultsT, future_states: mcnode.MCDecisionNode) -> MetricResultsT:
     target: str = future_states.action.casualty_id
     if target is None:
@@ -174,6 +124,7 @@ def get_target_metrics(new_metrics: MetricResultsT, future_states: mcnode.MCDeci
     new_metrics[Metric.TARGET_SEVERITY.value] = new_metrics[Metric.CASUALTY_SEVERITY.value][target]
     new_metrics[Metric.TARGET_SEVERITY_CHANGE.value] = new_metrics[Metric.CASUALTY_SEVERITY_CHANGE.value][target]
     return new_metrics
+
 
 def get_most_severe_metrics(new_metrics: MetricResultsT) -> MetricResultsT:
     most_severe_id, most_severe = None, -np.inf
@@ -187,6 +138,7 @@ def get_most_severe_metrics(new_metrics: MetricResultsT) -> MetricResultsT:
     new_metrics[Metric.SEVEREST_SEVERITY.value] = most_severe
     new_metrics[Metric.SEVEREST_SEVERITY_CHANGE.value] = new_metrics[Metric.CASUALTY_SEVERITY_CHANGE.value][most_severe_id]
     return new_metrics
+
 
 class MonteCarloAnalyzer(DecisionAnalyzer):
     def __init__(self, max_rollouts: int = 500, max_depth: int = 2):
@@ -230,7 +182,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         for decision in probe.decisions:
             decision_str = decision_to_actstr(decision)
             decision_metrics_raw = simulated_state_metrics[decision_str] if decision_str in simulated_state_metrics.keys() else None
-            basic_metrics: list[DecisionMetrics] = stat_metric_loop(decision_metrics_raw)
+            basic_metrics: list[DecisionMetrics] = dict_to_decisionmetrics(decision_metrics_raw)
 
             for bm in basic_metrics:
                 decision.metrics.update(bm)
