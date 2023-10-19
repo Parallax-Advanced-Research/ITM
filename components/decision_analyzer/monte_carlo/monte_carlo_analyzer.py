@@ -151,6 +151,7 @@ def get_nondeterministic_metrics(future_states: mcnode.MCDecisionNode) -> Metric
         sub_dict[Metric.PROBABILITY.value] = outcome.count / total_count
         sub_dict[Metric.SEVERITY.value] = outcome.state.get_state_severity()
         sub_dict[Metric.AVERAGE_TIME_USED.value] = outcome.state.time
+        sub_dict[Metric.JUSTIFICATION.value] = outcome.justification
         determinism[outcome_name] = sub_dict
     return determinism
 

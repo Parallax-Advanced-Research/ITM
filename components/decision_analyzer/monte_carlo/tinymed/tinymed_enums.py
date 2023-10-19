@@ -182,6 +182,7 @@ class Metric(Enum):
     SUPPLIES_USED = 'SUPPLIES_USED'
     PROBABILITY = 'PROBABILITY'
     NONDETERMINISM = 'NONDETERMINISM'
+    JUSTIFICATION = 'JUSTIFICATION'
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
 
 
@@ -206,5 +207,6 @@ metric_description_hash: dict[str, str] = {
     Metric.PARTIALLY_HEALTHY_CASUALTIES.value: 'Casualties with at least one treated and nontreated injury',
     Metric.NONDETERMINISM.value: 'Gives all possible outcomes and simulated probabilities',
     Metric.PROBABILITY.value: 'probability of this outcome being selected',
+    Metric.JUSTIFICATION.value: 'Justified reason for why this state is chosen versus siblings if applicable',
     Metric.UNTREATED_CASUALTIES.value: 'Casualties with zero treated injuries, and at least one not treated injury'
 }
