@@ -161,6 +161,19 @@ class MonteCarloTree:
 
         # propagate the node score up the parents
         parent = node.parent
+
+        percent_chosen = (node.count / parent.count) * 100
+        formatted_scores = {}
+        for key, value in node.score.items():
+            if isinstance(value, dict):
+                sub_scores = {}
+                for sub_key, sub_value in node.score[key].items():
+                    sub_scores[sub_key] = f'{sub_value:.2f}'
+                formatted_scores[key] = sub_scores
+            else:
+                formatted_scores[key] = f'{value:.2f}'
+        node.justification = f'chosen: {node.count}/{parent.count} ({percent_chosen:.2f}%) yielding score: {formatted_scores}'
+
         while parent is not None:
             parent.score = score_merger(parent)
             parent = parent.parent
