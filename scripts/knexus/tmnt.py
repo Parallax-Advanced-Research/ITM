@@ -1,16 +1,79 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
 from components.decision_analyzer.monte_carlo.tinymed import TinymedState, TinymedSim, TinymedAction
-from components.decision_analyzer.monte_carlo.tinymed.medactions import get_TMNT_demo_casualties, get_TMNT_supplies
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
+from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates, BreathingDescriptions, Demographics, Supplies
 from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
+
 from runner import TA3Driver
 from runner import simple_driver
 from domain.internal import KDMAs
 from util import logger, dict_difference
 from domain.external import Action
 
+def get_TMNT_demo_casualties() -> list[Casualty]:
+    wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
+    minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=3.0)
+    moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=5.0)
+    major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=7.0)
+    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=8.0)
 
+    raphael_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
+                            breathing=BreathingDescriptions.NORMAL.value, hrpmin=49)
+    michelangelo_vitals = Vitals(conscious=True, mental_status=MentalStates.FINE.value,
+                                 breathing=BreathingDescriptions.NORMAL.value, hrpmin=68)
+    donatello_vitals = Vitals(conscious=True, mental_status=MentalStates.FINE.value,
+                              breathing=BreathingDescriptions.HEAVY.value, hrpmin=81)
+    leonardo_vitals = Vitals(conscious=True, mental_status=MentalStates.PANICKED.value,
+                             breathing=BreathingDescriptions.COLLAPSED.value, hrpmin=50)
+    casualties = [
+        Casualty('raphael', 'raphael has a bump on his left wrist', name='raphael',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='muscle'),
+                       injuries=[wrist_bump],
+                       vitals=raphael_vitals,
+                       complete_vitals=raphael_vitals,
+                       assessed=False,
+                       tag="tag"),
+        Casualty('michelangelo', 'michelangelo has a minor laceration on his right bicep',
+                       name='michelangelo',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='the wild one'),
+                       injuries=[minor_cut],
+                       vitals=michelangelo_vitals,
+                       complete_vitals=michelangelo_vitals,
+                       assessed=False,
+                       tag="tag"),
+        Casualty('donatello', 'donatello has a major cut on his left thigh',
+                       name='donatello',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='the brains'),
+                       injuries=[major_cut],
+                       vitals=donatello_vitals,
+                       complete_vitals=donatello_vitals,
+                       assessed=False,
+                       tag="tag"),
+        Casualty('leonardo', 'leonardo is unable to breathe, and has moderate cut across the left side of abdomen',
+                       name='leonardo',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='the leader'),
+                       injuries=[moder_cut, collapsed_lung],
+                       vitals=leonardo_vitals,
+                       complete_vitals=leonardo_vitals,
+                       assessed=False,
+                       tag="tag"),
+    ]
+    return casualties
+
+
+def get_TMNT_supplies() -> dict[str, int]:
+    supplies = {
+        Supplies.TOURNIQUET.value: 3,
+        Supplies.PRESSURE_BANDAGE.value: 2,
+        Supplies.HEMOSTATIC_GAUZE.value: 2,
+        Supplies.DECOMPRESSION_NEEDLE.value: 2,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 3
+    }
+    return supplies
 class TMNTClient:
     SUPPLIES = [{'quantity': 3, 'type': 'Hemostatic gauze'}, {'quantity': 3, 'type': 'Tourniquet'}, {'quantity': 3, 'type': 'Pressure bandage'}, {'quantity': 3, 'type': 'Decompression Needle'}, {'quantity': 3, 'type': 'Nasopharyngeal airway'}]
     CASUALTIES = [{'id': 'Donatello', 'unstructured': 'Donatello has a horrific (0.9) burn and bad (0.7) neck puncture', 'name': 'Donatello', 'relationship': None, 'demographics': {'age': 15, 'sex': 'M', 'rank': 'turtle'}, 'injuries': [{'name': 'Puncture', 'location': 'left neck', 'severity': 0.8}, {'name': 'Burn', 'location': 'unspecified', 'severity': 0.9}], 'vitals': {'conscious': None, 'mental_status': None, 'breathing': None, 'hrpmin': None}, 'complete_vitals': None, 'assessed': False, 'tag': None},

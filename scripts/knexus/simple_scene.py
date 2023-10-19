@@ -1,14 +1,40 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult, MCState
 from components.decision_analyzer.monte_carlo.tinymed import TinymedState, TinymedSim, TinymedAction
 import components.decision_analyzer.monte_carlo.tinymed.tinymed_enums as tenums
-from components.decision_analyzer.monte_carlo.tinymed.medactions import get_simple_casualties, get_simple_supplies
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
+from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import *
 from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
 from runner.simple_driver import SimpleDriver
 from domain.internal import KDMAs, KDMA
 from util import logger, dict_difference
 from domain.external import Action
+
+
+def get_simple_casualties():
+    bicep_tear = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_BICEP.value, severity=4.0, treated=False)
+    jt_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
+                       breathing=BreathingDescriptions.NORMAL.value, hrpmin=69)
+    casualties = [
+        Casualty('JT', 'JT tore his bicep', name='JT',
+                       relationship='himself',
+                       demographics=Demographics(age=33, sex='M', rank='director of social media'),
+                       injuries=[bicep_tear],
+                       vitals=jt_vitals,
+                       complete_vitals=jt_vitals,
+                       assessed=False,
+                       tag="tag")]
+    return casualties
+
+
+def get_simple_supplies() -> dict[str, int]:
+    supplies = {
+        Supplies.TOURNIQUET.value: 0,
+        Supplies.PRESSURE_BANDAGE.value: 3,
+        Supplies.HEMOSTATIC_GAUZE.value: 0,
+        Supplies.DECOMPRESSION_NEEDLE.value: 0,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 0
+    }
+    return supplies
 
 
 class SimpleClient:

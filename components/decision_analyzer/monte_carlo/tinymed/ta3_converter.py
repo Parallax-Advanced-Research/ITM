@@ -138,11 +138,3 @@ def _reverse_convert_action(internal_action: TinymedAction, action_num: int) -> 
                                               'location': internal_action.location,
                                               'treatment': internal_action.supply})
     return action
-
-
-def convert_actions(actions: list[Action]) -> list[TinymedAction]:
-    tinymed_actions: list[TinymedAction] = []
-    for act in actions:
-        tinymed: TinymedAction = _convert_action(act)
-        tinymed_actions.append(tinymed)
-    return tinymed_actions
