@@ -1,4 +1,6 @@
+from .tinymed_state import TinymedAction
 from .tinymed_enums import Supplies, Actions, Injuries, Locations
+
 
 class MedicalOracle:
     FAILURE_CHANCE = {
@@ -56,3 +58,50 @@ class MedicalOracle:
                                Locations.UNSPECIFIED.value],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value, Locations.LEFT_NECK.value,
                                    Locations.RIGHT_NECK.value, Locations.UNSPECIFIED.value]}
+
+
+def supply_location_match(action: TinymedAction):
+    if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
+        return True
+    if action.supply == Supplies.TOURNIQUET.value:
+        if action.location in [Locations.LEFT_STOMACH.value, Locations.RIGHT_STOMACH.value,
+                               Locations.LEFT_SHOULDER.value, Locations.RIGHT_SHOULDER.value,
+                               Locations.LEFT_SIDE.value, Locations.RIGHT_SIDE.value,
+                               Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value,
+                               Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
+                               Locations.LEFT_NECK.value, Locations.RIGHT_NECK.value]:
+            return False
+        return True
+    if action.supply == Supplies.DECOMPRESSION_NEEDLE:
+        if action.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.UNSPECIFIED.value]:
+            return True
+        return False
+    if action.supply == Supplies.NASOPHARYNGEAL_AIRWAY:
+        if action.location in [Locations.LEFT_NECK.value, Locations.RIGHT_NECK.value, Locations.UNSPECIFIED.value]:
+            return True
+        return False
+    return True
+
+
+def supply_injury_match(supply: str, injury: str) -> bool:
+    if supply == Supplies.PRESSURE_BANDAGE.value:
+        if injury in [Injuries.BURN.value, Injuries.CHEST_COLLAPSE.value, Injuries.ASTHMATIC.value, Injuries.AMPUTATION.value]:
+            return False
+        return True
+    if supply == Supplies.HEMOSTATIC_GAUZE.value:
+        if injury in [Injuries.BURN.value]:
+            return True
+        return False
+    if supply == Supplies.TOURNIQUET.value:
+        if injury in [Injuries.AMPUTATION.value]:
+            return True
+        return False
+    if supply == Supplies.DECOMPRESSION_NEEDLE.value:
+        if injury in [Injuries.CHEST_COLLAPSE.value]:
+            return True
+        return False
+    if supply == Supplies.NASOPHARYNGEAL_AIRWAY.value:
+        if injury in [Injuries.ASTHMATIC.value]:
+            return True
+        return False
+    return True

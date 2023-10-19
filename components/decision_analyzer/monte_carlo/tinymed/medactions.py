@@ -2,41 +2,15 @@ import random
 
 from .tinymed_state import TinymedAction, TinymedState
 from .tinymed_enums import Casualty, Supplies, Actions, Locations, Tags, Injury, Injuries
-from .oracle import MedicalOracle
+from .oracle import MedicalOracle, supply_injury_match, supply_location_match
 import typing
-
-
-def treatment_supply_match(action: TinymedAction) -> bool:
-    if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value, Supplies.TOURNIQUET.value]:
-        return True
-    if action.supply == Supplies.DECOMPRESSION_NEEDLE:
-        if action.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.UNSPECIFIED.value]:
-            return True
-        return False
-    if action.supply == Supplies.NASOPHARYNGEAL_AIRWAY:
-        if action.location in [Locations.LEFT_NECK.value, Locations.RIGHT_NECK.value, Locations.UNSPECIFIED.value]:
-            return True
-        return False
-    return True
-
-
-def supply_injury_match(supply: str, injury: str) -> bool:
-    if supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value, Supplies.TOURNIQUET.value]:
-        if injury in [Injuries.ASTHMATIC.value, Injuries.CHEST_COLLAPSE.value]:
-            return False
-        return True
-    if supply in [Supplies.DECOMPRESSION_NEEDLE.value, Supplies.NASOPHARYNGEAL_AIRWAY.value]:
-        if injury in [Injuries.ASTHMATIC.value, Injuries.CHEST_COLLAPSE.value]:
-            return True
-        return False
-    return True
 
 
 def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
                             action: TinymedAction, rng: random.Random) -> float:
     fail = rng.random() < MedicalOracle.FAILURE_CHANCE[action.supply]
     time_taken = rng.choice(MedicalOracle.TIME_TAKEN[action.supply])
-    supply_location_logical = treatment_supply_match(action)
+    supply_location_logical = supply_location_match(action)
     if supplies[action.supply] <= 0:
         fail = True
     for ci in casualty.injuries:
