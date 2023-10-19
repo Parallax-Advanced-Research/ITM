@@ -180,6 +180,8 @@ class Metric(Enum):
     PARTIALLY_HEALTHY_CASUALTIES = 'PARTIALLY_HEALTHY_CASUALTIES'
     UNTREATED_CASUALTIES = 'UNTREATED_CASUALTIES'
     SUPPLIES_USED = 'SUPPLIES_USED'
+    PROBABILITY = 'PROBABILITY'
+    NONDETERMINISM = 'NONDETERMINISM'
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
 
 
@@ -202,5 +204,7 @@ metric_description_hash: dict[str, str] = {
     Metric.UNTREATED_INJURIES.value: 'Number of untreated injuries still increasing in severity',
     Metric.HEALTHY_CASUALTIES.value: 'Casualties with zero untreated injuries',
     Metric.PARTIALLY_HEALTHY_CASUALTIES.value: 'Casualties with at least one treated and nontreated injury',
+    Metric.NONDETERMINISM.value: 'Gives all possible outcomes and simulated probabilities',
+    Metric.PROBABILITY.value: 'probability of this outcome being selected',
     Metric.UNTREATED_CASUALTIES.value: 'Casualties with zero treated injuries, and at least one not treated injury'
 }

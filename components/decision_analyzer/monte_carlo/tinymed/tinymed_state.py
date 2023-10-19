@@ -35,6 +35,13 @@ class TinymedState(MCState):
             num_supplies += self.supplies[supply]
         return num_supplies
 
+    def get_state_severity(self) -> float:
+        severity = 0.
+        for cas in self.casualties:
+            for inj in cas.injuries:
+                severity += inj.severity
+        return severity
+
 
 class TinymedAction(MCAction):
     def __init__(self, action: Actions, casualty_id: str | None = None, supply: str | None = None,

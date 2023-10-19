@@ -114,6 +114,8 @@ def get_future_and_change_metrics(current_state: TinymedState, future_states: mc
     target_metrics = get_target_metrics(new_metrics, future_states)
     most_severe_metrics = get_most_severe_metrics(target_metrics)
 
+    nondeterminism_metrics = get_nondeterministic_metrics(future_states)
+    most_severe_metrics[Metric.NONDETERMINISM.value] = nondeterminism_metrics
     return most_severe_metrics
 
 
@@ -139,6 +141,18 @@ def get_most_severe_metrics(new_metrics: MetricResultsT) -> MetricResultsT:
     new_metrics[Metric.SEVEREST_SEVERITY_CHANGE.value] = new_metrics[Metric.CASUALTY_SEVERITY_CHANGE.value][most_severe_id]
     return new_metrics
 
+def get_nondeterministic_metrics(future_states: mcnode.MCDecisionNode) -> MetricResultsT:
+    outcomes = future_states.children
+    total_count = float(future_states.count)
+    determinism: MetricResultsT = dict()
+    for i, outcome in enumerate(outcomes):
+        outcome_name = 'outcome_%d' % (i + i)
+        sub_dict: MetricResultsT = dict()
+        sub_dict[Metric.PROBABILITY.value] = outcome.count / total_count
+        sub_dict[Metric.SEVERITY.value] = outcome.state.get_state_severity()
+        sub_dict[Metric.AVERAGE_TIME_USED.value] = outcome.state.time
+        determinism[outcome_name] = sub_dict
+    return determinism
 
 class MonteCarloAnalyzer(DecisionAnalyzer):
     def __init__(self, max_rollouts: int = 500, max_depth: int = 2):
@@ -181,9 +195,11 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         # The second loop iterates all of the probes presented by the elaborator
         for decision in probe.decisions:
             decision_str = decision_to_actstr(decision)
+            analysis[decision_str] = {}
             decision_metrics_raw = simulated_state_metrics[decision_str] if decision_str in simulated_state_metrics.keys() else None
             basic_metrics: list[DecisionMetrics] = dict_to_decisionmetrics(decision_metrics_raw)
 
             for bm in basic_metrics:
                 decision.metrics.update(bm)
+                analysis[decision_str].update(bm)
         return analysis
