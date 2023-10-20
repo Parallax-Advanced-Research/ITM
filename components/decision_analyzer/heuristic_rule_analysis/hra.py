@@ -1438,6 +1438,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             
             
             metrics: DecisionMetrics = {
+                "All Predictors": DecisionMetric(name="All Predictors", description="Full set of predictors with kdma associated values", value={'-'.join(key + '(' + str(val) + ')' for key, val in data['kdma'].items()):all_predictors}),\
                 "HRA Strategy": DecisionMetric(name="HRA Strategy", description="Applicable hra strategies", value=ret),\
                 "Take-The-Best Priority": DecisionMetric(name="Take-The-Best Priority",
                                                          description="Priority for take-the-best strategy",
