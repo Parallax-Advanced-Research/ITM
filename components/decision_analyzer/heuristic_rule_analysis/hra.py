@@ -3,7 +3,7 @@ import json
 import random
 import copy
 from pathlib import Path
-from domain.internal import Probe, Scenario, Decision, DecisionMetrics, DecisionMetric
+from domain.internal import TADProbe, Scenario, Decision, DecisionMetrics, DecisionMetric
 from components import DecisionAnalyzer
 
 

@@ -1,7 +1,7 @@
 from enum import Enum
 
 from components.decision_analyzer.monte_carlo.tinymed import TinymedSim
-from domain.internal import Probe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
+from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_state import TinymedAction, TinymedState
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
 from components import DecisionAnalyzer
@@ -78,10 +78,10 @@ def is_scoreless(decision: mcnode.MCDecisionNode) -> bool:
 
 def get_blank_scores() -> dict[str, int | None | float]:
     return {Metric.SEVERITY.value: None, Metric.SUPPLIES_REMAINING.value: None, Metric.AVERAGE_TIME_USED.value: None,
-            Metric.AVERAGE_INJURY_SEVERITY.value: None, Metric.AVERAGE_CASUALTY_SEVERITY.value: None,
-            Metric.UNTREATED_INJURIES.value: None, Metric.TREATED_INJURIES.value: None,
-            Metric.HEALTHY_CASUALTIES.value: None, Metric.PARTIALLY_HEALTHY_CASUALTIES.value: None,
-            Metric.UNTREATED_CASUALTIES.value: None}
+            Metric.AVERAGE_INJURY_SEVERITY.value: None, Metric.AVERAGE_CASUALTY_SEVERITY.value: None}
+            # Metric.UNTREATED_INJURIES.value: None, Metric.TREATED_INJURIES.value: None,
+            # Metric.HEALTHY_CASUALTIES.value: None, Metric.PARTIALLY_HEALTHY_CASUALTIES.value: None,
+            # Metric.UNTREATED_CASUALTIES.value: None}
 
 
  # Change this to have the casualty_severity dict, and pass the dict in for new_state
@@ -124,11 +124,11 @@ def get_populated_scores(decision: mcnode.MCDecisionNode, tinymedstate: TinymedS
     ret_dict[Metric.AVERAGE_INJURY_SEVERITY.value] = severity / injuries if injuries else severity
     ret_dict[Metric.AVERAGE_CASUALTY_SEVERITY.value] = severity / num_casualties if num_casualties else severity
     ret_dict[Metric.CASUALTY_SEVERITY.value] = decision.score['individual casualty severity']
-    ret_dict[Metric.TREATED_INJURIES.value] = treated_injuries
-    ret_dict[Metric.UNTREATED_INJURIES.value] = untreated_injuries
-    ret_dict[Metric.HEALTHY_CASUALTIES.value] = healthy_casualties
-    ret_dict[Metric.PARTIALLY_HEALTHY_CASUALTIES.value] = partially_healthy_casualties
-    ret_dict[Metric.UNTREATED_CASUALTIES.value] = untreated_casualties
+    # ret_dict[Metric.TREATED_INJURIES.value] = treated_injuries
+    # ret_dict[Metric.UNTREATED_INJURIES.value] = untreated_injuries
+    # ret_dict[Metric.HEALTHY_CASUALTIES.value] = healthy_casualties
+    # ret_dict[Metric.PARTIALLY_HEALTHY_CASUALTIES.value] = partially_healthy_casualties
+    # ret_dict[Metric.UNTREATED_CASUALTIES.value] = untreated_casualties
     return ret_dict
 
 
@@ -198,7 +198,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
     def most_recent_state(self) -> TinymedState:
         return self.previous_states[-1] if len(self.previous_states) else None
 
-    def analyze(self, scen: Scenario, probe: Probe) -> dict[str, DecisionMetrics]:
+    def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         ta3_state: TA3State = probe.state
         tinymed_state: TinymedState = ta3_conv.convert_state(ta3_state)
         if not self.supplies_set:

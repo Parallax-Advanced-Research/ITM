@@ -1,5 +1,5 @@
 import math
-from domain.internal import Scenario, Probe, Decision, KDMAs
+from domain.internal import Scenario, TADProbe, Decision, KDMAs
 from domain.mvp import MVPState
 from components import DecisionSelector
 from .case import Case
@@ -16,7 +16,7 @@ class CBRDecisionSelector(DecisionSelector):
         self.cb: list[Case] = case_base
         self.variant = variant
 
-    def select(self, scenario: Scenario[MVPState], probe: Probe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario[MVPState], probe: TADProbe, target: KDMAs) -> (Decision, float):
         #  probe # a prompt with multiple choice answer (of decisions)
         returning_cases = {}
         highest_sim_found = -math.inf

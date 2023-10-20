@@ -3,7 +3,7 @@ from components.decision_analyzer.monte_carlo.tinymed import TinymedState, Tinym
 from components.decision_analyzer.monte_carlo.tinymed.medactions import get_TMNT_demo_casualties, get_TMNT_supplies
 from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
 from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
-from domain.external import Probe, ProbeType, Scenario
+from domain.external import ITMProbe, ProbeType, Scenario
 from runner import TA3Driver
 from runner import simple_driver
 from domain.internal import KDMAs
@@ -43,7 +43,7 @@ class TMNTClient:
     def get_init(self) -> TinymedState:
         return self.init_state
 
-    def get_probe(self, state: TinymedState | None) -> Probe | None:
+    def get_probe(self, state: TinymedState | None) -> ITMProbe | None:
         if self.probe_count > self.max_actions:
             return None
         self.probe_count += 1
@@ -75,11 +75,11 @@ class TMNTClient:
                          'mission': {'unstructured': self.UNSTRUCTURED, 'mission_type': 'Extraction'},
                          'environment': self.ENVIRONMENT, 'threat_state': self.THREAT_STATE,
                          'supplies': supplies_as_dict, 'casualties': casualties_as_dict}
-        probe: Probe = Probe(id='tmnt-probe', type=ProbeType.MC, prompt="what do?",
-                             state=swagger_state, options=ta3_actions)
+        probe: ITMProbe = ITMProbe(id='tmnt-probe', type=ProbeType.MC, prompt="what do?",
+                                   state=swagger_state, options=ta3_actions)
         return probe  # Probe actions only has one dmc
 
-    def take_action(self, action: Action) -> Probe:
+    def take_action(self, action: Action) -> ITMProbe:
         tinymed_action = _convert_action(act=action)
         sim_results: list[SimResult] = self.simulator.exec(self.current_state, action=tinymed_action)
         new_state = sim_results[0].outcome  # This is fine
