@@ -25,32 +25,29 @@
 </head>
 
 <body>
-
-    <body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-            <div class="container">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav mr-auto">
-                        {{ render_nav_item('index', 'Home') }}
-                        <li class="nav-item"><a class="nav-link" href="#" target="_blank">External Link</a></li>
-                    </ul>
-                </div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    {{ render_nav_item('main.index', 'Home') }}
+                    <li class="nav-item"><a class="nav-link" href="#" target="_blank">External Link</a></li>
+                </ul>
             </div>
-        </nav>
+        </div>
+    </nav>
+    {% block content %}
 
-        {% block content %}
-
-        {% endblock %}
-        {{ render_messages(container=True, dismissible=True, dismiss_animate=True) }}
-        {% block scripts %}
-        <!-- Optional JavaScript -->
-        {{ bootstrap.load_js() }}
-        {% endblock %}
-    </body>
+    {% endblock %}
+    {{ render_messages(container=True, dismissible=True, dismiss_animate=True) }}
+    {% block scripts %}
+    <!-- Optional JavaScript -->
+    {{ bootstrap.load_js() }}
+    {% endblock %}
+</body>
 
 </html>

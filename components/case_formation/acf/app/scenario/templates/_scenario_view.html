@@ -1,0 +1,105 @@
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Scenario</h5>
+        <p class="card-text">
+        <p><a href="{{ url_for('scenario.edit_scenario', scenario_id=scenario.id) }}">[edit]</a>
+            <a class="text-danger"
+                href="{{ url_for('scenario.delete_scenario', scenario_id=scenario.id, case_id=case.id) }}">[delete]</a>
+        </p>
+        <p>{{ scenario.description }}</p>
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Mission</h6>
+                <p class="card-text">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Type: {{ scenario.mission_type }}</li>
+                    <li class="list-group-item">Description: {{ scenario.mission_description }}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="card mt-2">
+            <div class="card-body">
+                <h6 class="card-title">Threats</h6>
+                <p class="card-text">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Description: {{ scenario.threat_state_description}}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="card mt-2">
+            <div class="card-body">
+                <h6 class="card-title">Casualties</h6>
+                <p class="card-text">
+                <ul class="list-group list-group-flush">
+                    {% for casualty in scenario.casualties.all()|sort(attribute="name") %}
+                    <li class="list-group-item">
+                        <p class="fw-bold">{{ casualty.name }}</p>
+                        <p>Description: {{ casualty.description }}</p>
+                        <p>Age: {{casualty.age}} | Sex: {{ casualty.sex}} | Rank: {{ casualty.rank }} | Relationship: {{
+                            casualty.relationship_type}}</p>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Vitals <a href="{{ url_for('scenario.add_vitals', casualty_id=casualty.id)
+                                    }}">{{ render_icon('plus-circle-fill', 15, 'secondary')}}</a>
+                                </h6>
+                                <p class="card-text">
+                                    {% if casualty.vitals.all()|count > 0 %}
+                                    greater than 0
+
+                                <div class="table-responsive-sm">
+                                    <table class="table table-light">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">hrpm</th>
+                                                <th scope="col">mmHg</th>
+                                                <th scope="col">spO2</th>
+                                                <th scope="col">RR</th>
+                                                <th scope="col">Pain</th>
+                                                <th scope="col">Mental Status</th>
+                                                <th scope="col">Concious</th>
+                                                <th scope="col">Time</th>
+                                                <th scope="col"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for vitals in casualty.vitals %}
+                                            <tr class="">
+                                                <td scope="row">{{ vitals.heart_rate }}</td>
+                                                <td>{{ vitals.blood_pressure }}</td>
+                                                <td>{{ vitals.oxygen_saturation }}</td>
+                                                <td>{{ vitals.respiratory_rate }}</td>
+                                                <td>{{ vitals.pain }}</td>
+                                                <td>{{ vitals.mental_status }}</td>
+                                                <td>{{ vitals.concious }}</td>
+                                                <td>{{ vitals.timestamp }}</td>
+                                                <td><a
+                                                        href="{{ url_for('scenario.edit_vitals', vitals_id=vitals.id) }}">[edit]</a>
+                                                    <a
+                                                        href="{{ url_for('scenario.delete_vitals', vitals_id=vitals.id) }}">[delete]</a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <p><a href="{{ url_for('scenario.edit_casualty', casualty_id=casualty.id) }}">[edit
+                                casualty]</a>
+                            <a class="text-danger"
+                                href="{{ url_for('scenario.delete_casualty', casualty_id=casualty.id) }}">[delete
+                                casualty]</a>
+                        </p>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="{{ url_for('scenario.add_casualty', scenario_id=scenario.id) }}">[add casualty]</a>
+            </div>
+        </div>
+        </p>
+    </div>
+</div>
+{% include 'view_probes.html' %}

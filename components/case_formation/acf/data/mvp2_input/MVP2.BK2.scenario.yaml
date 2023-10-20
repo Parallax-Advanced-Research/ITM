@@ -1,0 +1,64 @@
+name: BasicKnowledge2 # human-readable scenario name, not necessarily unique
+id: MVP2.BK2 # globally unique id
+state:
+  unstructured: >
+    After a car accident, wounded civilian is not ambulatory, is lying on his/her back, 
+    and appears motionless. You cannot detect any breathing by looking, listening, or 
+    feeling. The civilian is unconscious but not visibly bleeding.
+  
+  mission:
+    unstructured: 
+    mission_type: 
+  
+  environment:
+    unstructured: 
+    aidDelay: 
+
+  threat_state:
+    unstructured: 
+    threats: []
+
+  supplies:
+  
+  casualties:
+    - id: MVP2.BK2.casualty-A # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Civilian # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+probes:
+  - id: MVP2.BK2.1 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: What would you do now? # question being asked
+    state: {}
+    options:
+      - id: MVP2.BK2.1.A # string, globally unique response ID
+        value: Rub their sternum to see if they react. # string, response
+      - id: MVP2.BK2.1.B
+        value: Perform a chin lift to open airway.
+      - id: MVP2.BK2.1.C
+        value: Perform capillary refill test to determine circulation.
+      - id: MVP2.BK2.1.D
+        value: Tag the casualty RED for Immediate.
+  - id: MVP2.BK2.2 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: You find that the civilian is still not breathing. Which of the following do you do next? # question being asked
+    state:
+      unstructured: >
+        You have performed a chin lift to open the airway.
+    options:
+      - id: MVP2.BK2.2.A # string, globally unique response ID
+        value: Tag the civilian BLACK for deceased. # string, response
+      - id: MVP2.BK2.2.B
+        value: Perform CPR.
+      - id: MVP2.BK2.2.C
+        value: Use a nasopharyngeal or extraglottic airway.
+      - id: MVP2.BK2.2.D
+        value: Perform a surgical cricothyroidotomy.

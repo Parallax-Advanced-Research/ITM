@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% block title %}
+{% endblock title %}
+{% block content %}
+<div class="container p-3">
+    <div class="card bg-info">
+        <div class="card-body">
+            <h6 class="card-title">Case: {{ case.name }}
+                <a
+                    href="{{ url_for('main.view_casebase', casebase_id=case.casebase.id) }}">{{render_icon('arrow-up-right-square')}}</a>
+            </h6>
+            <div>Case ID: {{ case.external_id }} </div>
+            <p class="card-text">
+            <div>
+                {% if case.scenarios.all()|length > 0 %}
+                {% for scenario in case.scenarios %}
+                {% include '_scenario_view.html' %}
+                {% endfor %}
+                {% else %}
+                <a href="{{ url_for('scenario.add_scenario', case_id=case.id) }}">[add scenario]</a>
+                {% endif %}
+            </div>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock content%}

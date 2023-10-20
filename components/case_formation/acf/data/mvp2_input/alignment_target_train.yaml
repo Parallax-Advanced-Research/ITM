@@ -1,0 +1,12 @@
+# globally unique alignment target
+id: ADEPT-alignment-target-1
+
+# list of KDMAs to align to
+# {kdma: str name, value: float target value}
+kdma_values:
+  - {kdma: BasicKnowledge, value: 10}
+  - {kdma: TimePressure, value: 0}
+  - {kdma: RiskAversion, value: 7}
+  - {kdma: Fairness, value: 8}
+  - {kdma: ProtocolFocus, value: 5}
+  - {kdma: Utilitarianism, value: 5}

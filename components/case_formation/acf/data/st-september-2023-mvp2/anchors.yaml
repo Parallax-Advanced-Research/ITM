@@ -1,0 +1,431 @@
+st-september-2023-mvp:
+
+  select-casualty-abc:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-casualty-def:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-first-treatment-a:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-first-treatment-b:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-first-treatment-c:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-first-treatment-d:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-first-treatment-e:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-first-treatment-f:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-post-assessment-treatment-a:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-post-assessment-treatment-b:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-post-assessment-treatment-c:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-post-assessment-treatment-d:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-post-assessment-treatment-e:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-post-assessment-treatment-f:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-tag-a:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-tag-b:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-tag-c:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-tag-d:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-tag-e:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+
+  select-tag-f:
+    A:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    B:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    C:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0
+    D:
+      denial: 0
+      mission: 0
+      risktol: 0
+      timeurg: 0

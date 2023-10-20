@@ -8,5 +8,5 @@ class Config(object):
     # We'll use sqlite for now, but we'll want to use postgresql in production
     SQLALCHEMY_DATABASE_URI = (
         os.environ.get("DATABASE_URL") or "sqlite:///"
-    ) + os.path.join(basedir, "app.db")
+    ) + os.path.join(basedir, "casebases.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
