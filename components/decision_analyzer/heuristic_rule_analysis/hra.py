@@ -1390,7 +1390,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                             if vpred in pred:
                                 temp_data['treatment'][name][vpred] = val[vpred]
                 hash_ele = '-'.join(x for x in pred)
-                result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data)
+                m_arg = int(len(all_predictors) * 0.8) # number of predictors to start with before increasing for tallying, one-bounce, and sastisfactory
+                result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data, m=m_arg)
             casualty_analytics.append({casualty: result})
                 #casualty_analytics.append({casualty:self.hra_decision_analytics(new_file, data=temp_data)})
 
