@@ -79,6 +79,38 @@ class Injuries(Enum):
     BURN = 'Burn'
 
 
+class BodySystemEffect(Enum):
+    NONE = 'NONE'
+    MINIMAL = 'MINIMAL'
+    MODERATE = 'MODERATE'
+    SEVERE = 'SEVERE'
+    CRITICAL = 'CRITICAL'
+    FATAL = 'FATAL'
+
+
+effect_scores = {
+    BodySystemEffect.NONE.value: 0,
+    BodySystemEffect.MINIMAL.value: 1,
+    BodySystemEffect.MODERATE.value: 2,
+    BodySystemEffect.SEVERE.value: 3,
+    BodySystemEffect.CRITICAL.value: 5,
+    BodySystemEffect.FATAL.value: 10
+}
+
+
+def get_effect_name(effect: float) -> str:
+    if effect < 1:
+        return BodySystemEffect.NONE.value
+    if effect < 2:
+        return BodySystemEffect.MINIMAL.value
+    if effect < 3:
+        return BodySystemEffect.MODERATE.value
+    if effect < 5:
+        return BodySystemEffect.SEVERE.value
+    if effect < 10:
+        return BodySystemEffect.CRITICAL.value
+    return BodySystemEffect.FATAL.value
+
 class Demographics:
     def __init__(self, age: int, sex: str, rank: str):
         self.age: int = age
@@ -90,12 +122,16 @@ class Demographics:
 
 
 class Injury:
-    def __init__(self, name: str, location: str, severity: float, treated: bool = False):
+    def __init__(self, name: str, location: str, severity: float, treated: bool = False,
+                 breathing_effect=BodySystemEffect.NONE.value, cardio_effect=BodySystemEffect.NONE.value):
         self.name = name
         self.location = location
         self.severity = severity
         self.time_elapsed: float = 0.0
         self.treated: bool = treated
+        self.blood_lost_ml: float = 0.0
+        self.breathing_effect: str = breathing_effect
+        self.cardio_effect: str = cardio_effect
 
     def __eq__(self, other: 'Injury'):
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
@@ -131,7 +167,10 @@ class Casualty:
         self.complete_vitals: Vitals = complete_vitals
         self.assessed: bool = assessed
         self.tag: str = tag
-        self.time_elapsed: int = 0
+        self.time_elapsed: float = 0.0
+        self.blood_lost_ml: float = 0.0
+        self.cumulative_cardio_effect: float = 0.0
+        self.cumulative_breathing_effect: float = 0.0
         self.dead = False
 
     def __str__(self):
@@ -139,7 +178,11 @@ class Casualty:
         for inj in self.injuries:
             retstr += inj.__str__()
             retstr += '_'
-        return retstr[:-1]
+        cardio_effect = get_effect_name(self.cumulative_cardio_effect)
+        breathing_effect = get_effect_name(self.cumulative_breathing_effect)
+        retstr += 'BLOOD_LOSS: %.2f_CARDIO EFFECT: %s_RESPITORY EFFECT: %s' % (self.blood_lost_ml, cardio_effect,
+                                                                               breathing_effect)
+        return retstr
 
     def __eq__(self, other: 'Casualty'):
         same = False

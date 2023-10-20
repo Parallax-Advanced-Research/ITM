@@ -1,7 +1,7 @@
 from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty, Actions
 from components.decision_analyzer.monte_carlo.medsim.tiny.tinymed_actions import (supply_dict_to_list, get_possible_actions,
-                                                                                  create_tm_actions, trim_tm_actions, action_map,
+                                                                                  create_tm_actions, trim_tm_actions, tiny_action_map,
                                                                                   remove_non_injuries)
 from copy import deepcopy
 from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimState, MedsimAction
@@ -14,19 +14,22 @@ logger = util.logger
 
 class TinymedSim(MCSim):
 
-    def __init__(self, init_state: MedsimState, seed: Optional[float] = None):
+    def __init__(self, init_state: MedsimState, seed: Optional[float] = None, medsim='tiny'):
         self._rand: random.Random = random.Random(seed)
         self._init_state = deepcopy(init_state)
         self._init_supplies = deepcopy(init_state.supplies)
         self._init_casualties = deepcopy(init_state.casualties)
         self.current_casualties: list[Casualty] = self._init_state.casualties
         self.current_supplies: dict[str, int] = self._init_state.supplies
+        self.action_map = tiny_action_map
+        if medsim == 'smol':
+            self.action_map = smol_action_map
         super().__init__()
 
     def exec(self, state: MedsimState, action: MedsimAction) -> list[SimResult]:
         supplies: dict[str, int] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
-        new_state = action_map[action.action](casualties, supplies, action, self._rand, state.time)
+        new_state = tiny_action_map[action.action](casualties, supplies, action, self._rand, state.time)
         outcomes = []
         for new_s in new_state:
             outcome = SimResult(action=action, outcome=new_s)

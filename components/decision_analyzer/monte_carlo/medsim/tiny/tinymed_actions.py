@@ -266,7 +266,8 @@ update_injury_map: typing.Mapping[str, update_injury] = {
     Injuries.BURN.value: update_generic_injury,
 }
 
-action_map: typing.Mapping[str, resolve_action] = {
+# Updated name because this is called externally
+tiny_action_map: typing.Mapping[str, resolve_action] = {
     Actions.APPLY_TREATMENT.value: apply_treatment_mappers,
     Actions.CHECK_ALL_VITALS.value: apply_singlecaualty_action,
     Actions.CHECK_PULSE.value: apply_singlecaualty_action,
