@@ -1,20 +1,18 @@
-from enum import Enum
-
 import numpy as np
 
-from components.decision_analyzer.monte_carlo.tinymed import TinymedSim
+from components.decision_analyzer.monte_carlo.medsim import TinymedSim
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_state import TinymedAction, TinymedState
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Metric, metric_description_hash
+from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimAction, MedsimState
+from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Metric, metric_description_hash
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
-import components.decision_analyzer.monte_carlo.tinymed.ta3_converter as ta3_conv
+import components.decision_analyzer.monte_carlo.util.ta3_converter as ta3_conv
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import MetricResultsT
-from components.decision_analyzer.monte_carlo.tinymed.score_functions import (tiny_med_severity_score,
-                                                                              tiny_med_resources_remaining,
-                                                                              tiny_med_time_score,
-                                                                              tiny_med_casualty_severity)
+from components.decision_analyzer.monte_carlo.util.score_functions import (tiny_med_severity_score,
+                                                                           tiny_med_resources_remaining,
+                                                                           tiny_med_time_score,
+                                                                           tiny_med_casualty_severity)
 import util.logger
 from domain.ta3 import TA3State
 
@@ -31,7 +29,7 @@ def decision_to_actstr(decision: Decision) -> str:
 
 
 def tinymedact_to_actstr(decision: mcnode.MCDecisionNode) -> str:
-    action: TinymedAction = decision.action
+    action: MedsimAction = decision.action
     retstr = "%s_" % action.action
     for opt_param in ['casualty_id', 'location', 'supply', 'tag']:
         retstr += '%s_' % action.lookup(opt_param) if action.lookup(opt_param) is not None else ''
@@ -51,7 +49,7 @@ def dict_to_decisionmetrics(basic_stats: MetricResultsT) -> list[DecisionMetrics
     return metrics_out
 
 
-def tinymedstate_to_metrics(state: TinymedState) -> dict:
+def tinymedstate_to_metrics(state: MedsimState) -> dict:
     casualty_severities = {}
     retdict = {}
     severity = 0.
@@ -105,7 +103,7 @@ def dict_minus(before, after):
     return minus_dict
 
 
-def get_future_and_change_metrics(current_state: TinymedState, future_states: mcnode.MCDecisionNode) -> MetricResultsT:
+def get_future_and_change_metrics(current_state: MedsimState, future_states: mcnode.MCDecisionNode) -> MetricResultsT:
     new_metrics = future_states.children[0].score
     past_metrics = tinymedstate_to_metrics(current_state)
     delta_metrics = get_and_normalize_delta(past_metrics, new_metrics)
@@ -165,7 +163,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
 
     def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         ta3_state: TA3State = probe.state
-        tinymed_state: TinymedState = ta3_conv.convert_state(ta3_state)
+        tinymed_state: MedsimState = ta3_conv.convert_state(ta3_state)
         if not self.supplies_set:
             self.start_supplies = tinymed_state.get_num_supplies()
             self.supplies_set = True  # Loop will never run again

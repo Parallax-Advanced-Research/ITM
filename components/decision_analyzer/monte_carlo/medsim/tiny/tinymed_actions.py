@@ -1,15 +1,15 @@
 import random
 
-from .tinymed_state import TinymedAction, TinymedState
-from .tinymed_enums import Casualty, Supplies, Actions, Locations, Tags, Injury, Injuries
-from .oracle import MedicalOracle, supply_injury_match, supply_location_match
+from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimAction, MedsimState
+from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty, Supplies, Actions, Locations, Tags, Injury, Injuries
+from .tiny_oracle import TinyMedicalOracle, supply_injury_match, supply_location_match
 import typing
 
 
 def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random) -> float:
-    fail = rng.random() < MedicalOracle.FAILURE_CHANCE[action.supply]
-    time_taken = rng.choice(MedicalOracle.TIME_TAKEN[action.supply])
+                            action: MedsimAction, rng: random.Random) -> float:
+    fail = rng.random() < TinyMedicalOracle.FAILURE_CHANCE[action.supply]
+    time_taken = rng.choice(TinyMedicalOracle.TIME_TAKEN[action.supply])
     supply_location_logical = supply_location_match(action)
     if supplies[action.supply] <= 0:
         fail = True
@@ -17,7 +17,7 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
         supply_injury_logical = supply_injury_match(action.supply, ci.name)
         if ci.location == action.location and not fail and supply_location_logical and supply_injury_logical:
             existing_severity = ci.severity
-            ci.severity = min(MedicalOracle.SUCCESSFUL_SEVERITY[action.supply], existing_severity)
+            ci.severity = min(TinyMedicalOracle.SUCCESSFUL_SEVERITY[action.supply], existing_severity)
             ci.time_elapsed += time_taken
         else:
             update_generic_injury(ci, time_taken)
@@ -29,7 +29,7 @@ def update_generic_injury(i: Injury, elapsed: float) -> None:
     i.time_elapsed += elapsed
 
 
-def find_casualty(action: TinymedAction, casualties: list[Casualty]) -> Casualty | None:
+def find_casualty(action: MedsimAction, casualties: list[Casualty]) -> Casualty | None:
     c_id = action.casualty_id
     for casualty in casualties:
         if casualty.id == c_id:
@@ -38,7 +38,7 @@ def find_casualty(action: TinymedAction, casualties: list[Casualty]) -> Casualty
 
 
 def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random, start_time: float) -> list[TinymedState]:
+                            action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c = find_casualty(action, casualties)
     time_taken = treatment_map[action.supply](c, supplies, action, rng)
     supplies[action.supply] -= 1
@@ -48,12 +48,12 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
         casualty_injuries: list[Injury] = c2.injuries
         for ci in casualty_injuries:
             update_generic_injury(ci, time_taken)
-    new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
+    new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
 
 def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random, start_time: float) -> list[TinymedState]:
+                            action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     if action.casualty_id is None:
         # Apply for all if not other instructions
         retlist = []
@@ -67,32 +67,32 @@ def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int]
 
 
 def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random, start_time: float) -> list[TinymedState]:
+                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c1 = find_casualty(action, casualties)
-    time_taken = rng.choice(MedicalOracle.TIME_TAKEN[action.action])
+    time_taken = rng.choice(TinyMedicalOracle.TIME_TAKEN[action.action])
     c1.tag = action.tag
     for c in casualties:
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
             update_generic_injury(ci, time_taken)
-    new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
+    new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
 
 def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random, start_time: float) -> list[TinymedState]:
-    time_taken = rng.choice(MedicalOracle.TIME_TAKEN[action.action])
+                               action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
+    time_taken = rng.choice(TinyMedicalOracle.TIME_TAKEN[action.action])
     for c in casualties:
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
             update_generic_injury(ci, time_taken)
-    new_state = TinymedState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
+    new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
 
 def default_action(casualties: list[Casualty], supplies: dict[str, int],
-                            action: TinymedAction, rng: random.Random) -> list[TinymedState]:
-    same_state = TinymedState(casualties, supplies, time=0)
+                   action: MedsimAction, rng: random.Random) -> list[MedsimState]:
+    same_state = MedsimState(casualties, supplies, time=0)
     return [same_state]
 
 
@@ -167,32 +167,32 @@ def supply_dict_to_list(supplies: dict[str, int]) -> list[str]:
     return list(set(keylist))   # Set removes non  uniques
 
 
-def create_tm_actions(actions: list[tuple]) -> list[TinymedAction]:
+def create_tm_actions(actions: list[tuple]) -> list[MedsimAction]:
     tm_actions = []
     for act_tuple in actions:
         action = act_tuple[0]
         if action == Actions.APPLY_TREATMENT.value:
             casualty, supply, loc = act_tuple[1:]
-            tm_action = TinymedAction(action, casualty_id=casualty, supply=supply, location=loc)
+            tm_action = MedsimAction(action, casualty_id=casualty, supply=supply, location=loc)
         elif action in [Actions.CHECK_PULSE.value, Actions.CHECK_RESPIRATION.value, Actions.CHECK_ALL_VITALS.value,
                         Actions.MOVE_TO_EVAC.value]:
             casualty = act_tuple[1]
-            tm_action = TinymedAction(action, casualty_id=casualty)
+            tm_action = MedsimAction(action, casualty_id=casualty)
         elif action == Actions.DIRECT_MOBILE_CASUALTY.value:
-            tm_action = TinymedAction(action=action)
+            tm_action = MedsimAction(action=action)
         elif action == Actions.TAG_CASUALTY.value:
             casualty, tag = act_tuple[1:]
-            tm_action = TinymedAction(action=action, casualty_id=casualty, tag=tag)
+            tm_action = MedsimAction(action=action, casualty_id=casualty, tag=tag)
         elif action == Actions.SITREP.value:
             if len(act_tuple) == 1:  # Only sitrep
-                tm_action = TinymedAction(action=action)
+                tm_action = MedsimAction(action=action)
             else:
-                tm_action = TinymedAction(action=action, casualty_id=act_tuple[1])
+                tm_action = MedsimAction(action=action, casualty_id=act_tuple[1])
         tm_actions.append(tm_action)
     return tm_actions
 
 
-def trim_tm_actions(actions: list[TinymedAction]) -> list[TinymedAction]:
+def trim_tm_actions(actions: list[MedsimAction]) -> list[MedsimAction]:
     trimmed = []
     for act in actions:
         if act.action == Actions.APPLY_TREATMENT.value:
@@ -220,15 +220,15 @@ def trim_tm_actions(actions: list[TinymedAction]) -> list[TinymedAction]:
     return trimmed
 
 
-def remove_non_injuries(state: TinymedState, tinymedactions: list[TinymedAction]) -> list[TinymedAction]:
-    acceptable_actions: list[TinymedAction] = []
+def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) -> list[MedsimAction]:
+    acceptable_actions: list[MedsimAction] = []
     casualties: list[Casualty] = state.casualties
     for casualty in casualties:
         casualty_injuries: list[Injury] = casualty.injuries
         for injury in casualty_injuries:
             for supply in [s for s in Supplies]:
-                acceptable_action = TinymedAction(Actions.APPLY_TREATMENT.value, casualty.id,
-                                                  supply.value, injury.location)
+                acceptable_action = MedsimAction(Actions.APPLY_TREATMENT.value, casualty.id,
+                                                 supply.value, injury.location)
                 acceptable_actions.append(acceptable_action)
     retlist = [x for x in tinymedactions if x.action != Actions.APPLY_TREATMENT.value]
     retlist.extend(acceptable_actions)
@@ -236,14 +236,14 @@ def remove_non_injuries(state: TinymedState, tinymedactions: list[TinymedAction]
 
 
 def get_injury_update_time(injury_name: str):
-    if injury_name in MedicalOracle.INJURY_UPDATE_TIMES:
-        return MedicalOracle.INJURY_UPDATE_TIMES[injury_name]
+    if injury_name in TinyMedicalOracle.INJURY_UPDATE_TIMES:
+        return TinyMedicalOracle.INJURY_UPDATE_TIMES[injury_name]
     else:
-        return MedicalOracle.INJURY_UPDATE_TIMES[Injuries.FOREHEAD_SCRAPE.value]  # Assume not serious
+        return TinyMedicalOracle.INJURY_UPDATE_TIMES[Injuries.FOREHEAD_SCRAPE.value]  # Assume not serious
 
 
-resolve_action = typing.Callable[[list[Casualty], dict[str, int], TinymedAction, random.Random, int], list[TinymedState]]
-resolve_injury = typing.Callable[[Casualty, dict[str, int], TinymedAction, random.Random], float]
+resolve_action = typing.Callable[[list[Casualty], dict[str, int], MedsimAction, random.Random, int], list[MedsimState]]
+resolve_injury = typing.Callable[[Casualty, dict[str, int], MedsimAction, random.Random], float]
 update_injury = typing.Callable[[Injury, float], None]
 
 treatment_map: typing.Mapping[str, resolve_injury] = {

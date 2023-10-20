@@ -1,15 +1,13 @@
-import components.decision_analyzer.monte_carlo.tinymed as tmed
+import components.decision_analyzer.monte_carlo.medsim as tmed
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
-import components.decision_analyzer.monte_carlo.tinymed.tinymed_enums as tnums
 import domain.ta3.ta3_state as ta3state
-import components.decision_analyzer.monte_carlo.tinymed.medactions as medact
-import components.decision_analyzer.monte_carlo.tinymed.ta3_converter as ta3conv
+import components.decision_analyzer.monte_carlo.util.ta3_converter as ta3conv
 import time
 import numpy as np
 import datetime
 
 from runner import TA3Driver, TA3Client
-from util import logger, dict_difference
+from util import logger
 import pickle as pkl
 
 save = False

@@ -1,9 +1,9 @@
 from components.decision_analyzer.monte_carlo.mc_sim import MCAction, MCState
-from .tinymed_enums import Casualty, Supplies, Actions
+from .medsim_enums import Casualty, Supplies, Actions
 import numpy as np
 
 
-class TinymedState(MCState):
+class MedsimState(MCState):
     def __init__(self, casualties: list[Casualty], supplies: dict[str, int], time: float, unstructured: str = ''):
         super().__init__()
         self.casualties: list[Casualty] = casualties
@@ -11,7 +11,7 @@ class TinymedState(MCState):
         self.unstructured = unstructured
         self.time = time
 
-    def __eq__(self, other: 'TinymedState'):
+    def __eq__(self, other: 'MedsimState'):
         # fastest checks are lengths
         if len(self.casualties) != len(other.casualties):
             return False
@@ -43,7 +43,7 @@ class TinymedState(MCState):
         return severity
 
 
-class TinymedAction(MCAction):
+class MedsimAction(MCAction):
     def __init__(self, action: Actions, casualty_id: str | None = None, supply: str | None = None,
                  location: str | None = None, tag: str | None = None):
         super().__init__()

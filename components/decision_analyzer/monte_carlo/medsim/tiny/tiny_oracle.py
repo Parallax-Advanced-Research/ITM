@@ -1,8 +1,8 @@
-from .tinymed_state import TinymedAction
-from .tinymed_enums import Supplies, Actions, Injuries, Locations
+from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimAction
+from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Supplies, Actions, Injuries, Locations
 
 
-class MedicalOracle:
+class TinyMedicalOracle:
     FAILURE_CHANCE = {
         Supplies.PRESSURE_BANDAGE.value: .16,
         Supplies.HEMOSTATIC_GAUZE.value: .25,
@@ -60,7 +60,7 @@ class MedicalOracle:
                                    Locations.RIGHT_NECK.value, Locations.UNSPECIFIED.value]}
 
 
-def supply_location_match(action: TinymedAction):
+def supply_location_match(action: MedsimAction):
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
         return True
     if action.supply == Supplies.TOURNIQUET.value:

@@ -1,9 +1,9 @@
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
-from .tinymed_enums import Demographics, Vitals, Injury, Injuries, Casualty
-from .tinymed_state import TinymedState, TinymedAction
+from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Demographics, Vitals, Injury, Injuries, Casualty
+from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimState, MedsimAction
 from domain.external import Action
-from .tinymed_state import TinymedState
+from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimState
 
 
 def _convert_demographic(ta_demographic: TA_DEM) -> Demographics:
@@ -108,13 +108,13 @@ def reverse_convert_supplies(internal_supplies: dict[str, int]) -> list[TA_SUPPL
     return supplies
 
 
-def convert_state(ta3_state: TA3State) -> TinymedState:
+def convert_state(ta3_state: TA3State) -> MedsimState:
     cas = convert_casualties(ta3_state.casualties)
     sup = convert_supplies(ta3_state.supplies)
-    return TinymedState(casualties=cas, supplies=sup, time=ta3_state.time_, unstructured=ta3_state.unstructured)
+    return MedsimState(casualties=cas, supplies=sup, time=ta3_state.time_, unstructured=ta3_state.unstructured)
 
 
-def reverse_convert_state(tinymedstate: TinymedState) -> TA3State:
+def reverse_convert_state(tinymedstate: MedsimState) -> TA3State:
     cas = reverse_convert_casualties(tinymedstate.casualties)
     sup = reverse_convert_supplies(tinymedstate.supplies)
     ta3 = TA3State(casualties=cas, supplies=sup, unstructured=tinymedstate.unstructured, time_=int(tinymedstate.time),
@@ -122,17 +122,17 @@ def reverse_convert_state(tinymedstate: TinymedState) -> TA3State:
     return ta3
 
 
-def _convert_action(act: Action) -> TinymedAction:
+def _convert_action(act: Action) -> MedsimAction:
     supply, location = None, None
     if 'treatment' in act.params.keys():
         supply = act.params['treatment']
     if 'location' in act.params.keys():
         location = act.params['location']
-    return TinymedAction(action=act.type, casualty_id=act.casualty,
-                         supply=supply, location=location)
+    return MedsimAction(action=act.type, casualty_id=act.casualty,
+                        supply=supply, location=location)
 
 
-def _reverse_convert_action(internal_action: TinymedAction, action_num: int) -> Action:
+def _reverse_convert_action(internal_action: MedsimAction, action_num: int) -> Action:
     action: Action = Action(id='action_%d' % action_num, type=internal_action.action, casualty=internal_action.casualty_id,
                             kdmas={}, params={'casualty': internal_action.casualty_id,
                                               'location': internal_action.location,

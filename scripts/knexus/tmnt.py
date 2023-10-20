@@ -1,10 +1,9 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
-from components.decision_analyzer.monte_carlo.tinymed import TinymedState, TinymedSim, TinymedAction
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates, BreathingDescriptions, Demographics, Supplies
-from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
+from components.decision_analyzer.monte_carlo.medsim import MedsimState, TinymedSim, MedsimAction
+from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates, BreathingDescriptions, Demographics, Supplies
+from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
 
-from runner import TA3Driver
 from runner import simple_driver
 from domain.internal import KDMAs
 from util import logger, dict_difference
@@ -96,24 +95,24 @@ class TMNTClient:
         self.probe_count = 1
         casualties: list[Casualty] = get_TMNT_demo_casualties()
         supplies: dict[str, int] = get_TMNT_supplies()
-        self.init_state: TinymedState = TinymedState(casualties, supplies, time=0.0,
-                                                        unstructured="Turtles in a half shell, TURTLE POWER!!!")
-        self.current_state: TinymedState = self.init_state
+        self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
+                                                   unstructured="Turtles in a half shell, TURTLE POWER!!!")
+        self.current_state: MedsimState = self.init_state
         self.simulator = TinymedSim(init_state=self.init_state)
         self.probe_count: int = 0
         self.max_actions: int = max_actions
 
-    def get_init(self) -> TinymedState:
+    def get_init(self) -> MedsimState:
         return self.init_state
 
-    def get_probe(self, state: TinymedState | None) -> ITMProbe | None:
+    def get_probe(self, state: MedsimState | None) -> ITMProbe | None:
         if self.probe_count > self.max_actions:
             return None
         self.probe_count += 1
         state = state if state is not None else self.init_state
 
         ta3_state = reverse_convert_state(state)
-        actions: list[TinymedAction] = self.simulator.actions(state)
+        actions: list[MedsimAction] = self.simulator.actions(state)
         ta3_actions: list[Action] = []
         for i, internal_action in enumerate(actions):  # Only one direct mobile casualties in actions
             ta3_action = _reverse_convert_action(internal_action, action_num=i)
@@ -167,7 +166,7 @@ if __name__ == '__main__':
     driver.set_alignment_tgt(kdmas)
     logger.debug("Driver and TMNT Client loaded.")
 
-    initial_state: TinymedState = client.get_init()
+    initial_state: MedsimState = client.get_init()
     probe = client.get_probe(initial_state)
     scenario = Scenario(name='TMNT DEMO', id='tmnt-demo', state=probe.state, probes=[])
     driver.set_scenario(scenario=scenario)

@@ -1,12 +1,12 @@
 from components.decision_analyzer.monte_carlo.mc_sim import MCState
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import ScoreT, MetricResultsT
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
-from .tinymed_state import TinymedState
+from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty
+from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimState
 
 
 
 def tiny_med_severity_score(state: MCState) -> ScoreT:
-    if not isinstance(state, TinymedState):
+    if not isinstance(state, MedsimState):
         raise RuntimeError('Only Tinymed States for Tinymed severity')
     injury_score: float = 0.0
     for casualty in state.casualties:
@@ -25,7 +25,7 @@ def tiny_med_time_score(state: MCState) -> ScoreT:
 
 
 def tiny_med_casualty_severity(state: MCState) -> ScoreT:
-    if not isinstance(state, TinymedState):
+    if not isinstance(state, MedsimState):
         raise RuntimeError('Only Tinymed States for Tinymed severity')
     injury_scores: dict[str, float] = {}
     for casualty in state.casualties:
