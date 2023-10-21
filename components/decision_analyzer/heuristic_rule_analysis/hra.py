@@ -1372,23 +1372,26 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             temp_data['casualty'] = casualty_data[casualty]
             temp_data['treatment'] = {}
 
-# LEFT OFF
             result = {}
             for pred in predictor_combos:
 
                 temp_data['predictors'] = {'relevance': pred}
                 for treatment in data['treatment']:
-                    #if (treatment == 'CHECK_ALL_VITALS' or treatment == 'SITREP') and casualty_data[casualty]['assessed'] == True:
-                    #    continue
-                    #elif treatment == 'TAG_CASUALTY' and casualty_data[casualty]['tag'] != None:
-                    #    continue
-                    for name, val in data['treatment'][treatment].items():
-                    #for val in data['treatment'][treatment].values():
-                    #    for name1, val1 in val:
-                        temp_data['treatment'][name] = {}#val
-                        for vpred in val:
-                            if vpred in pred:
-                                temp_data['treatment'][name][vpred] = val[vpred]
+                    rel_treatment = treatment + '(' + casualty + ')'
+                    rel_treatment_found = [x for x in probe.decisions if x.value.name == treatment and x.value.params['casualty'] == casualty]
+                    if len(rel_treatment_found): #treatment + '(' + casualty + ')' in probe.decisions:
+                        print("treatment exists for casualty")
+                        #if (treatment == 'CHECK_ALL_VITALS' or treatment == 'SITREP') and casualty_data[casualty]['assessed'] == True:
+                        #    continue
+                        #elif treatment == 'TAG_CASUALTY' and casualty_data[casualty]['tag'] != None:
+                        #    continue
+                        for name, val in data['treatment'][treatment].items():
+                        #for val in data['treatment'][treatment].values():
+                        #    for name1, val1 in val:
+                            temp_data['treatment'][name] = {}#val
+                            for vpred in val:
+                                if vpred in pred:
+                                    temp_data['treatment'][name][vpred] = val[vpred]
                 hash_ele = '-'.join(x for x in pred)
                 m_arg = int(len(all_predictors) * 0.8) # number of predictors to start with before increasing for tallying, one-bounce, and sastisfactory
                 result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data, m=m_arg)
