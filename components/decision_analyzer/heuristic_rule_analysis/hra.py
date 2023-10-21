@@ -1377,10 +1377,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
                 temp_data['predictors'] = {'relevance': pred}
                 for treatment in data['treatment']:
-                    rel_treatment = treatment + '(' + casualty + ')'
                     rel_treatment_found = [x for x in probe.decisions if x.value.name == treatment and x.value.params['casualty'] == casualty]
                     if len(rel_treatment_found): #treatment + '(' + casualty + ')' in probe.decisions:
-                        print("treatment exists for casualty")
                         #if (treatment == 'CHECK_ALL_VITALS' or treatment == 'SITREP') and casualty_data[casualty]['assessed'] == True:
                         #    continue
                         #elif treatment == 'TAG_CASUALTY' and casualty_data[casualty]['tag'] != None:
