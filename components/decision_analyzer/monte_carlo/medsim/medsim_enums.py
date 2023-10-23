@@ -1,6 +1,11 @@
 from enum import Enum
 
 
+class SimulatorName(Enum):
+    TINY = 'TINY MED SIM'
+    SMOL = 'SMOL MED SIM'
+
+
 class Actions(Enum):
     APPLY_TREATMENT = "APPLY_TREATMENT"
     CHECK_ALL_VITALS = "CHECK_ALL_VITALS"

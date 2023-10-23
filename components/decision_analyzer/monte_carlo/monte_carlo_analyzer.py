@@ -1,9 +1,9 @@
 import numpy as np
 
-from components.decision_analyzer.monte_carlo.medsim import TinymedSim
+from components.decision_analyzer.monte_carlo.medsim import MedicalSimulator
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimAction, MedsimState
-from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Metric, metric_description_hash
+from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Metric, metric_description_hash, SimulatorName
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
@@ -175,14 +175,14 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
                            Metric.AVERAGE_TIME_USED.value: tiny_med_time_score,
                            Metric.CASUALTY_SEVERITY.value : tiny_med_casualty_severity}
 
-        sim = TinymedSim(tinymed_state)
+        sim = MedicalSimulator(tinymed_state, simulator_name=SimulatorName.SMOL.value)
         root = mcsim.MCStateNode(tinymed_state)
         tree = mcsim.MonteCarloTree(sim, score_functions, [root])
 
         for rollout in range(self.max_rollouts):
             tree.rollout(max_depth=self.max_depth)
 
-        logger.debug('MC Tree Trained')
+        logger.critical('MC Tree Trained using Simulator %s.' % sim.get_simulator())
         analysis = {}  # Not used in driver
         decision_node_list: list[mcnode.MCDecisionNode] = tree._roots[0].children
         # Has each decision string -> list of {'sevrity': .69, 'resources used': 2...}

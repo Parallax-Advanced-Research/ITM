@@ -1,9 +1,15 @@
+from enum import Enum
+
 from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty, Actions
 from components.decision_analyzer.monte_carlo.medsim.tiny.tinymed_actions import (supply_dict_to_list, get_possible_actions,
                                                                                   create_tm_actions, trim_tm_actions, tiny_action_map,
                                                                                   remove_non_injuries)
+from components.decision_analyzer.monte_carlo.medsim.smol.smolmed_actions import (supply_dict_to_list, get_possible_actions,
+                                                                                  create_tm_actions, trim_tm_actions, smol_action_map,
+                                                                                  remove_non_injuries)
 from copy import deepcopy
+from components.decision_analyzer.monte_carlo.medsim.medsim_enums import SimulatorName
 from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimState, MedsimAction
 import util.logger
 from typing import Optional
@@ -12,9 +18,11 @@ import random
 logger = util.logger
 
 
-class TinymedSim(MCSim):
 
-    def __init__(self, init_state: MedsimState, seed: Optional[float] = None, medsim='tiny'):
+
+
+class MedicalSimulator(MCSim):
+    def __init__(self, init_state: MedsimState, seed: Optional[float] = None, simulator_name: str = SimulatorName.TINY.value):
         self._rand: random.Random = random.Random(seed)
         self._init_state = deepcopy(init_state)
         self._init_supplies = deepcopy(init_state.supplies)
@@ -22,14 +30,19 @@ class TinymedSim(MCSim):
         self.current_casualties: list[Casualty] = self._init_state.casualties
         self.current_supplies: dict[str, int] = self._init_state.supplies
         self.action_map = tiny_action_map
-        if medsim == 'smol':
+        self.simulator_name = simulator_name
+        if simulator_name == SimulatorName.SMOL.value:
             self.action_map = smol_action_map
         super().__init__()
+
+    def get_simulator(self) -> str:
+        return self.simulator_name
+
 
     def exec(self, state: MedsimState, action: MedsimAction) -> list[SimResult]:
         supplies: dict[str, int] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
-        new_state = tiny_action_map[action.action](casualties, supplies, action, self._rand, state.time)
+        new_state = self.action_map[action.action](casualties, supplies, action, self._rand, state.time)
         outcomes = []
         for new_s in new_state:
             outcome = SimResult(action=action, outcome=new_s)

@@ -1,5 +1,5 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
-from components.decision_analyzer.monte_carlo.medsim import MedsimState, TinymedSim, MedsimAction
+from components.decision_analyzer.monte_carlo.medsim import MedsimState, MedicalSimulator, MedsimAction
 from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates, BreathingDescriptions, Demographics, Supplies
 from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
@@ -98,7 +98,7 @@ class TMNTClient:
         self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
                                                    unstructured="Turtles in a half shell, TURTLE POWER!!!")
         self.current_state: MedsimState = self.init_state
-        self.simulator = TinymedSim(init_state=self.init_state)
+        self.simulator = MedicalSimulator(init_state=self.init_state)
         self.probe_count: int = 0
         self.max_actions: int = max_actions
 

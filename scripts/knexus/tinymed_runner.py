@@ -36,7 +36,7 @@ if __name__ == '__main__':
                                        supplies=scen.state['supplies'])
     tinymed_init = ta3conv.convert_state(ta3_init_state)
 
-    sim = tmed.TinymedSim(tinymed_init)
+    sim = tmed.MedicalSimulator(tinymed_init)
     root = mcsim.MCStateNode(tinymed_init)
     tree = mcsim.MonteCarloTree(sim, [root], node_selector=selection_function)
 
