@@ -9,11 +9,20 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
+V KR 1.4.7 (10/23 BOW)
+=========================
+> Added in justification about injuries and overall scene
+
+
+
 V KR 1.3.5 (10/18 midweek patch)
+=========================
 > Major rewrite of Monte Carlo Analyzer class:
   > Returns new metrics for target severity/change, and severest casualty severity/change
   > Values have been normalized for number of time units taken
 > __init__.py removed from scrips file to fix scripts running "illegally" in pycharm
+
+
 
 V KR 1.2.3 (10/16 changes)
 =========================
@@ -23,40 +32,36 @@ Changes:
 > TA3 past action / treatments are refactored out of driver class
 > Removed non-working metrics while target/worst severity metrics are being built
 
-=========================
+
+
 V KR 1.1.3A (oops) (10/10 Internal changes)
-=======
+=========================
 Monte Carlo Changes-
 > replace score averager with weighted average
 > children nodes that are chosen more frequently have a greater affect on the node's score
 
+
+
 V KR 1.1.2 (10/7 to Paralax)
-=======
+=========================
 Monte Carlo Changes-
 > Visualizer implemented
 > Nested score propogation implemented
-
-=======
 Tinymed Simulator-
 > Large overhaul medactions, very generic functions
 > Made fixes
-
-=======
 Ingestors-
 > TA3 converters written
-
-=======
 Sumo-
 > Medical Oracle excel generated
-
 Misc-
 > TA3 States updated to work with kdma rules
 > Updated tad_tester to run with new kdma deciders
 
-=======================
+
 
 V KR.1.0.0 (Sept-Demo)
-=======
+=========================
 Monte Carlo Changes-
 > Monte Carlo created
 > Random + explore/exploit node selectors implemented
@@ -73,9 +78,11 @@ Ingestors-
 Sumo-
 > Did time tests, sumo work discontinued
 
-=======================
+
+
+
 V KR.0.0.0 (MVP)
-=======
+=========================
 Monte Carlo Changes-
 > Not Present
 =======
