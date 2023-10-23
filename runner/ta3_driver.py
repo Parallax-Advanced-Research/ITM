@@ -30,7 +30,7 @@ class TA3Driver(Driver):
         elif args.kedsd:
             selector = KDMAEstimationDecisionSelector("data/sept/extended_case_base.csv", 
                                                       variant = args.variant,
-                                                      print_neighbors = args.verbose,
+                                                      print_neighbors = args.decision_verbose,
                                                       use_drexel_format = True)
         elif args.csv:
             selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
@@ -39,7 +39,7 @@ class TA3Driver(Driver):
         else:
             selector = KDMAEstimationDecisionSelector("data/sept/alternate_case_base.csv", 
                                                       variant = args.variant,
-                                                      print_neighbors = args.verbose)
+                                                      print_neighbors = args.decision_verbose)
         elaborator = TA3Elaborator()
 
 

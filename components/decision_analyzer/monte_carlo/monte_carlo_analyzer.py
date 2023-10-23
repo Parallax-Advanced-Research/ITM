@@ -153,6 +153,7 @@ def get_nondeterministic_metrics(future_states: mcnode.MCDecisionNode) -> Metric
         determinism[outcome_name] = sub_dict
     return determinism
 
+
 class MonteCarloAnalyzer(DecisionAnalyzer):
     def __init__(self, max_rollouts: int = 500, max_depth: int = 2):
         super().__init__()
