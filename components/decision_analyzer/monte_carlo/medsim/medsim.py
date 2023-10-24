@@ -6,7 +6,7 @@ from components.decision_analyzer.monte_carlo.medsim.tiny.tinymed_actions import
                                                                                   create_tm_actions, trim_tm_actions, tiny_action_map,
                                                                                   remove_non_injuries)
 from components.decision_analyzer.monte_carlo.medsim.smol.smolmed_actions import (supply_dict_to_list, get_possible_actions,
-                                                                                  create_tm_actions, trim_tm_actions, smol_action_map,
+                                                                                  create_tm_actions, trim_medsim_actions, smol_action_map,
                                                                                   remove_non_injuries)
 from copy import deepcopy
 from components.decision_analyzer.monte_carlo.medsim.medsim_enums import SimulatorName
@@ -16,9 +16,6 @@ from typing import Optional
 import random
 
 logger = util.logger
-
-
-
 
 
 class MedicalSimulator(MCSim):
@@ -54,7 +51,7 @@ class MedicalSimulator(MCSim):
         supplies: list[str] = supply_dict_to_list(state.supplies)
         actions: list[tuple] = get_possible_actions(casualties, supplies)
         tinymed_actions: list[MedsimAction] = create_tm_actions(actions)
-        tinymed_actions_trimmed: list[MedsimAction] = trim_tm_actions(tinymed_actions)
+        tinymed_actions_trimmed: list[MedsimAction] = trim_medsim_actions(tinymed_actions)
         tinymed_actions_trimmed = remove_non_injuries(state, tinymed_actions_trimmed)
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENARIO.value))
         return tinymed_actions_trimmed

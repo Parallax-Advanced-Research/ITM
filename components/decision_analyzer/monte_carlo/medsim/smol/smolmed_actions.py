@@ -1,7 +1,7 @@
 import random
 
 from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimAction, MedsimState
-from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty, Supplies, Actions, Locations, Tags, Injury, Injuries
+from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty, Supplies, Actions, Locations, Tags, Injury
 from .smol_oracle import SmolMedicalOracle, supply_injury_match, supply_location_match
 import typing
 
@@ -16,17 +16,12 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
     for ci in casualty.injuries:
         supply_injury_logical = supply_injury_match(action.supply, ci.name)
         if ci.location == action.location and not fail and supply_location_logical and supply_injury_logical:
-            existing_severity = ci.severity
-            ci.severity = min(SmolMedicalOracle.SUCCESSFUL_SEVERITY[action.supply], existing_severity)
-            ci.time_elapsed += time_taken
+            pass
+            # Was successful, need to get the correct successful update function from smol oracle. DO UPDATES
         else:
-            update_generic_injury(ci, time_taken)
+            pass
+            # Was not successful, ^^. DO UPDATES
     return time_taken
-
-
-def update_generic_injury(i: Injury, elapsed: float) -> None:
-    i.severity += (elapsed * get_injury_update_time(i.name))
-    i.time_elapsed += elapsed
 
 
 def find_casualty(action: MedsimAction, casualties: list[Casualty]) -> Casualty | None:
@@ -40,14 +35,15 @@ def find_casualty(action: MedsimAction, casualties: list[Casualty]) -> Casualty 
 def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int],
                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c = find_casualty(action, casualties)
-    time_taken = treatment_map[action.supply](c, supplies, action, rng)
+    time_taken = apply_generic_treatment(c, supplies, action, rng)
     supplies[action.supply] -= 1
     for c2 in casualties:
         if c.id == c2.id:
             continue  # already updated, casualty of action
         casualty_injuries: list[Injury] = c2.injuries
         for ci in casualty_injuries:
-            update_generic_injury(ci, time_taken)
+            # Was not the subject of treatment, so update injuries based on fail from smol oracle map
+            pass
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
@@ -74,7 +70,8 @@ def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int
     for c in casualties:
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
-            update_generic_injury(ci, time_taken)
+                pass
+                # Was not the subject of treatment, so update injuries based on fail from smol oracle map
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
@@ -85,7 +82,8 @@ def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, i
     for c in casualties:
         casualty_injuries: list[Injury] = c.injuries
         for ci in casualty_injuries:
-            update_generic_injury(ci, time_taken)
+            pass
+            # Was not the subject of treatment, so update injuries based on fail from smol oracle map
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
@@ -192,7 +190,7 @@ def create_tm_actions(actions: list[tuple]) -> list[MedsimAction]:
     return tm_actions
 
 
-def trim_tm_actions(actions: list[MedsimAction]) -> list[MedsimAction]:
+def trim_medsim_actions(actions: list[MedsimAction]) -> list[MedsimAction]:
     trimmed = []
     for act in actions:
         if act.action == Actions.APPLY_TREATMENT.value:
@@ -235,16 +233,8 @@ def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) 
     return list(set(retlist))
 
 
-def get_injury_update_time(injury_name: str):
-    if injury_name in SmolMedicalOracle.INJURY_UPDATE_TIMES:
-        return SmolMedicalOracle.INJURY_UPDATE_TIMES[injury_name]
-    else:
-        return SmolMedicalOracle.INJURY_UPDATE_TIMES[Injuries.FOREHEAD_SCRAPE.value]  # Assume not serious
-
-
 resolve_action = typing.Callable[[list[Casualty], dict[str, int], MedsimAction, random.Random, int], list[MedsimState]]
 resolve_injury = typing.Callable[[Casualty, dict[str, int], MedsimAction, random.Random], float]
-update_injury = typing.Callable[[Injury, float], None]
 
 treatment_map: typing.Mapping[str, resolve_injury] = {
     Supplies.PRESSURE_BANDAGE.value: apply_generic_treatment,
@@ -252,18 +242,6 @@ treatment_map: typing.Mapping[str, resolve_injury] = {
     Supplies.TOURNIQUET.value: apply_generic_treatment,
     Supplies.DECOMPRESSION_NEEDLE.value: apply_generic_treatment,
     Supplies.NASOPHARYNGEAL_AIRWAY.value: apply_generic_treatment
-}
-
-update_injury_map: typing.Mapping[str, update_injury] = {
-    Injuries.LACERATION.value: update_generic_injury,
-    Injuries.EAR_BLEED.value: update_generic_injury,
-    Injuries.FOREHEAD_SCRAPE.value: update_generic_injury,
-    Injuries.ASTHMATIC.value: update_generic_injury,
-    Injuries.PUNCTURE.value: update_generic_injury,
-    Injuries.SHRAPNEL.value: update_generic_injury,
-    Injuries.CHEST_COLLAPSE.value: update_generic_injury,
-    Injuries.AMPUTATION.value: update_generic_injury,
-    Injuries.BURN.value: update_generic_injury,
 }
 
 # Updated name because this is called externally
@@ -278,5 +256,4 @@ smol_action_map: typing.Mapping[str, resolve_action] = {
     Actions.SITREP.value: apply_zeroornone_action,
     Actions.UNKNOWN.value: default_action,
     Actions.END_SCENARIO.value: apply_zeroornone_action
-
 }

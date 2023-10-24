@@ -93,6 +93,34 @@ class BodySystemEffect(Enum):
     FATAL = 'FATAL'
 
 
+def increment_effect(effect: str) -> str:
+    if effect == BodySystemEffect.NONE.value:
+        return BodySystemEffect.MINIMAL.value
+    if effect == BodySystemEffect.MINIMAL.value:
+        return BodySystemEffect.MODERATE.value
+    if effect == BodySystemEffect.MODERATE.value:
+        return BodySystemEffect.SEVERE.value
+    if effect == BodySystemEffect.SEVERE.value:
+        return BodySystemEffect.CRITICAL.value
+    if effect == BodySystemEffect.CRITICAL.value:
+        return BodySystemEffect.FATAL.value
+    return BodySystemEffect.FATAL.value
+
+
+def decrement_effect(effect: str) -> str:
+    if effect == BodySystemEffect.FATAL.value:
+        return BodySystemEffect.CRITICAL.value
+    if effect == BodySystemEffect.CRITICAL.value:
+        return BodySystemEffect.SEVERE.value
+    if effect == BodySystemEffect.SEVERE.value:
+        return BodySystemEffect.MODERATE.value
+    if effect == BodySystemEffect.MODERATE.value:
+        return BodySystemEffect.MINIMAL.value
+    if effect == BodySystemEffect.MINIMAL.value:
+        return BodySystemEffect.NONE.value
+    return BodySystemEffect.NONE.value
+
+
 effect_scores = {
     BodySystemEffect.NONE.value: 0,
     BodySystemEffect.MINIMAL.value: 1,
@@ -135,6 +163,7 @@ class Injury:
         self.time_elapsed: float = 0.0
         self.treated: bool = treated
         self.blood_lost_ml: float = 0.0
+        self.breathing_points: float = 0.0  # Breathing points are scaled the same as blood lost. If you lose 5000 you die
         self.breathing_effect: str = breathing_effect
         self.cardio_effect: str = cardio_effect
 
