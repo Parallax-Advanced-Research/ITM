@@ -1,7 +1,6 @@
 from components.decision_analyzer.monte_carlo.mc_sim import MCState
-from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import ScoreT, MetricResultsT
-from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty
-from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimState
+from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import ScoreT
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
 
 
 

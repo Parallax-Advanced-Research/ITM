@@ -1,5 +1,5 @@
-from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimAction
-from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Supplies, Actions, Injuries, Locations
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations
 
 
 class TinyMedicalOracle:

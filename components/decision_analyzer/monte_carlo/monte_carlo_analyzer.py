@@ -2,8 +2,8 @@ import numpy as np
 
 from components.decision_analyzer.monte_carlo.medsim import MedicalSimulator
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
-from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimAction, MedsimState
-from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Metric, metric_description_hash, SimulatorName
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash, SimulatorName
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode

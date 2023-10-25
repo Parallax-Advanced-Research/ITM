@@ -1,9 +1,9 @@
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
-from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Demographics, Vitals, Injury, Injuries, Casualty
-from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimState, MedsimAction
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, Casualty
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from domain.external import Action
-from components.decision_analyzer.monte_carlo.medsim.medsim_state import MedsimState
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
 
 
 def _convert_demographic(ta_demographic: TA_DEM) -> Demographics:

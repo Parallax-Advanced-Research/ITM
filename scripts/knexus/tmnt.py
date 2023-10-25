@@ -1,6 +1,6 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
 from components.decision_analyzer.monte_carlo.medsim import MedsimState, MedicalSimulator, MedsimAction
-from components.decision_analyzer.monte_carlo.medsim.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates, BreathingDescriptions, Demographics, Supplies
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates, BreathingDescriptions, Demographics, Supplies
 from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
 

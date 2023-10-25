@@ -1,6 +1,5 @@
 from components.decision_analyzer.monte_carlo.mc_sim import MCAction, MCState
-from .medsim_enums import Casualty, Supplies, Actions
-import numpy as np
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Actions
 
 
 class MedsimState(MCState):

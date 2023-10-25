@@ -1,7 +1,7 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
 from components.decision_analyzer.monte_carlo.medsim import MedsimState, MedicalSimulator, MedsimAction
-import components.decision_analyzer.monte_carlo.medsim.medsim_enums as tenums
-from components.decision_analyzer.monte_carlo.medsim.medsim_enums import *
+import components.decision_analyzer.monte_carlo.medsim.util.medsim_enums as tenums
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import *
 from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
 from runner.simple_driver import SimpleDriver
