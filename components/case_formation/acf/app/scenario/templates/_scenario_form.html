@@ -5,14 +5,29 @@
         <div class="card-body">
             <h6 class="card-title">Mission</h6>
             <p>{{ render_field(scenario_form.mission_type) }}</p>
-            <p class="card-text">{{ render_field(scenario_form.mission_description) }}</p>
+            <div class="bg-danger p-2">
+                <p>{{ render_field(scenario_form.eval_mission_type) }}</p>
+            </div>
+            <div class="bg-warning p-2">
+                <p class="card-text">{{ render_field(scenario_form.mission_description) }}</p>
+            </div>
         </div>
     </div>
-    <div class="card mt-2">
+    <div class="card bg-warning mt-2">
         <div class="card-body">
             <h6 class="card-title">Threats</h6>
             <p class="card-text">{{ render_field(scenario_form.threat_state_description)}}</p>
         </div>
     </div>
+    <div class="card bg-warning mt-2">
+        <div class="card-body">
+            <h6 class="card-title">Additional Information</h6>
+            <p class="card-text">
+            <div>{{ render_field(scenario_form.elapsed_time)}}</div>
+            </p>
+        </div>
+    </div>
+
     <div class="mt-2">{{ render_field(scenario_form.submit)}}</div>
+
 </form>

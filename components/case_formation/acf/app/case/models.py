@@ -1,6 +1,66 @@
 from app import db
 from datetime import datetime
 from sqlalchemy import Integer, String, DateTime, ForeignKey, Text
+import enum
+
+
+class ExtendedEnum(enum.Enum):
+    @classmethod
+    def get_members(cls):
+        return [member.value for name, member in cls.__members__.items()]
+
+    @classmethod
+    def get_member(cls, value):
+        return cls.__members__.get(value, None)
+
+    @classmethod
+    def get_name(cls, value):
+        for name, member in cls.__members__.items():
+            if member.value == value:
+                return name
+        return None
+
+
+class MissionType(ExtendedEnum):
+    LISTENING_OBSERVATION = "Listening/Observation"
+    DIRCT_ACTION = "Direct Action"
+    HOSTAGE_RESCUE = "Hostage rescue"
+    ASSET_TRANSPORT = "Asset transport"
+    SENSOR_EMPLACEMENT = "Sensor emplacement"
+    INTELLIGENCE_GATHERING = "Intelligence gathering"
+    CIVIL_AFFAIRS = "Civil affairs"
+    TRAINING = "Training"
+    SABOTAGE = "Sabotage"
+    SECURITY_PATROL = "Security patrol"
+    FIRE_SUPPORT = "Fire support"
+    NUCLEAR_DETERRENCE = "Nuclear deterrence"
+    EXTRACTION = "Extraction"
+    UNKNOWN = "Unknown"
+
+
+class SupplyTypes(ExtendedEnum):
+    TOURNIQUET = "Tourniquet"
+    PRESSURE_BANDAGE = "Pressure bandage"
+    HEMOSTATIC_GAUZE = "Hemostatic gauze"
+    DECOMPRESSION_NEEDLE = "Decompression needle"
+    NASPHARYNGEAL_AIRWAY = "Nasopharyngeal airway"
+
+
+class RelationshipTypes(ExtendedEnum):
+    NONE = "None"
+    ALLY = "Ally"
+    FRIEND = "Friend"
+    HOSTILE = "Hostile"
+    EXPECTANT = "Expectant"
+
+
+class RankTypes(ExtendedEnum):
+    MARINE = "Marine"
+    FMF_CORPSMAN = "FMF Corpsman"
+    SAILOR = "Sailor"
+    CIVILIAN = "Civilian"
+    SEAL = "SEAL"
+    INTEL_OFFICER = "Intel Officer"
 
 
 class CaseBase(db.Model):

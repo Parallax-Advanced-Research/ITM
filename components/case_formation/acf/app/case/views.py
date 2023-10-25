@@ -60,7 +60,7 @@ def delete_case(case_id):
 
 
 # view
-@case.route("/<int:case_id>")
+@case.route("/<int:case_id>", methods=["GET", "POST"])
 def view_case(case_id):
     case = Case.query.get_or_404(case_id)
     return render_template("view_case.html", case=case, title=case.name)

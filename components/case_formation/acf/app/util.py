@@ -1,7 +1,7 @@
 from app import db
 from app.case.models import Case
 from app.probe.models import Probe, ProbeOption, ProbeResponse
-from app.scenario.models import Scenario, Casualty, casualty_scenario, case_scenario
+from app.scenario.models import Scenario, Casualty, casualty_scenario
 
 
 # cascade

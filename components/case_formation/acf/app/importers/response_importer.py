@@ -15,11 +15,9 @@ class ResponseImporter:
         for message in messages:
             response = message["response"]
             user_id = message["user_id"]
+            session_id = message["session_id"]
             for item in response:
                 scenario_id = item["scenario_id"]
-                case = Case.query.filter_by(
-                    external_id=scenario_id, casebase_id=1
-                ).first()
                 probe_id = item["probe_id"]
                 probe = Probe.query.filter_by(probe_id=probe_id).first()
                 choice_id = item["choice"]
@@ -29,6 +27,7 @@ class ResponseImporter:
                     continue
                 probe_response = ProbeResponse(
                     user_id=user_id,
+                    session_id=session_id,
                     created_by="test",
                     value=probe_choice.value,
                     probe_id=probe_id,

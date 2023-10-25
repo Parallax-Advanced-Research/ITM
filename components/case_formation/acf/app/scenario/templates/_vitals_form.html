@@ -1,3 +1,7 @@
 <form method="post">
     {{ render_form(vitals_form) }}
 </form>
+
+<form method="post">
+    {{ vitals_form.csrf_token() }}
+</form>

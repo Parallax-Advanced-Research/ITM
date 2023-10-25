@@ -16,12 +16,18 @@
                 <tbody>
                     {% for probe in scenario.probes %}
                     <tr class="">
-                        <td>{{probe.id}}{{probe.external_id}} {{ probe.prompt }}</td>
+                        <td>[{{ probe.probe_id}}] {{ probe.prompt }}</td>
                         <td>{{ probe.state }}</td>
                         <td>
+
                             <ul class="list-group list-group-flush">
                                 {% for option in probe.options %}
                                 <li class="list-group-item">{{ option.value}}</li>
+                                {% endfor %}
+                            </ul>
+                            <ul>
+                                {% for alignment in probe.alignments %}
+                                {{ alignment.score}}
                                 {% endfor %}
                             </ul>
                         </td>
@@ -31,13 +37,12 @@
                     </tr>
                     <tr>
                         <td>Responses</td>
-                        <td></td>
-                        <td>{% for response in probe.responses %}
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">User {{ response.user_id }}<br>{{ response.value}}
-                                </li>
-                                {% endfor %}
-                            </ul>
+                        <td colspan="2">
+                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapsePanel" aria-expanded="false" aria-controls="collapsePanel">
+                                Expand/Collapse Responses
+                            </button>
+                            {% include '_view_response.html' %}
                         </td>
                         <td></td>
                         <td></td>
