@@ -1,4 +1,4 @@
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations, Injury, BodySystemEffect, InjuryUpdate
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations, Injury, BodySystemEffect, InjuryUpdate, Casualty
 from util.logger import logger
 
 
@@ -82,3 +82,46 @@ def update_smol_injury(injury: Injury, time_taken: float, treated=False):
         injury_effect: InjuryUpdate = SmolMedicalOracle.INJURY_UPDATE[injury_str]
         injury.update_bleed_breath(injury_effect, time_taken, reference_oracle=SmolMedicalOracle.DAMAGE_PER_SECOND, treated=True)
 
+
+def calc_prob_bleedout(casualty: Casualty):
+    # keep in mind, that loosing blood fast is different from loosing blood slow
+    max_blood_ml = 5000
+
+    total_blood_lost = 0
+    for inj in casualty.injuries:
+        total_blood_lost += inj.blood_lost_ml
+
+    if total_blood_lost / max_blood_ml < 0.15:  # < 15%
+        return 0.0
+    elif total_blood_lost / max_blood_ml < 0.30:  # 15-30%
+        return 0.1
+    elif total_blood_lost / max_blood_ml < 0.40:  # 30-40%
+        return 0.5
+    elif total_blood_lost / max_blood_ml < 0.50:  # 40-50%
+        return 0.75
+    else:
+        return 0.90
+
+
+def calc_prob_asphyx(casualty: Casualty):
+    max_breath_hp = 5000
+
+    total_breath_hp_lost = 0
+    for inj in casualty.injuries:
+        total_breath_hp_lost += inj.breathing_hp_lost
+
+    if total_breath_hp_lost / max_breath_hp < 0.15:  # < 15%
+        return 0.0
+    elif total_breath_hp_lost / max_breath_hp < 0.30:  # 15-30%
+        return 0.1
+    elif total_breath_hp_lost/ max_breath_hp < 0.40:  # 30-40%
+        return 0.5
+    elif total_breath_hp_lost / max_breath_hp < 0.50:  # 40-50%
+        return 0.75
+    else:
+        return 0.90
+
+
+def calc_prob_death(casualty: Casualty):
+    # simple adding of probabilities for now
+    return min(calc_prob_asphyx(casualty) + calc_prob_bleedout(casualty), 1.0)

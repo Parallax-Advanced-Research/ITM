@@ -195,6 +195,7 @@ class Injury:
             self.treated = True
 
     def __eq__(self, other: 'Injury'):
+        # TODO: add new cas members to equal function
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
                 self.time_elapsed == other.time_elapsed) and (self.treated == other.treated)
 
