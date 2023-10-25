@@ -1,10 +1,17 @@
 from enum import Enum
 
 
+class InjuryUpdate:
+    def __init__(self, bleed: str, breath: str):
+        self.bleeding_effect = bleed
+        self.breathing_effect = breath
+
+    def as_dict(self) -> dict[str, str]:
+        return {SmolSystems.BLEEDING.value: self.bleeding_effect, SmolSystems.BREATHING.value: self.breathing_effect}
+
 class SimulatorName(Enum):
     TINY = 'TINY MED SIM'
     SMOL = 'SMOL MED SIM'
-
 
 class Actions(Enum):
     APPLY_TREATMENT = "APPLY_TREATMENT"
@@ -84,6 +91,10 @@ class Injuries(Enum):
     BURN = 'Burn'
 
 
+class SmolSystems(Enum):
+    BREATHING = 'BREATHING'
+    BLEEDING = 'BLEEDING'
+
 class BodySystemEffect(Enum):
     NONE = 'NONE'
     MINIMAL = 'MINIMAL'
@@ -156,24 +167,43 @@ class Demographics:
 
 class Injury:
     def __init__(self, name: str, location: str, severity: float, treated: bool = False,
-                 breathing_effect=BodySystemEffect.NONE.value, cardio_effect=BodySystemEffect.NONE.value):
+                 breathing_effect=BodySystemEffect.NONE.value, bleeding_effect=BodySystemEffect.NONE.value):
         self.name = name
         self.location = location
         self.severity = severity
         self.time_elapsed: float = 0.0
         self.treated: bool = treated
         self.blood_lost_ml: float = 0.0
-        self.breathing_points: float = 0.0  # Breathing points are scaled the same as blood lost. If you lose 5000 you die
+        self.breathing_hp_lost: float = 0.0  # Breathing points are scaled the same as blood lost. If you lose 5000 you die
         self.breathing_effect: str = breathing_effect
-        self.cardio_effect: str = cardio_effect
+        self.bleeding_effect: str = bleeding_effect
+
+    def update_bleed_breath(self, effect: InjuryUpdate, time_elapsed: float,
+                            reference_oracle: dict[str, float], treated=False):
+        effect_dict: dict[str, str] = effect.as_dict()
+        for effect_key in list(effect_dict.keys()):
+            level = effect_dict[effect_key]
+            effect_value = reference_oracle[level]
+            effect_value /= 4.0 if treated else 1.0  # They only lost 1/4 hp if they're getting treated
+            if effect_key == SmolSystems.BREATHING.value:
+                self.breathing_hp_lost += (effect_value * time_elapsed) if not self.treated else 0.0
+                self.breathing_effect = effect_dict[effect_key]
+            if effect_key == SmolSystems.BLEEDING.value:
+                self.blood_lost_ml += (effect_value * time_elapsed) if not self.treated else 0.0
+                self.bleeding_effect = effect_dict[effect_key]
+        if treated:
+            self.treated = True
 
     def __eq__(self, other: 'Injury'):
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
                 self.time_elapsed == other.time_elapsed) and (self.treated == other.treated)
 
     def __str__(self):
-        return '%s_%s_%.2f_t=%.2f_%s' % (self.name, self.location, self.severity, self.time_elapsed,
-                                         'T' if self.treated else 'NT')
+        return '%s_%s_%.2f_t=%.2f_%s. Blood lost: %.1f ml (%s) BreathHP lost: %.1f (%s)' % (self.name, self.location,
+                                                                                            self.severity,
+                                                                                            self.time_elapsed, 'T' if self.treated else 'NT',
+                                                                                            self.blood_lost_ml, self.bleeding_effect,
+                                                                                            self.breathing_hp_lost, self.breathing_effect)
 
 
 class Vitals:
@@ -202,21 +232,15 @@ class Casualty:
         self.assessed: bool = assessed
         self.tag: str = tag
         self.time_elapsed: float = 0.0
-        self.blood_lost_ml: float = 0.0
-        self.cumulative_cardio_effect: float = 0.0
-        self.cumulative_breathing_effect: float = 0.0
         self.dead = False
+
 
     def __str__(self):
         retstr = "%s_" % self.id
         for inj in self.injuries:
             retstr += inj.__str__()
-            retstr += '_'
-        cardio_effect = get_effect_name(self.cumulative_cardio_effect)
-        breathing_effect = get_effect_name(self.cumulative_breathing_effect)
-        retstr += 'BLOOD_LOSS: %.2f_CARDIO EFFECT: %s_RESPITORY EFFECT: %s' % (self.blood_lost_ml, cardio_effect,
-                                                                               breathing_effect)
-        return retstr
+            retstr += ', '
+        return retstr[:-2]
 
     def __eq__(self, other: 'Casualty'):
         same = False
@@ -236,6 +260,7 @@ class Casualty:
         if self_inj_sorted != other_inj_sorted:
             same = False
         return same
+
 
 class Metric(Enum):
     SEVERITY = 'SEVERITY'
