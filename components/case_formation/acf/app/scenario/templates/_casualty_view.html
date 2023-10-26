@@ -57,6 +57,9 @@
                                 <div class="card-body">
                                     <h6 class="card-title">{{ injury.injury_type}}</h6>
                                     <p class="card-text">
+                                        {% if injury.created_by %}
+                                        (added by {{ injury.created_by}})
+                                        {% endif %}
                                     <div>Location: {{injury.injury_location}}</div>
                                     <div>Severity: {{injury.injury_severity}}</div>
                                     <div><a href="{{ url_for('scenario.edit_injury', injury_id=injury.id) }}">[edit]</a>

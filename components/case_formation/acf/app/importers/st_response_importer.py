@@ -32,14 +32,11 @@ class SoarTechResponseImporter:
                 chosen_value = possible_responses[choices[row["choice"]]].value
                 response = chosen_value
 
-                denial = row["denial"]
-                risktol = row["risktol"]
-                timeurg = row["timeurg"]
-
                 mission_kdma = KDMA(
                     kdma_name="mission",
                     kdma_value=row["mission"],
                 )
+                mission_kdma.save()
 
                 denial_kdma = KDMA(
                     kdma_name="denial",

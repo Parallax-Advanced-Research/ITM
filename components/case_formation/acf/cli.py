@@ -101,6 +101,13 @@ def applytourniquet():
     add_tourniquet()
 
 
+@click.command()
+def setkdmas():
+    """Set tags for probes."""
+    click.echo("Setting tags")
+    set_session_kdmas()
+
+
 # can't have underscores in command names
 cli.add_command(importyaml)
 cli.add_command(importresponses)
@@ -111,6 +118,8 @@ cli.add_command(deleteresponses)
 cli.add_command(deletecases)
 cli.add_command(deleteall)
 cli.add_command(settags)
+cli.add_command(applytourniquet)
+cli.add_command(setkdmas)
 
 if __name__ == "__main__":
     cli()

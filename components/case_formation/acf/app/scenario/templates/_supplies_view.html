@@ -2,7 +2,12 @@
     {% for supply in scenario.supplies %}
     <div class="card">
         <div class="card-body">
-            <div class="card-title">{{ supply.supply_type | validate_supply_type | safe }}</div>
+            <div class="card-title">{{ supply.supply_type | validate_supply_type | safe }}
+                {% if supply.created_by %}
+                <div>(added by {{ supply.created_by }})</div>
+                {% endif %}
+
+            </div>
             <p class="card-text">
             <div>quantity: {{supply.supply_quantity}}</div>
             <div><a href="{{ url_for('scenario.edit_supply', supply_id=supply.id) }}">[edit]</a>

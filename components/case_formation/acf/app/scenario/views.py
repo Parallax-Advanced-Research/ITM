@@ -18,7 +18,13 @@ from app.scenario.models import (
     Threat,
     Environment,
 )
-from app.case.models import Case, MissionType, SupplyTypes, RelationshipTypes, RankTypes
+from app.case.models import (
+    Case,
+    MissionTypes,
+    SupplyTypes,
+    RelationshipTypes,
+    RankTypes,
+)
 from app import db
 
 
@@ -30,8 +36,8 @@ def validate_api_member_filter(api_member):
 
 @scenario.app_template_filter("validate_mission_type")
 def validate_mission_type_filter(mission_type):
-    if mission_type in MissionType.__members__:
-        mission_type = MissionType.get_member(mission_type).value
+    if mission_type in MissionTypes.__members__:
+        mission_type = MissionTypes.get_member(mission_type).value
         return '<span class="text-success fw-bold">{}</span>'.format(mission_type)
     else:
         return '<span class="text-danger fw-bold">{}</span>'.format(mission_type)

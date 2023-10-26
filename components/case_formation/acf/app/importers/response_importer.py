@@ -28,7 +28,7 @@ class ResponseImporter:
                 probe_response = ProbeResponse(
                     user_id=user_id,
                     session_id=session_id,
-                    created_by="test",
+                    created_by="import",
                     value=probe_choice.value,
                     probe_id=probe_id,
                 )

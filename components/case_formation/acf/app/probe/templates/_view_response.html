@@ -43,7 +43,7 @@
                 <a href="{{ url_for('probe.add_action', response_id=response.id) }}">[add action]</a>
             </li>
             <li class="list-group-item text-info">
-                {% if kdmas|count > 0 %}
+                {% if response.kdmas|count > 0 %}
                 {{ response.kdmas}}
                 {% else %}
                 none

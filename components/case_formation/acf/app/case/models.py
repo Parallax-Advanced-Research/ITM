@@ -14,16 +14,19 @@ class ExtendedEnum(enum.Enum):
         return cls.__members__.get(value, None)
 
     @classmethod
-    def get_name(cls, value):
-        for name, member in cls.__members__.items():
-            if member.value == value:
-                return name
-        return None
+    def get_member_name(cls, value):
+        member = cls.get_member(value)
+        return member.name if member else None
+
+    @classmethod
+    def get_member_value(cls, name):
+        member = cls.__members__.get(name, None)
+        return member.value if member else None
 
 
-class MissionType(ExtendedEnum):
+class MissionTypes(ExtendedEnum):
     LISTENING_OBSERVATION = "Listening/Observation"
-    DIRCT_ACTION = "Direct Action"
+    DIRECT_ACTION = "Direct Action"
     HOSTAGE_RESCUE = "Hostage rescue"
     ASSET_TRANSPORT = "Asset transport"
     SENSOR_EMPLACEMENT = "Sensor emplacement"
@@ -42,7 +45,7 @@ class SupplyTypes(ExtendedEnum):
     TOURNIQUET = "Tourniquet"
     PRESSURE_BANDAGE = "Pressure bandage"
     HEMOSTATIC_GAUZE = "Hemostatic gauze"
-    DECOMPRESSION_NEEDLE = "Decompression needle"
+    DECOMPRESSION_NEEDLE = "Decompression Needle"  # in ta1 data Decompression Needle
     NASPHARYNGEAL_AIRWAY = "Nasopharyngeal airway"
 
 

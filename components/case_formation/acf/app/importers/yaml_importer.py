@@ -34,7 +34,14 @@ class YAMLImporter:
             scenario_state = data["state"]
             scenario_description = scenario_state["unstructured"]
             scenario_mission_description = scenario_state["mission"]["unstructured"]
-            scenario_mission_type = scenario_state["mission"]["mission_type"]
+            scenario_mission_type = None
+            if (
+                "mission_type" in scenario_state["mission"]
+                and scenario_state["mission"]["mission_type"] is not None
+            ):
+                scenario_mission_type = (
+                    scenario_state["mission"]["mission_type"].upper().replace(" ", "_")
+                )
 
             scenario = Scenario(
                 created_by="import" if external_id is None else "import-" + external_id,
@@ -77,7 +84,7 @@ class YAMLImporter:
                 scenario_supplies = scenario_state["supplies"]
                 if scenario_supplies is not None:
                     for supply in scenario_supplies:
-                        supply_type = supply["type"]
+                        supply_type = supply["type"].upper().replace(" ", "_")
                         supply_quantity = supply["quantity"]
                         supply = Supply(
                             supply_type=supply_type,
@@ -100,14 +107,18 @@ class YAMLImporter:
         )
 
         casualty_relationship_type = "NONE"
-        casualty_rank = ""
+        casualty_rank = None
         for casualty in scenario_casualties:
             casualty_age = casualty["demographics"]["age"]
             casualty_sex = casualty["demographics"]["sex"]
             if "rank" in casualty["demographics"]:
-                casualty_rank = casualty["demographics"]["rank"]
+                casualty_rank = (
+                    casualty["demographics"]["rank"].upper().replace(" ", "_")
+                )
             if "relationship" in casualty:
-                casualty_relationship_type = casualty["relationship"]["type"]
+                casualty_relationship_type = (
+                    casualty["relationship"]["type"].upper().replace(" ", "_")
+                )
             new_casualty = Casualty(
                 name=casualty["id"],
                 description=casualty["unstructured"],
