@@ -197,7 +197,9 @@ class Injury:
     def __eq__(self, other: 'Injury'):
         # TODO: add new cas members to equal function
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
-                self.time_elapsed == other.time_elapsed) and (self.treated == other.treated)
+                self.time_elapsed == other.time_elapsed and self.treated == other.treated and
+                self.blood_lost_ml == other.blood_lost_ml and self.breathing_hp_lost == other.breathing_hp_lost and
+                self.breathing_effect == other.breathing_effect and self.bleeding_effect == other.bleeding_effect)
 
     def __str__(self):
         return '%s_%s_%.2f_t=%.2f_%s. Blood lost: %.1f ml (%s) BreathHP lost: %.1f (%s)' % (self.name, self.location,
