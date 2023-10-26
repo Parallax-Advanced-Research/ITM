@@ -39,9 +39,12 @@ class MedicalSimulator(MCSim):
     def exec(self, state: MedsimState, action: MedsimAction) -> list[SimResult]:
         supplies: dict[str, int] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
-        new_state = self.action_map[action.action](casualties, supplies, action, self._rand, state.time)
+        new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action, self._rand, state.time)
         outcomes = []
         for new_s in new_state:
+            new_state_casualties = new_s.casualties
+            for nsc in new_state_casualties:
+                nsc.update_morbidity_calculations()
             outcome = SimResult(action=action, outcome=new_s)
             outcomes.append(outcome)
         return outcomes

@@ -1,6 +1,6 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
 from components.decision_analyzer.monte_carlo.medsim import MedsimState, MedicalSimulator, MedsimAction
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates, BreathingDescriptions, Demographics, Supplies
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates_KNX, BreathingDescriptions_KNX, Demographics, Supplies
 from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
 
@@ -16,14 +16,14 @@ def get_TMNT_demo_casualties() -> list[Casualty]:
     major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=7.0)
     collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=8.0)
 
-    raphael_vitals = Vitals(conscious=True, mental_status=MentalStates.DANDY.value,
-                            breathing=BreathingDescriptions.NORMAL.value, hrpmin=49)
-    michelangelo_vitals = Vitals(conscious=True, mental_status=MentalStates.FINE.value,
-                                 breathing=BreathingDescriptions.NORMAL.value, hrpmin=68)
-    donatello_vitals = Vitals(conscious=True, mental_status=MentalStates.FINE.value,
-                              breathing=BreathingDescriptions.HEAVY.value, hrpmin=81)
-    leonardo_vitals = Vitals(conscious=True, mental_status=MentalStates.PANICKED.value,
-                             breathing=BreathingDescriptions.COLLAPSED.value, hrpmin=50)
+    raphael_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.DANDY.value,
+                            breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=49)
+    michelangelo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.FINE.value,
+                                 breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=68)
+    donatello_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.FINE.value,
+                              breathing=BreathingDescriptions_KNX.HEAVY.value, hrpmin=81)
+    leonardo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.PANICKED.value,
+                             breathing=BreathingDescriptions_KNX.COLLAPSED.value, hrpmin=50)
     casualties = [
         Casualty('raphael', 'raphael has a bump on his left wrist', name='raphael',
                        relationship='same unit',

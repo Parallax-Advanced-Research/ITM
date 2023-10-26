@@ -3,12 +3,6 @@ from util.logger import logger
 
 
 class SmolMedicalOracle:
-    MAX_BLOOD_ML = 5000
-    MAX_BREATH_HP = 5000
-    BLEEDOUT_CHANCE_NONE = 0.15
-    BLEEDOUT_CHANCE_LOW = 0.3
-    BLEEDOUT_CHANCE_MED = 0.4
-    BLEEDOUT_CHANCE_HIGH = 0.5
 
     FAILURE_CHANCE = {
         Supplies.PRESSURE_BANDAGE.value: .01,
@@ -84,47 +78,3 @@ def update_smol_injury(injury: Injury, time_taken: float, treated=False):
         injury.name = injury_str
     injury_effect: InjuryUpdate = SmolMedicalOracle.INJURY_UPDATE[injury_str]
     injury.update_bleed_breath(injury_effect, time_taken, reference_oracle=SmolMedicalOracle.DAMAGE_PER_SECOND, treated=treated)
-
-    def resolve_smol_injury(injury: Injury, time_taken: float):
-        injury_effect: InjuryUpdate = SmolMedicalOracle.INJURY_UPDATE[injury_str]
-        injury.update_bleed_breath(injury_effect, time_taken, reference_oracle=SmolMedicalOracle.DAMAGE_PER_SECOND, treated=True)
-
-
-def calc_prob_bleedout(casualty: Casualty):
-    # keep in mind, that loosing blood fast is different from loosing blood slow
-    total_blood_lost = 0
-    for inj in casualty.injuries:
-        total_blood_lost += inj.blood_lost_ml
-
-    if total_blood_lost / SmolMedicalOracle.MAX_BLOOD_ML < SmolMedicalOracle.BLEEDOUT_CHANCE_NONE:  # < 15%
-        return 0.0
-    elif total_blood_lost / SmolMedicalOracle.MAX_BLOOD_ML < SmolMedicalOracle.BLEEDOUT_CHANCE_LOW:  # 15-30%
-        return 0.1
-    elif total_blood_lost / SmolMedicalOracle.MAX_BLOOD_ML < SmolMedicalOracle.BLEEDOUT_CHANCE_MED:  # 30-40%
-        return 0.5
-    elif total_blood_lost / SmolMedicalOracle.MAX_BLOOD_ML < SmolMedicalOracle.BLEEDOUT_CHANCE_HIGH:  # 40-50%
-        return 0.75
-    else:
-        return 0.90
-
-
-def calc_prob_asphyx(casualty: Casualty):
-    total_breath_hp_lost = 0
-    for inj in casualty.injuries:
-        total_breath_hp_lost += inj.breathing_hp_lost
-
-    if total_breath_hp_lost / SmolMedicalOracle.MAX_BREATH_HP < SmolMedicalOracle.BLEEDOUT_CHANCE_NONE:  # < 15%
-        return 0.0
-    elif total_breath_hp_lost / SmolMedicalOracle.MAX_BREATH_HP < SmolMedicalOracle.BLEEDOUT_CHANCE_LOW:  # 15-30%
-        return 0.1
-    elif total_breath_hp_lost/ SmolMedicalOracle.MAX_BREATH_HP < SmolMedicalOracle.BLEEDOUT_CHANCE_MED:  # 30-40%
-        return 0.5
-    elif total_breath_hp_lost / SmolMedicalOracle.MAX_BREATH_HP < SmolMedicalOracle.BLEEDOUT_CHANCE_HIGH:  # 40-50%
-        return 0.75
-    else:
-        return 0.90
-
-
-def calc_prob_death(casualty: Casualty):
-    # simple adding of probabilities for now
-    return min(calc_prob_asphyx(casualty) + calc_prob_bleedout(casualty), 1.0)
