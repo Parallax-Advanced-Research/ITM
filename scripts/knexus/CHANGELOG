@@ -9,6 +9,14 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
+V KR 1.5.8 (10/27 EOW)
+=========================
+> Updated Medical simulator. Major change provides much more accurate values for reasoning
+> Legacy keys remian, but new helpful keys include: MEDSIM_P_DEATH, MEDSIM_P_BLEEDOUT, MEDSIM_P_ASPHYXIA,
+  EST_BLOOD_LOSS, EST_LUNG_LOSS, as well as the HIGHEST version of all of these
+> Major refactoring of med simulator
+> Added flag to tad_tester to turn off output from kdma estimator with decision_verbose flag (left extended output on for now)
+
 V KR 1.4.7 (10/23 BOW)
 =========================
 > Added in justification about injuries and overall scene

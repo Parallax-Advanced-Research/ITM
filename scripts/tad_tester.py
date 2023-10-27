@@ -8,7 +8,7 @@ def test_endpoint(args):
     args.variant = 'aligned'
     args.ebd = False
     args.hra = True
-    args.decision_verbose = False
+    args.decision_verbose = True
     tad.api_test(args)
 
 

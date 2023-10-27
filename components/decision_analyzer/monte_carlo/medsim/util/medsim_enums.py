@@ -188,8 +188,9 @@ class Casualty:
         if not len(self.injuries):
             return True
         self_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost) for inj in self.injuries)
-        other_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost) for inj in self.injuries)
-        return self_hp_lost < other_hp_lost
+        other_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost) for inj in other.injuries)
+        less_than = self_hp_lost < other_hp_lost
+        return less_than
 
 
 class SimulatorName(Enum):

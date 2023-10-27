@@ -2,7 +2,7 @@ import numpy as np
 
 from components.decision_analyzer.monte_carlo.medsim import MedicalSimulator
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState, get_prob
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash, SimulatorName
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
@@ -103,6 +103,21 @@ def dict_minus(before, after):
     return minus_dict
 
 
+def get_average_morbidity(outcomes: dict[str, float | dict[str, float]]) -> MetricResultsT:
+    morbidity_lists: dict[str, list[float]] = {}
+    morbidity_output: MetricResultsT = dict()
+    for outcome in outcomes:
+        outcome_probability = outcomes[outcome][Metric.PROBABILITY.value]
+        morbidity: dict = outcomes[outcome][Metric.MORBIDITY.value]
+        for morbid_key in morbidity:
+            if morbid_key not in morbidity_lists.keys():
+                morbidity_lists[morbid_key] = []
+            morbidity_lists[morbid_key].append((morbidity[morbid_key] * outcome_probability))
+    for morb_key in morbidity_lists:
+        morbidity_output[morb_key] = sum(morbidity_lists[morb_key])
+    return morbidity_output
+
+
 def get_future_and_change_metrics(current_state: MedsimState, future_states: mcnode.MCDecisionNode) -> MetricResultsT:
     metric_return: MetricResultsT = dict()
     new_metrics = future_states.children[0].score
@@ -120,8 +135,8 @@ def get_future_and_change_metrics(current_state: MedsimState, future_states: mcn
     nondeterminism_metrics = get_nondeterministic_metrics(future_states)
     metric_return[Metric.NONDETERMINISM.value] = nondeterminism_metrics
 
-    # morbidity_metrics = current_state.get_state_morbidity()
-    # metric_return.update(morbidity_metrics)
+    morbidity_metrics = get_average_morbidity(metric_return[Metric.NONDETERMINISM.value])
+    metric_return.update(morbidity_metrics)
     return metric_return
 
 
