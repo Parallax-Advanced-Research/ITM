@@ -1,5 +1,7 @@
+import logging
+import numpy as np
 from components.decision_analyzer.monte_carlo.mc_sim import MCAction, MCState
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Actions
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Actions, Metric
 
 
 class MedsimState(MCState):
@@ -40,6 +42,40 @@ class MedsimState(MCState):
             for inj in cas.injuries:
                 severity += inj.severity
         return severity
+
+    def get_state_morbidity(self) -> dict[str, float | dict[str, float]]:
+        def get_prob(pvals: list[float]):
+            prob = 1.
+            for pval in pvals:
+                not_occur = 1 - pval
+                prob *= not_occur
+            final_prob = 1 - prob
+            return final_prob # prob is probability of event not happening
+
+        morbidity_dict: dict[str, float] = dict()
+        sorted_cas: list[Casualty] = sorted(self.casualties)
+        if not len(sorted_cas):  # Assuming at least one else return nada
+            return {}
+        deathly_person = sorted_cas[0]
+        probability_death = get_prob([cas.calc_prob_death() for cas in sorted_cas])
+        probability_bleedout = get_prob([cas.calc_prob_bleedout() for cas in sorted_cas])
+        probability_asphyxia = get_prob([cas.calc_prob_asphyx() for cas in sorted_cas])
+        tot_blood, lung_loss = 0., 0.
+        for cas in sorted_cas:
+            tot_blood += sum(inj.blood_lost_ml for inj in cas.injuries)
+            lung_loss += sum(inj.breathing_hp_lost for inj in cas.injuries)
+        morbidity_dict[Metric.P_DEATH.value] = probability_death
+        morbidity_dict[Metric.P_BLEEDOUT.value] = probability_bleedout
+        morbidity_dict[Metric.P_ASPHYXIA.value] = probability_asphyxia
+        morbidity_dict[Metric.TOT_BLOOD_LOSS.value] = tot_blood
+        morbidity_dict[Metric.TOT_LUNG_LOSS.value] = lung_loss
+        # Overall p_death
+        # Overall p_bleedout
+        # Overall p_asphyxia
+        # Overall Blood Lost
+        # Overall Lung HP Lost
+        # + Most Severe
+        return morbidity_dict
 
 
 class MedsimAction(MCAction):
