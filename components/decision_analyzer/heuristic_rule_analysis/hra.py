@@ -1095,8 +1095,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         with kdma associated predictor values (should be learned), predictor values for possible decisions (will be educated guess), kdma values (should be learned)
     '''
 
-    # TODO: refactor and test
-    def preprocess(self, decision_list:list) -> str: #LEFT OFF
+    def preprocess(self, decision_list:list) -> str:
 
         if type(decision_list) != list: raise AttributeError("Incorrect arg types or size")
 
@@ -1139,7 +1138,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             "SITREP": {
                 "SITREP": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all"}},
         }
-
         file['treatment'] = {}
         file['treatment']["APPLY_TREATMENT"] = dict()
         for decision_complete in decision_list:
@@ -1147,9 +1145,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             if decision == 'END_SCENARIO': continue
             elif decision == "APPLY_TREATMENT":
                 for ele in temp_file['treatment']['APPLY_TREATMENT']:
-                    if ele in str(decision_complete.value).lower():
+                    if ele in file['treatment']["APPLY_TREATMENT"]: continue
+                    elif ele in str(decision_complete.value).lower():
                         file['treatment']["APPLY_TREATMENT"][ele] = temp_file['treatment']['APPLY_TREATMENT'][ele]
+                        break
             else:
+                if decision in file['treatment']: continue
                 file['treatment'][decision] = temp_file['treatment'][decision]
 
         file['injury_list'] = ["Forehead Scrape", "Ear Bleed", "Asthmatic", "Laceration", "Puncture", "Shrapnel",
