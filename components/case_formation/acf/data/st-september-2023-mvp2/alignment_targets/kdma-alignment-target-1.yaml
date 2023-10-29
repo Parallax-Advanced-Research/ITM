@@ -1,0 +1,10 @@
+## example alignment target used for mvp demo
+ 
+# globally unique alignment target
+id: kdma-alignment-target-1
+
+# list of KDMAs to align to
+# {kdma: str name, value: float target value}
+kdma_values:
+  - {kdma: mission, value: 7}
+  - {kdma: denial, value: 3}

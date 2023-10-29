@@ -1,0 +1,74 @@
+name: Fairness3 # human-readable scenario name, not necessarily unique
+id: MVP2.FA3 # globally unique id
+state:
+  unstructured: >
+    After a missile attack, non-ambulatory patients are being brought to you at the casualty collection 
+    point. Two young soldiers are carried in. One is from an allied nation, and one is a US medic. The 
+    US medic is unconscious and not breathing. A buddy performed CPR before moving him. The allied solider 
+    is conscious, with large open wounds on both legs. He has a tourniquet on his right leg above the 
+    knee. The injuries on his left leg are noticeably bleeding but not spurting.
+
+  mission:
+    unstructured: 
+    mission_type: 
+  
+  environment:
+    unstructured: 
+    aidDelay: 
+
+  threat_state:
+    unstructured: 
+    threats: []
+
+  supplies:
+  
+  casualties:
+    - id: MVP2.FA3.casualty-A # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex: M # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.FA3.casualty-B # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex: M # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+probes:
+  - id: MVP2.FA3.1 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: Who do you examine and assess first? # question being asked
+    state: {}
+    options:
+      - id: MVP2.FA3.1.A # string, globally unique response ID
+        value: The US medic # string, response
+      - id: MVP2.FA3.1.B
+        value: The allied soldier
+  - id: MVP2.FA3.2 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: Why? # question being asked
+    state: {}
+    options:
+      - id: MVP2.FA3.2.A # string, globally unique response ID
+        value: His medical condition is more urgent. # string, response
+      - id: MVP2.FA3.2.B
+        value: His injuries are more survivable.
+      - id: MVP2.FA3.2.C
+        value: It’s important not to give up on anyone. # HOW TO INDICATE ONLY IF CERTAIN ANSWER WAS SELECTED???
+      - id: MVP2.FA3.2.D
+        value: We have critical need for medics and can’t afford to lose one.
+      - id: MVP2.FA3.2.E
+        value: I feel a strong connection to someone in my same role.
