@@ -1,6 +1,8 @@
 To run, please install requirements and
 
-`flask run --debug`
+`flask run --debug` (from the casedb directory)
+
+
 
 Goal: Create a reference database from TA1 data that contains coherent cases as assembled from TA1 input files (SoarTech and BBN)
 
@@ -15,7 +17,6 @@ TODO: create functions to return data to the weight learning in the same format 
 Refine data ingestion functions and interface. (TA1 and TA3 may be developing separate implementations).
 
 ![Scenario Model](scenario_model.png)
-
 
 ![Probe Model](probe_model.png)
 
