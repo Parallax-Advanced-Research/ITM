@@ -4,6 +4,16 @@ To run, please install requirements and
 
 
 
+Red fields indicate TA3 only data
+
+Yellow fields indicate both TA1 and TA3 data
+
+Red text indicates TA1 data incompatible with TA3 data
+
+Green text indicates TA1 data compatible with TA3 data
+
+Plus and minus options are included to allow for the addition and removal of data from the database and to allow some alignment between TA1 concepts that have an analagous ta3 concept.
+
 Goal: Create a reference database from TA1 data that contains coherent cases as assembled from TA1 input files (SoarTech and BBN)
 
 Create an ORM scheme that allows database entities to be treated as objects to interact with both TAD and TA3 API
