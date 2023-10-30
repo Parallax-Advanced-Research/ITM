@@ -821,7 +821,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             "Bad value for k or m")
 
         # prep the input
-        if data == None:
+        if data is None:
             with open(file_name, 'r') as f:
                 data = json.load(f)
         treatment_idx = list(data['treatment'])
@@ -846,7 +846,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # create container to hold number of predictors matched for each treatment
         treatment_predictor_sums = [0] * 2
 
-        # store "battles" in list e.g. list[list] -> battle[0] = [1, 2, 3, 4], battle[1] = [2, 3, 4]
+        # store "battles" in list e.g. list[list] -> battle[0] = [(1,0), (2,0), (3,0), (4,0)], battle[1] = [(2,1), (3,1), (4,1)] ... battle[4] = []
         battle = [None] * len(treatment_idx)
         # for l in range(len(treatment_pairs) - 1, -1, -1):
         for ele in treatment_pairs:
@@ -870,7 +870,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 winner_idx = 0
                 battle_idx = 0
         else:
-            return "no battles"
+            raise Exception("No treatments to compare")
 
         # continue checking battles, while number of battle < num of battle pairs
         while (cnt > 0):
@@ -948,7 +948,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                        + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
                         return (treatment_idx[pair[1]], treatment1, search_tree)
                     else:
-                        return (treatment_idx[pair[1]], treatment0)
+                        return (treatment_idx[pair[1]], treatment1) # change to data['treatments'][winner_idx]
 
             # do mini battle
             # get last battle index
@@ -1263,18 +1263,14 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                          'one-bounce': 0}
 
         # call each HRA strategy and store the result with the matching decision list
-        take_the_best_result = self.take_the_best(new_file, search_path=search_path, data=data) # update all strategies to use data
+        take_the_best_result = self.take_the_best(new_file, search_path=search_path, data=data)
         decision_hra[take_the_best_result[0]]['take-the-best'] += 1
 
         exhaustive_result = self.exhaustive(new_file, search_path=search_path, data=data)
         decision_hra[exhaustive_result[0]]['exhaustive'] += 1
 
-        #if not(rand_seed is None):
         tallying_result = self.tallying(new_file, m, search_path=search_path, data=data,
                                             seed=rand_seed)
-        #else:
-        #    tallying_result = self.tallying(new_file, m,
-        #                                    search_path=search_path, data=data)
         decision_hra[tallying_result[0]]['tallying'] += 1
 
         satisfactory_result = self.satisfactory(new_file, m, seed=rand_seed,
@@ -1350,7 +1346,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             casualty_data[casualty]['injury'] = {'system':"None"}
             for i in injury_cnt:
                 casualty_data[casualty]['injury']['system'] = self.guess_injury_body_system(casualty_data[casualty]['injuries'][i]['location'], casualty_data[casualty]['injuries'][i]['name'])
-            temp_data['casualty'] = casualty_data[casualty] # <- should the casualty name be added?
+            temp_data['casualty'] = casualty_data[casualty]
             temp_data['treatment'] = {}
 
             result = {}
@@ -1432,27 +1428,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             decision_complete.metrics.update(metrics)
             analysis[decision_complete.id_] = metrics
         return analysis
-
-"""
-        # TODO: Sometimes Casualty Selected is empty/none??
-
-if __name__ == '__main__':
-    #cwd = Path.cwd()
-    #print("cwd", cwd)
-    mod_path = Path(__file__).parent
-    #print("mod_path:", mod_path)
-    #file_path = (mod_path / "scene_one_treatment.json").resolve()
-    #file_path = (mod_path / "hra_info.json").resolve()
-    #file_path = (mod_path / "scene.json").resolve()
-    new_file = (mod_path / "newfile.json").resolve()
-    #print("file_path", type(file_path),file_path)
-    hra_obj = HeuristicRuleAnalyzer()
-    #result = hra_obj.one_bounce(file_path, 2, 3)
-    result = hra_obj.hra_decision_analytics(new_file)
-    #result = hra_obj.hra_decision_analytics(file_path, 2, rand_seed=0)
-    #result = hra_obj.analyze(file_path, 2, rand_seed=0)
-    print("result", result)
-"""
 
 
 
