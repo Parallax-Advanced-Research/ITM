@@ -9,7 +9,30 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
-V KR 1.2.3 (10/17 changes)
+V KR 1.5.8 (10/27 EOW)
+=========================
+> Updated Medical simulator. Major change provides much more accurate values for reasoning
+> Legacy keys remian, but new helpful keys include: MEDSIM_P_DEATH, MEDSIM_P_BLEEDOUT, MEDSIM_P_ASPHYXIA,
+  EST_BLOOD_LOSS, EST_LUNG_LOSS, as well as the HIGHEST version of all of these
+> Major refactoring of med simulator
+> Added flag to tad_tester to turn off output from kdma estimator with decision_verbose flag (left extended output on for now)
+
+V KR 1.4.7 (10/23 BOW)
+=========================
+> Added in justification about injuries and overall scene
+
+
+
+V KR 1.3.5 (10/18 midweek patch)
+=========================
+> Major rewrite of Monte Carlo Analyzer class:
+  > Returns new metrics for target severity/change, and severest casualty severity/change
+  > Values have been normalized for number of time units taken
+> __init__.py removed from scrips file to fix scripts running "illegally" in pycharm
+
+
+
+V KR 1.2.3 (10/16 changes)
 =========================
 Changes:
 > Monte Carlo Decision Analyzer is no longer calculating casualty severity twice.
@@ -17,40 +40,36 @@ Changes:
 > TA3 past action / treatments are refactored out of driver class
 > Removed non-working metrics while target/worst severity metrics are being built
 
-=========================
+
+
 V KR 1.1.3A (oops) (10/10 Internal changes)
-=======
+=========================
 Monte Carlo Changes-
 > replace score averager with weighted average
 > children nodes that are chosen more frequently have a greater affect on the node's score
 
+
+
 V KR 1.1.2 (10/7 to Paralax)
-=======
+=========================
 Monte Carlo Changes-
 > Visualizer implemented
 > Nested score propogation implemented
-
-=======
 Tinymed Simulator-
 > Large overhaul medactions, very generic functions
 > Made fixes
-
-=======
 Ingestors-
 > TA3 converters written
-
-=======
 Sumo-
 > Medical Oracle excel generated
-
 Misc-
 > TA3 States updated to work with kdma rules
 > Updated tad_tester to run with new kdma deciders
 
-=======================
+
 
 V KR.1.0.0 (Sept-Demo)
-=======
+=========================
 Monte Carlo Changes-
 > Monte Carlo created
 > Random + explore/exploit node selectors implemented
@@ -67,9 +86,11 @@ Ingestors-
 Sumo-
 > Did time tests, sumo work discontinued
 
-=======================
+
+
+
 V KR.0.0.0 (MVP)
-=======
+=========================
 Monte Carlo Changes-
 > Not Present
 =======

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_field %}
+{% from 'bootstrap5/form.html' import render_form %}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% block title %}
+{% endblock title %}
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ title}}</h5>
+            <p class="card-text">{% include '_probe_form.html' %}</p>
+        </div>
+    </div>
+    <div class="card mt-2">
+        <div class="card-body">
+            <h5 class="card-title">Options</h5>
+            <p class="card-text">
+                {% if probe %}
+            <ul class="list-group list-group-flush">
+                {% for option in probe.options %}
+                <li class="list-group-item">{{option.value}} [External Id: ({{option.choice_id}})] <a href="{{ url_for('probe.delete_probe_option',
+                    probe_option_id=option.id) }}">{{ render_icon('dash-circle', 15, 'secondary')}}</a></li>
+                {% endfor %}
+            </ul>
+            <a href="{{ url_for('probe.add_probe_option', probe_id=probe.id) }}">[add option]</a>
+            {% else %}
+            <div class="text-warning">Save probe to add option</div>
+            {% endif %}
+            </p>
+            <p>
+                <a class="btn btn-primary" href="{{ url_for('case.view_case', case_id=case_id) }}"
+                    role="button">Done</a>
+
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock content %}

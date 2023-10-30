@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">{{ title }}</h4>
+            {% include '_casebase_form.html' %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

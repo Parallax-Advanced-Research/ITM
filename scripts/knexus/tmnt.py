@@ -1,16 +1,78 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
-from components.decision_analyzer.monte_carlo.tinymed import TinymedState, TinymedSim, TinymedAction
-from components.decision_analyzer.monte_carlo.tinymed.medactions import get_TMNT_demo_casualties, get_TMNT_supplies
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
-from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
+from components.decision_analyzer.monte_carlo.medsim import MedsimState, MedicalSimulator, MedsimAction
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates_KNX, BreathingDescriptions_KNX, Demographics, Supplies
+from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
-from runner import TA3Driver
+
 from runner import simple_driver
 from domain.internal import KDMAs
 from util import logger, dict_difference
 from domain.external import Action
 
+def get_TMNT_demo_casualties() -> list[Casualty]:
+    wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
+    minor_cut = Injury(name=Injuries.LACERATION.value, location=Locations.RIGHT_BICEP.value, severity=3.0)
+    moder_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_SIDE.value, severity=5.0)
+    major_cut = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_THIGH.value, severity=7.0)
+    collapsed_lung = Injury(name=Injuries.CHEST_COLLAPSE.value, location=Locations.UNSPECIFIED.value,  severity=8.0)
 
+    raphael_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.DANDY.value,
+                            breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=49)
+    michelangelo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.FINE.value,
+                                 breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=68)
+    donatello_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.FINE.value,
+                              breathing=BreathingDescriptions_KNX.HEAVY.value, hrpmin=81)
+    leonardo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.PANICKED.value,
+                             breathing=BreathingDescriptions_KNX.COLLAPSED.value, hrpmin=50)
+    casualties = [
+        Casualty('raphael', 'raphael has a bump on his left wrist', name='raphael',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='muscle'),
+                       injuries=[wrist_bump],
+                       vitals=raphael_vitals,
+                       complete_vitals=raphael_vitals,
+                       assessed=False,
+                       tag="tag"),
+        Casualty('michelangelo', 'michelangelo has a minor laceration on his right bicep',
+                       name='michelangelo',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='the wild one'),
+                       injuries=[minor_cut],
+                       vitals=michelangelo_vitals,
+                       complete_vitals=michelangelo_vitals,
+                       assessed=False,
+                       tag="tag"),
+        Casualty('donatello', 'donatello has a major cut on his left thigh',
+                       name='donatello',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='the brains'),
+                       injuries=[major_cut],
+                       vitals=donatello_vitals,
+                       complete_vitals=donatello_vitals,
+                       assessed=False,
+                       tag="tag"),
+        Casualty('leonardo', 'leonardo is unable to breathe, and has moderate cut across the left side of abdomen',
+                       name='leonardo',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='the leader'),
+                       injuries=[moder_cut, collapsed_lung],
+                       vitals=leonardo_vitals,
+                       complete_vitals=leonardo_vitals,
+                       assessed=False,
+                       tag="tag"),
+    ]
+    return casualties
+
+
+def get_TMNT_supplies() -> dict[str, int]:
+    supplies = {
+        Supplies.TOURNIQUET.value: 3,
+        Supplies.PRESSURE_BANDAGE.value: 2,
+        Supplies.HEMOSTATIC_GAUZE.value: 2,
+        Supplies.DECOMPRESSION_NEEDLE.value: 2,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 3
+    }
+    return supplies
 class TMNTClient:
     SUPPLIES = [{'quantity': 3, 'type': 'Hemostatic gauze'}, {'quantity': 3, 'type': 'Tourniquet'}, {'quantity': 3, 'type': 'Pressure bandage'}, {'quantity': 3, 'type': 'Decompression Needle'}, {'quantity': 3, 'type': 'Nasopharyngeal airway'}]
     CASUALTIES = [{'id': 'Donatello', 'unstructured': 'Donatello has a horrific (0.9) burn and bad (0.7) neck puncture', 'name': 'Donatello', 'relationship': None, 'demographics': {'age': 15, 'sex': 'M', 'rank': 'turtle'}, 'injuries': [{'name': 'Puncture', 'location': 'left neck', 'severity': 0.8}, {'name': 'Burn', 'location': 'unspecified', 'severity': 0.9}], 'vitals': {'conscious': None, 'mental_status': None, 'breathing': None, 'hrpmin': None}, 'complete_vitals': None, 'assessed': False, 'tag': None},
@@ -33,24 +95,24 @@ class TMNTClient:
         self.probe_count = 1
         casualties: list[Casualty] = get_TMNT_demo_casualties()
         supplies: dict[str, int] = get_TMNT_supplies()
-        self.init_state: TinymedState = TinymedState(casualties, supplies, time=0.0,
-                                                        unstructured="Turtles in a half shell, TURTLE POWER!!!")
-        self.current_state: TinymedState = self.init_state
-        self.simulator = TinymedSim(init_state=self.init_state)
+        self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
+                                                   unstructured="Turtles in a half shell, TURTLE POWER!!!")
+        self.current_state: MedsimState = self.init_state
+        self.simulator = MedicalSimulator(init_state=self.init_state)
         self.probe_count: int = 0
         self.max_actions: int = max_actions
 
-    def get_init(self) -> TinymedState:
+    def get_init(self) -> MedsimState:
         return self.init_state
 
-    def get_probe(self, state: TinymedState | None) -> ITMProbe | None:
+    def get_probe(self, state: MedsimState | None) -> ITMProbe | None:
         if self.probe_count > self.max_actions:
             return None
         self.probe_count += 1
         state = state if state is not None else self.init_state
 
         ta3_state = reverse_convert_state(state)
-        actions: list[TinymedAction] = self.simulator.actions(state)
+        actions: list[MedsimAction] = self.simulator.actions(state)
         ta3_actions: list[Action] = []
         for i, internal_action in enumerate(actions):  # Only one direct mobile casualties in actions
             ta3_action = _reverse_convert_action(internal_action, action_num=i)
@@ -104,7 +166,7 @@ if __name__ == '__main__':
     driver.set_alignment_tgt(kdmas)
     logger.debug("Driver and TMNT Client loaded.")
 
-    initial_state: TinymedState = client.get_init()
+    initial_state: MedsimState = client.get_init()
     probe = client.get_probe(initial_state)
     scenario = Scenario(name='TMNT DEMO', id='tmnt-demo', state=probe.state, probes=[])
     driver.set_scenario(scenario=scenario)
