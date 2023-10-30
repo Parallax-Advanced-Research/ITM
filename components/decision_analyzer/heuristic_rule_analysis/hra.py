@@ -77,9 +77,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     # TODO: refactor and test
     def take_the_best(self, file_name: str, search_path=False, data: dict = None) -> tuple:
 
+        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+            "No info to process")
+
         # prep the input
-        # - open the file
-        if data == None:
+        if data is None:
             with open(file_name, 'r') as f:
                 data = json.load(f)
         treatment_idx = list(data['treatment'])
@@ -107,7 +109,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
             # - for each predictor, compare treatment and predictor values
             for predictor in data['predictors']['relevance']:
-                predictor_val = data['predictors']['relevance'][predictor]  # [0]
+                predictor_val = data['predictors']['relevance'][predictor]
 
                 # - - if a treatment wins the round add 1 to its score and end the comparison
                 # - - - special case for system predictor
@@ -235,9 +237,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     # TODO: refactor and test
     def exhaustive(self, file_name: str, search_path=False, data: dict = None) -> tuple:
 
-        # prep inputs
-        # - open file
-        if data == None:
+        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+            "No info to process")
+
+        if data is None:
             with open(file_name, 'r') as f:
                 data = json.load(f)
         treatment_idx = list(data['treatment'])
@@ -252,12 +255,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         all_treatment_sum = list()
         treatment_sum = 0
 
-        # for each treatment and sum in treatment list
         for treatment in treatment_idx:
 
             # - for each predictor in set check its value against that of the predictor
             for predictor in data['predictors']['relevance']:
-                predictor_val = data['predictors']['relevance'][predictor]  # [0]
+                predictor_val = data['predictors']['relevance'][predictor]
 
                 # - - if the value matches, add 1 to the treatment sum
                 # - - - special case for system predictor
@@ -272,7 +274,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     if data['treatment'][treatment][predictor] == predictor_val:
                         treatment_sum += 1
 
-            # - add treatment sum to list and reset
             all_treatment_sum.append(treatment_sum)
             treatment_sum = 0
 
@@ -282,8 +283,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             for i in range(len(treatment_idx)):
                 search_tree += str(treatment_idx[i]) + "," + str(all_treatment_sum[i]) + ","
 
-        # return winner
-        # - get max value(s) index from sums
+        # return treatment with max sum
         max_val = max(all_treatment_sum)
         sequence = range(len(all_treatment_sum))
         list_indices = [index for index in sequence if all_treatment_sum[index] == max_val]
@@ -364,13 +364,16 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     # TODO: refactor and test
     def tallying(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> tuple:
 
+        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+            "No info to process")
+        if not (isinstance(m, numbers.Number) and m > 0): raise AttributeError("Bad value for m")
+
         # set random seed
-        if seed != None:
+        if not seed is None:
             random.seed(seed)
 
         # prep inputs
-        # - open file
-        if data == None:
+        if data is None:
             with open(file_name, 'r') as f:
                 data = json.load(f)
         treatment_idx = list(data['treatment'])
@@ -413,7 +416,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             # - - for each predictor, compare treatment and predictor values
             for h in rand_predictor_idx[:m]:
                 predictor = predictor_idx[h]
-                predictor_val = data['predictors']['relevance'][predictor]  # [0]
+                predictor_val = data['predictors']['relevance'][predictor]
 
                 # - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
                 # - - - - special case for system predictor
@@ -585,13 +588,16 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     # TODO: refactor and test
     def satisfactory(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> tuple:
 
+        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+            "No info to process")
+        if not (isinstance(m, numbers.Number) and m > 0): raise AttributeError("Bad value for m")
+
         # set random seed
-        if seed != None:
+        if not seed is None:
             random.seed(seed)
 
         # prep inputs
-        # - open file
-        if data == None:
+        if data is None:
             with open(file_name, 'r') as f:
                 data = json.load(f)
         treatment_idx = list(data['treatment'])
@@ -633,7 +639,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             # - - for each predictor, compare treatment and predictor values
             for h in rand_predictor_idx[:m]:
                 predictor = predictor_idx[h]
-                predictor_val = data['predictors']['relevance'][predictor]  # [0]
+                predictor_val = data['predictors']['relevance'][predictor]
 
                 # - - - if a treatment wins the round add 1 to its score and end the comparison
                 # - - - - special case for system predictor
@@ -809,8 +815,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     # TODO: refactor and test
     def one_bounce(self, file_name: str, m: int, k: int, search_path=False, data: dict = None) -> tuple:
 
+        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+            "No info to process")
+        if not ((isinstance(m, numbers.Number) and m > 0) or isinstance((k, numbers.Number) and k > 0)): raise AttributeError(
+            "Bad value for k or m")
+
         # prep the input
-        # - open the file, get dict from data, and convert treatment dict to list
         if data == None:
             with open(file_name, 'r') as f:
                 data = json.load(f)
@@ -828,7 +838,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # generate permutations of "battles" between treatments
         treatment_pairs = self.make_dspace_permutation_pairs(
-            len(treatment_idx))  # self.make_dspace_permutation_pairs(len(treatment_idx))
+            len(treatment_idx))
 
         # create container to hold number of "battles" won for each treatment
         treatment_sums = [0] * len(treatment_idx)  # NOTE: do we need this? think not
@@ -1120,7 +1130,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 "nasopharyngeal airway": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
                                           "system": "respiratory"}},
             "CHECK_ALL_VITALS": {
-                "CHECK_ALL_VITALS": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes",
+                "CHECK_ALL_VITALS": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
                                      "system": "all"}},
             "CHECK_PULSE": {
                 "CHECK_PULSE": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
@@ -1202,7 +1212,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     # TODO: refactor and test
     def hra_decision_analytics(self, file_name: str, m: int = 2, k: int = 2, search_path = False, rand_seed=0, data: dict = None) -> dict:
 
-        if (type(file_name) != str or file_name == "") and (type(data) != dict or data is None): raise AttributeError("No info to process")
+        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError("No info to process")
         if not(isinstance(m, numbers.Number) or isinstance(k, numbers.Number)): raise AttributeError("Bad value for k or m")
 
         # extract possible treatments from scenario input file
@@ -1228,15 +1238,17 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                       system: self.convert_between_kdma_system(mission, denial, None)}
 
         data['predictors'] = {'relevance': predictors}
-        '''
+        
         for predictor in data['predictors']['relevance']:
-            self.convert_kdma_predictor(mission, denial, predictor)
+            data['predictors']['relevance'][predictor] = self.convert_kdma_predictor(mission, denial, predictor)
 
         # add predictors to scenario file
         json_object = json.dumps(data, indent=2)
         new_file = "temp/scene.json"
         with open(new_file, "w") as outfile:
             outfile.write(json_object)
+        '''
+        new_file = "temp/scene.json" # remove after uncommenting above code
 
         # update input arg to hold the search path of each strategy
         if search_path:
@@ -1251,25 +1263,25 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                          'one-bounce': 0}
 
         # call each HRA strategy and store the result with the matching decision list
-        take_the_best_result = self.take_the_best(new_file, search_path)
+        take_the_best_result = self.take_the_best(new_file, search_path=search_path, data=data) # update all strategies to use data
         decision_hra[take_the_best_result[0]]['take-the-best'] += 1
 
-        exhaustive_result = self.exhaustive(new_file, search_path)
+        exhaustive_result = self.exhaustive(new_file, search_path=search_path, data=data)
         decision_hra[exhaustive_result[0]]['exhaustive'] += 1
 
-        if rand_seed:
-            tallying_result = self.tallying(new_file, m, search_path=search_path,
+        #if not(rand_seed is None):
+        tallying_result = self.tallying(new_file, m, search_path=search_path, data=data,
                                             seed=rand_seed)
-        else:
-            tallying_result = self.tallying(new_file, m,
-                                            search_path=search_path)
+        #else:
+        #    tallying_result = self.tallying(new_file, m,
+        #                                    search_path=search_path, data=data)
         decision_hra[tallying_result[0]]['tallying'] += 1
 
         satisfactory_result = self.satisfactory(new_file, m, seed=rand_seed,
-                                                search_path=search_path)
+                                                search_path=search_path, data=data)
         decision_hra[satisfactory_result[0]]['satisfactory'] += 1
 
-        one_bounce_result = self.one_bounce(new_file, m, k, search_path)
+        one_bounce_result = self.one_bounce(new_file, m, k, search_path=search_path, data=data)
         decision_hra[one_bounce_result[0]]['one-bounce'] += 1
 
         if search_path:
@@ -1327,8 +1339,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         #  for each casualty and each predictor set combination get the hra analytics
         temp_data = copy.deepcopy(data)
+        set_sz = 2
         all_predictors = {'time': 'seconds', 'resources': 'few', 'risk_reward_ratio': 'low', 'system': 'equal'}
-        predictor_combos = self.gen_predictor_combo(all_predictors,2)  # run hra for each of the possible combinations of predictors
+        predictor_combos = self.gen_predictor_combo(all_predictors, set_sz)  # run hra for each of the possible combinations of predictors
         casualty_analytics = []
 
         for casualty in casualty_data:
@@ -1337,7 +1350,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             casualty_data[casualty]['injury'] = {'system':"None"}
             for i in injury_cnt:
                 casualty_data[casualty]['injury']['system'] = self.guess_injury_body_system(casualty_data[casualty]['injuries'][i]['location'], casualty_data[casualty]['injuries'][i]['name'])
-            temp_data['casualty'] = casualty_data[casualty]
+            temp_data['casualty'] = casualty_data[casualty] # <- should the casualty name be added?
             temp_data['treatment'] = {}
 
             result = {}
@@ -1353,7 +1366,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                 if vpred in pred:
                                     temp_data['treatment'][name][vpred] = val[vpred]
                 hash_ele = '-'.join(x for x in pred)
-                m_arg = int(len(all_predictors) * 0.8) # number of predictors to start with before increasing for tallying, one-bounce, and sastisfactory
+                m_arg = int(set_sz * 0.8) # number of predictors to start with before increasing for tallying, one-bounce, and sastisfactory
                 result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data, m=m_arg)
             casualty_analytics.append({casualty: result})
 
