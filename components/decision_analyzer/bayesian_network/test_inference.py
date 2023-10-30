@@ -1,5 +1,5 @@
 import os
-from inference import Bayesian_Net
+from .inference import Bayesian_Net
 
 dirname = os.path.dirname(__file__)
 
@@ -15,7 +15,7 @@ except:
 	pass
 
 def test_valid() -> None:
-	bn = Bayesian_Net(os.path.join(dirname, 'sprinkler_test_valid.json'))
+	bn = Bayesian_Net(os.path.join(dirname, 'test_inputs/sprinkler_test_valid.json'))
 	bn.display()
 
 	prior = bn.predict({})
@@ -26,7 +26,6 @@ def test_valid() -> None:
 	print(posterior['wet'])
 
 	# TODO: test all the invalid ones
-
 
 test_valid()
 
