@@ -1202,8 +1202,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     # TODO: refactor and test
     def hra_decision_analytics(self, file_name: str, m: int = 2, k: int = 2, search_path = False, rand_seed=0, data: dict = None) -> dict:
 
+        if (type(file_name) != str or file_name == "") and (type(data) != dict or data is None): raise AttributeError("No info to process")
+        if not(isinstance(m, numbers.Number) or isinstance(k, numbers.Number)): raise AttributeError("Bad value for k or m")
+
         # extract possible treatments from scenario input file
-        if data == None:
+        if data is None:
             with open(file_name, 'r+') as f:
                 data = json.load(f)
         treatment_idx = list(data['treatment'])
@@ -1230,7 +1233,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             self.convert_kdma_predictor(mission, denial, predictor)
 
         # add predictors to scenario file
-        json_object = json.dumps(data, indent=4)
+        json_object = json.dumps(data, indent=2)
         new_file = "temp/scene.json"
         with open(new_file, "w") as outfile:
             outfile.write(json_object)
@@ -1248,25 +1251,25 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                          'one-bounce': 0}
 
         # call each HRA strategy and store the result with the matching decision list
-        take_the_best_result = self.take_the_best(new_file, search_path)  # file_name, search_path
+        take_the_best_result = self.take_the_best(new_file, search_path)
         decision_hra[take_the_best_result[0]]['take-the-best'] += 1
 
-        exhaustive_result = self.exhaustive(new_file, search_path)  # file_name, search_path
+        exhaustive_result = self.exhaustive(new_file, search_path)
         decision_hra[exhaustive_result[0]]['exhaustive'] += 1
 
         if rand_seed:
             tallying_result = self.tallying(new_file, m, search_path=search_path,
-                                            seed=rand_seed)  # (file_name, m, search_path=search_path, seed=rand_seed)
+                                            seed=rand_seed)
         else:
             tallying_result = self.tallying(new_file, m,
-                                            search_path=search_path)  # (file_name, m, search_path=search_path)
+                                            search_path=search_path)
         decision_hra[tallying_result[0]]['tallying'] += 1
 
         satisfactory_result = self.satisfactory(new_file, m, seed=rand_seed,
-                                                search_path=search_path)  # file_name, search_path
+                                                search_path=search_path)
         decision_hra[satisfactory_result[0]]['satisfactory'] += 1
 
-        one_bounce_result = self.one_bounce(new_file, m, k, search_path)  # file_name, search_path
+        one_bounce_result = self.one_bounce(new_file, m, k, search_path)
         decision_hra[one_bounce_result[0]]['one-bounce'] += 1
 
         if search_path:
