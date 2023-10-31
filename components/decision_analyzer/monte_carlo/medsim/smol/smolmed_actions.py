@@ -41,12 +41,16 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
 
 def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int],
                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
+    time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.action])
     if action.casualty_id is None:
         # Apply for all if not other instructions
         retlist = []
         for c in casualties:
             action.casualty_id = c.id
             retlist.extend(apply_singlecaualty_action(casualties, supplies, action, rng, start_time))
+            casualty_injuries: list[Injury] = c.injuries
+            for ci in casualty_injuries:
+                update_smol_injury(ci, time_taken)
         action.casualty_id = None
         return retlist
     else:
