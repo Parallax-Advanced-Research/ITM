@@ -40,8 +40,14 @@ class Injury:
         self.treated: bool = treated
         self.blood_lost_ml: float = 0.0
         self.breathing_hp_lost: float = 0.0  # Breathing points are scaled the same as blood lost. If you lose 5000 you die
-        self.breathing_effect: str = breathing_effect
-        self.bleeding_effect: str = bleeding_effect
+        self.bleeding_effect, self.breathing_effect = None, None
+        if self.name in INJURY_UPDATE.keys():
+            effects: InjuryUpdate = INJURY_UPDATE[self.name].as_dict()
+            self.breathing_effect: str = effects['BREATHING'] if breathing_effect == BodySystemEffect.NONE.value else breathing_effect
+            self.bleeding_effect: str = effects['BLEEDING'] if bleeding_effect == BodySystemEffect.NONE.value else bleeding_effect
+        else:
+            self.breathing_effect = breathing_effect
+            self.bleeding_effect = bleeding_effect
 
     def update_bleed_breath(self, effect: InjuryUpdate, time_elapsed: float,
                             reference_oracle: dict[str, float], treated=False):
@@ -317,6 +323,27 @@ class Metric(Enum):
     MORBIDITY = 'MORBIDITY'
 
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
+
+INJURY_UPDATE = {
+        Injuries.LACERATION.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                breath=BodySystemEffect.NONE.value),
+        Injuries.FOREHEAD_SCRAPE.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                                     breath=BodySystemEffect.NONE.value),
+        Injuries.BURN.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                          breath=BodySystemEffect.MODERATE.value),
+        Injuries.ASTHMATIC.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                               breath=BodySystemEffect.MODERATE.value),
+        Injuries.AMPUTATION.value: InjuryUpdate(bleed=BodySystemEffect.CRITICAL.value,
+                                          breath=BodySystemEffect.MINIMAL.value),
+        Injuries.CHEST_COLLAPSE.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                    breath=BodySystemEffect.SEVERE.value),
+        Injuries.PUNCTURE.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                              breath=BodySystemEffect.MINIMAL.value),
+        Injuries.EAR_BLEED.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                               breath=BodySystemEffect.NONE.value),
+        Injuries.SHRAPNEL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                              breath=BodySystemEffect.NONE.value)
+    }
 
 
 def increment_effect(effect: str) -> str:
