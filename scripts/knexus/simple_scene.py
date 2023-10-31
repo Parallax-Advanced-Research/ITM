@@ -4,7 +4,7 @@ import components.decision_analyzer.monte_carlo.medsim.util.medsim_enums as tenu
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import *
 from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
-from runner.simple_driver import SimpleDriver
+from runner.ta3_driver import TA3Driver
 from domain.internal import KDMAs
 from util import logger, dict_difference
 from domain.external import Action
@@ -127,10 +127,17 @@ def main():
             self.human = False
             self.ebd = False
             self.hra = False
+            self.kedsd = False
+            self.verbose = False
+            self.decision_verbose = False
+            self.mc = True
+            self.rollouts = 1234
+            self.csv = True
+            self.bayes = False
             self.variant = 'aligned'
     tmnt_args = SIMPLEARGS()
 
-    driver = SimpleDriver(tmnt_args)
+    driver = TA3Driver(tmnt_args)
     client = SimpleClient(kdmas)
     driver.set_alignment_tgt(kdmas)
     logger.debug("Driver and Simple Client loaded.")
