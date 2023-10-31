@@ -122,7 +122,6 @@ class Casualty:
         self.prob_asphyxia = self.calc_prob_asphyx()
         self.prob_death = self.calc_prob_death()
 
-
     def calc_prob_bleedout(self):
         # keep in mind, that loosing blood fast is different from loosing blood slow
         total_blood_lost = 0
@@ -164,7 +163,7 @@ class Casualty:
         for inj in self.injuries:
             retstr += inj.__str__()
             retstr += ', '
-        return retstr[:-2]
+        return retstr[:-1]
 
     def __eq__(self, other: 'Casualty'):
         same = False
@@ -184,6 +183,14 @@ class Casualty:
         if self_inj_sorted != other_inj_sorted:
             same = False
         return same
+
+    def __lt__(self, other: 'Casualty'):
+        if not len(self.injuries):
+            return True
+        self_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost) for inj in self.injuries)
+        other_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost) for inj in other.injuries)
+        less_than = self_hp_lost < other_hp_lost
+        return less_than
 
 
 class SimulatorName(Enum):
@@ -273,8 +280,6 @@ class SmolSystems(Enum):
     BLEEDING = 'BLEEDING'
 
 
-
-
 class Metric(Enum):
     SEVERITY = 'SEVERITY'
     AVERAGE_CASUALTY_SEVERITY = 'AVERAGE_CASUALTY_SEVERITY'
@@ -298,7 +303,21 @@ class Metric(Enum):
     PROBABILITY = 'PROBABILITY'
     NONDETERMINISM = 'NONDETERMINISM'
     JUSTIFICATION = 'JUSTIFICATION'
+    P_DEATH = 'MEDSIM_P_DEATH'
+    P_BLEEDOUT = 'MEDSIM_P_BLEEDOUT'
+    P_ASPHYXIA = 'MEDSIM_P_ASPHYXIA'
+    TOT_BLOOD_LOSS = 'EST_BLOOD_LOSS'
+    TOT_LUNG_LOSS = 'EST_LUNG_LOSS'
+
+    HIGHEST_P_DEATH = 'HIGHEST_P_DEATH'
+    HIGHEST_P_BLEEDOUT = 'HIGHEST_MEDSIM_P_BLEEDOUT'
+    HIGHEST_P_ASPHYXIA = 'HIGHEST_MEDSIM_P_ASPHYXIA'
+    HIGHEST_BLOOD_LOSS = 'HIGHEST_BLOOD_LOSS'
+    HIGHEST_LUNG_LOSS = 'HIGHEST_LUNG_LOSS'
+    MORBIDITY = 'MORBIDITY'
+
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
+
 
 def increment_effect(effect: str) -> str:
     if effect == BodySystemEffect.NONE.value:
@@ -374,5 +393,16 @@ metric_description_hash: dict[str, str] = {
     Metric.NONDETERMINISM.value: 'Gives all possible outcomes and simulated probabilities',
     Metric.PROBABILITY.value: 'probability of this outcome being selected',
     Metric.JUSTIFICATION.value: 'Justified reason for why this state is chosen versus siblings if applicable',
-    Metric.UNTREATED_CASUALTIES.value: 'Casualties with zero treated injuries, and at least one not treated injury'
+    Metric.UNTREATED_CASUALTIES.value: 'Casualties with zero treated injuries, and at least one not treated injury',
+    Metric.P_DEATH.value: 'MEDSIM_P_DEATH',
+    Metric.P_BLEEDOUT.value: 'MEDSIM_P_BLEEDOUT',
+    Metric.P_ASPHYXIA.value: 'MEDSIM_P_ASPHYXIA',
+    Metric.TOT_BLOOD_LOSS.value: 'EST_BLOOD_LOSS',
+    Metric.TOT_LUNG_LOSS.value: 'EST_LUNG_LOSS',
+    Metric.HIGHEST_P_DEATH.value: 'HIGHEST_P_DEATH',
+    Metric.HIGHEST_P_BLEEDOUT.value: 'HIGHEST_MEDSIM_P_BLEEDOUT',
+    Metric.HIGHEST_P_ASPHYXIA.value: 'HIGHEST_MEDSIM_P_ASPHYXIA',
+    Metric.HIGHEST_BLOOD_LOSS.value: 'HIGHEST_BLOOD_LOSS',
+    Metric.HIGHEST_LUNG_LOSS.value: 'HIGHEST_LUNG_LOSS',
+    Metric.MORBIDITY.value: 'Morbidity dictionary'
 }

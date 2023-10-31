@@ -2,7 +2,7 @@ import numpy as np
 
 from components.decision_analyzer.monte_carlo.medsim import MedicalSimulator
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState, get_prob
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash, SimulatorName
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
@@ -103,18 +103,41 @@ def dict_minus(before, after):
     return minus_dict
 
 
+def get_average_morbidity(outcomes: dict[str, float | dict[str, float]]) -> MetricResultsT:
+    morbidity_lists: dict[str, list[float]] = {}
+    morbidity_output: MetricResultsT = dict()
+    for outcome in outcomes:
+        outcome_probability = outcomes[outcome][Metric.PROBABILITY.value]
+        morbidity: dict = outcomes[outcome][Metric.MORBIDITY.value]
+        for morbid_key in morbidity:
+            if morbid_key not in morbidity_lists.keys():
+                morbidity_lists[morbid_key] = []
+            morbidity_lists[morbid_key].append((morbidity[morbid_key] * outcome_probability))
+    for morb_key in morbidity_lists:
+        morbidity_output[morb_key] = sum(morbidity_lists[morb_key])
+    return morbidity_output
+
+
 def get_future_and_change_metrics(current_state: MedsimState, future_states: mcnode.MCDecisionNode) -> MetricResultsT:
+    metric_return: MetricResultsT = dict()
     new_metrics = future_states.children[0].score
+    metric_return.update(new_metrics)
+
     past_metrics = tinymedstate_to_metrics(current_state)
     delta_metrics = get_and_normalize_delta(past_metrics, new_metrics)
-    new_metrics.update(delta_metrics)
+    metric_return.update(delta_metrics)
+    new_metrics.update(delta_metrics)  # We do this so get_target_metrics takes identical dict as in tinymedsim
 
     target_metrics = get_target_metrics(new_metrics, future_states)
     most_severe_metrics = get_most_severe_metrics(target_metrics)
+    metric_return.update(most_severe_metrics)
 
     nondeterminism_metrics = get_nondeterministic_metrics(future_states)
-    most_severe_metrics[Metric.NONDETERMINISM.value] = nondeterminism_metrics
-    return most_severe_metrics
+    metric_return[Metric.NONDETERMINISM.value] = nondeterminism_metrics
+
+    morbidity_metrics = get_average_morbidity(metric_return[Metric.NONDETERMINISM.value])
+    metric_return.update(morbidity_metrics)
+    return metric_return
 
 
 def get_target_metrics(new_metrics: MetricResultsT, future_states: mcnode.MCDecisionNode) -> MetricResultsT:
@@ -139,6 +162,7 @@ def get_most_severe_metrics(new_metrics: MetricResultsT) -> MetricResultsT:
     new_metrics[Metric.SEVEREST_SEVERITY_CHANGE.value] = new_metrics[Metric.CASUALTY_SEVERITY_CHANGE.value][most_severe_id]
     return new_metrics
 
+
 def get_nondeterministic_metrics(future_states: mcnode.MCDecisionNode) -> MetricResultsT:
     outcomes = future_states.children
     total_count = float(future_states.count)
@@ -150,6 +174,7 @@ def get_nondeterministic_metrics(future_states: mcnode.MCDecisionNode) -> Metric
         sub_dict[Metric.SEVERITY.value] = outcome.state.get_state_severity()
         sub_dict[Metric.AVERAGE_TIME_USED.value] = outcome.state.time
         sub_dict[Metric.JUSTIFICATION.value] = outcome.justification
+        sub_dict[Metric.MORBIDITY.value] = outcome.state.get_state_morbidity()
         determinism[outcome_name] = sub_dict
     return determinism
 
@@ -197,6 +222,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             decision_str = decision_to_actstr(decision)
             analysis[decision_str] = {}
             decision_metrics_raw = simulated_state_metrics[decision_str] if decision_str in simulated_state_metrics.keys() else None
+
             basic_metrics: list[DecisionMetrics] = dict_to_decisionmetrics(decision_metrics_raw)
             for bm in basic_metrics:
                 decision.metrics.update(bm)
