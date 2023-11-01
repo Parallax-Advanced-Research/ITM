@@ -48,6 +48,7 @@ class Injury:
         else:
             self.breathing_effect = breathing_effect
             self.bleeding_effect = bleeding_effect
+        self.damage_per_second = 0.0
 
     def update_bleed_breath(self, effect: InjuryUpdate, time_elapsed: float,
                             reference_oracle: dict[str, float], treated=False):
@@ -63,8 +64,10 @@ class Injury:
                 self.blood_lost_ml += (effect_value * time_elapsed) if not self.treated else 0.0
                 self.bleeding_effect = effect_dict[effect_key]
         self.severity = (self.blood_lost_ml / 500) + (self.breathing_hp_lost / 500)
+        self.damage_per_second = (self.blood_lost_ml + self.breathing_hp_lost) / time_elapsed if time_elapsed else 0.0
         if treated:
             self.treated = True
+            self.damage_per_second = 0.0
 
     def __eq__(self, other: 'Injury'):
         # TODO: add new cas members to equal function
@@ -321,6 +324,7 @@ class Metric(Enum):
     HIGHEST_BLOOD_LOSS = 'HIGHEST_BLOOD_LOSS'
     HIGHEST_LUNG_LOSS = 'HIGHEST_LUNG_LOSS'
     MORBIDITY = 'MORBIDITY'
+    DAMAGE_PER_SECOND = 'DAMAGE_PER_SECOND'
 
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
 
@@ -421,15 +425,16 @@ metric_description_hash: dict[str, str] = {
     Metric.PROBABILITY.value: 'probability of this outcome being selected',
     Metric.JUSTIFICATION.value: 'Justified reason for why this state is chosen versus siblings if applicable',
     Metric.UNTREATED_CASUALTIES.value: 'Casualties with zero treated injuries, and at least one not treated injury',
-    Metric.P_DEATH.value: 'MEDSIM_P_DEATH',
-    Metric.P_BLEEDOUT.value: 'MEDSIM_P_BLEEDOUT',
-    Metric.P_ASPHYXIA.value: 'MEDSIM_P_ASPHYXIA',
-    Metric.TOT_BLOOD_LOSS.value: 'EST_BLOOD_LOSS',
-    Metric.TOT_LUNG_LOSS.value: 'EST_LUNG_LOSS',
-    Metric.HIGHEST_P_DEATH.value: 'HIGHEST_P_DEATH',
-    Metric.HIGHEST_P_BLEEDOUT.value: 'HIGHEST_MEDSIM_P_BLEEDOUT',
-    Metric.HIGHEST_P_ASPHYXIA.value: 'HIGHEST_MEDSIM_P_ASPHYXIA',
-    Metric.HIGHEST_BLOOD_LOSS.value: 'HIGHEST_BLOOD_LOSS',
-    Metric.HIGHEST_LUNG_LOSS.value: 'HIGHEST_LUNG_LOSS',
-    Metric.MORBIDITY.value: 'Morbidity dictionary'
+    Metric.P_DEATH.value: 'Medical simulator probability at least one patient bleeds out or asphyxiates from action',
+    Metric.P_BLEEDOUT.value: 'Medical simulator probability at least one patient bleeds out from action',
+    Metric.P_ASPHYXIA.value: 'Medical simulator probability at least one patient asphyxiates from action',
+    Metric.TOT_BLOOD_LOSS.value: 'Total blood loss from all casualties resulting from action',
+    Metric.TOT_LUNG_LOSS.value: 'Total lung hp loss from all casualties resulting from action',
+    Metric.HIGHEST_P_DEATH.value: 'Highest probability of death from bleedout or asphyxia casualty',
+    Metric.HIGHEST_P_BLEEDOUT.value: 'casualty with highest probability of bleedout',
+    Metric.HIGHEST_P_ASPHYXIA.value: 'casulty with highest probability of aspyxiation',
+    Metric.HIGHEST_BLOOD_LOSS.value: 'casualty with the most blood loss',
+    Metric.HIGHEST_LUNG_LOSS.value: 'casualty with the most lung function loss',
+    Metric.MORBIDITY.value: 'Morbidity dictionary',
+    Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec'
 }

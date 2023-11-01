@@ -33,3 +33,10 @@ def tiny_med_casualty_severity(state: MCState) -> ScoreT:
             this_guys_severity += injury.severity
         injury_scores[casualty.id] = this_guys_severity
     return injury_scores
+
+def med_simulator_dps(state: MCState) -> ScoreT:
+    dps: float = 0.
+    for casualty in state.casualties:
+        for injury in casualty.injuries:
+            dps += injury.damage_per_second
+    return dps
