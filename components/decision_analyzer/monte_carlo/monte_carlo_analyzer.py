@@ -13,7 +13,10 @@ from components.decision_analyzer.monte_carlo.util.score_functions import (tiny_
                                                                            tiny_med_resources_remaining,
                                                                            tiny_med_time_score,
                                                                            tiny_med_casualty_severity,
-                                                                           med_simulator_dps)
+                                                                           med_simulator_dps,
+                                                                           med_casualty_dps,
+                                                                           med_prob_death,
+                                                                           med_casualty_prob_death)
 import util.logger
 from domain.ta3 import TA3State
 
@@ -208,7 +211,10 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
                            Metric.SUPPLIES_REMAINING.value : tiny_med_resources_remaining,
                            Metric.AVERAGE_TIME_USED.value: tiny_med_time_score,
                            Metric.CASUALTY_SEVERITY.value : tiny_med_casualty_severity,
-                           Metric.DAMAGE_PER_SECOND.value : med_simulator_dps}
+                           Metric.DAMAGE_PER_SECOND.value : med_simulator_dps,
+                           Metric.CASUALTY_DAMAGE_PER_SECOND.value : med_casualty_dps,
+                           Metric.P_DEATH.value : med_prob_death,
+                           Metric.CASUALTY_P_DEATH.value : med_casualty_prob_death}
 
         sim = MedicalSimulator(tinymed_state, simulator_name=SimulatorName.SMOL.value)
         root = mcsim.MCStateNode(tinymed_state)
