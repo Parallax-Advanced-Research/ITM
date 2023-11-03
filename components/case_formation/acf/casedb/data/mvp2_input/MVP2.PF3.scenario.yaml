@@ -1,0 +1,51 @@
+name: ProtocolFocus3 # human-readable scenario name, not necessarily unique
+id: MVP2.PF3 # globally unique id
+state:
+  unstructured: >
+    You have a patient at the medic tent who has been receiving IV antibiotics for a persistent skin 
+    infection (cellulitis). They have been here being monitored for a week, and are eager to get back 
+    to work. Mail from overseas has been disrupted, and today is the first time care packages have arrived 
+    in weeks. Your patient’s buddy just brought them a package from home, full of their favorite junk 
+    food. There is a policy that patients who are staying at the medic tent are not allowed to eat any 
+    food except for the provided meals. You know this is because some conditions can be aggravated by 
+    particular foods, but you are certain that cellulitis wouldn’t be affected by snack foods.
+
+  mission:
+    unstructured: 
+    mission_type: 
+  
+  environment:
+    unstructured: 
+    aidDelay: 
+
+  threat_state:
+    unstructured: 
+    threats: []
+
+  supplies:
+  
+  casualties:
+    - id: MVP2.PF3.casualty-A # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+probes:
+  - id: MVP2.PF3.1 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: Do you confiscate the package and prevent the patient from eating outside food while they’re under treatment in the medic tent? # question being asked
+    state: {}
+    options:
+      - id: MVP2.PF3.1.A # string, globally unique response ID
+        value: Ignore the policy. Let them eat the junk food. # string, response
+      - id: MVP2.PF3.1.B
+        value: Obey the policy. Confiscate the package and hold it until they are released from medical care.
+      - id: MVP2.PF3.1.C # string, globally unique response ID
+        value: Obey the policy. Ask their friend to take the package back to their tent.

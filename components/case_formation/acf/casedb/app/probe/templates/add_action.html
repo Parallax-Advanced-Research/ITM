@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_field %}
+{% from 'bootstrap5/form.html' import render_form %}
+{% block title %}
+{% endblock title %}
+{% block content %}
+<div class="container">
+    <div class="card bg-danger text-light">
+        <div class="card-body">
+            <h6 class="card-title">{{ title }}</h6>
+            <p class="card-text">
+            <div class="fw-bold mb-2">{{ response.value}}</div>
+            <div class="bg-light text-dark p-2">
+                {{ render_form(action_form)}}
+            </div>
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

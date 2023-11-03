@@ -1,5 +1,6 @@
 import typing
-from .decision_metric import DecisionMetrics
+from util.dict_tools import Dict_No_Overwrite
+from .decision_metric import DecisionMetrics, DecisionName, DecisionMetric
 from .justification import Justification
 from .kdmas import KDMAs
 
@@ -14,16 +15,22 @@ class Action:
     def __str__(self):
         return f"{self.name}({','.join(self.params.values())})"
 
+    # This makes it so that actions can be shown in the logger nicer
+    def __repr__(self):
+        return self.__str__()
+
 
 class Decision(typing.Generic[T]):
     def __init__(self, id_: str, value: T,
                  justifications: list[Justification] = (),
-                 metrics: DecisionMetrics = None,
+                 metrics: typing.Mapping[DecisionName, DecisionMetric] = None,
                  kdmas: KDMAs = None):
         self.id_: str = id_
         self.value: T = value
         self.justifications: list[Justification] = justifications
-        self.metrics: DecisionMetrics = metrics if metrics is not None else {}
+        self.metrics: DecisionMetrics = Dict_No_Overwrite()
+        if metrics:
+            self.metrics.update(metrics)
         self.kdmas: KDMAs | None = kdmas
 
     def __repr__(self):

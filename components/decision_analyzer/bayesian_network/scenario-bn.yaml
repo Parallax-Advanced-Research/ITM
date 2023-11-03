@@ -1,59 +1,3 @@
-# NOTE: We assume that P(!a | parent0, parent1) = P(!a | parent0) P(!a | parent1) for cases where the parent being true makes a more likely.
-
-# TODO: need to add treatments, because some of this stuff might be lethal even with treatment. We need to know the delta.
-
-# TODO: how best to represent "60% high, but otherwise provides no information". And make sure that something that causes medium pain doesn't make high pain *less* likely* if something else is causing that.
-# Answer: If we have one signal at +60%, one at +30%, and one at +20% for P(!X):
-# We start with P(X) = 60%. Then we multiply P(!X) by (1 - 30%).  Then multiply P(X) by (1 - 20%),
-# for a final value of .6 -> .72 -> .576.
-# Going in a different order: .3 -> .72 -> .576
-# If there are more than two possibilities, we decrease the *total* probability mass of everything except the value in question by the above amount,
-# and then scale all those values so as to make their total mass match that.
-# Except this is a bit of a hack. Maybe a better approach is to have a prior and add observations according to the specified proportion?
-# Although this whole thing is a hack for now, so don't spend too much time getting the naive assumptions slightly less naive. Will want to do
-# so eventually, though, once I have estimates of the basic probabilities from SMEs.
-#
-# Each row is a categorical distribution, which can be represented as a vector. Maybe just take the centroid of a set of vectors?
-# No, that doesn't make sense. If you've got two features that increase P(X), it'd increase it by *less*.
-#
-# I think I need to take into account the fact that the multi-bin variables have the bins *ordered*.
-# So instead of P(blood pressure = high | Y) = 30%, think of it as P(blood pressure goes up by one bin (capped at high) | Y).
-#
-# Suppose that each of the "basis" rows defines a single die, with probabilities for each side specified.
-# We roll all the dice and sum the values.  And then divide by the number of dice.
-# Nope. Because then if we have two dice with an 80% chance of increasing the total, we end up with...an 80% chance of increasing the total.
-#
-# How to take into account that a condition being false is the *baseline*?
-# We can, of course, specify the distribution for the row where all parents are false/low/normal.
-# We can't just roll the dice and sum them, because that double-counts the intersections. But we shouldn't divide by nfeatures either, because
-# if we have 5 features true, they *should* add up somewhat.
-#
-# The dice method without scaling might actually make sense as the *mean*. e.g. If two parents give a .8 probability of increasing by .1, then
-# P(+2) * 2 + P(+1) * 1 = 1.6?  Problem is, that doesn't work if there's a cap, and it doesn't tell me how much mass goes to each of those.
-#
-# Just need to extend the trick of not double counting the intersection, by doing 1 - (1 - x0) * (1 - x1), to the multiple possible value case.
-#
-# Draw a venn diagram where there are circles for both possible values and parent values, then do inclusion-exclusion principle?
-#
-# What if each feature gets a p% chance of increasing/decreasing the value by 1, and a q% chance of rolling again? Then fit p and q to best approximate
-# the distribution for just that feature, and then let each feature present play one round of the game and sum their final scores?
-# If we have two players with p=90% and q=0%, then we have an 81% chance of +2, an 18% chance of +1, and a .01% chance of +0. That's fairly reasonable,
-# and if we cap it at +1, it yields the same result as the trivial two-value case.
-# n.b., the chance of playing again is only nonzero if a single feature can increase by more than 1. TODO: might be a better way to model those.
-# If a specific feature is multimodal, model it as a set of possible distributions with another distribution that selects which we use.
-# Building on that, we have an alternate approach. Each row has its own distribution of +x/-x modifiers, and there's a probability that we will
-# decide to draw from that distribution and add to the total.
-# Forget q. Just do all of them like we do with the multimodal distributions. Pick a category according to a distribution, then add the offset from
-# that category. e.g. 40% A (+0), 30% V (+1), 20% P (+2), 10% U (+3).
-# Which is to say, we're back to the original dice idea, but without scaling by number of features. There probably exists a closed form of this,
-# but for now, just simulate it for a few million rounds to get the numbers.
-#
-# The adding of a fixed amount and capping it is particularly appropriate since what's *really* happening is that it's adding BPM or pressure or whatever, which is
-# a real-valued thing. And then it has a chance of exceeding a threshold to go to the next thing. But while *that* value can increase indefinitlely, it never leaves the top bin.
-# Probably still gives an abnormally high tendency to increase by multiple bins, since in reality, there'd be some sort of "degeneracy pressure" pushing it away from really extreme values. But Most of them only go from -1 to +1, so all a +42 means is that a couple of -1s aren't going to push it back to normal.
-#
-# And we can specify a probability for all the values, because the "doesn't do anything" value is just whatever 0 is.
-
 # hemorrhage effects - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1065003/
 # RR: "Adults usually take between 12 and 20 breaths per minute" - https://www.medicalnewstoday.com/articles/324409
 # Pulse: 60-100 bpm is normal resting. 130-150 is normal exercising. https://www.bhf.org.uk/informationsupport/heart-matters-magazine/medical/ask-the-experts/pulse-rate
@@ -69,8 +13,6 @@
 
 # P(condition | explosion) is entirely guesses.
 
-# TODO: specify the baseline value for each. That's zero. Moving to the left subtracts 1; moving to the right adds 1.
-
 # IMPORTANT: The rows where we specify the probability given a single parent are the probabilities that that parent is true
 # *and all other parents are false*, NOT the marginal probability given that parent
 
@@ -78,9 +20,31 @@
 
 # TODO: Are shock and blood pressure really separate nodes? hemorrhagic shock seems to just be defined as blood pressure < 90 mm Hg (https://pubmed.ncbi.nlm.nih.gov/9751548/)
 
-
 # Merck Manual seems to be a good source for a lot of this info. https://www.merckmanuals.com/home/heart-and-blood-vessel-disorders/low-blood-pressure-and-shock/shock
 # Another nice link. diagnosis flowcharts of sorts. https://www.wikidoc.org/index.php/Tension_pneumothorax_resident_survival_guide
+
+
+# TODO: syntax for parents that can take more than one value
+# mmHg:
+#     values: [ low, normal, high ]
+#     baseline: normal
+#     parents: [ internal_hemorrhage, external_hemorrhage, hypothermia ]
+#    
+#    	# Syntax for parents that take more than true/false
+#     internal_hemorrhage:
+#     	true: 0.7 low, 0.3 normal, 0.0 high
+#     	false: 0.0 low, 1.0 normal, 0.0 high
+# 
+# 	# But if the value isn't a dictionary, we assume that false is 100% baseline and the supplied line is for true, like we currently do.
+#     external_hemorrhage: 0.7 low, 0.3 normal, 0.0 high
+#     hypothermia: 0.4 low, 0.3 normal, 0.3 high # Same deal as with heart rate
+# 
+# TODO: syntax for manually specifying joint dependencies where the independence assumption is not safe.
+# make-naive-assumptions.py might handle cases where a line depends on some but not all parents by creating a hidden auxiliary node
+# with "values" of e.g., "parent0=A,parent1=B"
+# These nodes won't be in final graph; they just exist while propagating assumptions.
+
+
 
 # Symptoms
 AVPU:

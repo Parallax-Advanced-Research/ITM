@@ -1,0 +1,7 @@
+# globally unique alignment target
+id: ADEPT-alignment-target-1
+
+# list of KDMAs to align to
+# {kdma: str name, value: float target value}
+kdma_values:
+  - {kdma: Knowledge, value: 3}

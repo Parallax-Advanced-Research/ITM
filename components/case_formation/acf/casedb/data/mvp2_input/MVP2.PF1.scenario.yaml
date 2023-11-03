@@ -1,0 +1,60 @@
+name: ProtocolFocus1 # human-readable scenario name, not necessarily unique
+id: MVP2.PF1 # globally unique id
+state:
+  unstructured: >
+    You are at a casualty collection point at the site of a building collapse after an earthquake. 
+    The protocol for this multi-agency/multi-organization response includes clear guidance that no 
+    volunteers who are not vetted by one of the organizations is allowed to provide medical treatment 
+    on-site. Although you are associated with one of the organizations, some paperwork mix-up caused 
+    your most recent certification to not show in the system, so you have been cleared to supervise 
+    the casualty collection point but have not been cleared to actually provide medical treatment. 
+    The time to medical transport to a hospital is uncertain due to road and infrastructure disruption, 
+    but the current estimate is that no transport will arrive for at least one hour. One of the 
+    casualties had severe blood loss which was controlled during initial triage. They now have symptoms 
+    of shock and fluid resuscitation is indicated. The two medical providers on-site have not been 
+    able to get an IV started successfully, and neither of them has used an intraosseous access method 
+    before. They are not comfortable doing it for the first time in the field.  You have used this 
+    method many times yourself. An individual approaches you, identifies themselves as being an army 
+    surgeon for 20 years, and offers to help. 
+
+  mission:
+    unstructured: 
+    mission_type: 
+  
+  environment:
+    unstructured: 
+    aidDelay: 
+
+  threat_state:
+    unstructured: 
+    threats: []
+
+  supplies:
+  
+  casualties:
+    - id: MVP2.PF1.casualty-A # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+probes:
+  - id: MVP2.PF1.1 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: What do you do? # question being asked
+    state: {}
+    options:
+      - id: MVP2.PF1.1.A # string, globally unique response ID
+        value: Let them step in to do the IO access now. # string, response
+      - id: MVP2.PF1.1.B
+        value: Send them to the command site to get vetted.
+      - id: MVP2.PF1.1.C # string, globally unique response ID
+        value: Step in and perform the IO access yourself. # string, response
+      - id: MVP2.PF1.1.D
+        value: Verbally coach one of the on-site medical providers on how to do the IO access.

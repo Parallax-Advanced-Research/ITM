@@ -1,10 +1,10 @@
 from domain.ta3 import TA3State, Casualty, TagCategory
-from domain.internal import Decision, Action, Scenario, Probe
+from domain.internal import Decision, Action, Scenario, TADProbe
 from components import Elaborator
 
 
 class TA3Elaborator(Elaborator):
-    def elaborate(self, scenario: Scenario, probe: Probe) -> list[Decision[Action]]:
+    def elaborate(self, scenario: Scenario, probe: TADProbe) -> list[Decision[Action]]:
         d: Decision[Action]
         to_return: list[Decision[Action]] = []
         for d in probe.decisions:
@@ -61,6 +61,8 @@ class TA3Elaborator(Elaborator):
             if 'location' not in treat_action.value.params:
                 cas_id = treat_action.value.params['casualty']
                 cas = [c for c in state.casualties if c.id == cas_id][0]
+                if cas.assessed and not cas.tag:
+                    continue
                 for injury in cas.injuries:
                     treat_params = treat_action.value.params.copy()
                     treat_params['location'] = injury.location
@@ -75,7 +77,7 @@ class TA3Elaborator(Elaborator):
         cas_grounded: list[Decision[Action]] = []
         if 'casualty' not in action.params:
             for cas in casualties:
-                if not cas.tag:
+                if not cas.tag and cas.assessed:
                     # Copy the casualty into the params dict
                     cas_params = action.params.copy()
                     cas_params['casualty'] = cas.id

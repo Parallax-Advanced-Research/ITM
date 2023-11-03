@@ -1,14 +1,40 @@
-from components.decision_analyzer.monte_carlo.mc_sim import SimResult, MCState
-from components.decision_analyzer.monte_carlo.tinymed import TinymedState, TinymedSim, TinymedAction
-import components.decision_analyzer.monte_carlo.tinymed.tinymed_enums as tenums
-from components.decision_analyzer.monte_carlo.tinymed.medactions import get_simple_casualties, get_simple_supplies
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
-from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
-from domain.external import Probe, ProbeType, Scenario
-from runner.simple_driver import SimpleDriver
-from domain.internal import KDMAs, KDMA
+from components.decision_analyzer.monte_carlo.mc_sim import SimResult
+from components.decision_analyzer.monte_carlo.medsim import MedsimState, MedicalSimulator, MedsimAction
+import components.decision_analyzer.monte_carlo.medsim.util.medsim_enums as tenums
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import *
+from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
+from domain.external import ITMProbe, ProbeType, Scenario
+from runner.ta3_driver import TA3Driver
+from domain.internal import KDMAs
 from util import logger, dict_difference
 from domain.external import Action
+
+
+def get_simple_casualties():
+    bicep_tear = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_BICEP.value, severity=4.0, treated=False)
+    jt_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.DANDY.value,
+                       breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=69)
+    casualties = [
+        Casualty('JT', 'JT tore his bicep', name='JT',
+                       relationship='himself',
+                       demographics=Demographics(age=33, sex='M', rank='director of social media'),
+                       injuries=[bicep_tear],
+                       vitals=jt_vitals,
+                       complete_vitals=jt_vitals,
+                       assessed=False,
+                       tag="tag")]
+    return casualties
+
+
+def get_simple_supplies() -> dict[str, int]:
+    supplies = {
+        Supplies.TOURNIQUET.value: 0,
+        Supplies.PRESSURE_BANDAGE.value: 3,
+        Supplies.HEMOSTATIC_GAUZE.value: 0,
+        Supplies.DECOMPRESSION_NEEDLE.value: 0,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 0
+    }
+    return supplies
 
 
 class SimpleClient:
@@ -38,24 +64,24 @@ class SimpleClient:
         self.probe_count = 1
         casualties: list[Casualty] = get_simple_casualties()
         supplies: dict[str, int] = get_simple_supplies()
-        self.init_state: TinymedState = TinymedState(casualties, supplies, time=0.0,
-                                                     unstructured="JT tore his bicep getting ripped.")
-        self.current_state: TinymedState = self.init_state
-        self.simulator = TinymedSim(init_state=self.init_state)
+        self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
+                                                   unstructured="JT tore his bicep getting ripped.")
+        self.current_state: MedsimState = self.init_state
+        self.simulator = MedicalSimulator(init_state=self.init_state)
         self.probe_count: int = 0
         self.max_actions: int = max_actions
 
-    def get_init(self) -> TinymedState:
+    def get_init(self) -> MedsimState:
         return self.init_state
 
-    def get_probe(self, state: TinymedState | None) -> Probe | None:
+    def get_probe(self, state: MedsimState | None) -> ITMProbe | None:
         if self.probe_count > self.max_actions:
             return None
         self.probe_count += 1
         state = state if state is not None else self.init_state
 
         ta3_state = reverse_convert_state(state)
-        actions: list[TinymedAction] = self.simulator.actions(state)
+        actions: list[MedsimAction] = self.simulator.actions(state)
         ta3_actions: list[Action] = []
         for i, internal_action in enumerate(actions):
             ta3_action = _reverse_convert_action(internal_action, action_num=i)
@@ -80,11 +106,11 @@ class SimpleClient:
                          'mission': {'unstructured': self.UNSTRUCTURED, 'mission_type': 'Extraction'},
                          'environment': self.ENVIRONMENT, 'threat_state': self.THREAT_STATE,
                          'supplies': supplies_as_dict, 'casualties': casualties_as_dict}
-        probe: Probe = Probe(id='tmnt-probe', type=ProbeType.MC, prompt="what do?",
-                             state=swagger_state, options=ta3_actions)
+        probe: ITMProbe = ITMProbe(id='tmnt-probe', type=ProbeType.MC, prompt="what do?",
+                                   state=swagger_state, options=ta3_actions)
         return probe
 
-    def take_action(self, action: Action) -> Probe:
+    def take_action(self, action: Action) -> ITMProbe:
         tinymed_action = _convert_action(act=action)
         sim_results: list[SimResult] = self.simulator.exec(self.current_state, action=tinymed_action)
         new_state = sim_results[0].outcome  # This is fine
@@ -101,15 +127,22 @@ def main():
             self.human = False
             self.ebd = False
             self.hra = False
+            self.kedsd = False
+            self.verbose = False
+            self.decision_verbose = False
+            self.mc = True
+            self.rollouts = 1234
+            self.csv = True
+            self.bayes = False
             self.variant = 'aligned'
     tmnt_args = SIMPLEARGS()
 
-    driver = SimpleDriver(tmnt_args)
+    driver = TA3Driver(tmnt_args)
     client = SimpleClient(kdmas)
     driver.set_alignment_tgt(kdmas)
     logger.debug("Driver and Simple Client loaded.")
 
-    initial_state: TinymedState = client.get_init()
+    initial_state: MedsimState = client.get_init()
     probe = client.get_probe(initial_state)
     scenario = Scenario(name='SIMPLE DEMO', id='simple-demo', state=probe.state, probes=[])
     driver.set_scenario(scenario=scenario)
