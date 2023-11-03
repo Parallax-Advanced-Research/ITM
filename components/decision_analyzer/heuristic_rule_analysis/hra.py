@@ -16,6 +16,10 @@ SelectedTreatment = Union[
     Tuple[str, str, str]
 ]
 
+TreatmentComparison = Union[
+    Tuple[bool, bool]
+]
+
 # currently runs for set of possible decisions, future may change to be called for each decision
 class HeuristicRuleAnalyzer(DecisionAnalyzer):
     STRATEGIES = ["take-the-best", "exhaustive", "tallying", "satisfactory", "one-bounce"]
@@ -51,7 +55,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     def gen_predictor_combo(self, predictor_set_arg: dict, set_sz: int):
 
-        if type(predictor_set_arg) != dict or type(set_sz) != int or set_sz < 0: raise AttributeError("Incorrect arg types or size")
+        if type(predictor_set_arg) != dict or type(set_sz) != int or set_sz < 0 or set_sz > len(predictor_set_arg): raise AttributeError("Incorrect arg types or size")
         results = itertools.combinations(predictor_set_arg, set_sz)
         all_predictors_sets = []
         for predictor_set in results:
@@ -59,6 +63,36 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             all_predictors_sets.append(pred_dict)
 
         return all_predictors_sets
+
+    ''' Given a treatment pair compare them according to kma predictor values
+    
+        inputs:
+        - predictor_key, the key in the predictor dict
+        - predictor_val, the value in the predictor dict
+        - system, the casualty injury impacted system
+        - treatment0, the value from treatment dict for first treatment
+        - treatment1, the value from treatment dict for second treatment
+        
+        outputs:
+        - tuple (True/False, True/False), with True if the treatment predictor val matched the kdm predictor val
+    '''
+    def compare_treatment_pair(self, predictor_key:str, predictor_val, system:str, treatment0:dict, treatment1:dict)-> TreatmentComparison:
+        if type(predictor_key) != str or type(system) != str or type(treatment0) != dict or type(treatment1) != dict: \
+                raise AttributeError("argument type mismatch")
+        if not (predictor_key in treatment0 and predictor_key in treatment1): raise KeyError("Predictor doesn't exist for treatment")
+
+        result0 = False
+        result1 = False
+
+        if predictor_key == "system":
+            result0 = treatment0[predictor_key] == predictor_val or treatment0[predictor_key] == "all"
+            result1 = treatment1[predictor_key] == predictor_val or treatment1[predictor_key] == "all"
+
+        else:
+            result0 = treatment0[predictor_key] == predictor_val
+            result1 = treatment1[predictor_key] == predictor_val
+
+        return result0, result1
 
     '''
     Take-the-best: Given a set of predictors ranked by validity, and n treatments in the decision space, return the treatment that performs 
@@ -110,6 +144,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             # - for each predictor, compare treatment and predictor values
             for predictor in data['predictors']['relevance']:
                 predictor_val = data['predictors']['relevance'][predictor]
+
+
 
                 # - - if a treatment wins the round add 1 to its score and end the comparison
                 # - - - special case for system predictor
