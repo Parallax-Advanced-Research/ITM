@@ -48,7 +48,7 @@ class TA3Driver(Driver):
 
         ebd = EventBasedDiagnosisAnalyzer() if args.ebd else None
         hra = HeuristicRuleAnalyzer() if args.hra else None  # Crashes in TMNT/differenct scenario
-        bnd = BayesNetDiagnosisAnalyzer()
+        bnd = BayesNetDiagnosisAnalyzer() if args.bayes else None
         mca = MonteCarloAnalyzer(max_rollouts=args.rollouts, max_depth=2) if args.mc else None
 
         analyzers = [ebd, hra, bnd, mca]
