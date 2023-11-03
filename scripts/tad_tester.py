@@ -104,6 +104,7 @@ def main():
     parser.add_argument('--rollouts', type=int, default=1000, help="Monte Carlo rollouts to perform")
     parser.add_argument('--endpoint', type=str, help="The URL of the TA3 api", default=None)
     parser.add_argument('--variant', type=str, help="TAD variant", default="aligned")
+    parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=False, help="Asks for KDMA associations to actions")
     args = parser.parse_args()
 
     test_endpoint(args)

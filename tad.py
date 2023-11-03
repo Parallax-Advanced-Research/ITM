@@ -91,7 +91,11 @@ def api_test(args):
 
     driver = TA3Driver(args)
     client = TA3Client(args.endpoint)
-    sid = client.start_session(f'TAD')
+    if args.training:
+        sid = client.start_session(adm_name=f'TAD', session_type='soartech', kdma_training=True)
+    else:
+        sid = client.start_session(f'TAD')
+        
     logger.info(f"Started Session-{sid}")
     while True:
         scen = client.start_scenario()
