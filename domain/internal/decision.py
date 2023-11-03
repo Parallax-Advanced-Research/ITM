@@ -16,8 +16,8 @@ class Action:
         return f"{self.name}({','.join(self.params.values())})"
 
     # This makes it so that actions can be shown in the logger nicer
-    def __repr__(self):
-        return self.__str__()
+    # def __repr__(self):
+    #     return self.__str__()
 
 
 class Decision(typing.Generic[T]):
