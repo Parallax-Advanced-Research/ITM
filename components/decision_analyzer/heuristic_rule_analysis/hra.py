@@ -108,7 +108,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - decision
     '''
 
-    def take_the_best(self, file_name: str, search_path=False, data: dict = None) -> tuple:
+    def take_the_best(self, file_name: str, search_path=False, data: dict = None) -> SelectedTreatment:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
             "No info to process")
@@ -121,9 +121,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return treatment_idx[0], data['treatment'][treatment_idx[0]]
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return "no preference", ""
+            return "no preference", "", ""
 
         # if search_path then return as part of output the order of pairs and their scores
         search_tree = str()
@@ -219,8 +219,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - decision
     '''
 
-    # TODO: refactor and test
-    def exhaustive(self, file_name: str, search_path=False, data: dict = None) -> tuple:
+    def exhaustive(self, file_name: str, search_path=False, data: dict = None) -> SelectedTreatment:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
             "No info to process")
@@ -232,9 +231,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return ("no preference", "")
+            return "no preference", "", ""
 
         # create corresponding array to hold treatment scores
         all_treatment_sum = list()
@@ -249,9 +248,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 # - - if the value matches, add 1 to the treatment sum
                 # - - - special case for system predictor
                 if predictor == "system":
-                    if (
-                            data['treatment'][treatment][predictor] == data['casualty']['injury']['system'] or \
-                            data['treatment'][treatment][predictor] == "all"):
+                    if data['treatment'][treatment][predictor] == data['casualty']['injury']['system'] or \
+                            data['treatment'][treatment][predictor] == "all":
                         treatment_sum += 1
 
                 # - - - normal case for predictor
@@ -262,32 +260,19 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             all_treatment_sum.append(treatment_sum)
             treatment_sum = 0
 
-        # if search_path true store search order
-        if search_path:
-            search_tree = ""
-            for i in range(len(treatment_idx)):
-                search_tree += str(treatment_idx[i]) + "," + str(all_treatment_sum[i]) + ","
+        # store search order
+        search_tree = ','.join(treatment_idx[i] + ',' + str(all_treatment_sum[i]) for i in range(len(treatment_idx)))
 
         # return treatment with max sum
         max_val = max(all_treatment_sum)
         sequence = range(len(all_treatment_sum))
         list_indices = [index for index in sequence if all_treatment_sum[index] == max_val]
 
-        # - if the max isn't tied
+        # - if the max isn't tied, else return "no preference"
         if len(list_indices) == 1:
-
-            # - - return treatment, info pair corresponding to max index
-            if search_path:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree)
-            else:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]])
-
-        # - if the max is tied return "no preference"
+            return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            if search_path:
-                return ("no preference", "", search_tree)
-            else:
-                return ("no preference", "")
+            return "no preference", "", search_tree
 
     '''Returns the highest priority casualty according to cues used by exhaustive
 
