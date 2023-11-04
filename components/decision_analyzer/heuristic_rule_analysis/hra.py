@@ -331,15 +331,14 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     output: decision
     '''
 
-    # TODO: refactor and test
-    def tallying(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> tuple:
+    def tallying(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> SelectedTreatment:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
             "No info to process")
         if not (isinstance(m, numbers.Number) and m > 0): raise AttributeError("Bad value for m")
 
         # set random seed
-        if not seed is None:
+        if seed is not None:
             random.seed(seed)
 
         # prep inputs
@@ -350,37 +349,31 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return ("no preference", "")
+            return "no preference", "", ""
 
-        # if search_path then return as part of output the order of pairs and their scores
-        if search_path:
-            search_tree = str()
+        # return as part of output the order of pairs and their scores
+        search_tree = str()
 
         # select random set of m predictors
-        # - convert dict predictor names to list
         predictor_idx = list(data['predictors']['relevance'])
 
         # - get m random indices for predictors
-        # rand_predictor_idx = random.sample(range(0, len(predictor_idx)), m)
         rand_predictor_idx = random.sample(range(0, len(predictor_idx)), len(predictor_idx))
 
-        # prepare variables for battles
-        # - generate permutations of "battles" between treatments
+        # prepare variables for comparisons
         treatment_pairs = self.make_dspace_permutation_pairs(len(treatment_idx))
 
-        # - create container to hold number of "battles" won for each treatment
+        # - create container to hold number of comparisons won for each treatment
         treatment_sums = [0] * len(treatment_idx)
 
         # - create container to hold number of predictors matched for each treatment
         treatment_predictor_sums = [0] * 2
 
-        # do battles between treatments
-        # - iterate through treatment pairs
-        for battle in treatment_pairs:
-            treatment0 = data['treatment'][treatment_idx[battle[0]]]
-            treatment1 = data['treatment'][treatment_idx[battle[1]]]
+        for tpair in treatment_pairs:
+            treatment0 = data['treatment'][treatment_idx[tpair[0]]]
+            treatment1 = data['treatment'][treatment_idx[tpair[1]]]
             treatment_predictor_sums[0] = treatment_predictor_sums[1] = 0
 
             # - - for each predictor, compare treatment and predictor values
@@ -388,41 +381,18 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 predictor = predictor_idx[h]
                 predictor_val = data['predictors']['relevance'][predictor]
 
-                # - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
-                # - - - - special case for system predictor
-                if predictor == "system":
-                    if (
-                            treatment0[predictor] == data['casualty']['injury']['system'] or
-                            treatment0[predictor] == "all"):
-                        treatment_predictor_sums[0] += 1
-
-                    if (
-                            treatment1[predictor] == data['casualty']['injury']['system'] or
-                            treatment1[predictor] == "all"):
-                        treatment_predictor_sums[1] += 1
-
-                        # - - - - normal case for predictor
-                else:
-                    if treatment0[predictor] == predictor_val:
-                        treatment_predictor_sums[0] += 1
-
-                    if treatment1[predictor] == predictor_val:
-                        treatment_predictor_sums[1] += 1
+                compare_result = self.compare_treatment_pair(predictor, predictor_val, data['casualty']['injury']['system'], treatment0, treatment1)
+                treatment_predictor_sums[0] += 1 if compare_result[0] else 0
+                treatment_predictor_sums[1] += 1 if compare_result[1] else 0
 
             # get the round winner
-            # - - if the two treament scores are not equal
             if treatment_predictor_sums[0] != treatment_predictor_sums[1]:
 
-                # - - - add one to treament score of treatment with highest sum
-                treatment_sums[
-                    battle[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else battle[1]] += 1
+                # - - - add one to treatment score of treatment with max sum
+                treatment_sums[tpair[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else tpair[1]] += 1
+                search_tree += ",".join(
+                    [treatment_idx[tpair[0]], str(treatment_predictor_sums[0]), treatment_idx[tpair[1]], str(treatment_predictor_sums[1])])
 
-                if search_path:  search_tree += str(treatment_idx[battle[0]]) + "," + str(
-                    treatment_predictor_sums[0]) + "," \
-                                                + str(treatment_idx[battle[1]]) + "," + str(
-                    treatment_predictor_sums[1]) + ","
-
-            # - - else if the two treatment scores are equal
             else:
                 # - - - get M\m set of random predictors
                 rrand_predictor_idx = rand_predictor_idx[m:]
@@ -432,61 +402,30 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     rpredictor = predictor_idx[i]
                     rpredictor_val = data['predictors']['relevance'][rpredictor]
 
-                    # - - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
-                    # - - - - - special case for system predictor
-                    if rpredictor == "system":
-                        if (
-                                treatment0[rpredictor] == data['casualty']['injury']['system'] or
-                                treatment0[rpredictor] == "all"):
-                            treatment_predictor_sums[0] += 1
-
-                        if (
-                                treatment1[rpredictor] == data['casualty']['injury']['system'] or
-                                treatment1[rpredictor] == "all"):
-                            treatment_predictor_sums[1] += 1
-
-                            # - - - - - normal case for predictor
-                    else:
-                        if treatment0[rpredictor] == rpredictor_val:
-                            treatment_predictor_sums[0] += 1
-
-                        if treatment1[rpredictor] == rpredictor_val:
-                            treatment_predictor_sums[1] += 1
+                    rcompare_result = self.compare_treatment_pair(rpredictor, rpredictor_val, data['casualty']['injury']['system'], treatment0, treatment1)
+                    treatment_predictor_sums[0] += 1 if rcompare_result[0] else 0
+                    treatment_predictor_sums[1] += 1 if rcompare_result[1] else 0
 
                     # - - - - get the round winner
-                    # - - - - - if the two treament scores are not equal
                     if treatment_predictor_sums[0] != treatment_predictor_sums[1]:
 
-                        # - - - - - - add one to treament score of treatment with highest sum and continue to next treatment pair
+                        # - - - - - - add one to treament score of treatment with max sum and continue to next treatment pair
                         treatment_sums[
-                            battle[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else battle[1]] += 1
+                            tpair[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else tpair[1]] += 1
 
-                        if search_path:  search_tree += str(treatment_idx[battle[0]]) + "," + str(
-                            treatment_predictor_sums[0]) + "," \
-                                                        + str(treatment_idx[battle[1]]) + "," + str(
-                            treatment_predictor_sums[1]) + ","
-
+                        search_tree += ",".join([treatment_idx[tpair[0]], str(treatment_predictor_sums[0]), treatment_idx[tpair[1]], str(treatment_predictor_sums[1])])
                         break
 
         # return a decision
-        # - get the max value
         max_val = max(treatment_sums)
         sequence = range(len(treatment_sums))
         list_indices = [index for index in sequence if treatment_sums[index] == max_val]
 
-        # - if there is not tie, the treatment with the max value wins
+        # - if there is no tie, the treatment with the max value wins, else return "no preference"
         if len(list_indices) == 1:
-
-            # - - return treatment, info pair corresponding to max index or "no preference"
-            if search_path:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree)
-            else:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]])
+            return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            if search_path:
-                return ("no preference", "", search_tree)
-            else:
-                return ("no preference", "")
+            return "no preference", "", search_tree
 
     '''Returns the highest priority casualty according to cues used by tallying
 
