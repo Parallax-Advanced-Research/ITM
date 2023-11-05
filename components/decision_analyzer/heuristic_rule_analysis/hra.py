@@ -8,9 +8,6 @@ from domain.internal import TADProbe, Scenario, Decision, DecisionMetrics, Decis
 from components import DecisionAnalyzer
 from typing import List, Tuple, Union, Dict, Any, Optional
 
-
-# TODO: instead of having the option of two different lengths, maybe have a NULL value
-# of some kind for parse_tree when it isn't used.
 SelectedTreatment = Union[
     Tuple[str, str],
     Tuple[str, str, str]
@@ -494,7 +491,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     output: decision
     '''
 
-    # TODO: refactor and test
     def satisfactory(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> tuple:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
@@ -502,7 +498,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if not (isinstance(m, numbers.Number) and m > 0): raise AttributeError("Bad value for m")
 
         # set random seed
-        if not seed is None:
+        if seed is not None:
             random.seed(seed)
 
         # prep inputs
@@ -513,36 +509,27 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return ("no preference", "")
+            return "no preference", "", ""
 
-        # if search_path then return as part of output the order of pairs and their scores
-        if search_path:
-            search_tree = str()
-
-        # track if a round had a winner over m predictors
-        winner = False
+        # return as part of output the order of pairs and their scores
+        search_tree = str()
 
         # select random set of m predictors
-        # - convert dict predictor names to list
         predictor_idx = list(data['predictors']['relevance'])
-
-        # - get m random indices for predictors
         rand_predictor_idx = random.sample(range(0, len(predictor_idx)), len(predictor_idx))
 
-        # prepare variables for battles
-        # - generate permutations of "battles" between treatments
+        # prepare variables for comparisons
         treatment_pairs = self.make_dspace_permutation_pairs(len(treatment_idx))
 
-        # - create container to hold number of "battles" won for each treatment
+        # - create container to hold number of comparisons won for each treatment
         treatment_sums = [0] * len(treatment_idx)
 
-        # do battles between treatments
-        # - iterate through treatment pairs
-        for battle in treatment_pairs:
-            treatment0 = data['treatment'][treatment_idx[battle[0]]]
-            treatment1 = data['treatment'][treatment_idx[battle[1]]]
+        # do comparisons between treatments
+        for tpair in treatment_pairs:
+            treatment0 = data['treatment'][treatment_idx[tpair[0]]]
+            treatment1 = data['treatment'][treatment_idx[tpair[1]]]
             winner = False
 
             # - - for each predictor, compare treatment and predictor values
@@ -550,57 +537,22 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 predictor = predictor_idx[h]
                 predictor_val = data['predictors']['relevance'][predictor]
 
-                # - - - if a treatment wins the round add 1 to its score and end the comparison
-                # - - - - special case for system predictor
-                if predictor == "system":
-                    if (
-                            treatment0[predictor] == data['casualty']['injury']['system'] or
-                            treatment0[predictor] == "all") and \
-                            not (
-                                    treatment1[predictor] == data['casualty']['injury']['system'] or
-                                    treatment1[predictor] == "all"):
-                        treatment_sums[battle[0]] += 1
-                        winner = True
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(1) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            0) + ","  # NOTE: double check this in debug mode, only counts when there is a difference, not total sum, tallying has original code
-                        break
+                compare_result = self.compare_treatment_pair(predictor, predictor_val, data['casualty']['injury']['system'], treatment0, treatment1)
+                if compare_result[0] and not compare_result[1]:
+                    treatment_sums[tpair[0]] += 1
+                    search_tree += ",".join([treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]], str(treatment_sums[tpair[1]])])
+                    winner = True
+                    break
+                elif compare_result[1] and not compare_result[0]:
+                    treatment_sums[tpair[1]] += 1
+                    search_tree += ",".join([treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]], str(treatment_sums[tpair[1]])])
+                    winner = True
+                    break
 
-                    elif (
-                            treatment1[predictor] == data['casualty']['injury']['system'] or
-                            treatment1[predictor] == "all") and \
-                            not (
-                                    treatment0[predictor] == data['casualty']['injury']['system'] or
-                                    treatment0[predictor] == "all"):
-                        treatment_sums[battle[1]] += 1
-                        winner = True
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(0) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            1) + ","  # NOTE: double check this in debug mode, only counts when there is a difference, not total sum, tallying has original code
-                        break
-
-                        # - - - - normal case for predictor
-                else:
-                    if treatment0[predictor] == predictor_val and not (treatment1[predictor] == predictor_val):
-                        treatment_sums[battle[0]] += 1
-                        winner = True
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(1) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            0) + ","  # NOTE: check special case comment
-                        break
-                    elif treatment1[predictor] == predictor_val and not (treatment0[predictor] == predictor_val):
-                        treatment_sums[battle[1]] += 1
-                        winner = True
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(0) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            1) + ","  # NOTE: check special case comment
-                        break
             # get the round winner
-            # - - if the two treament scores are not equal
+            # - - if the two treatment scores are not equal or else they are
             if winner:
                 continue
-
-            # - - else if the two treatment scores are equal
             else:
                 # - - - get M\m set of random predictors
                 rrand_predictor_idx = rand_predictor_idx[m:]
@@ -610,74 +562,28 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     rpredictor = predictor_idx[i]
                     rpredictor_val = data['predictors']['relevance'][rpredictor]
 
-                    # - - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
-                    # - - - - - special case for system predictor
-                    if rpredictor == "system":
-
-                        if (
-                                treatment0[rpredictor] == data['casualty']['injury']['system'] or
-                                treatment0[rpredictor] == "all") and \
-                                not (
-                                        treatment1[rpredictor] == data['casualty']['injury']['system'] or
-                                        treatment1[rpredictor] == "all"):
-                            treatment_sums[battle[0]] += 1
-                            # winner = True
-                            if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(1) + "," \
-                                                           + str(treatment_idx[battle[1]]) + "," + str(
-                                0) + ","  # NOTE: double check this in debug mode, only counts when there is a difference, not total sum, tallying has original code
-                            break
-
-                        elif (
-                                treatment1[rpredictor] == data['casualty']['injury']['system'] or
-                                treatment1[rpredictor] == "all") and \
-                                not (
-                                        treatment0[rpredictor] == data['casualty']['injury']['system'] or
-                                        treatment0[rpredictor] == "all"):
-                            treatment_sums[battle[1]] += 1
-                            # winner = True
-                            if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(0) + "," \
-                                                           + str(treatment_idx[battle[1]]) + "," + str(
-                                1) + ","  # NOTE: double check this in debug mode, only counts when there is a difference, not total sum, tallying has original code
-                            break
-
-                            # - - - - - normal case for rpredictor
-                    else:
-
-                        if treatment0[rpredictor] == rpredictor_val and not (treatment1[rpredictor] == rpredictor_val):
-                            treatment_sums[battle[0]] += 1
-                            # winner = True
-                            if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(1) + "," \
-                                                           + str(treatment_idx[battle[1]]) + "," + str(
-                                0) + ","  # NOTE: check special case comment
-                            break
-                        elif treatment1[rpredictor] == rpredictor_val and not (
-                                treatment0[rpredictor] == rpredictor_val):
-                            treatment_sums[battle[1]] += 1
-                            # winner = True
-                            if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(0) + "," \
-                                                           + str(treatment_idx[battle[1]]) + "," + str(
-                                1) + ","  # NOTE: check special case comment
-                            break
+                    rcompare_result = self.compare_treatment_pair(rpredictor, rpredictor_val, data['casualty']['injury']['system'], treatment0, treatment1)
+                    if rcompare_result[0] and not rcompare_result[1]:
+                        treatment_sums[tpair[0]] += 1
+                        search_tree += ",".join(
+                            [treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]], str(treatment_sums[tpair[1]])])
+                        break
+                    elif rcompare_result[1] and not rcompare_result[0]:
+                        treatment_sums[tpair[1]] += 1
+                        search_tree += ",".join(
+                            [treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]], str(treatment_sums[tpair[1]])])
+                        break
 
         # return a decision
-        # - get the max value
         max_val = max(treatment_sums)
         sequence = range(len(treatment_sums))
         list_indices = [index for index in sequence if treatment_sums[index] == max_val]
 
-        # - if there is not tie, the treatment with the max value wins
+        # - if there is no tie, the treatment with the max value wins, else return "no preference"
         if len(list_indices) == 1:
-
-            # - - return treatment, info pair corresponding to max index or "no preference"
-            if search_path:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree)
-            else:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]])
+            return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            if search_path:
-                return ("no preference", "", search_tree)
-            else:
-                return ("no preference", "")
+            return "no preference", "", search_tree
 
     '''Returns the highest priority casualty according to cues used by satisfactory
 
