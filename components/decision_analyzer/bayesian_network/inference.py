@@ -123,8 +123,43 @@ class Bayesian_Net:
 		assert float == type(r) # can remove if pyAgrum gets a typestub file.
 		return r, H
 
+	def check_vitals_entropy_change(self, observation: dict[Node_Name, Node_Val]) -> dict[str, float]:
+		""" Given all possible outcomes of the CHECK_VITALS action, how do we expect entropy to decrease?
+		observation is any existing observations.
+		TODO: This probably belongs in bn_analyzer. This file is for generic BN code. """
+		nodes_to_observe = [ 'external_hemorrhage', 'amputation', 'severe_burns', 'SpO2', 'visible_trama_to_head', 'AVPU', 'visible_trauma_to_torso', 'mmHg', 'eye_or_vision_problems', 'hrpmin', 'pain', 'RR' ] # TODO: maybe have this be an argument
+		possibly_unobserved = set() # any nodes in this will have (unobserved) as an extra "value" it can take.
+
+		for node in possible_unobserved:
+			assert node in nodes_to_observe
+
+		current_entropy = self.entropy()
+		results: list[float, dict[Node_Name, float]] = []
+		def aux(observation: dict[Node_Name, Node_Val], nodes: list[Node_Name]):
+			nonlocal results
+			if 0 == len(nodes):
+				results.append(self.entropy(observation))
+				return
+
+			if nodes[0] in possibly_unobserved:
+				aux(observation, nodes[1:])
+			for val in self.values[node]:
+				aux(observation | { node : val }, nodes[1:])
+
+		aux(observation, nodes_to_observe)
+		scaled = [a[0] - current_entropy[0] for a in result]
+		# TODO: maybe mean isn't there right thing to be doing here. Rather, weighted average based on 
+		# relative probability of each observation given *prior* observations (the ones passed to this function)
+		return { 
+			'mean': sum(scaled) / len(scaled),
+			'mean_abs': sum(abs(a) for a in scaled) / len(scaled),
+			'min': min(scaled),
+			'max_abs': max(abs(a) for a in scaled),
+		}
+
 if '__main__' ==  __name__ and 2 == len(sys.argv) and 'TEST' == sys.argv[1]:
 	# TODO: need some tests I can assert, so I can put this in tests.commands
+	print(sys.path)
 	bn = Bayesian_Net('bayes_net.json')
 
 	bn.display()
