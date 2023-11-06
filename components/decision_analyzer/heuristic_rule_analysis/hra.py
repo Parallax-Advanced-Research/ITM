@@ -625,7 +625,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     output: decision
     '''
 
-    # TODO: refactor and test
     def one_bounce(self, file_name: str, m: int, k: int, search_path=False, data: dict = None) -> SelectedTreatment:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
