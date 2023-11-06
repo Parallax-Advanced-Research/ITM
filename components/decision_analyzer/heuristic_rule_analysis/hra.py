@@ -3,14 +3,12 @@ import json
 import random
 import copy
 import numbers
-from pathlib import Path
 from domain.internal import TADProbe, Scenario, Decision, DecisionMetrics, DecisionMetric
 from components import DecisionAnalyzer
 from typing import List, Tuple, Union, Dict, Any, Optional
 
 SelectedTreatment = Union[
-    Tuple[str, str],
-    Tuple[str, str, str]
+    Tuple[str, dict, str]
 ]
 
 TreatmentComparison = Union[
@@ -120,12 +118,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(treatment_idx) == 1:
             return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return "no preference", "", ""
+            return "no preference", {}, ""
 
         # if search_path then return as part of output the order of pairs and their scores
         search_tree = str()
 
-        # generate permutations of "battles" between treatments
+        # generate permutations of comparisons between treatments
         treatment_pairs = self.make_dspace_permutation_pairs(len(treatment_idx))
 
         # create container to hold number of comparisons won for each treatment
@@ -159,7 +157,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(list_indices) == 1:
             return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            return "no preference", "", search_tree
+            return "no preference", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by take-the-best
 
@@ -230,7 +228,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(treatment_idx) == 1:
             return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return "no preference", "", ""
+            return "no preference", {}, ""
 
         # create corresponding array to hold treatment scores
         all_treatment_sum = list()
@@ -269,7 +267,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(list_indices) == 1:
             return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            return "no preference", "", search_tree
+            return "no preference", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by exhaustive
 
@@ -348,7 +346,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(treatment_idx) == 1:
             return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return "no preference", "", ""
+            return "no preference", {}, ""
 
         # return as part of output the order of pairs and their scores
         search_tree = str()
@@ -422,7 +420,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(list_indices) == 1:
             return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            return "no preference", "", search_tree
+            return "no preference", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by tallying
 
@@ -491,7 +489,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     output: decision
     '''
 
-    def satisfactory(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> tuple:
+    def satisfactory(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> SelectedTreatment:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
             "No info to process")
@@ -511,7 +509,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(treatment_idx) == 1:
             return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return "no preference", "", ""
+            return "no preference", {}, ""
 
         # return as part of output the order of pairs and their scores
         search_tree = str()
@@ -583,7 +581,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(list_indices) == 1:
             return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            return "no preference", "", search_tree
+            return "no preference", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by satisfactory
 
@@ -594,7 +592,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - casualty id as string
     '''
 
-    def satisfactory_priority(self, casualty_dict: dict) -> dict:# LEFT OFF
+    def satisfactory_priority(self, casualty_dict: dict) -> dict:
 
         if type(casualty_dict) != dict: raise AttributeError("Incorrect arg types or size")
         if len(casualty_dict) == 0: raise Exception("no casualties exist")
@@ -628,7 +626,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     '''
 
     # TODO: refactor and test
-    def one_bounce(self, file_name: str, m: int, k: int, search_path=False, data: dict = None) -> tuple:
+    def one_bounce(self, file_name: str, m: int, k: int, search_path=False, data: dict = None) -> SelectedTreatment:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
             "No info to process")
@@ -643,56 +641,51 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (treatment_idx[0], data['treatment'][treatment_idx[0]])  # NOTE: update to reflect more complex return type
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return ("no preference", "")
+            return "no preference", {}, ""
 
-        # if search_path then return as part of output the order of pairs and their scores
-        if search_path:
-            search_tree = str()
+        # return as part of output the order of pairs and their scores
+        #if search_path:
+        search_tree = str()
 
-        # generate permutations of "battles" between treatments
+        # generate permutations of comparisons between treatments and containers to hold the result
         treatment_pairs = self.make_dspace_permutation_pairs(
             len(treatment_idx))
-
-        # create container to hold number of "battles" won for each treatment
         treatment_sums = [0] * len(treatment_idx)  # NOTE: do we need this? think not
-
-        # create container to hold number of predictors matched for each treatment
         treatment_predictor_sums = [0] * 2
 
-        # store "battles" in list e.g. list[list] -> battle[0] = [(1,0), (2,0), (3,0), (4,0)], battle[1] = [(2,1), (3,1), (4,1)] ... battle[4] = []
-        battle = [None] * len(treatment_idx)
+        # store comparison pairs in list e.g. list[list] -> tpair[0] = [(1,0), (2,0), (3,0), (4,0)], tpair[1] = [(2,1), (3,1), (4,1)] ... tpair[4] = []
+        tpair = [None] * len(treatment_idx)
         # for l in range(len(treatment_pairs) - 1, -1, -1):
         for ele in treatment_pairs:
             #    ele = treatment_pairs[l]
             first = ele[1]
             # second = ele[1]
-            if battle[first] == None:  # len(battle) - 1 < first:#len(battle[first]) == 0:
-                # battle.append(list())
-                battle[first] = list()
-                battle[first].append((ele[1], ele[0]))  # [second]
+            if tpair[first] is None:  # len(tpair) - 1 < first:#len(tpair[first]) == 0:
+                # tpair.append(list())
+                tpair[first] = list()
+                tpair[first].append((ele[1], ele[0]))  # [second]
             else:
-                battle[first].append((ele[1], ele[0]))  # (second)
-        battle[-1] = list()
+                tpair[first].append((ele[1], ele[0]))  # (second)
+        tpair[-1] = list()
 
-        # loop through battle pairs
+        # loop through tpair
         cnt = len(treatment_pairs)
         winner_idx = None
-        battle_idx = None
-        if len(battle) >= 1:
-            if len(battle[0]) >= 1:
+        tpair_idx = None
+        if len(tpair) >= 1:
+            if len(tpair[0]) >= 1:
                 winner_idx = 0
-                battle_idx = 0
+                tpair_idx = 0
         else:
             raise Exception("No treatments to compare")
 
-        # continue checking battles, while number of battle < num of battle pairs
+        # continue checking tpairs, while number of tpair < num of comparison pairs
         while (cnt > 0):
             cnt -= 1
-            # - do main battle
-            # - - get treatment pairs
-            pair = battle[winner_idx][battle_idx]
+            # - do main tpair
+            pair = tpair[winner_idx][tpair_idx]
             treatment0 = data['treatment'][treatment_idx[pair[0]]]
             treatment1 = data['treatment'][treatment_idx[pair[1]]]
             treatment_predictor_sums[0] = treatment_predictor_sums[1] = 0
@@ -701,6 +694,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             for predictor in data['predictors']['relevance']:
                 predictor_val = data['predictors']['relevance'][predictor]
 
+                ###
+                compare_result = self.compare_treatment_pair(predictor, predictor_val, data['casualty']['injury']['system'], treatment0, treatment1)
+                treatment_predictor_sums[0] += 1 if compare_result[0] else 0
+                treatment_predictor_sums[1] += 1 if compare_result[1] else 0
+                ###
+                '''
                 # - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
                 # - - - - special case for system predictor
                 if predictor == "system":
@@ -721,61 +720,74 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
                     if treatment1[predictor] == predictor_val:
                         treatment_predictor_sums[1] += 1
-
+                '''
             # get the round winner
             # - if winner wins
             if treatment_predictor_sums[0] > treatment_predictor_sums[1]:
-                # - - if winner has no more battle pairs
-                if battle_idx >= len(battle[winner_idx]) - 1:
-                    if search_path:
-                        search_tree += str(treatment_idx[pair[0]]) + "," + str(treatment_predictor_sums[0]) + "," \
-                                       + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
-                        return (treatment_idx[pair[0]], treatment0, search_tree)
-                    else:
-                        return (treatment_idx[pair[0]], treatment0)
-                # - - if winner has more battle pairs
-                elif battle_idx < len(battle[winner_idx]) - 1:  # got some stuff to do
-                    battle_idx += 1
+                # - - if winner has no more tpair elements
+                if tpair_idx >= len(tpair[winner_idx]) - 1:
+
+                    search_tree += ",".join(
+                        [treatment_idx[pair[0]], str(treatment_predictor_sums[0]), treatment_idx[pair[1]],
+                         str(treatment_predictor_sums[1])])
+
+                   # if search_path:
+                   #     search_tree += str(treatment_idx[pair[0]]) + "," + str(treatment_predictor_sums[0]) + "," \
+                   #                    + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
+                    return treatment_idx[pair[0]], treatment0, search_tree
+                    #else:
+                    #    return (treatment_idx[pair[0]], treatment0)
+                # - - if winner has more tpair pairs
+                elif tpair_idx < len(tpair[winner_idx]) - 1:  # got some stuff to do
+                    tpair_idx += 1
 
             # - if winner and fighter are equal continue to next set of pairs
             elif treatment_predictor_sums[0] == treatment_predictor_sums[1]:
                 if winner_idx < len(
-                        battle) - 1:  # NOTE: find better future solution, although they tie, they could have the highest predictors sums of all pairs
+                        tpair) - 1:  # NOTE: find better future solution, although they tie, they could have the highest predictors sums of all pairs
                     winner_idx += 1
-                    if len(battle[winner_idx]) >= 1:
-                        battle_idx = 0
+                    if len(tpair[winner_idx]) >= 1:
+                        tpair_idx = 0
                         continue
                     else:
-                        return ("no preference", "")
+                        return "no preference", {}, ""
                 else:
-                    return ("no preference", "")  # NOTE: should sequence tree be returned?
+                    return "no preference", {}, ""
 
-            # - else if fighter wins
+            # - else if non-winner wins
             else:
                 winner_idx = pair[1]
-                if len(battle[winner_idx]) >= 1:
-                    battle_idx = 0
-                    treatment0 = copy.deepcopy(treatment1)
+                if len(tpair[winner_idx]) >= 1:
+                    tpair_idx = 0
+                    #treatment0 = copy.deepcopy(treatment1)
                     continue
                 else:  # return it
-                    if search_path:
-                        search_tree += str(treatment_idx[pair[0]]) + "," + str(treatment_predictor_sums[0]) + "," \
-                                       + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
-                        return (treatment_idx[pair[1]], treatment1, search_tree)
-                    else:
-                        return (treatment_idx[pair[1]], treatment1) # change to data['treatments'][winner_idx]
+                    #if search_path:
+                    search_tree += ",".join(
+                        [treatment_idx[pair[0]], str(treatment_predictor_sums[0]), treatment_idx[pair[1]],
+                         str(treatment_predictor_sums[1])])
 
-            # do mini battle
-            # get last battle index
-            last_idx = min(battle_idx + k - 1, len(battle[winner_idx]) - 1)
+                    #search_tree += str(treatment_idx[pair[0]]) + "," + str(treatment_predictor_sums[0]) + "," \
+                    #                   + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
+                    return treatment_idx[pair[1]], treatment1, search_tree
+                    #else:
+                    #    return (treatment_idx[pair[1]], treatment1) # change to data['treatments'][winner_idx]
+
+            # do mini comparison
+            # get last tpair index
+            #last_idx = min(tpair_idx + k - 1, len(tpair[winner_idx]) - 1)
+            last_idx = min(tpair_idx + k, len(tpair[winner_idx]) - 1)
+
             # convert dict predictor names to list predictor_idx
             predictor_idx = list(data['predictors']['relevance'])
             # set a new winner bool and next treatment
             # new_winner = False
 
-            # do a tallying over a fixed set of m predictor for the next 0 to k treatments
-            for i in range(battle_idx, last_idx, 1):
-                treatment1 = data['treatment'][treatment_idx[i]]
+            # do a tallying over a fixed set of m predictors for the next 0 to k treatments
+            for i in range(tpair_idx, last_idx, 1):
+                tallying_pair = tpair[winner_idx][i]
+                #treatment1 = data['treatment'][treatment_idx[i]]
+                treatment1 = data['treatment'][treatment_idx[tallying_pair [1]]]
                 treatment_predictor_sums[0] = treatment_predictor_sums[1] = 0
 
                 for predictor in predictor_idx[:m]:
@@ -783,6 +795,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     # predictor = predictor_idx[j]
                     predictor_val = data['predictors']['relevance'][predictor]
 
+                    ###
+                    compare_result = self.compare_treatment_pair(predictor, predictor_val, data['casualty']['injury']['system'], treatment0, treatment1)
+                    treatment_predictor_sums[0] += 1 if compare_result[0] else 0
+                    treatment_predictor_sums[1] += 1 if compare_result[1] else 0
+                    ###
+                    '''
                     # - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
                     # - - - - special case for system predictor
                     if predictor == "system":
@@ -803,27 +821,31 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
                         if treatment1[predictor] == predictor_val:
                             treatment_predictor_sums[1] += 1
-
+                    '''
                 # - if winner wins and all up to k comparisons have been made, return it
-                if treatment_predictor_sums[0] > treatment_predictor_sums[1] and i == last_idx:
-                    if search_path:
-                        search_tree += str(treatment_idx[pair[0]]) + "," + str(treatment_predictor_sums[0]) + "," \
-                                       + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
-                        return (treatment_idx[pair[0]], treatment0, search_tree)
-                    else:
-                        return (treatment_idx[pair[0]], treatment0)
+                if treatment_predictor_sums[0] > treatment_predictor_sums[1] and i == (last_idx - 1):
+                    #if search_path:
+                    search_tree += ",".join(
+                        [treatment_idx[pair[0]], str(treatment_predictor_sums[0]), treatment_idx[pair[1]],
+                         str(treatment_predictor_sums[1])])
+
+                    #search_tree += str(treatment_idx[pair[0]]) + "," + str(treatment_predictor_sums[0]) + "," \
+                    #                   + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
+                    return treatment_idx[pair[0]], treatment0, search_tree
+                    #else:
+                    #    return (treatment_idx[pair[0]], treatment0)
                 # - else if fighter wins
                 if treatment_predictor_sums[0] <= treatment_predictor_sums[1]:
                     # new_winner = True
-                    battle_idx = i
+                    tpair_idx = i
                     break
 
-        # if there is a new winner return to main battle
+        # if there is a new winner return to main comparison
         # if new_winner:
         # - - break
 
-        # if outside of while loop no definitive winner was reahed
-        return ("no preference", "")
+        # if outside of while loop no definitive winner was reached
+        return "no preference", {}, ""
 
     '''Returns the highest priority casualty according to cues used by one-bounce
 
