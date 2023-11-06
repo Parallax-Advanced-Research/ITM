@@ -397,6 +397,9 @@ class Metric(Enum):
     HIGHEST_LUNG_LOSS = 'HIGHEST_LUNG_LOSS'
     MORBIDITY = 'MORBIDITY'
     DAMAGE_PER_SECOND = 'DAMAGE_PER_SECOND'
+    CASUALTY_DAMAGE_PER_SECOND = 'CASUALTY_DAMAGE_PER_SECOND'
+    CASUALTY_P_DEATH = 'CASUALTY_P_DEATH'
+
 
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
 
@@ -510,7 +513,9 @@ metric_description_hash: dict[str, str] = {
     Metric.HIGHEST_BLOOD_LOSS.value: 'casualty with the most blood loss',
     Metric.HIGHEST_LUNG_LOSS.value: 'casualty with the most lung function loss',
     Metric.MORBIDITY.value: 'Morbidity dictionary',
-    Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec'
+    Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec',
+    Metric.CASUALTY_DAMAGE_PER_SECOND.value: 'dictionary of dps for all casualties ',
+    Metric.CASUALTY_P_DEATH.value: 'dictionary of probability of death for all casualties'
 }
 
 # TODO: May need separate SA models for younger casualties 
