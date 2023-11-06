@@ -966,7 +966,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - tree of search path (not implemented)
     '''
 
-    # TODO: refactor and test
     def hra_decision_analytics(self, file_name: str, m: int = 2, k: int = 2, search_path = False, rand_seed=0, data: dict = None) -> dict:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError("No info to process")
@@ -1070,7 +1069,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         #  for each casualty and each predictor set combination get the hra analytics
         temp_data = copy.deepcopy(data)
         set_sz = 2
-        all_predictors = {'time': 'seconds', 'resources': 'few', 'risk_reward_ratio': 'low', 'system': 'equal'}
+        all_predictors = {'time': 'seconds', 'resources': 'few', 'risk_reward_ratio': 'low', 'system': 'equal'} # TODO calculate predictors based on kdmas
         predictor_combos = self.gen_predictor_combo(all_predictors, set_sz)  # run hra for each of the possible combinations of predictors
         casualty_analytics = []
 
@@ -1096,7 +1095,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                 if vpred in pred:
                                     temp_data['treatment'][name][vpred] = val[vpred]
                 hash_ele = '-'.join(x for x in pred)
-                m_arg = int(set_sz * 0.8) # number of predictors to start with before increasing for tallying, one-bounce, and sastisfactory
+                m_arg = int(set_sz * 0.8) # number of predictors to start with before increasing for tallying, one-bounce, and satisfactory
                 result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data, m=m_arg)
             casualty_analytics.append({casualty: result})
 
