@@ -55,7 +55,7 @@ def med_casualty_dps(state: MCState) -> ScoreT:
         try:
             injury_scores[casualty.id] = injury_to_dps(injury)
         except UnboundLocalError:
-            injury_scores[casualty.id] = 0.
+            injury_scores[casualty.id] = 0.0
     return injury_scores
 
 
