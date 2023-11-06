@@ -13,7 +13,7 @@ from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAn
 
 class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 3
-    def __init__(self, csv_file: str, variant='aligned', print_neighbors=True, use_drexel_format=False, force_uniform_weights=True):
+    def __init__(self, csv_file: str, variant='aligned', print_neighbors=True, use_drexel_format=False, force_uniform_weights=False):
         self._csv_file_path: str = csv_file
         self.cb = self._read_csv()
         self.variant: str = variant
@@ -51,8 +51,18 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 weights = {'Action type': 5, 'casualty_assessed': 2, 'Supplies: type': 3, 
                            'triage category': 3}
             else:
-                weights = {'assessing': 3, 'treating': 3, 'tagging': 3, 'visited': 2, 'treatment': 3, 
-                           'category': 3}
+                weights = {}
+                if cur_case['assessing']:
+                    weights |= {"assessing": 5}
+                if cur_case['treating']:
+                    weights |= {"treating": 5, "visited": 2, "treatment": 3, "unvisited_count": 3}
+                    weights["ACTION_TARGET_SEVERITY"] = 5
+                    weights["ACTION_TARGET_SEVERITY_CHANGE"] = 5
+                if cur_case['tagging']:
+                    weights |= {"tagging": 5, "category": 3}
+                if cur_case['leaving']:
+                    weights |= {"leaving": 5, "category": 3, "unvisited_count": 10, "injured_count": 2, "others_tagged_or_uninjured": 2}
+            
             for kdma in target.kdmas:
                 kdma_name = kdma.id_.lower()
                 match kdma_name:
@@ -60,11 +70,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                         weights = weights | \
                                   ({"IndividualRank": 1, "priority": 1, "pDeath": 11}
                                    if self.use_drexel_format else
-                                   {"rank": 1, "priority": 1, "pDeath": 1, "SeverityChange": 1})
+                                   {"rank": 1, "priority": 1, "pDeath": 1})
                     case "denial":
                         weights = weights | \
-                                  {"pDeath": 1, "pBrainInjury": 1, "pPain": 1, "leaving" : 10, 
-                                   "category": 2, "others_tagged_or_uninjured": 10}
+                                  {"pDeath": 1, "pBrainInjury": 1, "pPain": 1, 
+                                   "category": 5, "others_tagged_or_uninjured": 10}
                     case "risktol":
                         weights = weights | \
                                   {"injured_count": 1, "pDeath": 1, "Severity": .1, "category": 1}
@@ -108,13 +118,16 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         total = sum([max(sim, 0.01) for (sim, case) in topk])
         divisor = 0
         kdma_total = 0
+        neighbor = 0
         for (sim, case) in topk:
+            neighbor += 1
             if kdma not in case:
                 breakpoint()
                 raise Exception()
             kdma_val = case[kdma] 
             kdma_total += kdma_val * total/max(sim, 0.01)
             divisor += total/max(sim, 0.01)
+            cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
         kdma_val = kdma_total / divisor
         if self.print_neighbors:
             print(f"kdma_val: {kdma_val}")
