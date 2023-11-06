@@ -221,10 +221,10 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         for decision in probe.decisions:
             decision_str = decision_to_actstr(decision)
             analysis[decision_str] = {}
-            decision_metrics_raw = simulated_state_metrics[decision_str] if decision_str in simulated_state_metrics.keys() else None
-
-            basic_metrics: list[DecisionMetrics] = dict_to_decisionmetrics(decision_metrics_raw)
-            for bm in basic_metrics:
-                decision.metrics.update(bm)
-                analysis[decision_str].update(bm)
+            if decision_str in simulated_state_metrics.keys():
+                decision_metrics_raw = simulated_state_metrics[decision_str]
+                basic_metrics: list[DecisionMetrics] = dict_to_decisionmetrics(decision_metrics_raw)
+                for bm in basic_metrics:
+                    decision.metrics.update(bm)
+                    analysis[decision_str].update(bm)
         return analysis
