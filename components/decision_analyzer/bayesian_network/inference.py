@@ -5,17 +5,6 @@ from typing import Any
 from .typedefs import Node_Name, Node_Val, Probability
 
 
-# notebook stuff is just for debugging and visualization
-notebook = False
-try:
-	from IPython import get_ipython
-	ipy = get_ipython() # type: ignore[no-untyped-call]
-	if ipy is not None and 'IPKernelApp' in ipy.config:
-		import pyAgrum.lib.notebook as gnb # pylint: disable=ungrouped-imports
-		notebook = True
-except:
-	pass
-
 class Bayesian_Net:
 	bn: pyAgrum.BayesNet
 	node_names: list[Node_Name]
@@ -127,13 +116,15 @@ class Bayesian_Net:
 		""" Given all possible outcomes of the CHECK_VITALS action, how do we expect entropy to decrease?
 		observation is any existing observations.
 		TODO: This probably belongs in bn_analyzer. This file is for generic BN code. """
-		nodes_to_observe = [ 'external_hemorrhage', 'amputation', 'severe_burns', 'SpO2', 'visible_trama_to_head', 'AVPU', 'visible_trauma_to_torso', 'mmHg', 'eye_or_vision_problems', 'hrpmin', 'pain', 'RR' ] # TODO: maybe have this be an argument
+		nodes_to_observe = [ 'external_hemorrhage', 'amputation', 'severe_burns', 'SpO2', 'visible_trauma_to_head', 'AVPU', 'visible_trauma_to_torso', 'mmHg', 'eye_or_vision_problems', 'hrpmin', 'pain', 'RR' ] # TODO: maybe have this be an argument
+		nodes_to_observe = [ 'SpO2', 'AVPU', 'mmHg', 'hrpmin', 'RR', 'eye_or_vision_problems', 'pain' ] # TODO: maybe have this be an argument
+		#nodes_to_observe = [ 'external_hemorrhage', 'amputation', 'severe_burns', 'visible_trauma_to_head', 'visible_trauma_to_torso' ] # TODO: maybe have this be an argument
 		possibly_unobserved = set() # any nodes in this will have (unobserved) as an extra "value" it can take.
 
-		for node in possible_unobserved:
+		for node in possibly_unobserved:
 			assert node in nodes_to_observe
 
-		current_entropy = self.entropy()
+		current_entropy = self.entropy(observation)
 		results: list[float, dict[Node_Name, float]] = []
 		def aux(observation: dict[Node_Name, Node_Val], nodes: list[Node_Name]):
 			nonlocal results
@@ -143,11 +134,11 @@ class Bayesian_Net:
 
 			if nodes[0] in possibly_unobserved:
 				aux(observation, nodes[1:])
-			for val in self.values[node]:
-				aux(observation | { node : val }, nodes[1:])
+			for val in self.values[nodes[0]]:
+				aux(observation | { nodes[0] : val }, nodes[1:])
 
 		aux(observation, nodes_to_observe)
-		scaled = [a[0] - current_entropy[0] for a in result]
+		scaled = [a[0] - current_entropy[0] for a in results]
 		# TODO: maybe mean isn't there right thing to be doing here. Rather, weighted average based on 
 		# relative probability of each observation given *prior* observations (the ones passed to this function)
 		return { 
@@ -158,9 +149,23 @@ class Bayesian_Net:
 		}
 
 if '__main__' ==  __name__ and 2 == len(sys.argv) and 'TEST' == sys.argv[1]:
+	import os
+	SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+	# notebook stuff is just for debugging and visualization
+	notebook = False
+	try:
+		from IPython import get_ipython
+		ipy = get_ipython() # type: ignore[no-untyped-call]
+		if ipy is not None and 'IPKernelApp' in ipy.config:
+			import pyAgrum.lib.notebook as gnb # pylint: disable=ungrouped-imports
+			notebook = True
+	except:
+		pass
+
 	# TODO: need some tests I can assert, so I can put this in tests.commands
 	print(sys.path)
-	bn = Bayesian_Net('bayes_net.json')
+	bn = Bayesian_Net(os.path.join(SCRIPT_DIR, 'bayes_net.json'))
 
 	bn.display()
 	a = bn.predict({'explosion': 'true', 'hrpmin': 'low', 'external_hemorrhage': 'true'})
@@ -183,3 +188,5 @@ if '__main__' ==  __name__ and 2 == len(sys.argv) and 'TEST' == sys.argv[1]:
 
 	print(bn.entropy({}))
 	print(bn.entropy({'external_hemorrhage': 'true'}))
+
+	print(bn.check_vitals_entropy_change({}))
