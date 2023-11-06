@@ -30,7 +30,9 @@ class SmolMedicalOracle:
         Injuries.EAR_BLEED.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
                                                breath=BodySystemEffect.NONE.value),
         Injuries.SHRAPNEL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
-                                              breath=BodySystemEffect.NONE.value)
+                                              breath=BodySystemEffect.NONE.value),
+        Injuries.EYE_TRAUMA.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                breath=BodySystemEffect.MODERATE.value)
     }
 
     DAMAGE_PER_SECOND = {

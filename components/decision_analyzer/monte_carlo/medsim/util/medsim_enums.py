@@ -359,7 +359,7 @@ class Injuries(Enum):
     CHEST_COLLAPSE = 'Chest Collapse'
     AMPUTATION = 'Amputation'
     BURN = 'Burn'
-    EYE_TRAUMA = 'Eye trauma'
+    EYE_TRAUMA = 'Eye_Trauma'
 
 
 class SmolSystems(Enum):

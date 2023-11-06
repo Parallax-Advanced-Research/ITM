@@ -46,6 +46,8 @@ def is_scoreless(decision: mcnode.MCDecisionNode) -> bool:
 
 
 def dict_to_decisionmetrics(basic_stats: MetricResultsT) -> list[DecisionMetrics]:
+    if basic_stats is None:
+        return list()
     metrics_out: list[DecisionMetrics] = list()
     for k in list(basic_stats.keys()):
         v = basic_stats[k]
