@@ -31,12 +31,14 @@ class Demographics:
 
 
 class Injury:
+    STANDARD_BODY_VOLUME = 5000  # mL
     def __init__(self, name: str, location: str, severity: float, treated: bool = False,
                  breathing_effect=BodySystemEffect.NONE.value, bleeding_effect=BodySystemEffect.NONE.value,
                  is_burn: bool = False):
         self.name = name
         self.location = location
         self.severity = severity
+        self.base_severity = severity
         self.time_elapsed: float = 0.0
         self.treated: bool = treated
         self.blood_lost_ml: float = 0.0
@@ -65,11 +67,14 @@ class Injury:
             if effect_key == SmolSystems.BLEEDING.value:
                 self.blood_lost_ml += (effect_value * time_elapsed) if not self.treated else 0.0
                 self.bleeding_effect = effect_dict[effect_key]
-        self.severity = (self.blood_lost_ml / 500) + (self.breathing_hp_lost / 500)
+        self.severity = (self.blood_lost_ml / Injury.STANDARD_BODY_VOLUME) + (self.breathing_hp_lost / Injury.STANDARD_BODY_VOLUME) + self.base_severity
         self.damage_per_second = (self.blood_lost_ml + self.breathing_hp_lost) / time_elapsed if time_elapsed else 0.0
         if treated:
             self.treated = True
             self.damage_per_second = 0.0
+
+    def calculate_severity(self) -> float:
+        return (self.blood_lost_ml / Injury.STANDARD_BODY_VOLUME) + (self.breathing_hp_lost / Injury.STANDARD_BODY_VOLUME) + self.base_severity
 
     def update_burn_severity(self, treated=False):
         # Assumes burn is being treated with gauze
@@ -354,6 +359,7 @@ class Injuries(Enum):
     CHEST_COLLAPSE = 'Chest Collapse'
     AMPUTATION = 'Amputation'
     BURN = 'Burn'
+    EYE_TRAUMA = 'Eye trauma'
 
 
 class SmolSystems(Enum):
@@ -368,7 +374,7 @@ class Metric(Enum):
     AVERAGE_TIME_USED = 'AVERAGE_TIME_USED'
     TARGET_SEVERITY = 'ACTION_TARGET_SEVERITY'
     TARGET_SEVERITY_CHANGE = 'ACTION_TARGET_SEVERITY_CHANGE'
-    SEVEREST_SEVERITY = 'SEVREEST_SEVERITY'
+    SEVEREST_SEVERITY = 'SEVEREST_SEVERITY'
     SEVEREST_SEVERITY_CHANGE = 'SEVEREST_SEVERITY_CHANGE'
     TIME_BETWEEN_STATE = 'TIME_BETWEEN_STATES'
     SEVERITY_CHANGE = 'SEVERITY_CHANGE'
@@ -399,7 +405,7 @@ class Metric(Enum):
     DAMAGE_PER_SECOND = 'DAMAGE_PER_SECOND'
     CASUALTY_DAMAGE_PER_SECOND = 'CASUALTY_DAMAGE_PER_SECOND'
     CASUALTY_P_DEATH = 'CASUALTY_P_DEATH'
-
+    CASUALTY_DAMAGE_PER_SECOND_CHANGE = 'CASUALTY DPS CHANGE'
 
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
 
@@ -421,7 +427,9 @@ INJURY_UPDATE = {
         Injuries.EAR_BLEED.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
                                                breath=BodySystemEffect.NONE.value),
         Injuries.SHRAPNEL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
-                                              breath=BodySystemEffect.NONE.value)
+                                              breath=BodySystemEffect.NONE.value),
+        Injuries.EYE_TRAUMA.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                breath=BodySystemEffect.MODERATE.value)  # Assuming ET -> Brain injury
     }
 
 
@@ -515,7 +523,8 @@ metric_description_hash: dict[str, str] = {
     Metric.MORBIDITY.value: 'Morbidity dictionary',
     Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec',
     Metric.CASUALTY_DAMAGE_PER_SECOND.value: 'dictionary of dps for all casualties ',
-    Metric.CASUALTY_P_DEATH.value: 'dictionary of probability of death for all casualties'
+    Metric.CASUALTY_P_DEATH.value: 'dictionary of probability of death for all casualties',
+    Metric.CASUALTY_DAMAGE_PER_SECOND_CHANGE.value: 'dictionary for the change in dps per casualty'
 }
 
 # TODO: May need separate SA models for younger casualties 

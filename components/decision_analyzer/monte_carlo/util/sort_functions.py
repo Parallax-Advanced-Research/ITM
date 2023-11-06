@@ -1,5 +1,6 @@
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle
 from domain.internal import Decision, Action
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, Injury
 import numpy as np
 
 
@@ -22,3 +23,9 @@ def sort_decisions(decision_list: list[Decision[Action]], sort_metric: str=Metri
         sorted_decisions.append(decision_list[sorted_dec_idx])
     # return re-ordered decision list
     return sorted_decisions
+
+
+def injury_to_dps(inj: Injury) -> float:
+    dps_hash = SmolMedicalOracle.DAMAGE_PER_SECOND
+    dps = dps_hash[inj.breathing_effect] + dps_hash[inj.bleeding_effect] if not inj.treated else 0.0
+    return dps

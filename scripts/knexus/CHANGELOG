@@ -9,11 +9,16 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
-V KR 1.5.9
+V KR 1.5.9 (11/6 BOW)
 =========================
 > Updated justifications to use morbidity/bleedout
 > Updated command line args for knexus branches to see reduced output
 > Updated TMNT/Simple scene drivers to be compatible with TA3 state changes
+> Fixed delta in metric glitch from incorrect parameter order
+> Future state is now average of future states in mc analyzer, not most likely state
+> Added Eye Trauma injury
+> Fixed typo
+
 
 V KR 1.5.8 (10/27 EOW)
 =========================
