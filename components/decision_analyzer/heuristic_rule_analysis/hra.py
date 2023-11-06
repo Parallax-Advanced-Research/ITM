@@ -976,40 +976,25 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if data is None:
             with open(file_name, 'r+') as f:
                 data = json.load(f)
+
+                # extract kdma values from scenario input file
+                mission = data['kdma']['mission']
+                denial = data['kdma']['denial']
+
+                for predictor in data['predictors']['relevance']:
+                    data['predictors']['relevance'][predictor] = self.convert_kdma_predictor(mission, denial, predictor)
+
+                # add predictors to scenario file
+                json_object = json.dumps(data, indent=2)
+                new_file = "temp/scene.json"
+                with open(new_file, "w") as outfile:
+                    outfile.write(json_object)
+
+        new_file = ''
         treatment_idx = list(data['treatment'])
 
-        # extract kdma values from scenario input file
-        mission = data['kdma']['mission']
-        denial = data['kdma']['denial']
-
-        '''
-        # get predictor values from kdma values and to scenario file
-        risk_reward_ratio = 'risk_reward_ratio'
-        resources = 'resources'
-        time = 'time'
-        system = 'system'
-        
-        predictors = {risk_reward_ratio: self.convert_between_kdma_risk_reward_ratio(mission, denial, None), \
-                      resources: self.convert_between_kdma_resources(mission, denial, None), \
-                      time: self.convert_between_kdma_time(mission, denial, None), \
-                      system: self.convert_between_kdma_system(mission, denial, None)}
-
-        data['predictors'] = {'relevance': predictors}
-        
-        for predictor in data['predictors']['relevance']:
-            data['predictors']['relevance'][predictor] = self.convert_kdma_predictor(mission, denial, predictor)
-
-        # add predictors to scenario file
-        json_object = json.dumps(data, indent=2)
-        new_file = "temp/scene.json"
-        with open(new_file, "w") as outfile:
-            outfile.write(json_object)
-        '''
-        new_file = "temp/scene.json" # remove after uncommenting above code
-
         # update input arg to hold the search path of each strategy
-        if search_path:
-            search_tree = {'take-the-best': '', 'exhaustive': '', 'tallying': '', 'satisfactory': '', 'one-bounce': ''}
+        search_tree = {'take-the-best': '', 'exhaustive': '', 'tallying': '', 'satisfactory': '', 'one-bounce': ''}
 
         # create a dict for each treatment to hold corresponding HRA strategies
         decision_hra = dict()
@@ -1037,27 +1022,19 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         one_bounce_result = self.one_bounce(new_file, m, k, search_path=search_path, data=data)
         decision_hra[one_bounce_result[0]]['one-bounce'] += 1
 
-        if search_path:
-            search_tree['take-the-best'] = take_the_best_result[2]
-            search_tree['exhaustive'] = exhaustive_result[2]
-            search_tree['tallying'] = tallying_result[2]
-            search_tree['satisfactory'] = satisfactory_result[2]
-            search_tree['one-bounce'] = one_bounce_result[2]
+        search_tree['take-the-best'] = take_the_best_result[2]
+        search_tree['exhaustive'] = exhaustive_result[2]
+        search_tree['tallying'] = tallying_result[2]
+        search_tree['satisfactory'] = satisfactory_result[2]
+        search_tree['one-bounce'] = one_bounce_result[2]
 
         # return all hra decision analysis elements
-        if search_path:
-            return {
-                "decision_hra_dict": decision_hra,
-                #"learned_kdma_set": {'mission': mission, 'denial': denial},
-                #"learned_predictors": predictors,
-                #"decision_comparison_order": search_tree
-            }
-        else:
-            return {
-                "decision_hra_dict": decision_hra,
-                #"learned_kdma_set": {'mission': mission, 'denial': denial},
-                #"learned_predictors": predictors,
-            }
+        return {
+            "decision_hra_dict": decision_hra,
+            #"learned_kdma_set": {'mission': mission, 'denial': denial},
+            #"learned_predictors": predictors,
+            #"decision_comparison_order": search_tree
+        }
 
     '''Parent class function that calls hra_decision_analytics
     '''
@@ -1185,6 +1162,3 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             decision_complete.metrics.update(metrics)
             analysis[decision_complete.id_] = metrics
         return analysis
-
-
-
