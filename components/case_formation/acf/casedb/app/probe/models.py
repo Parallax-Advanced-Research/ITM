@@ -16,6 +16,12 @@ class Probe(db.Model):
     responses = db.relationship("ProbeResponse", backref="probe", lazy=True)
     scenario_id = db.Column(Integer, ForeignKey("scenario.id"), nullable=True)
 
+    def get_feature_dict(self):
+        return {
+            "type": self.type,
+            "prompt": self.prompt,
+        }
+
     def save(self):
         db.session.add(self)
         db.session.commit()
@@ -48,6 +54,11 @@ class ProbeResponse(db.Model):
     probe_id = db.Column(Integer, ForeignKey("probe.id"), nullable=True)
     actions = db.relationship("Action", backref="probe_response", lazy=True)
     kdmas = db.relationship("KDMA", secondary="probe_response_kdma", lazy="subquery")
+
+    def get_feature_dict(self):
+        return {
+            "treatment": self.value,
+        }
 
     def __repr__(self):
         return "<ProbeResponse {}>".format(self.value)
@@ -93,6 +104,11 @@ class KDMA(db.Model):
     kdma_name = db.Column(String, nullable=True)
     kdma_value = db.Column(Integer, nullable=True)
 
+    def get_feature_dict(self):
+        return {
+            self.kdma_name: self.kdma_value,
+        }
+
     def save(self):
         db.session.add(self)
         db.session.commit()
@@ -118,6 +134,12 @@ class Action(db.Model):
     )
     casualty_id = db.Column(Integer, ForeignKey("casualty.id"), nullable=True)
 
+    def get_feature_dict(self):
+        return {
+            "action_type": self.action_type,
+            # "action_description": self.action_description,
+        }
+
     def apply_treatment(self, treatment_supply):
         action_parameter = ActionParameters(
             parameter_type="treatment",
@@ -126,7 +148,7 @@ class Action(db.Model):
         self.parameters.append(action_parameter)
         db.session.add(action_parameter)
 
-    def check_all_vitals(self, casualty_id):
+    def check_all_vitals(self, casualty_id):  # no parameters
         pass
 
     def check_pulse(self, casualty_id):
@@ -168,6 +190,11 @@ class ActionParameters(db.Model):
     parameter_type = db.Column(String(50), nullable=True)
     parameter_value = db.Column(String(50), nullable=True)
     action_id = db.Column(Integer, ForeignKey("action.id"), nullable=True)
+
+    def get_feature_dict(self):
+        return {
+            self.parameter_type: self.parameter_value,
+        }
 
     def save(self):
         db.session.add(self)

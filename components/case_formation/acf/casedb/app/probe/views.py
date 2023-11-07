@@ -22,6 +22,7 @@ def add_probe(scenario_id):
         probe = Probe(
             type=probe_form.type.data,
             prompt=probe_form.prompt.data,
+            probe_id=probe_form.probe_id.data,
             created_by="admin",
         )
         db.session.add(probe)
@@ -46,6 +47,7 @@ def edit_probe(probe_id):
     probe_form = ProbeForm(obj=probe)
     if probe_form.validate_on_submit():
         probe.type = probe_form.type.data
+        probe.probe_id = probe_form.probe_id.data
         probe.prompt = probe_form.prompt.data
         db.session.commit()
         flash("Probe updated successfully.")
@@ -218,3 +220,41 @@ def edit_action(action_id):
         action=action,
     )
 """
+
+
+#                             response
+# add
+@probe.route("/add/response/<int:probe_id>", methods=["GET", "POST"])
+def add_probe_response(probe_id):
+    probe = Probe.query.get_or_404(probe_id)
+    scenario = probe.scenario
+    probe_response_form = ProbeResponseForm()
+    if probe_response_form.validate_on_submit():
+        probe_response = ProbeResponse(
+            value=probe_response_form.probe_value.data,
+            created_by="import",
+        )
+        db.session.add(probe_response)
+        probe_response.probe = probe
+        probe.responses.append(probe_response)
+        db.session.commit()
+        flash("Probe Response added successfully.")
+        return redirect(url_for("probe.edit_probe", probe_id=probe.id))
+    return render_template(
+        "add_probe_response.html",
+        probe_response_form=probe_response_form,
+        title="Add Probe Response",
+        probe_id=probe_id,
+    )
+
+
+# delete
+@probe.route("/delete/response/<int:probe_response_id>", methods=["GET", "POST"])
+def delete_probe_response(probe_response_id):
+    probe_response = ProbeResponse.query.get_or_404(probe_response_id)
+    probe_id = probe_response.probe.id
+    case_id = probe_response.probe.scenario.cases[0].id
+    db.session.delete(probe_response)
+    db.session.commit()
+    flash("Probe Response deleted successfully.")
+    return redirect(url_for("case.view_case", case_id=case_id))

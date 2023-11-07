@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% endblock title %}
+
+{% block content %}
+<div class="container-fluid">
+    <h3>{{ casebase.name}}</h3>
+
+    {% for case in casebase.cases %}
+    <h4> {{ case.name }}</h4>
+
+    {% for scenario in case.scenarios %}
+    <p>{{ scenario.description}}</p>
+
+    <div id="casualties">
+        <h5>Casualties</h5>
+        <div class="table-responsive-sm">
+            <table class="table table-primary">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th>Description</th>
+                        <th>Age</th>
+                        <th>Sex</th>
+                        <th>Rank</th>
+                        <th>Relationship</th>
+                        <th>Visited</th>
+                        <th>Concious</th>
+                        <th>Mental Status</th>
+                        <th>Breathing</th>
+                        <th>hrpm</th>
+                        <th>Injury Type</th>
+                        <th>Injury Location</th>
+                        <th>Injury Severity</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    {% for casualty in scenario.casualties | sort(attribute="name") %}
+                    <tr class="">
+                        <td scope="row">{{ casualty.name}}</td>
+                        <td>{{ casualty.description | truncate(50)}} </td>
+                        <td>{{ casualty.age }}</td>
+                        <td>{{ casualty.sex }}</td>
+                        <td>{{ casualty.rank }}</td>
+                        <td>{{ casualty.relationship }}</td>
+                        <td>{{ casualty.visted }}</td>
+                        <td>
+                            {% for vital in casualty.vitals %}
+                            <div>{{ vital.concious }}</div>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for vital in casualty.vitals %}
+                            <div>{{ vital.mental_status }}</div>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for vital in casualty.vitals %}
+                            <div>{{ vital.breathing }}</div>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for vital in casualty.vitals %}
+                            <div>{{ vital.heart_rate }}</div>
+                            {% endfor %}
+                        </td>
+                        <td> {% for injury in casualty.injuries %}
+                            <div>{{ injury.injury_type}}</div>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for injury in casualty.injuries %}
+                            <div>{{ injury.injury_location}}</div>
+                            {% endfor %}
+                        <td>
+                            {% for injury in casualty.injuries %}
+                            <div>{{ injury.injury_severity }}</div>
+                            {% endfor %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div id="table_div">
+
+    </div>
+    {% for probe in scenario.probes %}
+    <h5>{{ probe.prompt}}</h5>
+    <div class="table-responsive">
+        <table class="table table-primary">
+            <thead>
+                <tr>
+                    <th scope="col">Action</th>
+                    <th scope="col">Parameters</th>
+                    <th scope="col">mission</th>
+                    <th scope="col">denial</th>
+                    <th scope="col">risktol</th>
+                    <th scope="col">timeurg</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for response in probe.responses %}
+
+                {% for action in response.actions %}
+                <tr class="">
+                    <td scope="row">
+                        {{ action.action_type}}
+
+                    </td>
+                    <td>
+                        {% for parameter in action.parameters %}
+                        {{ parameter.parameter_value}}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for kdma in response.kdmas %}
+                        {% if kdma.kdma_name =="mission" %}
+                        {{ kdma.kdma_value}}
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for kdma in response.kdmas %}
+                        {% if kdma.kdma_name =="denial" %}
+                        {{ kdma.kdma_value}}
+                        {% endif %}
+                        {% endfor %}
+
+                    </td>
+                    <td>
+                        {% for kdma in response.kdmas %}
+                        {% if kdma.kdma_name =="risktol" %}
+                        {{ kdma.kdma_value}}
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for kdma in response.kdmas %}
+                        {% if kdma.kdma_name =="timeurg" %}
+                        {{ kdma.kdma_value}}
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+
+    {% endfor %}
+
+    {% endfor %}
+
+    {% endfor %}
+
+</div>
+{% endblock content %}

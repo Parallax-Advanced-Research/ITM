@@ -77,3 +77,30 @@ def delete_casebase(casebase_id):
     db.session.commit()
     flash("Case base deleted successfully.")
     return redirect(url_for("main.view_casebase_list"))
+
+
+# view case base as data list
+@main.route("/casebase/<int:casebase_id>/data/ta3")
+def view_case_data_ta3(casebase_id):
+    casebase = CaseBase.query.get_or_404(casebase_id)
+    cases = casebase.cases.all()
+    return render_template(
+        "view_casebase_case_data_list_ta3.html",
+        casebase=casebase,
+        cases=cases,
+        title=casebase.name,
+    )
+
+
+# learn weights
+@main.route("/casebase/<int:casebase_id>/learn")
+def learn_weights(casebase_id):
+    casebase = CaseBase.query.get_or_404(casebase_id)
+    cases = casebase.cases.all()
+
+    return render_template(
+        "learn_casebase_weights.html",
+        casebase=casebase,
+        cases=cases,
+        title=casebase.name,
+    )

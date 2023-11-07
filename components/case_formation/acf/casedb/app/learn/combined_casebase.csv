@@ -1,0 +1,548 @@
+type,prompt,action1,casualty_name,casualty_age,casualty_sex,casualty_rank,injury_type,injury_severity,injury_location,mission,denial,risktol,timeurg
+SelectTag,How would you tag A?,TAG_CASUALTY MINOR None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,8,2
+SelectTag,How would you tag A?,TAG_CASUALTY DELAYED None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,7,3
+SelectTag,How would you tag A?,TAG_CASUALTY IMMEDIATE None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,2,3,8
+SelectTag,How would you tag A?,TAG_CASUALTY EXPECTANT None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,8,2,8
+SelectTag,How would you tag A?,TAG_CASUALTY MINOR None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,2,8
+SelectTag,How would you tag A?,TAG_CASUALTY DELAYED None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,7,7,6
+SelectTag,How would you tag A?,TAG_CASUALTY IMMEDIATE None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,8,8,7
+SelectTag,How would you tag A?,TAG_CASUALTY EXPECTANT None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,8,2,8
+SelectTag,How would you tag A?,TAG_CASUALTY MINOR None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,2,2
+SelectTag,How would you tag A?,TAG_CASUALTY DELAYED None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,3,3,3
+SelectTag,How would you tag A?,TAG_CASUALTY IMMEDIATE None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,6,3,7
+SelectTag,How would you tag A?,TAG_CASUALTY EXPECTANT None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,7,8,8
+SelectTag,How would you tag A?,TAG_CASUALTY MINOR None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,0,2,2,8
+SelectTag,How would you tag A?,TAG_CASUALTY DELAYED None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,0,2,2,2
+SelectTag,How would you tag A?,TAG_CASUALTY IMMEDIATE None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,0,3,7,7
+SelectTag,How would you tag A?,TAG_CASUALTY EXPECTANT None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,8,2,8
+SelectTag,How would you tag B?,TAG_CASUALTY MINOR None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,3,8,8,2
+SelectTag,How would you tag B?,TAG_CASUALTY DELAYED None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,8,7,7,2
+SelectTag,How would you tag B?,TAG_CASUALTY IMMEDIATE None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,2,8,8
+SelectTag,How would you tag B?,TAG_CASUALTY EXPECTANT None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,8,8,3
+SelectTag,How would you tag B?,TAG_CASUALTY MINOR None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,3,7,3,2
+SelectTag,How would you tag B?,TAG_CASUALTY DELAYED None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,6,7,2
+SelectTag,How would you tag B?,TAG_CASUALTY IMMEDIATE None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,8,8,7
+SelectTag,How would you tag B?,TAG_CASUALTY EXPECTANT None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,2,2,2
+SelectTag,How would you tag B?,TAG_CASUALTY MINOR None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,8,3,3,3
+SelectTag,How would you tag B?,TAG_CASUALTY DELAYED None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,8,8,6,6
+SelectTag,How would you tag B?,TAG_CASUALTY IMMEDIATE None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,6,3,6
+SelectTag,How would you tag B?,TAG_CASUALTY EXPECTANT None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,2,2,8
+SelectTag,How would you tag B?,TAG_CASUALTY MINOR None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,2,6,8
+SelectTag,How would you tag B?,TAG_CASUALTY DELAYED None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,4,4,8
+SelectTag,How would you tag B?,TAG_CASUALTY IMMEDIATE None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,6,3,4
+SelectTag,How would you tag B?,TAG_CASUALTY EXPECTANT None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,8,7,8
+SelectTag,How would you tag C?,TAG_CASUALTY MINOR None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,3,2,8,2
+SelectTag,How would you tag C?,TAG_CASUALTY DELAYED None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,2,7,3
+SelectTag,How would you tag C?,TAG_CASUALTY IMMEDIATE None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,2,2,7
+SelectTag,How would you tag C?,TAG_CASUALTY EXPECTANT None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,8,8,8
+SelectTag,How would you tag C?,TAG_CASUALTY MINOR None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,2,8,2
+SelectTag,How would you tag C?,TAG_CASUALTY DELAYED None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,6,7,3
+SelectTag,How would you tag C?,TAG_CASUALTY IMMEDIATE None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,2,6,7
+SelectTag,How would you tag C?,TAG_CASUALTY EXPECTANT None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,8,3,2
+SelectTag,How would you tag C?,TAG_CASUALTY MINOR None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,3,3,6
+SelectTag,How would you tag C?,TAG_CASUALTY DELAYED None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,8,6,6
+SelectTag,How would you tag C?,TAG_CASUALTY IMMEDIATE None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,4,3,3,6
+SelectTag,How would you tag C?,TAG_CASUALTY EXPECTANT None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,2,2,8
+SelectTag,How would you tag C?,TAG_CASUALTY MINOR None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,8,0,8
+SelectTag,How would you tag C?,TAG_CASUALTY DELAYED None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,4,8,2,6
+SelectTag,How would you tag C?,TAG_CASUALTY IMMEDIATE None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,6,2,2,0
+SelectTag,How would you tag C?,TAG_CASUALTY EXPECTANT None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,8,0,8
+SelectTag,How would you tag D?,TAG_CASUALTY MINOR None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,8,8,2
+SelectTag,How would you tag D?,TAG_CASUALTY DELAYED None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,4,7,7
+SelectTag,How would you tag D?,TAG_CASUALTY IMMEDIATE None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,7,2,3,8
+SelectTag,How would you tag D?,TAG_CASUALTY EXPECTANT None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,8,8,8,8
+SelectTag,How would you tag D?,TAG_CASUALTY MINOR None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,8,2,2
+SelectTag,How would you tag D?,TAG_CASUALTY DELAYED None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,7,3,4
+SelectTag,How would you tag D?,TAG_CASUALTY IMMEDIATE None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,3,7,2
+SelectTag,How would you tag D?,TAG_CASUALTY EXPECTANT None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,2,2,2
+SelectTag,How would you tag D?,TAG_CASUALTY MINOR None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,8,8,8
+SelectTag,How would you tag D?,TAG_CASUALTY DELAYED None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,8,7,7,6
+SelectTag,How would you tag D?,TAG_CASUALTY IMMEDIATE None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,6,3,7
+SelectTag,How would you tag D?,TAG_CASUALTY EXPECTANT None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,2,2,8
+SelectTag,How would you tag D?,TAG_CASUALTY MINOR None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,0,8,8,8
+SelectTag,How would you tag D?,TAG_CASUALTY DELAYED None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,0,6,7,6
+SelectTag,How would you tag D?,TAG_CASUALTY IMMEDIATE None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,0,3,2,4
+SelectTag,How would you tag D?,TAG_CASUALTY EXPECTANT None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,7,8,8,8
+SelectTag,How would you tag E?,TAG_CASUALTY MINOR None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,8,7,7,2
+SelectTag,How would you tag E?,TAG_CASUALTY DELAYED None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,3,6,7
+SelectTag,How would you tag E?,TAG_CASUALTY IMMEDIATE None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,3,8
+SelectTag,How would you tag E?,TAG_CASUALTY EXPECTANT None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,8,8,8,8
+SelectTag,How would you tag E?,TAG_CASUALTY MINOR None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,8,2,2,2
+SelectTag,How would you tag E?,TAG_CASUALTY DELAYED None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,6,3,7,3
+SelectTag,How would you tag E?,TAG_CASUALTY IMMEDIATE None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,4,8,8,7
+SelectTag,How would you tag E?,TAG_CASUALTY EXPECTANT None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,8,2,2,2
+SelectTag,How would you tag E?,TAG_CASUALTY MINOR None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,4,2
+SelectTag,How would you tag E?,TAG_CASUALTY DELAYED None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,3,6,6,3
+SelectTag,How would you tag E?,TAG_CASUALTY IMMEDIATE None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,8,8,6,8
+SelectTag,How would you tag E?,TAG_CASUALTY EXPECTANT None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,3,4,2,8
+SelectTag,How would you tag E?,TAG_CASUALTY MINOR None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,0,8,8,8
+SelectTag,How would you tag E?,TAG_CASUALTY DELAYED None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,0,4,4,8
+SelectTag,How would you tag E?,TAG_CASUALTY IMMEDIATE None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,0,4,2,4
+SelectTag,How would you tag E?,TAG_CASUALTY EXPECTANT None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,7,8,8,8
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,8,2
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,7,7,3
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,8,8,3
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None ,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,8,7,8
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,8,8,2
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,7,7,3
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,7,3,3
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,8,3,7,3
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,3,2
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,2,4,2
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,2,6,3
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,6,2,8,2
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,7,7
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,4,2,6,6
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,2,3,7
+SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,4,2,2,4
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,8,2
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,8,8,3,7
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,8,8,2,8
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,3,8,2
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,8,8,2
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,3,7,7,7
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,8,3,3
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,3,7,2
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,3,2
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,2,3,4
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,7,8,8,6
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,3,2,4
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,7,7
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,4,2,6,6
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,4,2,2,4
+SelectCasualty,"Who do you treat first between casualties A, B, D, and E?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,4,2,3,2
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,6,8,2
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,2,2,3
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,7,2
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,8,2
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,3,8,3
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,4,3,2,7
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,7,7,2
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,7,8,2
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,3,6,8
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,3,3,8
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,3,3,6
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,3,3,3,6
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,4,3,2,2
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,6,7,3,3
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,4,2,2,2
+SelectTreatment,"You decide to treat casualty A first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,0,2,8,2
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,8,7,2,2
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,2,4,4
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,3,4,7
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,2,2,7
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,3,8,3
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,4,3,2,7
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,3,7,2
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,3,2,2
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,3,3,8
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,3,6,8
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,3,7,8
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,8,7,8,8
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,3,2,2
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,7,3,3
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,4,2,2,2
+SelectTreatment,"You decide to treat casualty B first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,0,2,7,2
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,2,2,7
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,2,3,2
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,2,6,8
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,2,3,2
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,3,3,3
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,4,3,3,4
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,4,3,2,2
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,3,3,4
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,7,8,8
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,3,3,8
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,6,3,7,7
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,3,3,4
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,3,2,2
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,3,3,3
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,0,2,2,2
+SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,4,2,2,2
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,6,2,7,3
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,2,8,2
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,2,8,2
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",APPLY_TREATMENT None HEMOSTATIC_GAUZE RIGHT_FACE,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,7,2,2,8
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,3,6,6
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,3,6,6
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,3,7,8
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",APPLY_TREATMENT None HEMOSTATIC_GAUZE RIGHT_FACE,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,4,3,6,4
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,4,3,6,8
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,3,2,8
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,2,6,6
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",APPLY_TREATMENT None HEMOSTATIC_GAUZE RIGHT_FACE,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,8,7,8,7
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,6,3,2,2
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,6,3,3,3
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,4,2,2,2
+SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",APPLY_TREATMENT None HEMOSTATIC_GAUZE RIGHT_FACE,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,4,2,6,2
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,7,6
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,7,2
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",APPLY_TREATMENT None HEMOSTATIC_GAUZE RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,7,2
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",APPLY_TREATMENT None TOURNIQUET RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,7,8
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,3,7,4
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,3,7,4
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",APPLY_TREATMENT None HEMOSTATIC_GAUZE RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,3,7,2
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",APPLY_TREATMENT None TOURNIQUET RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,3,6,3
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,8,2,6,8
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,2,7
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",APPLY_TREATMENT None HEMOSTATIC_GAUZE RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,3,7
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",APPLY_TREATMENT None TOURNIQUET RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,8,7
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,6,3,2,2
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,6,0,3,3
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",APPLY_TREATMENT None HEMOSTATIC_GAUZE RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,4,2,2,2
+SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",APPLY_TREATMENT None TOURNIQUET RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,4,2,6,2
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,6,8,4,8
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,6,2,7,2
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,8,2
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE RIGHT_CALF,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,7,2
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,7,2,8
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,3,7,6,7
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,3,8,7,3
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE RIGHT_CALF,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,3,8,8,2
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,3,2,2
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,7,2,8,8
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,3,2,3,4
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE RIGHT_CALF,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,2,3
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,8,8,2,8
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,7,7,3,4
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,4,3
+SelectTreatment,"You decide to assess casualty A, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE RIGHT_CALF,casualty-A,22,M,MARINE,PUNCTURE,.5,LEFT_SIDE,2,2,2,2
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,2,8,8,7
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,2,3,2
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,3,7,3
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,2,3,3
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,8,2,8
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,6,3,7
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,3,3,4,6
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,3,2,7,3
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,3,3,2,2
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,7,3,2,6
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,3,8,8
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,8,3,2,3
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,3,4,4,4
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,4,4,4
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,6,4,4,4
+SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_SIDE,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,0,3,3,2
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,8,8,8
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,2,2,2
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,3,2,3
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_FOREARM,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,2,4,3
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,7,8,8
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,3,6,6,7
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,3,3,3
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_FOREARM,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,7,7,7
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,3,2,2
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,3,7,6
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,3,7,6
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_FOREARM,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,3,8,8
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,8,7,8
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,6,3,0,4
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,0,2,2,2
+SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE LEFT_FOREARM,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,2,2,4
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,8,8,8
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,2,8,2
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,2,8,2
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE RIGHT_FACE,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,7,2,2,8
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,8,8,2,8
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,7,7,3,7
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,4,7,2,3
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE RIGHT_FACE,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,6,7,7,8
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,2,2,2
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,3,7,2
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,3,6,2
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE RIGHT_FACE,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,3,2,8,8
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,7,8,8,8
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,6,3,6,3
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,0,2,4,3
+SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",APPLY_TREATMENT None PRESSURE_BANDAGE RIGHT_FACE,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,4,2,4,4
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,7,8,3,8
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,2,2
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,2,3
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",APPLY_TREATMENT None TOURNIQUET RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,2,8
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,8,2,2,8
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,7,6,3,6
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,3,7,2,2
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",APPLY_TREATMENT None TOURNIQUET RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,7,7,3,4
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,2,2
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,2,4
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,6,6
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",APPLY_TREATMENT None TOURNIQUET RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,8,8
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,7,8,8,8
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,4,3,6,3
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,0,2,4,2
+SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",APPLY_TREATMENT None TOURNIQUET RIGHT_CALF,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,4,2,4,4
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,8,2,8,3
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,8,3,3
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,8,2,8
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,8,2
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,3,7,7,2
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,7,2,3,7
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,2,2,7,3
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,2,7,2
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,8,3,3,2
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,2,3,3,6
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,8,8,8,7
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,2,3,2,7
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-B,25,M,MARINE,SHRAPNEL,.25,LEFT_SIDE,4,2,7,6
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-C,36,M,MARINE,SHRAPNEL,.25,LEFT_FOREARM,8,2,3,7
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-D,40,M,Civilian,SHRAPNEL,.25,RIGHT_FACE,4,2,2,4
+SelectCasualty,"Who do you treat first between casualties B, C, D and E?",CHECK_ALL_VITALS None None None,casualty-E,26,M,MARINE,AMPUTATION,1,RIGHT_CALF,4,2,3,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,7,1,3
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,7,8,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,10,5,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,0,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,2,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,4,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,8,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,6,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,7,4,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,8,8,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,5,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,7,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,2,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,8,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,2,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,CHECK_RESPIRATION None NONE ,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,10,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,5,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,10,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,8,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,6,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,8,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,1,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,8,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,9,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None NASOPHARYNGEAL_AIRWAY UNSPECIFIED,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,1,8,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,10,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,1,7,1,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,8,9,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,0,9,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,8,5,3
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,8,8,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,7,2,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,8,10,1,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,4,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,7,6,3
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,9,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,7,5,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,1,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,9,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,9,4
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,7,8,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,5,6,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,5,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,0,6
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,8,1,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,2,8,2,4
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,9,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,2,10,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,8,4,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,7,8,3
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,8,6,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,2,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,5,9,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,7,5,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,3,8,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,8,2,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,2,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,8,9,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,1,3,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,5,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,1,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,7,1,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,7,10,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,4,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,6,8
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,7,9,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,10,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,8,8,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,5,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,2,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,5,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,8,5,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,5,4,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,7,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,2,10,2,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,8,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,2,4,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,9,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,5,3
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,9,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,7,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,5,6,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,5,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,7,8,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,5,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,8,6,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,8,8,2,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,9,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,7,8,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,7,1,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,5,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,5,5,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,7,6,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,1,10,9,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,7,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,1,10,9,5
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,2,3
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,2,10,2,8
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,7,9,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,5,10,1,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,9,6
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,2,10,8,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,8,8,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,7,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,7,10,8,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,2,7,9,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,10,6,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,8,7,4,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,4,10,5,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,3,10,9,2
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,0,0,0,0
+MultipleChoice,What do you do?,APPLY_TREATMENT None TOURNIQUET LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,.05,LEFT_CALF,6,7,1,3
