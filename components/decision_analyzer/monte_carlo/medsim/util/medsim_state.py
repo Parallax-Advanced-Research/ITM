@@ -52,7 +52,7 @@ class MedsimState(MCState):
                 severity += inj.severity
         return severity
 
-    def get_state_morbidity(self) -> dict[str, float | dict[str, float]]:
+    def get_state_morbidity(self, generic = True) -> dict[str, float | dict[str, float]]:
         morbidity_dict: dict[str, float] = dict()
         sorted_cas: list[Casualty] = sorted(self.casualties)
         if not len(sorted_cas):  # Assuming at least one else return nada
@@ -70,17 +70,18 @@ class MedsimState(MCState):
             avg_pbi += cas.calc_burn_tbsa() + cas.demographics.age
         
         morbidity_dict[Metric.P_DEATH.value] = probability_death
-        morbidity_dict[Metric.P_BLEEDOUT.value] = probability_bleedout
-        morbidity_dict[Metric.P_ASPHYXIA.value] = probability_asphyxia
-        morbidity_dict[Metric.P_SHOCK.value] = probability_shock
-        morbidity_dict[Metric.TOT_BLOOD_LOSS.value] = tot_blood
-        morbidity_dict[Metric.TOT_LUNG_LOSS.value] = lung_loss
         morbidity_dict[Metric.HIGHEST_P_DEATH.value] = deathly_person.calc_prob_death()
-        morbidity_dict[Metric.HIGHEST_P_BLEEDOUT.value] = deathly_person.calc_prob_bleedout()
-        morbidity_dict[Metric.HIGHEST_P_ASPHYXIA.value] = deathly_person.calc_prob_asphyx()
-        morbidity_dict[Metric.HIGHEST_P_SHOCK.value] = deathly_person.calc_prob_shock()
-        morbidity_dict[Metric.HIGHEST_BLOOD_LOSS.value] = sum(inj.blood_lost_ml for inj in deathly_person.injuries)
-        morbidity_dict[Metric.HIGHEST_LUNG_LOSS.value] = sum(inj.breathing_hp_lost for inj in deathly_person.injuries)
+        if not generic:
+            morbidity_dict[Metric.P_BLEEDOUT.value] = probability_bleedout
+            morbidity_dict[Metric.P_ASPHYXIA.value] = probability_asphyxia
+            morbidity_dict[Metric.P_SHOCK.value] = probability_shock
+            morbidity_dict[Metric.TOT_BLOOD_LOSS.value] = tot_blood
+            morbidity_dict[Metric.TOT_LUNG_LOSS.value] = lung_loss
+            morbidity_dict[Metric.HIGHEST_P_BLEEDOUT.value] = deathly_person.calc_prob_bleedout()
+            morbidity_dict[Metric.HIGHEST_P_ASPHYXIA.value] = deathly_person.calc_prob_asphyx()
+            morbidity_dict[Metric.HIGHEST_P_SHOCK.value] = deathly_person.calc_prob_shock()
+            morbidity_dict[Metric.HIGHEST_BLOOD_LOSS.value] = sum(inj.blood_lost_ml for inj in deathly_person.injuries)
+            morbidity_dict[Metric.HIGHEST_LUNG_LOSS.value] = sum(inj.breathing_hp_lost for inj in deathly_person.injuries)
         return morbidity_dict
 
 

@@ -571,7 +571,7 @@ class MetricSet:
             return [Metric.SEVERITY.value, Metric.SUPPLIES_REMAINING.value, Metric.SUPPLIES_USED.value,
                     Metric.AVERAGE_TIME_USED.value, Metric.TARGET_SEVERITY.value, Metric.TARGET_SEVERITY_CHANGE.value,
                     Metric.SEVEREST_SEVERITY.value, Metric.SEVEREST_SEVERITY_CHANGE.value, Metric.SEVERITY_CHANGE.value,
-                    Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value]
+                    Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value]
         elif self.set_name == 'full':
             return []
 
@@ -585,22 +585,22 @@ class MetricSet:
         elif self.set_name == 'full':
             return {}
 
-    def apply_metric_set(self, in_list: list[str, DecisionMetrics]) -> list[str, DecisionMetrics]:
-        out_dict: list[str, DecisionMetrics] = list()
+    def apply_metric_set(self, in_list: list[DecisionMetrics]) -> list[DecisionMetrics]:
+        out_dict: list[DecisionMetrics] = list()
         for metric_dict in in_list:
             existing_metric = list(metric_dict.keys())[0]
             if existing_metric in self.metric_list:
                 out_dict.append({existing_metric: list(metric_dict.values())[0]})
         return out_dict
 
-    def apply_nondeterminism_set(self, in_list: list[str, DecisionMetrics]) -> list[str, DecisionMetrics]:
-        out_dict: list[str, DecisionMetrics] = list()
+    def apply_nondeterminism_set(self, in_list: list[DecisionMetrics]) -> list[DecisionMetrics]:
+        out_dict: list[DecisionMetrics] = list()
         for metric_dict in in_list:
             existing_metric = list(metric_dict.keys())[0]
             if existing_metric not in list(self.nested_keeps.keys()):
                 continue
             list_of_outcomes = metric_dict[existing_metric].value
-            outcome_return: list[str, DecisionMetrics] = list()
+            outcome_return: list[ DecisionMetrics] = list()
             for outcome_key, outcome_val in list_of_outcomes.items():
                 inner_outcome_keep: DecisionMetrics = dict()
                 for inner_key, inner_val in outcome_val.items():

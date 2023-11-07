@@ -9,6 +9,12 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
+V KR 1.6.10 (Veterans day week)
+=========================
+> Added genericized metrics instead of mass casualty specific as default flag
+> Sorting of metrics by damage per second (deterioration per second?)
+
+
 V KR 1.5.9 (11/6 BOW)
 =========================
 > Updated justifications to use morbidity/bleedout

@@ -164,7 +164,8 @@ def get_average_morbidity(outcomes: dict[str, float | dict[str, float]]) -> Metr
                 morbidity_lists[morbid_key] = []
             morbidity_lists[morbid_key].append((morbidity[morbid_key] * outcome_probability))
     for morb_key in morbidity_lists:
-        morbidity_output[morb_key] = sum(morbidity_lists[morb_key])
+        if morb_key in [Metric.P_DEATH.value, Metric.HIGHEST_P_DEATH.value]:
+            morbidity_output[morb_key] = sum(morbidity_lists[morb_key])
     return morbidity_output
 
 
@@ -287,7 +288,6 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
 
             basic_metrics: list[DecisionMetrics] = dict_to_decisionmetrics(decision_metrics_raw)
             cut_metrics = metric_set.apply_metric_set(basic_metrics)
-            nd_metrics = metric_set.apply_nondeterminism_set(basic_metrics)
             for bm in cut_metrics:
                 decision.metrics.update(bm)
                 analysis[decision_str].update(bm)
