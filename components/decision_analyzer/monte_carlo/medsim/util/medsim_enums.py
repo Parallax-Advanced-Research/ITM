@@ -1,5 +1,7 @@
 from enum import Enum
 
+from domain.internal import DecisionMetrics
+from util import logger
 
 
 class InjuryUpdate:
@@ -553,3 +555,54 @@ location_surface_areas: dict[str, float] = {
     Locations.RIGHT_NECK.value: .5,
     Locations.UNSPECIFIED.value: 1,
 }
+
+
+class MetricSet:
+    def __init__(self, set_name: str = 'generic'):
+        if set_name not in ['generic', 'full']:
+            set_name = 'generic'
+            logger.info('%s not a known metric list, reverting to %s.' % (set_name, 'generic'))
+        self.set_name = set_name
+        self.metric_list = self.get_metric_list()
+        self.nested_keeps = self.get_nested_keeps()
+
+    def get_metric_list(self) -> list[str]:
+        if self.set_name == 'generic':
+            return [Metric.SEVERITY.value, Metric.SUPPLIES_REMAINING.value, Metric.SUPPLIES_USED.value,
+                    Metric.AVERAGE_TIME_USED.value, Metric.TARGET_SEVERITY.value, Metric.TARGET_SEVERITY_CHANGE.value,
+                    Metric.SEVEREST_SEVERITY.value, Metric.SEVEREST_SEVERITY_CHANGE.value, Metric.SEVERITY_CHANGE.value,
+                    Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value]
+        elif self.set_name == 'full':
+            return []
+
+    def get_nested_keeps(self) -> dict[str, str]:
+        if self.set_name == 'generic':
+            return {Metric.NONDETERMINISM.value: [Metric.PROBABILITY.value, Metric.SEVERITY.value,
+                                                  Metric.AVERAGE_TIME_USED.value,
+                                                  {Metric.MORBIDITY.value: [Metric.P_DEATH.value,
+                                                                           Metric.HIGHEST_P_DEATH.value]},
+                                                  Metric.JUSTIFICATION.value]}
+        elif self.set_name == 'full':
+            return {}
+
+    def apply_metric_set(self, in_list: list[str, DecisionMetrics]) -> list[str, DecisionMetrics]:
+        out_dict: list[str, DecisionMetrics] = list()
+        for metric_dict in in_list:
+            existing_metric = list(metric_dict.keys())[0]
+            if existing_metric in self.metric_list:
+                out_dict.append({existing_metric: list(metric_dict.values())[0]})
+        return out_dict
+
+    def apply_nondeterminism_set(self, in_list: list[str, DecisionMetrics]) -> list[str, DecisionMetrics]:
+        out_dict: list[str, DecisionMetrics] = list()
+        for metric_dict in in_list:
+            existing_metric = list(metric_dict.keys())[0]
+            if existing_metric not in list(self.nested_keeps.keys()):
+                continue
+            list_of_outcomes = metric_dict[existing_metric].value
+            outcome_return: list[str, DecisionMetrics] = list()
+            for outcome_key, outcome_val in list_of_outcomes.items():
+                inner_outcome_keep: DecisionMetrics = dict()
+                for inner_key, inner_val in outcome_val.items():
+                    pass
+        return out_dict

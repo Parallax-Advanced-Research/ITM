@@ -5,12 +5,8 @@ import numpy as np
 
 
 def ideal_function(decision: Decision[Action]) -> float:
-    damage_total = decision.metrics[Metric.TOT_BLOOD_LOSS.value].value + decision.metrics[Metric.TOT_LUNG_LOSS.value].value
-    time_taken = decision.metrics[Metric.AVERAGE_TIME_USED.value].value
-    if time_taken == 0:
-        return 0.0
-    dps = damage_total / time_taken
-    return dps
+    damage_total = decision.metrics[Metric.DAMAGE_PER_SECOND.value].value
+    return damage_total
 
 
 def sort_decisions(decision_list: list[Decision[Action]], sort_metric: str=Metric.P_DEATH.value) -> list[Decision[Action]]:
