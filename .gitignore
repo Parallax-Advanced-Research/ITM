@@ -318,3 +318,8 @@ temp/newfile.json
 
 temp/scene.json
 /temp/*
+adept_client/
+adept_server/
+align-system/
+itm-analysis-reporting/
+ta1-server-mvp/
