@@ -101,6 +101,7 @@ def main():
     parser.add_argument('--keds', action=argparse.BooleanOptionalAction, default=True, help="Uses KDMA Estimation Decision Selector for decision selection (default)")
     parser.add_argument('--kedsd', action=argparse.BooleanOptionalAction, default=False, help="Uses KDMA with Drexel cases")
     parser.add_argument('--csv', action=argparse.BooleanOptionalAction, default=False, help="Uses CSV Decision Selector")
+    parser.add_argument('--bayes', action=argparse.BooleanOptionalAction, default=True, help='Perform bayes net calculations')
     parser.add_argument('--rollouts', type=int, default=1000, help="Monte Carlo rollouts to perform")
     parser.add_argument('--endpoint', type=str, help="The URL of the TA3 api", default=None)
     parser.add_argument('--variant', type=str, help="TAD variant", default="aligned")

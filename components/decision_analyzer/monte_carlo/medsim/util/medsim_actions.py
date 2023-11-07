@@ -53,6 +53,7 @@ def find_casualty(action: MedsimAction, casualties: list[Casualty]) -> Casualty 
             return casualty
     return None
 
+
 def get_treatment_actions(casualties: list[Casualty], supplies: list[str]) -> list[tuple]:
     treatments: list[tuple] = []
     locations: list[str] = [loc.value for loc in Locations]

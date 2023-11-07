@@ -31,17 +31,28 @@ class Demographics:
 
 
 class Injury:
+    STANDARD_BODY_VOLUME = 5000  # mL
     def __init__(self, name: str, location: str, severity: float, treated: bool = False,
-                 breathing_effect=BodySystemEffect.NONE.value, bleeding_effect=BodySystemEffect.NONE.value):
+                 breathing_effect=BodySystemEffect.NONE.value, bleeding_effect=BodySystemEffect.NONE.value,
+                 is_burn: bool = False):
         self.name = name
         self.location = location
         self.severity = severity
+        self.base_severity = severity
         self.time_elapsed: float = 0.0
         self.treated: bool = treated
         self.blood_lost_ml: float = 0.0
         self.breathing_hp_lost: float = 0.0  # Breathing points are scaled the same as blood lost. If you lose 5000 you die
-        self.breathing_effect: str = breathing_effect
-        self.bleeding_effect: str = bleeding_effect
+        self.bleeding_effect, self.breathing_effect = None, None
+        self.is_burn = is_burn or name == Injuries.BURN.value
+        if self.name in INJURY_UPDATE.keys():
+            effects: InjuryUpdate = INJURY_UPDATE[self.name].as_dict()
+            self.breathing_effect: str = effects['BREATHING'] if breathing_effect == BodySystemEffect.NONE.value else breathing_effect
+            self.bleeding_effect: str = effects['BLEEDING'] if bleeding_effect == BodySystemEffect.NONE.value else bleeding_effect
+        else:
+            self.breathing_effect = breathing_effect
+            self.bleeding_effect = bleeding_effect
+        self.damage_per_second = 0.0
 
     def update_bleed_breath(self, effect: InjuryUpdate, time_elapsed: float,
                             reference_oracle: dict[str, float], treated=False):
@@ -56,9 +67,20 @@ class Injury:
             if effect_key == SmolSystems.BLEEDING.value:
                 self.blood_lost_ml += (effect_value * time_elapsed) if not self.treated else 0.0
                 self.bleeding_effect = effect_dict[effect_key]
-        self.severity = (self.blood_lost_ml / 500) + (self.breathing_hp_lost / 500)
+        self.severity = (self.blood_lost_ml / Injury.STANDARD_BODY_VOLUME) + (self.breathing_hp_lost / Injury.STANDARD_BODY_VOLUME) + self.base_severity
+        self.damage_per_second = (self.blood_lost_ml + self.breathing_hp_lost) / time_elapsed if time_elapsed else 0.0
         if treated:
             self.treated = True
+            self.damage_per_second = 0.0
+
+    def calculate_severity(self) -> float:
+        return (self.blood_lost_ml / Injury.STANDARD_BODY_VOLUME) + (self.breathing_hp_lost / Injury.STANDARD_BODY_VOLUME) + self.base_severity
+
+    def update_burn_severity(self, treated=False):
+        # Assumes burn is being treated with gauze
+        if self.is_burn and treated and not self.treated:
+            self.treated = True
+            self.severity *= .8 # TODO: get better estimate
 
     def __eq__(self, other: 'Injury'):
         # TODO: add new cas members to equal function
@@ -155,8 +177,70 @@ class Casualty:
         else:
             return self._CRITICAL_P_BLEEDOUT
 
+    def calc_burn_tbsa(self):
+        burn_locations = {}
+        for inj in self.injuries:
+            if inj.is_burn:
+                burn_locations[inj.location] = inj.severity
+
+        burn_coverage = 0
+        body_area = 0 
+        for location in location_surface_areas:
+            # Don't consider location if amputated
+            skip = False
+            for injury in self.injuries:
+                # TODO: Make sure this way of checking for amputations is valid
+                if injury.location == location and injury.name == Injuries.AMPUTATION:
+                    skip = True
+                    break
+            if skip:
+                continue
+
+            sa = location_surface_areas[location]
+            body_area += sa
+            if location in burn_locations:
+                burn_coverage += sa * burn_locations[location]
+
+        return burn_coverage / body_area
+
+    def has_sufficient_hydration(self, tbsa: float = None):
+        if tbsa is None:
+            tbsa = self.calc_burn_tbsa()
+        # TODO: get hydration rate based on treatment actions
+        hydration_rate = 0 # mL/hr
+        # https://www.osmosis.org/answers/parkland-formula
+        parkland_24h_total = 4 * (tbsa * 100) * 90 # TODO: get better weight estimate
+        required_hydration = parkland_24h_total / 16 # 1/2 of parkland total over 8h
+        return hydration_rate > required_hydration
+
+    def calc_prob_shock(self):
+        shock_factors = [0]
+        # Burn shock
+        tbsa = self.calc_burn_tbsa()
+        if tbsa > .1:
+            pbi = tbsa * 100 + self.demographics.age
+            if self.has_sufficient_hydration(tbsa):
+                if pbi >= 105:
+                    shock_factors.append(1)
+                if pbi >= 90:
+                    shock_factors.append(.5 + ((pbi - 90) / 15) * .4)
+                else:
+                    shock_factors.append(tbsa * 100 / pbi * .5)
+            else: # TODO: try to find better sources for untreated burns
+                if pbi > 80:
+                    shock_factors.append(1)
+                if pbi > 60:
+                    shock_factors.append(.9)
+                else:
+                    shock_factors.append(tbsa / pbi * .9)
+        return max(shock_factors)
+
     def calc_prob_death(self):
-        return min(self.calc_prob_asphyx() + self.calc_prob_bleedout(), 1.0)
+        factors = [
+            self.calc_prob_asphyx() + self.calc_prob_bleedout(),
+            self.calc_prob_shock(),
+        ]
+        return min(max(factors), 1.0)
 
     def __str__(self):
         retstr = "%s_" % self.id
@@ -189,7 +273,9 @@ class Casualty:
             return True
         self_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost) for inj in self.injuries)
         other_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost) for inj in other.injuries)
-        less_than = self_hp_lost < other_hp_lost
+        self_shock = self.calc_prob_shock()
+        other_shock = other.calc_prob_shock()
+        less_than = self_hp_lost < other_hp_lost or self_shock < other_shock
         return less_than
 
 
@@ -273,12 +359,12 @@ class Injuries(Enum):
     CHEST_COLLAPSE = 'Chest Collapse'
     AMPUTATION = 'Amputation'
     BURN = 'Burn'
+    EYE_TRAUMA = 'Eye_Trauma'
 
 
 class SmolSystems(Enum):
     BREATHING = 'BREATHING'
     BLEEDING = 'BLEEDING'
-
 
 class Metric(Enum):
     SEVERITY = 'SEVERITY'
@@ -288,7 +374,7 @@ class Metric(Enum):
     AVERAGE_TIME_USED = 'AVERAGE_TIME_USED'
     TARGET_SEVERITY = 'ACTION_TARGET_SEVERITY'
     TARGET_SEVERITY_CHANGE = 'ACTION_TARGET_SEVERITY_CHANGE'
-    SEVEREST_SEVERITY = 'SEVREEST_SEVERITY'
+    SEVEREST_SEVERITY = 'SEVEREST_SEVERITY'
     SEVEREST_SEVERITY_CHANGE = 'SEVEREST_SEVERITY_CHANGE'
     TIME_BETWEEN_STATE = 'TIME_BETWEEN_STATES'
     SEVERITY_CHANGE = 'SEVERITY_CHANGE'
@@ -306,17 +392,45 @@ class Metric(Enum):
     P_DEATH = 'MEDSIM_P_DEATH'
     P_BLEEDOUT = 'MEDSIM_P_BLEEDOUT'
     P_ASPHYXIA = 'MEDSIM_P_ASPHYXIA'
+    P_SHOCK = 'MEDSIM_P_SHOCK'
     TOT_BLOOD_LOSS = 'EST_BLOOD_LOSS'
     TOT_LUNG_LOSS = 'EST_LUNG_LOSS'
-
     HIGHEST_P_DEATH = 'HIGHEST_P_DEATH'
     HIGHEST_P_BLEEDOUT = 'HIGHEST_MEDSIM_P_BLEEDOUT'
     HIGHEST_P_ASPHYXIA = 'HIGHEST_MEDSIM_P_ASPHYXIA'
+    HIGHEST_P_SHOCK = 'HIGHEST_MEDSIM_P_SHOCK'
     HIGHEST_BLOOD_LOSS = 'HIGHEST_BLOOD_LOSS'
     HIGHEST_LUNG_LOSS = 'HIGHEST_LUNG_LOSS'
     MORBIDITY = 'MORBIDITY'
+    DAMAGE_PER_SECOND = 'DAMAGE_PER_SECOND'
+    CASUALTY_DAMAGE_PER_SECOND = 'CASUALTY_DAMAGE_PER_SECOND'
+    CASUALTY_P_DEATH = 'CASUALTY_P_DEATH'
+    CASUALTY_DAMAGE_PER_SECOND_CHANGE = 'CASUALTY DPS CHANGE'
 
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
+
+INJURY_UPDATE = {
+        Injuries.LACERATION.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                breath=BodySystemEffect.NONE.value),
+        Injuries.FOREHEAD_SCRAPE.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                                     breath=BodySystemEffect.NONE.value),
+        Injuries.BURN.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                          breath=BodySystemEffect.MODERATE.value),
+        Injuries.ASTHMATIC.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                               breath=BodySystemEffect.MODERATE.value),
+        Injuries.AMPUTATION.value: InjuryUpdate(bleed=BodySystemEffect.CRITICAL.value,
+                                          breath=BodySystemEffect.MINIMAL.value),
+        Injuries.CHEST_COLLAPSE.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                    breath=BodySystemEffect.SEVERE.value),
+        Injuries.PUNCTURE.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                              breath=BodySystemEffect.MINIMAL.value),
+        Injuries.EAR_BLEED.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                               breath=BodySystemEffect.NONE.value),
+        Injuries.SHRAPNEL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                              breath=BodySystemEffect.NONE.value),
+        Injuries.EYE_TRAUMA.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                breath=BodySystemEffect.MODERATE.value)  # Assuming ET -> Brain injury
+    }
 
 
 def increment_effect(effect: str) -> str:
@@ -394,15 +508,48 @@ metric_description_hash: dict[str, str] = {
     Metric.PROBABILITY.value: 'probability of this outcome being selected',
     Metric.JUSTIFICATION.value: 'Justified reason for why this state is chosen versus siblings if applicable',
     Metric.UNTREATED_CASUALTIES.value: 'Casualties with zero treated injuries, and at least one not treated injury',
-    Metric.P_DEATH.value: 'MEDSIM_P_DEATH',
-    Metric.P_BLEEDOUT.value: 'MEDSIM_P_BLEEDOUT',
-    Metric.P_ASPHYXIA.value: 'MEDSIM_P_ASPHYXIA',
-    Metric.TOT_BLOOD_LOSS.value: 'EST_BLOOD_LOSS',
-    Metric.TOT_LUNG_LOSS.value: 'EST_LUNG_LOSS',
-    Metric.HIGHEST_P_DEATH.value: 'HIGHEST_P_DEATH',
-    Metric.HIGHEST_P_BLEEDOUT.value: 'HIGHEST_MEDSIM_P_BLEEDOUT',
-    Metric.HIGHEST_P_ASPHYXIA.value: 'HIGHEST_MEDSIM_P_ASPHYXIA',
-    Metric.HIGHEST_BLOOD_LOSS.value: 'HIGHEST_BLOOD_LOSS',
-    Metric.HIGHEST_LUNG_LOSS.value: 'HIGHEST_LUNG_LOSS',
-    Metric.MORBIDITY.value: 'Morbidity dictionary'
+    Metric.P_DEATH.value: 'Medical simulator probability at least one patient bleeds out or asphyxiates from action',
+    Metric.P_BLEEDOUT.value: 'Medical simulator probability at least one patient bleeds out from action',
+    Metric.P_ASPHYXIA.value: 'Medical simulator probability at least one patient asphyxiates from action',
+    Metric.TOT_BLOOD_LOSS.value: 'Total blood loss from all casualties resulting from action',
+    Metric.TOT_LUNG_LOSS.value: 'Total lung hp loss from all casualties resulting from action',
+    Metric.HIGHEST_P_DEATH.value: 'Highest probability of death from bleedout or asphyxia casualty',
+    Metric.HIGHEST_P_BLEEDOUT.value: 'casualty with highest probability of bleedout',
+    Metric.HIGHEST_P_ASPHYXIA.value: 'casulty with highest probability of aspyxiation',
+    Metric.HIGHEST_P_SHOCK.value: 'casualty with the highest probibility of burn shock',
+    Metric.P_SHOCK.value: 'probability that casualty died from burn shock',
+    Metric.HIGHEST_BLOOD_LOSS.value: 'casualty with the most blood loss',
+    Metric.HIGHEST_LUNG_LOSS.value: 'casualty with the most lung function loss',
+    Metric.MORBIDITY.value: 'Morbidity dictionary',
+    Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec',
+    Metric.CASUALTY_DAMAGE_PER_SECOND.value: 'dictionary of dps for all casualties ',
+    Metric.CASUALTY_P_DEATH.value: 'dictionary of probability of death for all casualties',
+    Metric.CASUALTY_DAMAGE_PER_SECOND_CHANGE.value: 'dictionary for the change in dps per casualty'
+}
+
+# TODO: May need separate SA models for younger casualties 
+location_surface_areas: dict[str, float] = {
+    Locations.RIGHT_FOREARM.value: 1.5,
+    Locations.LEFT_FOREARM.value: 1.5,
+    Locations.RIGHT_CALF.value: 5.25,
+    Locations.LEFT_CALF.value: 5.25,
+    Locations.RIGHT_THIGH.value: 6,
+    Locations.LEFT_THIGH.value: 6,
+    Locations.RIGHT_STOMACH.value: 1.3,
+    Locations.LEFT_STOMACH.value: 1.3,
+    Locations.RIGHT_BICEP.value: 1.3,
+    Locations.LEFT_BICEP.value: 1.3,
+    Locations.RIGHT_SHOULDER.value: 1.3,
+    Locations.LEFT_SHOULDER.value: 1.3,
+    Locations.RIGHT_SIDE.value: 1.3,
+    Locations.LEFT_SIDE.value: 1.3,
+    Locations.LEFT_CHEST.value: 1.3,
+    Locations.RIGHT_CHEST.value: 1.3,
+    Locations.RIGHT_WRIST.value: 1.5,
+    Locations.LEFT_WRIST.value: 1.5,
+    Locations.LEFT_FACE.value: 2.3,
+    Locations.RIGHT_FACE.value: 2.3,
+    Locations.LEFT_NECK.value: .5,
+    Locations.RIGHT_NECK.value: .5,
+    Locations.UNSPECIFIED.value: 1,
 }
