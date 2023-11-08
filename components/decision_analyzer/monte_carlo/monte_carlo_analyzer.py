@@ -6,6 +6,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import Me
 from components.decision_analyzer.monte_carlo.util.sort_functions import injury_to_dps
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
                                                                                SimulatorName, MetricSet)
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calc_prob_death, calculate_injury_severity
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
@@ -42,10 +43,6 @@ def tinymedact_to_actstr(decision: mcnode.MCDecisionNode) -> str:
     return retstr
 
 
-def is_scoreless(decision: mcnode.MCDecisionNode) -> bool:
-    return not bool(len(decision.score.keys()))
-
-
 def dict_to_decisionmetrics(basic_stats: MetricResultsT) -> list[DecisionMetrics]:
     if basic_stats is None:
         return list()
@@ -66,7 +63,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
     casualty_dps = dict()
     casualty_p_death = dict()
     for cas in state.casualties:
-        cas_severity = sum([i.calculate_severity() for i in cas.injuries])
+        cas_severity = sum([calculate_injury_severity(i) for i in cas.injuries])
         if cas.id not in list(casualty_dps.keys()):
             casualty_dps[cas.id] = 0.
         dps = 0.0
@@ -75,7 +72,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
             dps += injury_to_dps(injury)
             casualty_dps[cas.id] += dps
 
-        casualty_p_death[cas.id] = cas.calc_prob_death()
+        casualty_p_death[cas.id] = calc_prob_death(cas)
         casualty_severities[cas.id] = cas_severity
     for supply, num in state.supplies.items():
         resource_score += num
@@ -128,6 +125,7 @@ def dict_minus(before, after):
         else:
             minus_dict[common_key] = dict_minus(before[common_key], after[common_key])
     return minus_dict
+
 
 def dict_average(in_dicts) -> dict:
     averaged_dict = dict()
