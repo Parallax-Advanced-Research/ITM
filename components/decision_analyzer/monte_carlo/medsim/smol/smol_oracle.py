@@ -50,6 +50,8 @@ class SmolMedicalOracle:
 
 def update_smol_injury(injury: Injury, time_taken: float, treated=False):
     injury_str: str = injury.name
+    if injury_str == Injuries.BURN.value:
+        pass
     if injury_str not in [i.value for i in Injuries]:
         logger.critical("%s not found in Injuries class. Assigning to %s." % (injury_str, Injuries.FOREHEAD_SCRAPE.value))
         injury_str = Injuries.FOREHEAD_SCRAPE.value
@@ -135,7 +137,7 @@ DAMAGE_PER_SECOND = {
     BodySystemEffect.NONE.value: 0.0,
     BodySystemEffect.MINIMAL.value: 0.5,
     BodySystemEffect.MODERATE.value: 1.5,
-    BodySystemEffect.SEVERE.value: 4.0,
+    BodySystemEffect.SEVERE.value: 10.0,
     BodySystemEffect.CRITICAL.value: 50.0,
     BodySystemEffect.FATAL.value: 9001.0
 }
