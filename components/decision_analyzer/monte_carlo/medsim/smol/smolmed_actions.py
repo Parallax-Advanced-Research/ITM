@@ -1,6 +1,7 @@
 import random
 
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import find_casualty, supply_injury_match, supply_location_match
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import (find_casualty, supply_injury_match,
+                                                                                 supply_location_match)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Supplies, Actions, Injury
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle, update_smol_injury

@@ -2,6 +2,7 @@ from components.decision_analyzer.monte_carlo.mc_sim import MCState
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import ScoreT
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
 from components.decision_analyzer.monte_carlo.util.sort_functions import injury_to_dps
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calculate_injury_severity
 
 
 
@@ -11,7 +12,7 @@ def tiny_med_severity_score(state: MCState) -> ScoreT:
     injury_score: float = 0.0
     for casualty in state.casualties:
         for injury in casualty.injuries:
-            injury_score += injury.calculate_severity()
+            injury_score += calculate_injury_severity(injury)
     return injury_score
 
 
@@ -31,7 +32,7 @@ def tiny_med_casualty_severity(state: MCState) -> ScoreT:
     for casualty in state.casualties:
         this_guys_severity = 0.0
         for injury in casualty.injuries:
-            this_guys_severity += injury.calculate_severity()
+            this_guys_severity += calculate_injury_severity(injury)
         injury_scores[casualty.id] = this_guys_severity
     return injury_scores
 

@@ -1,16 +1,12 @@
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import DAMAGE_PER_SECOND
 from domain.internal import Decision, Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, Injury
 import numpy as np
 
 
 def ideal_function(decision: Decision[Action]) -> float:
-    damage_total = decision.metrics[Metric.TOT_BLOOD_LOSS.value].value + decision.metrics[Metric.TOT_LUNG_LOSS.value].value
-    time_taken = decision.metrics[Metric.AVERAGE_TIME_USED.value].value
-    if time_taken == 0:
-        return 0.0
-    dps = damage_total / time_taken
-    return dps
+    damage_total = decision.metrics[Metric.DAMAGE_PER_SECOND.value].value
+    return damage_total
 
 
 def sort_decisions(decision_list: list[Decision[Action]], sort_metric: str=Metric.P_DEATH.value) -> list[Decision[Action]]:
@@ -26,6 +22,6 @@ def sort_decisions(decision_list: list[Decision[Action]], sort_metric: str=Metri
 
 
 def injury_to_dps(inj: Injury) -> float:
-    dps_hash = SmolMedicalOracle.DAMAGE_PER_SECOND
+    dps_hash = DAMAGE_PER_SECOND
     dps = dps_hash[inj.breathing_effect] + dps_hash[inj.bleeding_effect] if not inj.treated else 0.0
     return dps
