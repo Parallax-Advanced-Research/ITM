@@ -31,8 +31,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         misalign = self.variant.lower() == "misaligned"
         new_cases: list[dict[str, Any]] = list()
         self.index += 1
+        best_kdmas = None
+        min_kdmas = {kdma.id_.lower():100 for kdma in target.kdmas}
+        max_kdmas = {kdma.id_.lower():0   for kdma in target.kdmas}
         for cur_decision in probe.decisions:
             name = cur_decision.value.params.get("casualty", None)
+            cur_kdmas = {}
             if name is None:
                 cur_casualty = None
             else:
@@ -90,6 +94,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     weights = default_weights
                 estimate = self.estimate_KDMA(cur_case, weights, kdma_name)
                 cur_case[kdma_name] = estimate
+                cur_kdmas[kdma_name] = estimate
+                if not cur_case['leaving']:
+                    min_kdmas[kdma_name] = min(min_kdmas[kdma_name], estimate)
+                    max_kdmas[kdma_name] = max(max_kdmas[kdma_name], estimate)
                 if not misalign:
                     diff = kdma.value - estimate
                 else:
@@ -98,11 +106,13 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             if sqDist < minDist:
                 minDist = sqDist
                 minDecision = cur_decision
+                best_kdmas = cur_kdmas
             if target.kdmas[0].id_ == "Mission" and self.print_neighbors:
                 print(f"New dist: {sqDist} Best Dist: {minDist}")
             cur_case["distance"] = sqDist
         if self.print_neighbors:
-            print(f"Chosen Decision: {minDecision.value} Dist: {minDist}")
+            print(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
+            
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
         
@@ -505,7 +515,7 @@ def get_decision(p: TADProbe, casualty: str = None, action_name: str = None, tre
         return decision
         
     
-def make_soartech_case_base() -> list[dict[str, Any]]:
+def make_soartech_case_base(remove_irrelevance: bool = False) -> list[dict[str, Any]]:
     analyzers_without_HRA = get_analyzers_without_HRA()
     analyzers = get_analyzers()
     cb: list[dict[str, Any]] = []
@@ -557,11 +567,13 @@ def make_soartech_case_base() -> list[dict[str, Any]]:
     cb.append(make_case(st, get_decision(p, casualty="casualty-A", action_name="CHECK_ALL_VITALS")) 
               | {"mission": 4, "denial": 3.75, "risktol": 6, "urgency": 3.75})
     cb.append(make_case(st, get_decision(p, casualty="casualty-A", treatment="Pressure bandage")) 
-              | {"mission": 1.75, "denial": 3.5, "risktol": 6.75, "urgency": 3})
+              | {} if remove_irrelevance else {"mission": 2.33} 
+              | {"denial": 3.5, "risktol": 6.75, "urgency": 3})
 
     cb.append(make_case(st, get_decision(p, casualty="casualty-B", action_name="CHECK_ALL_VITALS")) 
                 | {"mission": 5.5, "denial": 4, "risktol": 3.75, "urgency": 3.75})
     cb.append(make_case(st, get_decision(p, casualty="casualty-B", treatment="Pressure bandage")) 
+                | {} if remove_irrelevance else {"mission": 4} 
                 | {"mission": 3, "denial": 3.5, "risktol": 4.75, "urgency": 4.75})
 
     cb.append(make_case(st, get_decision(p, casualty="casualty-C", action_name="CHECK_ALL_VITALS")) 
@@ -597,7 +609,8 @@ def make_soartech_case_base() -> list[dict[str, Any]]:
     cb.append(make_case(st, get_decision(p, action_name="END_SCENARIO")) 
                 | {"mission": 3.75, "denial": 5.75, "risktol": 4, "urgency": 5.25})
     cb.append(make_case(st, get_decision(p, treatment="Pressure bandage")) 
-                | {"mission": 4.25, "denial": 2.5, "risktol": 3.75, "urgency": 2.75})
+                | {} if remove_irrelevance else {"mission": 5.67} 
+                | {"denial": 2.5, "risktol": 3.75, "urgency": 2.75})
 
     st = make_posttag_state(["casualty-C"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
@@ -618,7 +631,8 @@ def make_soartech_case_base() -> list[dict[str, Any]]:
     cb.append(make_case(st, get_decision(p, action_name="END_SCENARIO")) 
                 | {"mission": 6, "denial": 5, "risktol": 3.75, "urgency": 6.5})
     cb.append(make_case(st, get_decision(p, treatment="Hemostatic gauze")) 
-                | {"mission": 1.75, "denial": 3.25, "risktol": 3.5, "urgency": 3.25})
+                | {} if remove_irrelevance else {"mission": 2.33} 
+                | {"denial": 3.25, "risktol": 3.5, "urgency": 3.25})
     cb.append(make_case(st, get_decision(p, treatment="Decompression Needle")) 
                 | {"mission": 3.75, "denial": 3.25, "risktol": 4.25, "urgency": 6})
 
@@ -628,11 +642,14 @@ def make_soartech_case_base() -> list[dict[str, Any]]:
     st = make_postvisit_state(["casualty-A"])
     p = perform_analysis(st, make_tag_decision_list(st), analyzers)
     cb.append(make_case(st, get_decision(p, category="MINIMAL")) 
-                | {"mission": 1.5, "denial": 2, "risktol": 3.5, "urgency": 5})
+                | {} if remove_irrelevance else {"mission": 2} 
+                | {"denial": 2, "risktol": 3.5, "urgency": 5})
     cb.append(make_case(st, get_decision(p, category="DELAYED")) 
-                | {"mission": 1.5, "denial": 3.5, "risktol": 4.75, "urgency": 3.5})
+                | {} if remove_irrelevance else {"mission": 2} 
+                | {"denial": 3.5, "risktol": 4.75, "urgency": 3.5})
     cb.append(make_case(st, get_decision(p, category="IMMEDIATE")) 
-                | {"mission": 3, "denial": 4.75, "risktol": 5.25, "urgency": 7.25})
+                | {} if remove_irrelevance else {"mission": 4} 
+                | {"denial": 4.75, "risktol": 5.25, "urgency": 7.25})
     cb.append(make_case(st, get_decision(p, category="EXPECTANT"))
                 | {"mission": 6.5, "denial": 7.75, "risktol": 3.5, "urgency": 8})
 
@@ -650,33 +667,42 @@ def make_soartech_case_base() -> list[dict[str, Any]]:
     st = make_postvisit_state(["casualty-C"])
     p = perform_analysis(st, make_tag_decision_list(st), analyzers)
     cb.append(make_case(st, get_decision(p, category="MINIMAL")) 
-                | {"mission": 5, "denial": 3.75, "risktol": 4.75, "urgency": 4.5})
+                | {} if remove_irrelevance else {"risktol": 6.33} 
+                | {"mission": 5, "denial": 3.75, "urgency": 4.5})
     cb.append(make_case(st, get_decision(p, category="DELAYED")) 
                 | {"mission": 6.5, "denial": 6, "risktol": 5.5, "urgency": 4.5})
     cb.append(make_case(st, get_decision(p, category="IMMEDIATE")) 
-                | {"mission": 6.5, "denial": 2.25, "risktol": 3.25, "urgency": 5})
+                | {} if remove_irrelevance else {"urgency": 6.67} 
+                | {"mission": 6.5, "denial": 2.25, "risktol": 3.25})
     cb.append(make_case(st, get_decision(p, category="EXPECTANT"))
-                | {"mission": 2, "denial": 6.5, "risktol": 3.25, "urgency": 6.5})
+                | {} if remove_irrelevance else {"risktol": 4.33} 
+                | {"mission": 2, "denial": 6.5, "urgency": 6.5})
 
     st = make_postvisit_state(["casualty-D"])
     p = perform_analysis(st, make_tag_decision_list(st), analyzers)
     cb.append(make_case(st, get_decision(p, category="MINIMAL")) 
-                | {"mission": 2, "denial": 8, "risktol": 6.5, "urgency": 5})
+                | {} if remove_irrelevance else {"mission": 2.67} 
+                | {"denial": 8, "risktol": 6.5, "urgency": 5})
     cb.append(make_case(st, get_decision(p, category="DELAYED")) 
-                | {"mission": 3.5, "denial": 6, "risktol": 6, "urgency": 5.75})
+                | {} if remove_irrelevance else {"mission": 4.67} 
+                | {"denial": 6, "risktol": 6, "urgency": 5.75})
     cb.append(make_case(st, get_decision(p, category="IMMEDIATE")) 
-                | {"mission": 3, "denial": 3.5, "risktol": 3.75, "urgency": 5.25})
+                | {} if remove_irrelevance else {"mission": 4} 
+                | {"denial": 3.5, "risktol": 3.75, "urgency": 5.25})
     cb.append(make_case(st, get_decision(p, category="EXPECTANT"))
                 | {"mission": 5, "denial": 5, "risktol": 5, "urgency": 6.5})
 
     st = make_postvisit_state(["casualty-E"])
     p = perform_analysis(st, make_tag_decision_list(st), analyzers)
     cb.append(make_case(st, get_decision(p, category="MINIMAL")) 
-                | {"mission": 4.5, "denial": 4.75, "risktol": 5.25, "urgency": 3.5})
+                | {} if remove_irrelevance else {"mission": 6} 
+                | {"denial": 4.75, "risktol": 5.25, "urgency": 3.5})
     cb.append(make_case(st, get_decision(p, category="DELAYED")) 
-                | {"mission": 2.75, "denial": 4, "risktol": 5.75, "urgency": 5.25})
+                | {} if remove_irrelevance else {"mission": 3.67} 
+                | {"denial": 4, "risktol": 5.75, "urgency": 5.25})
     cb.append(make_case(st, get_decision(p, category="IMMEDIATE")) 
-                | {"mission": 3.5, "denial": 5.5, "risktol": 4.75, "urgency": 6.75})
+                | {} if remove_irrelevance else {"mission": 4.67} 
+                | {"denial": 5.5, "risktol": 4.75, "urgency": 6.75})
     cb.append(make_case(st, get_decision(p, category="EXPECTANT"))
                 | {"mission": 6.5, "denial": 5.5, "risktol": 5, "urgency": 6.5})
     cb.append({"leaving": True, "unvisited_count": 1, "mission": 50, "denial": 50, "risktol": 50, "urgency": 50}) 
