@@ -1,4 +1,5 @@
 import os
+__package__ = __package__ or 'components.decision_analyzer.bayesian_network'
 from .inference import Bayesian_Net
 
 dirname = os.path.dirname(__file__)
