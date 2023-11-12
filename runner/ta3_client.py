@@ -1,6 +1,6 @@
 import swagger_client.models as models
 import swagger_client as ta3
-from domain.external import Scenario, Probe, Action
+from domain.external import Scenario, ITMProbe, Action
 from domain.internal import KDMA, KDMAs
 
 
@@ -46,7 +46,7 @@ class TA3Client:
 
         return scen
 
-    def get_probe(self, state: ta3.State = None) -> Probe:
+    def get_probe(self, state: ta3.State = None) -> ITMProbe:
         if state is None:
             state = self._api.get_scenario_state(self._session_id, self._scenario.id)
         if state.scenario_complete:
@@ -59,7 +59,7 @@ class TA3Client:
             for action in _actions
         ]
 
-        probe: Probe = Probe(
+        probe: ITMProbe = ITMProbe(
             id=f"{self._scenario.id}-{self._probe_count}",
             prompt="What do you do next?",
             state=state.to_dict(),
@@ -69,7 +69,7 @@ class TA3Client:
 
         return probe
 
-    def take_action(self, action: Action) -> Probe:
+    def take_action(self, action: Action) -> ITMProbe:
         response = ta3.Action(
             action_id=action.id,
             scenario_id=self._scenario.id,

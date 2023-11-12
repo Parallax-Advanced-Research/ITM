@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% endblock title %}
+{% block content %}
+<div class="container p-3">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Scenario {{ scenario.name }}</h5>
+            <p class="card-text">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Scenario Values</h6>
+                    {% include '_scenario_view.html' %}
+                    <p class="card-text">
+                    </p>
+                </div>
+            </div>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock content%}

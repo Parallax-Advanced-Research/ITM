@@ -15,21 +15,25 @@ install the requirements via pip
 `pip install -r requirements.txt`
 
 A Lisp dependency must also be installed to support the Event-Based Diagnosis system. To do so: 
+
 1. Install steel bank common lisp (sbcl) found at www.sbcl.org and available on Unix package managers
 2. Download quicklisp.lisp from https://beta.quicklisp.org/quicklisp.lisp.
 3. Open up a lisp command line with "sbcl" in the directory you put quicklisp.lisp
 4. Enter the following commands at the lisp command line, one at a time:
-    a. (load "quicklisp.lisp")
-    b. (quicklisp-quickstart:install)
-    c. (ql:add-to-init-file)
-    d. ql:*local-project-directories*
+
+    1. `(load "quicklisp.lisp")`
+    1. `(quicklisp-quickstart:install)`
+    1. `(ql:add-to-init-file)`
+    1. `ql:*local-project-directories*`
+
 5. Lisp should output the directory for install of quicklisp packages after the last command; this 
    is often ~/quicklisp/local-projects.
 6. Quit out of sbcl with the command (quit) or sometimes (sb-ext:quit)
 7. Download the following git repository to the quicklisp: https://github.com/dmenager/HEMS.git
     For example, at the command line on a linux system type:
-    a. cd ~/quicklisp/local-projects
-    a. git clone https://github.com/dmenager/HEMS.git
+
+    1. `cd ~/quicklisp/local-projects`
+    1. `git clone https://github.com/dmenager/HEMS.git`
     
 You should now be able to use the Event-Based Diagnosis Analyzer successfully.
 
@@ -63,7 +67,7 @@ Which will output soar.json to data/mvp/test
 
 `python tad.py test-local soar data/mvp/test/soar.json -kdma mission=1 denial=2 --verbose`
 
-which will output soar_results_aligned.json to the local directory
+which will output `soar_results_aligned.json` to the local directory
 
 These can be further tweaked with additional options provided by the CLI. e.g.,
 

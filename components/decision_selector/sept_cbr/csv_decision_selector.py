@@ -2,7 +2,7 @@ import csv
 import math
 from components import DecisionSelector
 from components.decision_selector.mvp_cbr.sim_tools import similarity
-from domain.internal import Scenario, Probe, KDMAs, Decision, Action
+from domain.internal import Scenario, TADProbe, KDMAs, Decision, Action
 from domain.ta3 import TA3State, Supply, Casualty
 
 
@@ -25,7 +25,7 @@ class CSVDecisionSelector(DecisionSelector):
         self.variant: str = variant
         self.verbose: bool = verbose
 
-    def select(self, scenario: Scenario, probe: Probe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         """ Find the best decision from the probe by comparing to individual rows in the case base """
         max_sim: float = -math.inf
         max_decision: Decision[Action] = None
@@ -114,7 +114,7 @@ class CSVDecisionSelector(DecisionSelector):
             return 0
 
         params = decision.value.params.copy()
-        params.pop('casualty')
+        params.pop('casualty') if 'casualty' in params.keys() else None  # Sitrep can take no casualty
 
         tot_sim = 1
         tot_count = 1

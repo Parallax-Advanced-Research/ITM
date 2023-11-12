@@ -24,3 +24,14 @@ sast:
   stage: test
 include:
 - template: Auto-DevOps.gitlab-ci.yml
+
+run_test:
+  stage: test
+  script:
+    - python run_tests.py
+
+tad_tester:
+  stage: test
+  script:
+    - python -m scripts.tad_tester --no-ebd --no-verbose # TODO: remove --no-ebd once that works
+

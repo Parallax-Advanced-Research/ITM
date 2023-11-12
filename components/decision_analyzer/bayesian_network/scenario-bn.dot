@@ -7,7 +7,7 @@ digraph {
 		style="invis";
 		subgraph cluster_event {
 			color=blue;
-			label="initial event";
+			label="Initial Event";
 			rank="same";
 			style="solid";
 
@@ -16,150 +16,118 @@ digraph {
 
 		subgraph cluster_outcomes {
 			color=blue;
-			label="outcomes";
+			label="Outcomes";
 			rank="same";
 			style="solid";
 
 			/* may add forms of permanent injury or PTSD here later */
 			death;
 		}
+	
+		foo [shape=plaintext, label="An arrow from one subgraph to another indicates\nthat there exist edges leading from each node\nin the parent subgraph to each node in the child subgraph.\n(Subgraphs are indicated by blue rectangles.)"];
 	}
 
 	subgraph cluster_symptoms {
 		color=blue;
-		label="symptoms";
+		label="Symptoms             ."; /* aligned s.t. the period is covered by an edge (and the text isn't)*/
 		{
 			rank="same";
 
-			AVPU; // {A,V,P,U}
-
-			/* TODO: comment each bin with what range falls there */
-			hrpmin; // heart rate. low, normal, high
-			mmHg; // blood pressure. low, normal, high
-			SpO2; // blood oxygen level. low, normal, high
-			RR; // respiration rate. low, normal, high
-
-			/* Don't have a node for unreported pain, since AVPU covers that */
-			pain; // low = 1-3, med = 4-6, high = 7-10
-
-			eye_or_vision_problems;//covers all of echhymosis, hyphema, limited extraocular movement, cloudy vision
-			chest_rising
-
-			/* Note that these don't represent the injuries themselves, but rather the visible effects of them.
-			   Slightly important distinction that lets us keep the arrows pointing in a way that respects the layers */
+			AVPU;
+			hrpmin;
+			mmHg;
+			SpO2;
+			RR;
+			pain;
+			eye_or_vision_problems;
 			visible_trauma_to_head;
 			visible_trauma_to_torso;
 			visible_trauma_to_extremities;
 		}
-		
-		RR -> chest_rising;
 	}
 
 	/* Some of these, e.g. amputation, are directly observable, but others are latent */
 	subgraph cluster_conditions {
 		color=blue;
-		label="conditions";
+		label="Conditions";
 		{
 			rank="same";
-			tension_pseumothorax
-		
-			severe_burns_BSA_above_x_pct // these are all 2nd and 3rd degree, and the bins will be 0-25%, 25-50%, 50-75%, 75-100% BSA
+			tension_pneumothorax;
+			severe_burns;
+			limb_fracture;
+			amputation;
 		}
 		{
 			rank="same";
-			airway_blocked
-			amputation
-			external_hemorrhage
-			shock
-			internal_hemorrhage
-			brain_injury
-			hypothermia
-			limb_fracture
-			trauma_triad // P(trauma_triad) = P(hypothermia and at least one of the hemorhages). Modeling it this way to avoid cycles.
+			airway_blocked;
+			external_hemorrhage;
+			shock;
+			internal_hemorrhage;
+			brain_injury;
+			hypothermia;
 		}
-
-		internal_hemorrhage -> trauma_triad;
-		external_hemorrhage -> trauma_triad;
-		hypothermia -> trauma_triad;
-
-		//internal hemorrhage - does not include brain hemorrhage; that's brain_injury
-			internal_hemorrhage -> hrpmin;
-			internal_hemorrhage -> mmHg;
-			internal_hemorrhage -> pain;
-			//internal_hemorrhage -> AVPU;//shock and hypothermia probably cover this
-			//internal_hemorrhage -> visible_trauma_to_head;
-			internal_hemorrhage -> visible_trauma_to_torso;
-			internal_hemorrhage -> visible_trauma_to_extremities;
-
-			/* links to other conditions */
-			internal_hemorrhage -> shock;
-			internal_hemorrhage -> hypothermia;
-			internal_hemorrhage -> RR;
-
-		//external hemorrhage
-			external_hemorrhage -> hrpmin;
-			external_hemorrhage -> mmHg;
-			external_hemorrhage -> pain;
-			external_hemorrhage -> visible_trauma_to_torso;
-			external_hemorrhage -> visible_trauma_to_extremities;
-			external_hemorrhage -> RR;
-			
-			/* links to other conditions */
-			external_hemorrhage -> shock;
-			external_hemorrhage -> hypothermia;
-
-		//limb fracture
-			limb_fracture -> internal_hemorrhage;
-			limb_fracture -> pain;
-			limb_fracture -> visible_trauma_to_extremities;
-
-		//hypothermia
-			hypothermia -> AVPU;
-			hypothermia -> hrpmin;
-			hypothermia -> RR;
-
-		//shock - hemorrhagic shock, specifically
-			shock -> AVPU;
-			shock -> mmHg;
-
-		//brain injury
-			brain_injury -> AVPU;
-			brain_injury -> eye_or_vision_problems;
-			brain_injury -> visible_trauma_to_head;
-
-		//airway blocked
-			airway_blocked -> AVPU;
-			airway_blocked -> RR;
-			airway_blocked -> SpO2;//TODO: presumably
-			//airway_blocked -> chest_rising;//RR covers it
-			airway_blocked -> visible_trauma_to_head;
-
-		//amputation
-			amputation -> pain;
-
-			/* links to other conditions */
-			amputation -> external_hemorrhage;//which in turn leads to hrpmin, mmHg
-
-		//tension psuemothorax
-			tension_pseumothorax -> pain;
-			tension_pseumothorax -> hrpmin;
-			tension_pseumothorax -> mmHg;
-			tension_pseumothorax -> RR;
-			tension_pseumothorax -> shock;
-
-		//severe burns
-			severe_burns_BSA_above_x_pct -> pain;
-			severe_burns_BSA_above_x_pct -> RR;
-			/* I *think* that hrpmin and mmHg are only affected via shock */
-
-			/* links to other conditions */
-			severe_burns_BSA_above_x_pct -> airway_blocked;
-			severe_burns_BSA_above_x_pct -> shock;//TODO: not entirely certain of this one
 	}
 
-	// The specific nodes here don't matter; we just need to pick anything from the appropriate cluster for the head and tail
-	explosion -> severe_burns_BSA_above_x_pct [ltail=cluster_event,lhead=cluster_conditions];
-	severe_burns_BSA_above_x_pct -> death [ltail=cluster_conditions,lhead=cluster_outcomes];
-}
+	hypothermia -> AVPU;
+	shock -> AVPU;
+	brain_injury -> AVPU;
+	airway_blocked -> AVPU;
 
-/* TODO: See if the TCCC handbook has values I can use for the low/normal/high cases */
+	internal_hemorrhage -> hrpmin;
+	external_hemorrhage -> hrpmin;
+	hypothermia -> hrpmin;
+	tension_pneumothorax -> hrpmin;
+
+	internal_hemorrhage -> mmHg;
+	external_hemorrhage -> mmHg;
+	hypothermia -> mmHg;
+
+	airway_blocked -> SpO2;
+	tension_pneumothorax -> SpO2;
+
+	hypothermia -> RR;
+	airway_blocked -> RR;
+	tension_pneumothorax -> RR;
+	severe_burns -> RR;
+	internal_hemorrhage -> RR;
+	external_hemorrhage -> RR;
+
+	internal_hemorrhage -> pain;
+	external_hemorrhage -> pain;
+	brain_injury -> pain;
+	limb_fracture -> pain;
+	amputation -> pain;
+	tension_pneumothorax -> pain;
+	severe_burns -> pain;
+
+	brain_injury -> eye_or_vision_problems;
+
+	brain_injury -> visible_trauma_to_head;
+	airway_blocked -> visible_trauma_to_head;
+
+	internal_hemorrhage -> visible_trauma_to_torso;
+	external_hemorrhage -> visible_trauma_to_torso;
+
+	internal_hemorrhage -> visible_trauma_to_extremities;
+	external_hemorrhage -> visible_trauma_to_extremities;
+	limb_fracture -> visible_trauma_to_extremities;
+
+	severe_burns -> airway_blocked;
+
+	amputation -> external_hemorrhage;
+	limb_fracture -> external_hemorrhage;
+
+	limb_fracture -> internal_hemorrhage;
+
+	internal_hemorrhage -> shock;
+	external_hemorrhage -> shock;
+	tension_pneumothorax -> shock;
+	severe_burns -> shock;
+
+
+	shock -> hypothermia;
+
+	// The specific nodes here don't matter; we just need to pick anything from the appropriate cluster for the head and tail
+	explosion -> severe_burns [ltail=cluster_event,lhead=cluster_conditions];
+	severe_burns -> death [ltail=cluster_conditions,lhead=cluster_outcomes];
+}

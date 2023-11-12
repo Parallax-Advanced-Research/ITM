@@ -1,1 +1,1 @@
-from .external import Scenario, ProbeType, Probe, Action
+from .external import Scenario, ProbeType, ITMProbe, Action

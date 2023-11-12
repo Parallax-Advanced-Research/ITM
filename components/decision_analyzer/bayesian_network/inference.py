@@ -1,12 +1,11 @@
 import pyAgrum
-#import pyAgrum.causal as csl
-import json
-from typing import Dict, Any, List, Set
+import json, sys
+from typing import Any
 
-RandVar = str
-Value = str
-TESTING = False
+from .typedefs import Node_Name, Node_Val, Probability
 
+
+# notebook stuff is just for debugging and visualization
 notebook = False
 try:
 	from IPython import get_ipython
@@ -19,29 +18,29 @@ except:
 
 class Bayesian_Net:
 	bn: pyAgrum.BayesNet
-	node_names: List[str]
-	values: Dict[str, List[str]] # in order of offset
+	node_names: list[Node_Name]
+	values: dict[Node_Name, list[Node_Val]] # values that each node can take, in order of offset
 
 	def __init__(self, json_fname: str) -> None:
-		def get_topological_order(j: Dict[str, Any]) -> List[str]:
+		def get_topological_order(j: dict[Node_Name, Any]) -> list[Node_Name]:
 			# TODO: O(N^2), but that might be unavoidable
 			node_names = j.keys()
-			remaining: Set[str] = set(node_names)
-			def get_next() -> str:
+			remaining: set[Node_Name] = set(node_names)
+			def get_next() -> Node_Name:
 				for node in remaining:
-					assert type(node) is str
+					assert type(node) is Node_Name
 					if all(parent not in remaining for parent in j[node]['parents']):
 						return node
 				assert False
 
-			result: List[str] = []
+			result: list[Node_Name] = []
 			while len(remaining):
 				node = get_next()
 				remaining.remove(node)
 				result.append(node)
 			return result
 
-		def add_node(name: str, defn: Dict[str, Any]) -> None:
+		def add_node(name: Node_Name, defn: dict[str, Any]) -> None:
 			# put in order of offsets
 			assert ('|' not in name) and ('{' not in name) and ('}' not in name), \
 				f"Invalid node name: {name} (doesn't work with pyagrum's fast syntax"
@@ -97,19 +96,35 @@ class Bayesian_Net:
 			return
 		gnb.showBN(self.bn, size='9')
 
-	def predict(self, observation: Dict[RandVar, Value]) -> Dict[RandVar, Dict[Value, float]]:
-		""" RandVar and Value are both strings. And the float is a probability
-			Usage: bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
-		"""
+	def predict(self, observation: dict[Node_Name, Node_Val]) -> dict[Node_Name, dict[Node_Val, Probability]]:
+		""" Usage: bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'}) """
 		ie = pyAgrum.LazyPropagation(self.bn)
 		ie.setEvidence(observation)
+		ie.makeInference() # Not necessary, but might prevent duplicate work in ie.posterior()? docs vague.
 		result = {}
 		for node in self.node_names:
 			assert node not in result
 			result[node] = { a[0]: a[1] for a in zip(self.values[node], ie.posterior(node)[:]) }
 		return result
 
-if TESTING:
+	def entropy(self, observation: dict[Node_Name, Node_Val]) -> tuple[float, dict[Node_Name, float]]:
+		""" Conditional entropy given observation.
+		    Returns H(network|observation), { node_name: H(node|observation) }
+		"""
+		# TODO: test this. need some known true values for something.
+		# It does pass some initial sanity checks (e.g. entropy of explosion goes to 0 if external_hemorrhage,
+		# since right now, explosion's the only thing that can cause injuries.
+		shafer = pyAgrum.ShaferShenoyInference(self.bn)
+		shafer.setEvidence(observation)
+		shafer.makeInference()
+
+		H = { name: shafer.H(self.bn.idFromName(name)) for name in self.node_names }
+		r = sum(H.values())
+		assert float == type(r) # can remove if pyAgrum gets a typestub file.
+		return r, H
+
+if '__main__' ==  __name__ and 2 == len(sys.argv) and 'TEST' == sys.argv[1]:
+	# TODO: need some tests I can assert, so I can put this in tests.commands
 	bn = Bayesian_Net('bayes_net.json')
 
 	bn.display()
@@ -131,3 +146,5 @@ if TESTING:
 	a = bn.predict({'explosion': 'true', 'hrpmin': 'normal', 'external_hemorrhage': 'false'})
 	print(f"{a['shock']=}, {a['death']=}")
 
+	print(bn.entropy({}))
+	print(bn.entropy({'external_hemorrhage': 'true'}))

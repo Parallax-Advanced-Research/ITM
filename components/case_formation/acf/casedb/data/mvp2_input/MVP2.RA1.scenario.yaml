@@ -1,0 +1,110 @@
+name: RiskAversion1 # human-readable scenario name, not necessarily unique
+id: MVP2.RA1 # globally unique id
+state:
+  unstructured: >
+    You are treating casualties at a field hospital, with a less experienced soldier 
+    assisting you. Six combat injuries arrive due to an unexpected attack. You cannot 
+    treat all the patients by yourself. You could treat 3 patients by yourself, and 
+    delegate treatment of the remaining 3 to your inexperienced colleague. This would 
+    let you focus your attention carefully on those 3 patients. Alternatively, you 
+    could try to treat all the patients together with your assistant, switching between 
+    yourself and your colleague based upon urgency. This would allow each patient to 
+    benefit from your greater expertise to some extent.
+  
+  mission:
+    unstructured: 
+    mission_type: 
+  
+  environment:
+    unstructured: 
+    aidDelay: 
+
+  threat_state:
+    unstructured: 
+    threats: []
+
+  supplies:
+  
+  casualties:
+    - id: MVP2.RA1.casualty-A # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.RA1.casualty-B # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.RA1.casualty-C # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.RA1.casualty-D # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.RA1.casualty-E # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.RA1.casualty-F # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+probes:
+  - id: MVP2.RA1.1 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: What do you do? # question being asked
+    state: {}
+    options:
+      - id: MVP2.RA1.1.A # string, globally unique response ID
+        value: Treat all patients with your colleague in tandem, giving all 6 patients a moderate chance of survival. # string, response
+      - id: MVP2.RA1.1.B
+        value: Treat 3 patients, giving them a high chance for survival, and delegate 3 patients to your colleague, giving them a low chance for survival.
