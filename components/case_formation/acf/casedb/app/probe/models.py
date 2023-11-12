@@ -1,6 +1,15 @@
 from app import db
 from datetime import datetime
 from sqlalchemy import Integer, String, DateTime, ForeignKey, Text, Float, Boolean
+import sys
+import importlib
+
+# give access to top level modules
+sys.path.append("../../../../") # TODO: fix this hack
+
+import domain.internal as TAD
+
+
 
 
 class Probe(db.Model):
