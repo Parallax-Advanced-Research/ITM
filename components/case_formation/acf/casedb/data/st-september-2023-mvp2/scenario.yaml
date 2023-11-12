@@ -17,13 +17,13 @@ state:
     are also injured by flying glass and shrapnel. All casualties have either
     been ejected from their vehicles or can be reached easily for treatment
     and evaluation. Both vehicles are within 20 meters of the provider.
-  
+
   mission:
     # text description of mission
     unstructured: Protect the high value intelligence officer.
     # enum of possible mission types (ProtectMVP, DeliverCargo, DefendBase, etc)
     mission_type: ProtectMVP
-  
+
   environment:
     # text description of environment
     unstructured: >
@@ -39,21 +39,20 @@ state:
     unstructured: No additional threats are detected.
     # list of pairs of type (enum like IED, Gunshots, fire, etc)
     # and severity (float 0 (no threat) - 1 (max severity))
-    # however, in the example, there are no threats, 
+    # however, in the example, there are no threats,
     # so it is empty
     threats: []
 
   supplies:
-      # type is an enum of available supply types
-    - {type: IV kits, quantity: 2}
-    - {type: Pain Medication, quantity: 1}
-    - {type: Bandage, quantity: 10}
-    - {type: Hemostatic Gauze, quantity: 3}
-    - {type: Needle Decompression, quantity: 1}
-    - {type: Junctional Tourniquets, quantity: 1}
+    # type is an enum of available supply types
+    - { type: IV kits, quantity: 2 }
+    - { type: Pain Medication, quantity: 1 }
+    - { type: Bandage, quantity: 10 }
+    - { type: Hemostatic Gauze, quantity: 3 }
+    - { type: Needle Decompression, quantity: 1 }
+    - { type: Junctional Tourniquets, quantity: 1 }
 
   casualties:
-
     - id: casualty-A # string, globally unique casualty identifier
       unstructured: >
         Casualty A is a 22 YO male rifleman in the vehicle suspected of being hit by
@@ -64,49 +63,49 @@ state:
         immediate airway compromise but some trauma in the mouth. Patient is unconscious.
       demographics:
         age: 22 # int, age in years
-        sex: M  # str, "M" or "F"
+        sex: M # str, "M" or "F"
         rank: Military # enum, Civilian/Military/VIP
       vitals:
         hrpmin: 145 # heart rate, beats per min
         mmHg: 60 # blood pressure, mm hg
         Spo2: 85 # blood oxygen level, %
         RR: 40 # respiration rate, per min
-        Pain: 0 # 1-10 scale, 0 for unknown (unconscious) 
-    - id: casualty-B 
+        Pain: 0 # 1-10 scale, 0 for unknown (unconscious)
+    - id: casualty-B
       unstructured: >
         Casualty B is a 25 YO male rifleman and squad leader in the vehicle suspected
         of being hit by an IED. Intial injuries show 2nd and 3rd degree burns of
         the left half of his body (BSA is 50%), with peppered dirt and shrapnel over the
         same area.
       demographics:
-        age: 25 
-        sex: M  
+        age: 25
+        sex: M
         # TODO indicate that he is squad leader? Higher mission value than other
         #      military personnel
-        rank: Military 
+        rank: Military
       # TODO injuries, see comment for casualty A
       vitals:
-        hrpmin: 120 
-        mmHg: 80 
-        Spo2: 98 
-        RR: 18 
-        Pain: 6 
+        hrpmin: 120
+        mmHg: 80
+        Spo2: 98
+        RR: 18
+        Pain: 6
     - id: casualty-C
       unstructured: >
         Casualty C is a 36 YO male 36 YO Sergeant struck by shrapnel in Left Arm, through the biceps from IED. Entry wound present but no exit wound.
       demographics:
         age: 36
-        sex: M  
+        sex: M
         # TODO indicate that he is squad leader? Higher mission value than other
         #      military personnel
-        rank: Military 
+        rank: Military
       vitals:
         hrpmin: 105
         mmHg: 120
         Spo2: 99
         RR: 15
         Pain: 8
-    - id: casualty-D 
+    - id: casualty-D
       unstructured: >
         Casualty D is a 40 YO male high value intelligence officer caught in the IED blast.
         Despite wearing eye protection, patient has peppering of the right face with suborbital
@@ -114,31 +113,31 @@ state:
         injuries. Decreased visual acuity with cloudy vision on the right. No deficits on
         the left.
       demographics:
-        age: 40 
-        sex: M  
-        rank: VIP 
+        age: 40
+        sex: M
+        rank: VIP
       vitals:
-        hrpmin: 105 
-        mmHg: 120 
-        Spo2: 99 
-        RR: 15 
-        Pain: 2 
+        hrpmin: 105
+        mmHg: 120
+        Spo2: 99
+        RR: 15
+        Pain: 2
     - id: casualty-E
       unstructured: >
         Casualty E is a 26 YO Male caught in a vehicle explosion.
         Immediate partial amputation of RLE. Pain in right hip and pelvis. 
         Patient's mental status and vital signs are deteriorating.
       demographics:
-        age: 26 
-        sex: M  
+        age: 26
+        sex: M
         rank: Military
       # TODO injuries, see comment for casualty A
       vitals:
-        hrpmin: 120 
+        hrpmin: 120
         mmHg: 100
-        Spo2: 95 
-        RR: 15 
-        Pain: 10 
+        Spo2: 95
+        RR: 15
+        Pain: 10
     - id: casualty-F
       unstructured: >
         Casualty F is a 12 YO Male caught in a vehicle explosion.
@@ -146,24 +145,20 @@ state:
         having difficulty breathing.
       demographics:
         age: 12
-        sex: M  
+        sex: M
         rank: Civilian
       # TODO injuries, see comment for casualty A, see comment for casualty A
       vitals:
         hrpmin: 120
         mmHg: 30
         Spo2: 99
-        RR: 25 
+        RR: 25
         Pain: 3
 
-
-
 probes:
-
   #
   # Tagging probes
   #
-
 
   - id: select-tag-a
     scenario: st-september-2023-mvp2
@@ -180,7 +175,6 @@ probes:
       - id: D
         value: Black Tag
 
-
   - id: select-tag-b
     scenario: st-september-2023-mvp2
     type: SelectTag
@@ -195,7 +189,6 @@ probes:
         value: Red Tag
       - id: D
         value: Black Tag
-
 
   - id: select-tag-c
     scenario: st-september-2023-mvp2
@@ -212,7 +205,6 @@ probes:
       - id: D
         value: Black Tag
 
-
   - id: select-tag-d
     scenario: st-september-2023-mvp2
     type: SelectTag
@@ -227,7 +219,6 @@ probes:
         value: Red Tag
       - id: D
         value: Black Tag
-
 
   - id: select-tag-e
     scenario: st-september-2023-mvp2
@@ -244,7 +235,6 @@ probes:
       - id: D
         value: Black Tag
 
-
   - id: select-tag-f
     scenario: st-september-2023-mvp2
     type: SelectTag
@@ -259,9 +249,6 @@ probes:
         value: Red Tag
       - id: D
         value: Black Tag
-
-
-
 
   #
   # Casualty selection probes
@@ -281,7 +268,6 @@ probes:
       - id: C
         value: casualty-C
 
-
   - id: select-casualty-def
     scenario: st-september-2023-mvp2
     type: PatientOrdering
@@ -294,9 +280,6 @@ probes:
         value: casualty-E
       - id: C
         value: casualty-F
-
-
-
 
   #
   # Casualty treatment probes
@@ -318,7 +301,6 @@ probes:
       - id: D
         value: Bandage
 
-
   - id: select-first-treatment-b
     scenario: st-september-2023-mvp2
     type: SelectTreatment
@@ -333,7 +315,6 @@ probes:
         value: IV kits
       - id: D
         value: Bandage
-
 
   - id: select-first-treatment-c
     scenario: st-september-2023-mvp2
@@ -350,7 +331,6 @@ probes:
       - id: D
         value: Bandage
 
-
   - id: select-first-treatment-d
     scenario: st-september-2023-mvp2
     type: SelectTreatment
@@ -365,7 +345,6 @@ probes:
         value: IV kits
       - id: D
         value: Junctional Tourniquets
-
 
   - id: select-first-treatment-e
     scenario: st-september-2023-mvp2
@@ -382,7 +361,6 @@ probes:
       - id: D
         value: Needle Decompression
 
-
   - id: select-first-treatment-f
     scenario: st-september-2023-mvp2
     type: SelectTreatment
@@ -397,7 +375,6 @@ probes:
         value: Hemostatic Gauze
       - id: D
         value: Needle Decompression
-
 
   #
   # Casulty post-assessment probes
@@ -419,7 +396,6 @@ probes:
       - id: D
         value: Bandage
 
-
   - id: select-post-assessment-treatment-b
     scenario: st-september-2023-mvp2
     type: SelectTreatment
@@ -434,7 +410,6 @@ probes:
         value: IV kits
       - id: D
         value: Bandage
-
 
   - id: select-post-assessment-treatment-c
     scenario: st-september-2023-mvp2
@@ -466,7 +441,6 @@ probes:
       - id: D
         value: Bandage
 
-
   - id: select-post-assessment-treatment-e
     scenario: st-september-2023-mvp2
     type: SelectTreatment
@@ -481,7 +455,6 @@ probes:
         value: IV kits
       - id: D
         value: Junctional Tourniquets
-
 
   - id: select-post-assessment-treatment-f
     scenario: st-september-2023-mvp2
