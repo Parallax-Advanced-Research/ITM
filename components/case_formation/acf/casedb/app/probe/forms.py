@@ -13,15 +13,11 @@ from wtforms.validators import DataRequired
 class ProbeForm(FlaskForm):
     type = SelectField(
         "Type",
-        choices=[
-            ("", ""),
-            ("MULTIPLECHOICE", "MultipleChoice"),
-            ("FREERESPONSE", "FreeResponse"),
-            ("PATIENTORDERING", "PatientOrdering"),
-        ],
+        choices=["SelectTag", "SelectTreatment", "SelectCasualty"],
         default="MULTIPLECHOICE",
         description="Includes allowable values from the data source.",
     )
+    probe_id = StringField("Probe ID")
     prompt = StringField("Prompt", validators=[DataRequired()])
     state = StringField("State")
     submit = SubmitField("Save Probe")

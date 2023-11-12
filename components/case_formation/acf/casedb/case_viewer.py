@@ -2,10 +2,11 @@ from app import create_app, db
 from app.case.models import Case, CaseBase
 from app.probe.models import Probe, ProbeOption, ProbeResponse
 from app.scenario.models import Scenario, Threat, Casualty, Vitals, Supply
-from . import cli
+
+# from . import cli
 
 app = create_app()
-cli.register(app)
+# cli.register(app)
 
 
 @app.shell_context_processor

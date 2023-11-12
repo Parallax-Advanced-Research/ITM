@@ -318,6 +318,8 @@ temp/newfile.json
 
 temp/scene.json
 /temp/*
-components/case_formation/acf/__pycache__
-components/case_formation/__pycache__
-components/case_formation/acf/migrations
+adept_client/
+adept_server/
+align-system/
+itm-analysis-reporting/
+ta1-server-mvp/

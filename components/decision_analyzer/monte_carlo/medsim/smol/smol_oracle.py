@@ -30,7 +30,9 @@ class SmolMedicalOracle:
         Injuries.EAR_BLEED.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
                                                breath=BodySystemEffect.NONE.value),
         Injuries.SHRAPNEL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
-                                              breath=BodySystemEffect.NONE.value)
+                                              breath=BodySystemEffect.NONE.value),
+        Injuries.EYE_TRAUMA.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                breath=BodySystemEffect.MODERATE.value)
     }
 
     DAMAGE_PER_SECOND = {
@@ -78,3 +80,4 @@ def update_smol_injury(injury: Injury, time_taken: float, treated=False):
         injury.name = injury_str
     injury_effect: InjuryUpdate = SmolMedicalOracle.INJURY_UPDATE[injury_str]
     injury.update_bleed_breath(injury_effect, time_taken, reference_oracle=SmolMedicalOracle.DAMAGE_PER_SECOND, treated=treated)
+    injury.update_burn_severity(treated=treated)

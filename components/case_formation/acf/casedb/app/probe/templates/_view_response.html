@@ -40,7 +40,10 @@
 
                     {% endfor %}
                 </div>
-                <a href="{{ url_for('probe.add_action', response_id=response.id) }}">[add action]</a>
+                <a href="{{ url_for('probe.add_action', response_id=response.id) }}">[add action]</a> <a
+                    class="text-danger"
+                    href="{{ url_for('probe.delete_probe_response', probe_response_id=response.id) }}">[delete
+                    response]</a>
             </li>
             <li class="list-group-item text-info">
                 {% if response.kdmas|count > 0 %}

@@ -339,9 +339,23 @@ def make_case(s: State, d: Decision) -> dict[str, Any]:
         if type(dm.value) is not dict:
             case[dm.name] = dm.value
         else:
-            for (inner_key, inner_value) in dm.value.items():
-                case[dm.name + "." + inner_key] = inner_value
+            for (inner_key, inner_value) in flatten(dm.name, dm.value).items():
+                case[inner_key] = inner_value
     return case
+    
+def flatten(name, valueDict: dict[str, Any]):
+    ret = {}
+    for (key, value) in valueDict.items():
+        if type(value) is not dict:
+            ret[name + "." + key] = value
+        else:
+            for (subkey, subvalue) in flatten(key, value).items():
+                ret[name + "." + subkey] = subvalue
+
+    return ret
+            
+        
+
 
 CASE_INDEX = 1000
 
@@ -665,25 +679,29 @@ def all_true(bools: list[bool]) -> bool:
     return True
 
 def write_case_base(fname: str, cb: list[dict[str, Any]]):
-    keys = list(cb[0].keys())
-    keyset = set(keys)
+    index : int = 0
+    keys : list[str] = list(cb[0].keys())
+    keyset : set[str] = set(keys)
     for case in cb:
         new_keys = set(case.keys()) - keyset
         if len(new_keys) > 0:
             keys += list(new_keys)
             keyset = keyset.union(new_keys)
+    if "index" in keys:
+        keys.remove("index")
     csv_file = open(fname, "w")
-    csv_file.write(",".join(keys))
+    csv_file.write("index," + ",".join(keys))
     csv_file.write("\n")
     for case in cb:
-        line = ""
+        index += 1
+        line = str(index)
         for key in keys:
             value = str(case.get(key, None))
             if "," in value:
                 value= '"' + value + '"'
-            line += value + ","
-        csv_file.write(line[:-1])
-        csv_file.write("\n")
+            line += ","
+            line += value
+        csv_file.write(line + "\n")
     csv_file.close()
         
         
