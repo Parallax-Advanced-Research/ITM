@@ -9,6 +9,7 @@ from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
+from components.attribute_explorer.random_probe_based import RandomProbeBasedAttributeExplorer
 import domain.external as ext
 from .driver import Driver
 
@@ -36,6 +37,8 @@ class TA3Driver(Driver):
             selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
                                            variant = args.variant,
                                            verbose = args.verbose)
+        elif args.training:
+            selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
         else:
             selector = KDMAEstimationDecisionSelector("data/sept/alternate_case_base.csv", 
                                                       variant = args.variant,

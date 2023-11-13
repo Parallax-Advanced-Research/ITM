@@ -15,9 +15,20 @@ class Action:
     def __str__(self):
         return f"{self.name}({','.join(self.params.values())})"
 
+    def to_json(self):
+        d = dict()
+        def get_params(params):
+            dd = {}
+            for param in self.params:
+                dd[param] = params[param]
+            return dd
+        d['name']  = self.name
+        d['params'] = get_params(self.params)
+        return d
+
     # This makes it so that actions can be shown in the logger nicer
-    def __repr__(self):
-        return self.__str__()
+    # def __repr__(self):
+    #     return self.__str__()
 
 
 class Decision(typing.Generic[T]):
@@ -35,3 +46,5 @@ class Decision(typing.Generic[T]):
 
     def __repr__(self):
         return f"{self.id_}: {self.value} - {self.kdmas} - {[(dm.name, dm.value) for dm in self.metrics.values()]}"
+
+
