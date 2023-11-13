@@ -1,6 +1,6 @@
 import openapi_client.models as models
 import openapi_client
-from domain.external import Scenario, Probe, Action
+from domain.external import Scenario, ITMProbe, Action
 from domain.internal import KDMA, KDMAs
 
 
