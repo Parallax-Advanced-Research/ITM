@@ -2,6 +2,7 @@ from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Actions
 from components.decision_analyzer.monte_carlo.medsim.tiny.tinymed_actions import tiny_action_map
 from components.decision_analyzer.monte_carlo.medsim.smol.smolmed_actions import smol_action_map
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import update_morbidity_calculations
 from copy import deepcopy
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import SimulatorName
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState, MedsimAction
@@ -44,7 +45,7 @@ class MedicalSimulator(MCSim):
         for new_s in new_state:
             new_state_casualties = new_s.casualties
             for nsc in new_state_casualties:
-                nsc.update_morbidity_calculations()
+                update_morbidity_calculations(nsc)
             outcome = SimResult(action=action, outcome=new_s)
             outcomes.append(outcome)
         return outcomes

@@ -1,7 +1,8 @@
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, Casualty
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, Casualty, Locations
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, INITIAL_SEVERITIES, BodySystemEffect
 from domain.external import Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
 
@@ -24,28 +25,25 @@ def _reverse_convert_vitals(internal_vitals: Vitals) -> TA_VIT:
                   breathing=internal_vitals.breathing, hrpmin=internal_vitals.hrpmin)
 
 
-def _convert_injury(ta_injury: TA_INJ) -> Injury:
-    if ta_injury.severity is None: 
-        if ta_injury.name == Injuries.FOREHEAD_SCRAPE.value:
-            severe = 0.1
-        elif ta_injury.name == Injuries.PUNCTURE.value:
-            severe = 0.3
-        elif ta_injury.name == Injuries.SHRAPNEL.value:
-            severe = 0.4
-        elif ta_injury.name == Injuries.LACERATION.value:
-            severe = 0.6
-        elif ta_injury.name == Injuries.EAR_BLEED.value:
-            severe = 0.8
-        elif ta_injury.name == Injuries.CHEST_COLLAPSE.value:
-            severe = 0.9
-        elif ta_injury.name == Injuries.AMPUTATION.value:
-            severe = 1.0
-        else: 
-            severe = 0.7
+def _convert_injury(ta_injury: TA_INJ) -> list[Injury]:
+    if ta_injury.severity is None:
+        severe = INITIAL_SEVERITIES[ta_injury.name] if ta_injury.name in INITIAL_SEVERITIES.keys() else 0.7
     else:
         severe = ta_injury.severity
-    
-    return Injury(name=ta_injury.name, location=ta_injury.location, severity=severe)
+    injuries = []
+    effect = INJURY_UPDATE[ta_injury.name]
+    if ta_injury.name == Injuries.BURN.value:
+        burn_suffocation_injury = Injury(name=Injuries.BURN_SUFFOCATION.value, location=Locations.LEFT_FACE.value,
+                                         severity=ta_injury.severity,
+                                         breathing_effect=INJURY_UPDATE[Injuries.BURN_SUFFOCATION.value].breathing_effect,
+                                         bleeding_effect=BodySystemEffect.NONE.value,
+                                         burning_effect=BodySystemEffect.NONE.value)
+        injuries.append(burn_suffocation_injury)
+    burn_tissue_injury = Injury(name=ta_injury.name, location=ta_injury.location, severity=severe,
+                                burning_effect=effect.burning_effect, bleeding_effect=effect.bleeding_effect,
+                                breathing_effect=effect.breathing_effect)
+    injuries.append(burn_tissue_injury)
+    return injuries
 
 
 def _reverse_convert_injury(internal_injury: Injury) -> TA_INJ:
@@ -58,7 +56,7 @@ def _convert_casualty(ta_casualty: TA_CAS) -> Casualty:
     dem = _convert_demographic(demos)
     injuries = []
     for inj in ta_casualty.injuries:
-        injuries.append(_convert_injury(inj))
+        injuries.extend(_convert_injury(inj))
     vit = _convert_vitals(ta_casualty.vitals)
 
     return Casualty(id=ta_casualty.id, unstructured=ta_casualty.unstructured, name=ta_casualty.name,

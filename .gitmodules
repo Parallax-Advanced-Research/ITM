@@ -1,24 +1,9 @@
 [submodule "itm-api"]
 	path = itm-api
 	url = https://github.com/ITM-Soartech/itm-api.git
-[submodule "ta1-server-mvp"]
-	path = ta1-server-mvp
-	url = https://github.com/ITM-Soartech/ta1-server-mvp.git
-[submodule "adept_server"]
-	path = adept_server
-	url = https://gitlab.com/itm-ta1-adept-shared/adept_server.git
-[submodule "adept_client"]
-	path = adept_client
-	url = https://gitlab.com/itm-ta1-adept-shared/adept_client.git
-[submodule "align-system"]
-	path = align-system
-	url = https://github.com/ITM-Kitware/align-system.git
 [submodule "itm-evaluation-server"]
 	path = itm-evaluation-server
 	url = https://github.com/NextCenturyCorporation/itm-evaluation-server.git
 [submodule "itm-evaluation-client"]
 	path = itm-evaluation-client
 	url = https://github.com/NextCenturyCorporation/itm-evaluation-client.git
-[submodule "itm-analysis-reporting"]
-	path = itm-analysis-reporting
-	url = https://github.com/NextCenturyCorporation/itm-analysis-reporting.git

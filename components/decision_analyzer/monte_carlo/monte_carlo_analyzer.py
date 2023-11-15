@@ -4,7 +4,9 @@ from components.decision_analyzer.monte_carlo.medsim import MedicalSimulator
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.util.sort_functions import injury_to_dps
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash, SimulatorName, Injury
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
+                                                                               SimulatorName, MetricSet)
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calc_prob_death, calculate_injury_severity
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
@@ -41,10 +43,6 @@ def tinymedact_to_actstr(decision: mcnode.MCDecisionNode) -> str:
     return retstr
 
 
-def is_scoreless(decision: mcnode.MCDecisionNode) -> bool:
-    return not bool(len(decision.score.keys()))
-
-
 def dict_to_decisionmetrics(basic_stats: MetricResultsT) -> list[DecisionMetrics]:
     if basic_stats is None:
         return list()
@@ -65,7 +63,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
     casualty_dps = dict()
     casualty_p_death = dict()
     for cas in state.casualties:
-        cas_severity = sum([i.calculate_severity() for i in cas.injuries])
+        cas_severity = sum([calculate_injury_severity(i) for i in cas.injuries])
         if cas.id not in list(casualty_dps.keys()):
             casualty_dps[cas.id] = 0.
         dps = 0.0
@@ -74,7 +72,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
             dps += injury_to_dps(injury)
             casualty_dps[cas.id] += dps
 
-        casualty_p_death[cas.id] = cas.calc_prob_death()
+        casualty_p_death[cas.id] = calc_prob_death(cas)
         casualty_severities[cas.id] = cas_severity
     for supply, num in state.supplies.items():
         resource_score += num
@@ -110,11 +108,11 @@ def get_and_normalize_delta(past_metrics, new_metrics):
                 sub_dict = {}
                 for subkey in delta_dict[common_key]:
                     sub_dict[subkey] = delta_dict[common_key][subkey]
-                    sub_dict[subkey] /= time_delta
+                    sub_dict[subkey] /= max(time_delta, 1)
                 time_delta_out[delta_converters[common_key]] = sub_dict
             else:
                 time_delta_out[delta_converters[common_key]] = delta_dict[common_key]
-                time_delta_out[delta_converters[common_key]] /= time_delta
+                time_delta_out[delta_converters[common_key]] /= max(time_delta, 1)
     time_delta_out[Metric.SUPPLIES_USED.value] *= -1
     return time_delta_out
 
@@ -127,6 +125,7 @@ def dict_minus(before, after):
         else:
             minus_dict[common_key] = dict_minus(before[common_key], after[common_key])
     return minus_dict
+
 
 def dict_average(in_dicts) -> dict:
     averaged_dict = dict()
@@ -163,7 +162,8 @@ def get_average_morbidity(outcomes: dict[str, float | dict[str, float]]) -> Metr
                 morbidity_lists[morbid_key] = []
             morbidity_lists[morbid_key].append((morbidity[morbid_key] * outcome_probability))
     for morb_key in morbidity_lists:
-        morbidity_output[morb_key] = sum(morbidity_lists[morb_key])
+        if morb_key in [Metric.P_DEATH.value, Metric.HIGHEST_P_DEATH.value]:
+            morbidity_output[morb_key] = sum(morbidity_lists[morb_key])
     return morbidity_output
 
 
@@ -259,6 +259,8 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
                            Metric.P_DEATH.value : med_prob_death,
                            Metric.CASUALTY_P_DEATH.value : med_casualty_prob_death}
 
+        metric_set: MetricSet = MetricSet()
+
         sim = MedicalSimulator(tinymed_state, simulator_name=SimulatorName.SMOL.value)
         root = mcsim.MCStateNode(tinymed_state)
         tree = mcsim.MonteCarloTree(sim, score_functions, [root])
@@ -275,6 +277,8 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         for decision in decision_node_list:
             dec_str = tinymedact_to_actstr(decision)
             simulated_state_metrics[dec_str] = get_future_and_change_metrics(tinymed_state, decision)
+            # simulated_state_metrics[dec_str].update(decision.justification)
+            # TODO- Get decision nodes to generate justifications from child average
 
         # The second loop iterates all of the probes presented by the elaborator
         for decision in probe.decisions:
@@ -283,7 +287,8 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             decision_metrics_raw = simulated_state_metrics[decision_str] if decision_str in simulated_state_metrics.keys() else None
 
             basic_metrics: list[DecisionMetrics] = dict_to_decisionmetrics(decision_metrics_raw)
-            for bm in basic_metrics:
+            cut_metrics = metric_set.apply_metric_set(basic_metrics)
+            for bm in cut_metrics:
                 decision.metrics.update(bm)
                 analysis[decision_str].update(bm)
         return analysis
