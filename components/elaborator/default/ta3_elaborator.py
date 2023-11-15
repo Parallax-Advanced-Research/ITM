@@ -21,13 +21,16 @@ class TA3Elaborator(Elaborator):
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
 
-        probe.decisions = to_return
         final_list = []
         for tr in to_return:
             if tr.value.name == 'DIRECT_MOBILE_CASUALTY' and 'casualty' in tr.value.params:
                 pass
             else:
                 final_list.append(tr)
+        tag_actions = [d for d in final_list if d.value.name == "TAG_CASUALTY"]
+        if len(tag_actions) > 0:
+            final_list = tag_actions
+        probe.decisions = final_list
         # Needs direct mobile casualties no
         return final_list
 
