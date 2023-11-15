@@ -94,7 +94,7 @@ class Casualty:
         self.prob_burndeath: float = 0.0
         self.prob_shock: float = 0.0
         self.prob_death: float = 0.0
-        self.prob_surv_triss: float = 0.0
+        self.prob_triss_death: float = 0.0
 
     def __str__(self):
         retstr = "%s_" % self.id

@@ -155,7 +155,7 @@ def update_morbidity_calculations(cas: Casualty):
     cas.prob_burndeath = calc_prob_burndeath(cas)
     cas.prob_shock = calc_prob_shock(cas)
     cas.prob_death = calc_prob_death(cas)
-    cas.prob_surv_triss = calc_TRISS(cas)
+    cas.prob_triss_death = calc_TRISS_deathP(cas)
 
 
 def calc_prob_bleedout(cas: Casualty) -> float:
@@ -275,7 +275,7 @@ def calc_prob_death(cas: Casualty):
     return min(1 - no_death, 1.0)
 
 
-def calc_TRISS(cas: Casualty):
+def calc_TRISS_deathP(cas: Casualty):
     # program the formulas in
     # if no vitals, use normal levels
     # https://www.mdapp.co/trauma-injury-severity-score-triss-calculator-277/
@@ -284,9 +284,9 @@ def calc_TRISS(cas: Casualty):
         https://www.mdapp.co/revised-trauma-score-calculator-111/
         """
         def mental_status_to_gcs_points(cas_mental):
-            if cas_mental == 'CALM':
+            if cas_mental == 'CALM' or cas_mental is None or cas_mental in ['dandy', 'fine']:
                 return 15  # max score
-            elif cas_mental == 'UPSET':
+            elif cas_mental == 'UPSET' or cas_mental in ['panicked']:
                 return 12
             elif cas_mental == 'CONFUSED':
                 return 9
@@ -319,11 +319,11 @@ def calc_TRISS(cas: Casualty):
             If we are not using the actually respiratory rate, some values in triss will not be reachable
             TRISS has a scale from 0-4, and we only provide 3 options, so 2 of them, can't be reached.
             """
-            if breathing == 'FAST':
+            if breathing == 'FAST' or breathing == 'heavy':
                 return 30
-            elif breathing == 'NORMAL':
+            elif breathing == 'NORMAL' or breathing is None or breathing == 'normal':
                 return 16  # normal is 12-20
-            elif breathing == 'RESTRICTED':
+            elif breathing == 'RESTRICTED' or breathing == 'collapsed':
                 return 8
             else:
                 logger.critical('unsupported or no breathing type provided')
@@ -372,7 +372,7 @@ def calc_TRISS(cas: Casualty):
             else:
                 return 0  # not reachable given how we measure respiratory rate
 
-        return ((0.9368 * glasgow_coma_scale_score(gcs_points)) + (0.7326 * blood_pressure_score(blood_pressure)) +
+        return 1 - ((0.9368 * glasgow_coma_scale_score(gcs_points)) + (0.7326 * blood_pressure_score(blood_pressure)) +
                 (0.2908 * respiratory_rate_score(r_rate)))
 
     def calculate_ISS(cas):
