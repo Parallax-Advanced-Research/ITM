@@ -28,11 +28,11 @@ def supply_injury_match(supply: str, injury: str) -> bool:
             return False
         return True
     if supply == Supplies.HEMOSTATIC_GAUZE.value:
-        if injury in [Injuries.BURN.value]:
+        if injury in [Injuries.LACERATION.value, Injuries.EAR_BLEED.value, Injuries.SHRAPNEL.value, Injuries.PUNCTURE.value, Injuries.FOREHEAD_SCRAPE.value]:
             return True
         return False
     if supply == Supplies.TOURNIQUET.value:
-        if injury in [Injuries.AMPUTATION.value]:
+        if injury in [Injuries.AMPUTATION.value, Injuries.LACERATION.value, Injuries.PUNCTURE.value, Injuries.SHRAPNEL.value]:
             return True
         return False
     if supply == Supplies.DECOMPRESSION_NEEDLE.value:
@@ -40,7 +40,7 @@ def supply_injury_match(supply: str, injury: str) -> bool:
             return True
         return False
     if supply == Supplies.NASOPHARYNGEAL_AIRWAY.value:
-        if injury in [Injuries.ASTHMATIC.value]:
+        if injury in [Injuries.ASTHMATIC.value, Injuries.BURN_SUFFOCATION.value]:
             return True
         return False
     return True

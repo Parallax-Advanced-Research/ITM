@@ -18,7 +18,7 @@ class Injury:
     STANDARD_BODY_VOLUME = 5000  # mL
 
     def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
-                 bleeding_effect='NONE', is_burn: bool = False):
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
         self.name = name
         self.location = location
         self.severity = severity
@@ -27,25 +27,27 @@ class Injury:
         self.treated: bool = treated
         self.blood_lost_ml: float = 0.0
         self.breathing_hp_lost: float = 0.0  # Breathing points are scaled the same as blood lost. If you lose 5000 you die
-        self.bleeding_effect, self.breathing_effect = None, None
+        self.burn_hp_lost: float = 0.0  # Burn hp is the same as breathing points
         self.is_burn = is_burn or name == Injuries.BURN.value
         self.breathing_effect = breathing_effect
         self.bleeding_effect = bleeding_effect
+        self.burning_effect = burning_effect
         self.damage_per_second = 0.0
 
     def __eq__(self, other: 'Injury'):
-        # TODO: add new cas members to equal function
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
                 self.time_elapsed == other.time_elapsed and self.treated == other.treated and
                 self.blood_lost_ml == other.blood_lost_ml and self.breathing_hp_lost == other.breathing_hp_lost and
-                self.breathing_effect == other.breathing_effect and self.bleeding_effect == other.bleeding_effect)
+                self.breathing_effect == other.breathing_effect and self.bleeding_effect == other.bleeding_effect and
+                self.burning_effect == other.burning_effect)
 
     def __str__(self):
-        return '%s_%s_%.2f_t=%.2f_%s. Blood lost: %.1f ml (%s) BreathHP lost: %.1f (%s)' % (self.name, self.location,
+        return '%s_%s_%.2f_t=%.2f_%s. Blood lost: %.1f ml (%s) BreathHP lost: %.1f (%s) Burn %.1f (%s)' % (self.name, self.location,
                                                                                             self.severity,
                                                                                             self.time_elapsed, 'T' if self.treated else 'NT',
                                                                                             self.blood_lost_ml, self.bleeding_effect,
-                                                                                            self.breathing_hp_lost, self.breathing_effect)
+                                                                                            self.breathing_hp_lost, self.breathing_effect,
+                                                                                                           self.burn_hp_lost, self.burning_effect)
 
 
 class Vitals:
@@ -63,6 +65,7 @@ class Vitals:
 class Casualty:
     MAX_BLOOD_ML = 5000
     MAX_BREATH_HP = 5000
+    MAX_BURN_HP = 5000
     BLEEDOUT_CHANCE_NONE = 0.15
     BLEEDOUT_CHANCE_LOW = 0.3
     BLEEDOUT_CHANCE_MED = 0.4
@@ -88,10 +91,9 @@ class Casualty:
         self.time_elapsed: float = 0.0
         self.prob_bleedout: float = 0.0
         self.prob_asphyxia: float = 0.0
+        self.prob_burndeath: float = 0.0
         self.prob_shock: float = 0.0
         self.prob_death: float = 0.0
-
-
 
     def __str__(self):
         retstr = "%s_" % self.id
@@ -122,8 +124,8 @@ class Casualty:
     def __lt__(self, other: 'Casualty'):
         if not len(self.injuries):
             return True
-        self_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost) for inj in self.injuries)
-        other_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost) for inj in other.injuries)
+        self_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost) for inj in self.injuries)
+        other_hp_lost = sum((inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost) for inj in other.injuries)
         # self_shock = self.calc_prob_shock()
         # other_shock = other.calc_prob_shock()
         less_than = self_hp_lost < other_hp_lost  # or self_shock < other_shock
@@ -133,6 +135,7 @@ class Casualty:
 class SimulatorName(Enum):
     TINY = 'TINY MED SIM'
     SMOL = 'SMOL MED SIM'
+
 
 class Actions(Enum):
     APPLY_TREATMENT = "APPLY_TREATMENT"
@@ -210,6 +213,7 @@ class Injuries(Enum):
     CHEST_COLLAPSE = 'Chest Collapse'
     AMPUTATION = 'Amputation'
     BURN = 'Burn'
+    BURN_SUFFOCATION = 'Burn Suffocation'
     EYE_TRAUMA = 'Eye_Trauma'
 
 

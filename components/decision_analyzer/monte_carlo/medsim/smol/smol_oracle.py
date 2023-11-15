@@ -8,6 +8,7 @@ from util.logger import logger
 class SmolSystems(Enum):
     BREATHING = 'BREATHING'
     BLEEDING = 'BLEEDING'
+    BURNING = 'BURNING'
 
 
 class SmolMedicalOracle:
@@ -44,14 +45,12 @@ class SmolMedicalOracle:
                                Locations.LEFT_STOMACH.value, Locations.RIGHT_SIDE.value, Locations.RIGHT_NECK.value,
                                Locations.RIGHT_CHEST.value, Locations.RIGHT_SHOULDER.value, Locations.RIGHT_FACE.value,
                                Locations.RIGHT_STOMACH.value],
-        Supplies.DECOMPRESSION_NEEDLE.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.UNSPECIFIED.value],
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value, Locations.UNSPECIFIED.value]}
+        Supplies.DECOMPRESSION_NEEDLE.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value],
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]}
 
 
 def update_smol_injury(injury: Injury, time_taken: float, treated=False):
     injury_str: str = injury.name
-    if injury_str == Injuries.BURN.value:
-        pass
     if injury_str not in [i.value for i in Injuries]:
         logger.critical("%s not found in Injuries class. Assigning to %s." % (injury_str, Injuries.FOREHEAD_SCRAPE.value))
         injury_str = Injuries.FOREHEAD_SCRAPE.value
@@ -59,15 +58,6 @@ def update_smol_injury(injury: Injury, time_taken: float, treated=False):
     injury_effect: InjuryUpdate = INJURY_UPDATE[injury_str]
     update_bleed_breath(injury, injury_effect, time_taken, reference_oracle=DAMAGE_PER_SECOND, treated=treated)
     #update_burn_severity(injury, treated=treated)
-
-
-class InjuryUpdate:
-    def __init__(self, bleed: str, breath: str):
-        self.bleeding_effect = bleed
-        self.breathing_effect = breath
-
-    def as_dict(self) -> dict[str, str]:
-        return {SmolSystems.BLEEDING.value: self.bleeding_effect, SmolSystems.BREATHING.value: self.breathing_effect}
 
 
 class BodySystemEffect(Enum):
@@ -79,13 +69,28 @@ class BodySystemEffect(Enum):
     FATAL = 'FATAL'
 
 
+class InjuryUpdate:
+    def __init__(self, bleed: str, breath: str, burn: str = BodySystemEffect.NONE.value):
+        self.bleeding_effect = bleed
+        self.breathing_effect = breath
+        self.burning_effect = burn
+
+    def as_dict(self) -> dict[str, str]:
+        return {SmolSystems.BLEEDING.value: self.bleeding_effect, SmolSystems.BREATHING.value: self.breathing_effect,
+                SmolSystems.BURNING.value: self.burning_effect}
+
+
 INJURY_UPDATE = {
+        # TODO - Injury update now needs to take in burn, and we need to add burn
         Injuries.LACERATION.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
                                                 breath=BodySystemEffect.NONE.value),
         Injuries.FOREHEAD_SCRAPE.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
                                                      breath=BodySystemEffect.NONE.value),
-        Injuries.BURN.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
-                                          breath=BodySystemEffect.SEVERE.value),
+        Injuries.BURN.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                          breath=BodySystemEffect.NONE.value,
+                                          burn=BodySystemEffect.SEVERE.value),
+        Injuries.BURN_SUFFOCATION.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                      breath=BodySystemEffect.SEVERE.value),
         Injuries.ASTHMATIC.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
                                                breath=BodySystemEffect.MODERATE.value),
         Injuries.AMPUTATION.value: InjuryUpdate(bleed=BodySystemEffect.CRITICAL.value,
@@ -146,6 +151,7 @@ DAMAGE_PER_SECOND = {
 def update_morbidity_calculations(cas: Casualty):
     cas.prob_bleedout = calc_prob_bleedout(cas)
     cas.prob_asphyxia = calc_prob_asphyx(cas)
+    cas.prob_burndeath = calc_prob_burndeath(cas)
     cas.prob_shock = calc_prob_shock(cas)
     cas.prob_death = calc_prob_death(cas)
 
@@ -178,6 +184,22 @@ def calc_prob_asphyx(cas: Casualty) -> float:
     elif total_breath_hp_lost / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_MED:  # 30-40%
         return cas.MED_P_BLEEDOUT
     elif total_breath_hp_lost / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_HIGH:  # 40-50%
+        return cas.HIGH_P_BLEEDOUT
+    else:
+        return cas.CRITICAL_P_BLEEDOUT
+
+
+def calc_prob_burndeath(cas: Casualty) -> float:
+    burn_damage = 0
+    for inj in cas.injuries:
+        burn_damage += inj.burn_hp_lost
+    if burn_damage / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_NONE:  # < 15%
+        return cas.NO_P_BLEEDOUT
+    elif burn_damage / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_LOW:  # 15-30%
+        return cas.LOW_P_BLEEDOUT
+    elif burn_damage / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_MED:  # 30-40%
+        return cas.MED_P_BLEEDOUT
+    elif burn_damage / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_HIGH:  # 40-50%
         return cas.HIGH_P_BLEEDOUT
     else:
         return cas.CRITICAL_P_BLEEDOUT
@@ -246,7 +268,8 @@ def calc_prob_shock(cas: Casualty) -> float:
 
 
 def calc_prob_death(cas: Casualty):
-    no_death = (1 - calc_prob_bleedout(cas)) * (1 - calc_prob_asphyx(cas)) * (1 - calc_prob_shock(cas))
+    no_death = ((1 - calc_prob_bleedout(cas)) * (1 - calc_prob_asphyx(cas)) *
+                (1 - calc_prob_shock(cas) * (1 - calc_prob_burndeath(cas))))
     return min(1 - no_death, 1.0)
 
 
@@ -263,8 +286,13 @@ def update_bleed_breath(inj: Injury, effect: InjuryUpdate, time_elapsed: float,
         if effect_key == SmolSystems.BLEEDING.value:
             inj.blood_lost_ml += (effect_value * time_elapsed) if not inj.treated else 0.0
             inj.bleeding_effect = effect_dict[effect_key]
-    inj.severity = (inj.blood_lost_ml / Injury.STANDARD_BODY_VOLUME) + (inj.breathing_hp_lost / Injury.STANDARD_BODY_VOLUME) + inj.base_severity
-    inj.damage_per_second = (inj.blood_lost_ml + inj.breathing_hp_lost) / time_elapsed if time_elapsed else 0.0
+        if effect_key == SmolSystems.BURNING.value:
+            inj.burn_hp_lost += (effect_value * time_elapsed) if not inj.treated else 0.0
+            inj.burning_effect = effect_dict[effect_key]
+    inj.severity = ((inj.blood_lost_ml / Injury.STANDARD_BODY_VOLUME) +
+                    (inj.breathing_hp_lost / Injury.STANDARD_BODY_VOLUME) +
+                    (inj.burn_hp_lost/Injury.STANDARD_BODY_VOLUME) + inj.base_severity)
+    inj.damage_per_second = (inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost) / time_elapsed if time_elapsed else 0.0
     if treated:
         inj.treated = True
         inj.damage_per_second = 0.0
