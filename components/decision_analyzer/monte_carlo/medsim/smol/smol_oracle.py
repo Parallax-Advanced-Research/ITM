@@ -58,7 +58,6 @@ def update_smol_injury(injury: Injury, time_taken: float, treated=False):
         injury.name = injury_str
     injury_effect: InjuryUpdate = INJURY_UPDATE[injury_str]
     update_bleed_breath(injury, injury_effect, time_taken, reference_oracle=DAMAGE_PER_SECOND, treated=treated)
-    #update_burn_severity(injury, treated=treated)
 
 
 class BodySystemEffect(Enum):

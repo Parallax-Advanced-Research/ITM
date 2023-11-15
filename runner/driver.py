@@ -78,15 +78,10 @@ class Driver:
 
         # Print info affecting decisions
         index: int = 0
-        not_simulated = list()
         sorted_decisions = sort_decisions(probe.decisions)
         for d in sorted_decisions:
-            if d.metrics['SEVERITY'].value is None:
-                not_simulated.append(str(d.value))
-            else:
-                logger.debug(f"Available Action {index}: {d}")
+            logger.debug(f"Available Action {index}: {d}")
             index += 1
-        logger.debug("Not simulated, but probed: %s" % ', '.join(not_simulated))
         for cas in probe.state.casualties:
             logger.debug(f"Casualty: {cas.id} Injuries: {cas.injuries} Vitals: {cas.vitals} Tag: {cas.tag}")
 

@@ -268,7 +268,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         for rollout in range(self.max_rollouts):
             tree.rollout(max_depth=self.max_depth)
 
-        logger.info('MC Tree Trained using Simulator %s.' % sim.get_simulator())
+        logger.debug('MC Tree Trained using Simulator %s.' % sim.get_simulator())
         analysis = {}  # Not used in driver
         decision_node_list: list[mcnode.MCDecisionNode] = tree._roots[0].children
         # Has each decision string -> list of {'sevrity': .69, 'resources used': 2...}
@@ -276,9 +276,10 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
         # The first loop gathers all of our knowledge from the MCTree in simulations
         for decision in decision_node_list:
             dec_str = tinymedact_to_actstr(decision)
+            if not len(decision.children):
+                continue
             simulated_state_metrics[dec_str] = get_future_and_change_metrics(tinymed_state, decision)
             # simulated_state_metrics[dec_str].update(decision.justification)
-            # TODO- Get decision nodes to generate justifications from child average
 
         # The second loop iterates all of the probes presented by the elaborator
         for decision in probe.decisions:

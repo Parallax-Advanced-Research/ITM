@@ -1,3 +1,5 @@
+import sys
+
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import DAMAGE_PER_SECOND
 from domain.internal import Decision, Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, Injury
@@ -5,6 +7,8 @@ import numpy as np
 
 
 def ideal_function(decision: Decision[Action]) -> float:
+    if Metric.DAMAGE_PER_SECOND.value not in decision.metrics:
+        return sys.maxsize
     damage_total = decision.metrics[Metric.DAMAGE_PER_SECOND.value].value
     return damage_total
 
