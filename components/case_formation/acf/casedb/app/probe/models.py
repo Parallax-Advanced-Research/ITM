@@ -5,11 +5,9 @@ import sys
 import importlib
 
 # give access to top level modules
-sys.path.append("../../../../") # TODO: fix this hack
+sys.path.append("../../../../")  # TODO: fix this hack
 
 import domain.internal as TAD
-
-
 
 
 class Probe(db.Model):
@@ -68,6 +66,17 @@ class ProbeResponse(db.Model):
         return {
             "treatment": self.value,
         }
+
+    def as_tad_probe(self) -> TAD.TADProbe:
+        return TAD.TADProbe(self.probe_id, self.value, self.prompt)
+
+    def get_parent_state(self):
+        """
+        Returns the state of the parent scenario of the probe so it can be added to the response
+        to from a complete TADProbe object. This is different than the probe state which is an indicator
+        in the TA1 data of an event that has occurred prior to this question.
+        """
+        return self.probe.scenario.state
 
     def __repr__(self):
         return "<ProbeResponse {}>".format(self.value)
