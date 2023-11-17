@@ -1,8 +1,4 @@
 import sys
-from app import db
-from datetime import datetime
-from sqlalchemy import Integer, String, DateTime, ForeignKey, Text, Float, Boolean
-import builtins, inspect
 import typing
 
 from app.probe.models import Probe
@@ -143,7 +139,7 @@ def convert_to_ta3_casualty(Casualty) -> TA3.Casualty:
     casualty_treatments = []
 
     ta3_casualty = TA3.Casualty(
-        id=casualty_id,
+        id=casualty_name,  # TODO: use instead of the db id for mc analysis
         name=casualty_name,
         injuries=casualty_injuries,
         demographics=casualty_demographics,
@@ -233,10 +229,11 @@ class ProbeToAnalyze(Probe):
         tad_probe = self.as_tad_probe(tad_scenario)
         # temporarily give them one of each of the supplies if it is a monte carlo analyzer
         # this is because monte carlo only handles a subset of supplies (in tinymed_enums.Supplies)
-        if isinstance(self.decision_analyzer, MonteCarloAnalyzer):
+        is_mc = isinstance(self.decision_analyzer, MonteCarloAnalyzer)
+        if is_mc:
             supplies_list = []
             for supply in tinymed_enums.Supplies:
-                supply = TA3.Supply(supply.value, 1)
+                supply = TA3.Supply(supply.value, 10)
                 supplies_list.append(supply)
             tad_scenario.state.supplies = supplies_list
 
@@ -264,7 +261,7 @@ class ProbeToAnalyze(Probe):
                     kdmas=TAD.KDMAs(KDMAs),
                 )
                 decision_actions.append(tad_decision)
-
+                tad_probe.state.actions_performed = [tad_action]
         # remove duplicates when value.name and parameters are the same
         for decision_action in decision_actions:
             for other_decision_action in decision_actions:
@@ -284,7 +281,7 @@ class ProbeToAnalyze(Probe):
 
         metrics = self.decision_analyzer.analyze(tad_scenario, tad_probe)
 
-        return self.decision_analyzer.analyze(tad_scenario, tad_probe)
+        return metrics
 
     @classmethod
     def __str__(self):
