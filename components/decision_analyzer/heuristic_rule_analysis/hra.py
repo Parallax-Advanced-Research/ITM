@@ -881,32 +881,32 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         temp_file["treatment"] = {
             "APPLY_TREATMENT": {
                 "hemostatic gauze": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
-                                     "system": "cardiovascular"},
+                                     "system": "cardiovascular", "life_impact": "low"},
                 "tourniquet": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
-                               "system": "cardiovascular"},
-                "pressure bandage": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "integumentary"},
-                "decompression needle": {"risk_reward_ratio": "med", "resources": "few", "time": "minutes",
-                                         "system": "respiratory"},
+                               "system": "cardiovascular", "life_impact": "medium"},
+                "pressure bandage": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "integumentary", "life_impact": "low"},
+                "decompression needle": {"risk_reward_ratio": "medium", "resources": "few", "time": "minutes",
+                                         "system": "respiratory", "life_impact": "low"},
                 "nasopharyngeal airway": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
-                                          "system": "respiratory"}},
+                                          "system": "respiratory", "life_impact": "medium"}},
             "CHECK_ALL_VITALS": {
                 "CHECK_ALL_VITALS": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
-                                     "system": "all"}},
+                                     "system": "all", "life_impact": "low"}},
             "CHECK_PULSE": {
                 "CHECK_PULSE": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
-                                "system": "cardiovascular"}},
+                                "system": "cardiovascular", "life_impact": "low"}},
             "CHECK_RESPIRATION": {
                 "CHECK_RESPIRATION": {"risk_reward_ratio": "low", "resources": "some", "time": "seconds",
                                       "system": "respiratory"}},
             "DIRECT_MOBILE_CASUALTY": {
                 "DIRECT_MOBILE_CASUALTY": {"risk_reward_ratio": "medium", "resources": "few", "time": "minutes",
-                                           "system": "none"}},
+                                           "system": "none", "life_impact": "medium"}},
             "MOVE_TO_EVAC": {
-                "MOVE_TO_EVAC": {"risk_reward_ratio": "high", "resources": "few", "time": "minutes", "system": "none"}},
+                "MOVE_TO_EVAC": {"risk_reward_ratio": "high", "resources": "few", "time": "minutes", "system": "none", "life_impact": "high"}},
             "TAG_CASUALTY": {
-                "TAG_CASUALTY": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "none"}},
+                "TAG_CASUALTY": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "none", "life_impact": "high"}},
             "SITREP": {
-                "SITREP": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all"}},
+                "SITREP": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all", "life_impact": "low"}},
         }
         file['treatment'] = {}
         file['treatment']["APPLY_TREATMENT"] = dict()
