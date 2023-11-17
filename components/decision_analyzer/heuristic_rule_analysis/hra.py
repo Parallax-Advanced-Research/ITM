@@ -858,6 +858,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     def convert_between_kdma_system(self, mission, denial, predictor):
         return "equal"
 
+    def convert_between_kdma_life_impact(self, mission, denial, predictor):
+        return "medium"
+
     ''' placeholder data needed by hra strategies until functionality is implemented. Currently creates a scenario file
         with kdma associated predictor values (should be learned), predictor values for possible decisions (will be educated guess), kdma values (should be learned)
     '''
