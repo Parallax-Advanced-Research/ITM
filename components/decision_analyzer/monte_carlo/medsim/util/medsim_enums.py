@@ -259,59 +259,18 @@ class Metric(Enum):
     CASUALTY_P_DEATH = 'CASUALTY_P_DEATH'
     CASUALTY_DAMAGE_PER_SECOND_CHANGE = 'CASUALTY DPS CHANGE'
 
+    AVERAGE_DECISION_DPS = 'AVERAGE_DECISION_DPS'
+    AVERAGE_DECISION_SUPPLIES_REMAINING = 'AVERAGE_DECISION_SUPPLIES_REMAINING'
+    AVERAGE_PDEATH = 'AVERAGE_PDEATH'
+    AVERAGE_URGENCY = 'AVERAGE_URGENCY'
+
+    MINIMUM = 'MINIMUM'
+    MEAN = 'MEAN'
+    MAXIMUM = 'MAXIMUM'
+    RANK_ORDER = 'RANK_ORDER'
+    RANK_TOTAL = 'RANK_TOTAL'
+
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
-
-
-# def increment_effect(effect: str) -> str:
-#     if effect == BodySystemEffect.NONE.value:
-#         return BodySystemEffect.MINIMAL.value
-#     if effect == BodySystemEffect.MINIMAL.value:
-#         return BodySystemEffect.MODERATE.value
-#     if effect == BodySystemEffect.MODERATE.value:
-#         return BodySystemEffect.SEVERE.value
-#     if effect == BodySystemEffect.SEVERE.value:
-#         return BodySystemEffect.CRITICAL.value
-#     if effect == BodySystemEffect.CRITICAL.value:
-#         return BodySystemEffect.FATAL.value
-#     return BodySystemEffect.FATAL.value
-#
-#
-# def decrement_effect(effect: str) -> str:
-#     if effect == BodySystemEffect.FATAL.value:
-#         return BodySystemEffect.CRITICAL.value
-#     if effect == BodySystemEffect.CRITICAL.value:
-#         return BodySystemEffect.SEVERE.value
-#     if effect == BodySystemEffect.SEVERE.value:
-#         return BodySystemEffect.MODERATE.value
-#     if effect == BodySystemEffect.MODERATE.value:
-#         return BodySystemEffect.MINIMAL.value
-#     if effect == BodySystemEffect.MINIMAL.value:
-#         return BodySystemEffect.NONE.value
-#     return BodySystemEffect.NONE.value
-#
-#
-# effect_scores = {
-#     BodySystemEffect.NONE.value: 0,
-#     BodySystemEffect.MINIMAL.value: 1,
-#     BodySystemEffect.MODERATE.value: 2,
-#     BodySystemEffect.SEVERE.value: 3,
-#     BodySystemEffect.CRITICAL.value: 5,
-#     BodySystemEffect.FATAL.value: 10
-# }
-#
-#
-# def get_effect_name(effect: float) -> str:
-#     if effect < 1:
-#         return BodySystemEffect.NONE.value
-#     if effect < 2:
-#         return BodySystemEffect.MINIMAL.value
-#     if effect < 3:
-#         return BodySystemEffect.MODERATE.value
-#     if effect < 5:
-#         return BodySystemEffect.SEVERE.value
-#     if effect < 10:
-#         return BodySystemEffect.CRITICAL.value
-#     return BodySystemEffect.FATAL.value
 
 
 metric_description_hash: dict[str, str] = {
@@ -353,7 +312,11 @@ metric_description_hash: dict[str, str] = {
     Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec',
     Metric.CASUALTY_DAMAGE_PER_SECOND.value: 'dictionary of dps for all casualties ',
     Metric.CASUALTY_P_DEATH.value: 'dictionary of probability of death for all casualties',
-    Metric.CASUALTY_DAMAGE_PER_SECOND_CHANGE.value: 'dictionary for the change in dps per casualty'
+    Metric.CASUALTY_DAMAGE_PER_SECOND_CHANGE.value: 'dictionary for the change in dps per casualty',
+    Metric.AVERAGE_DECISION_DPS.value: 'how this compares to other deciosions in damage per second',
+    Metric.AVERAGE_DECISION_SUPPLIES_REMAINING.value: 'how this metric compares to others in supplies remaining',
+    Metric.AVERAGE_PDEATH.value: 'how this metric compares to others in probability of death',
+    Metric.AVERAGE_URGENCY.value: 'how this metric compares to others in terms of average time used'
 }
 
 

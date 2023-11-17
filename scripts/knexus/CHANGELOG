@@ -14,6 +14,7 @@ V KR 1.8.12 (11/20 week begin)
 > Probability death triss calculated
 > Fixed driver and montecarlo sim outputting errors in superlow rollout numbers
 > Added Knexus jedi tester script
+> Added decision justifications
 
 V KR 1.7.11 (11/13 week begin)
 ========================

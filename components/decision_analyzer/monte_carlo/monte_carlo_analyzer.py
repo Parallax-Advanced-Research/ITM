@@ -1,5 +1,7 @@
 import numpy as np
 from collections import Counter
+
+from components.decision_analyzer.monte_carlo.mc_sim.decision_justification import DecisionJustifier
 from components.decision_analyzer.monte_carlo.medsim import MedicalSimulator
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
@@ -234,6 +236,32 @@ def get_nondeterministic_metrics(future_states: mcnode.MCDecisionNode) -> Metric
     return determinism
 
 
+def classify_distribution(value, average):
+    if value < average:
+        return "lower than"
+    elif value > average:
+        return "greater than"
+    return "equal to"
+
+
+def get_decision_justification(decision: mcnode.MCDecisionNode) -> dict[str, int | float | str]:
+    average_dps, average_pdeath, average_supplies, average_urgency = 0., 0., 0., 0.
+    aunts_and_uncles = 0  # Sibling needs children for comparisons
+    for sibling_node in decision.parent.children:
+        if not(len(sibling_node.children)):  # No nieces/nephews,
+            continue
+        aunts_and_uncles += 1
+        scores = sibling_node.score
+        average_dps += scores[Metric.DAMAGE_PER_SECOND.value]
+        average_pdeath += scores[Metric.P_DEATH.value]
+        average_supplies += scores[Metric.SUPPLIES_REMAINING.value]
+        average_urgency += scores[Metric.AVERAGE_TIME_USED.value]
+    justice_dict = dict()
+    justice_dict[Metric.AVERAGE_DECISION_DPS.value] = classify_distribution(decision.score[Metric.DAMAGE_PER_SECOND.value],
+                                                                            average_dps / aunts_and_uncles)
+    return justice_dict
+
+
 class MonteCarloAnalyzer(DecisionAnalyzer):
     def __init__(self, max_rollouts: int = 500, max_depth: int = 2):
         super().__init__()
@@ -278,18 +306,35 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             dec_str = tinymedact_to_actstr(decision)
             if not len(decision.children):
                 continue
+            decision_justification_extra = get_decision_justification(decision)
             simulated_state_metrics[dec_str] = get_future_and_change_metrics(tinymed_state, decision)
             # simulated_state_metrics[dec_str].update(decision.justification)
-
         # The second loop iterates all of the probes presented by the elaborator
+        all_decision_metrics: dict[str, list] = dict()
         for decision in probe.decisions:
             decision_str = decision_to_actstr(decision)
             analysis[decision_str] = {}
             decision_metrics_raw = simulated_state_metrics[decision_str] if decision_str in simulated_state_metrics.keys() else None
 
+            if decision_metrics_raw is not None:
+                decision_metrics_raw.update(decision_justification_extra)
             basic_metrics: list[DecisionMetrics] = dict_to_decisionmetrics(decision_metrics_raw)
             cut_metrics = metric_set.apply_metric_set(basic_metrics)
             for bm in cut_metrics:
                 decision.metrics.update(bm)
                 analysis[decision_str].update(bm)
+                value = list(bm.values())[0]
+                if value.name not in all_decision_metrics.keys():
+                    all_decision_metrics[value.name] = list()
+                all_decision_metrics[value.name].append(value.value)
+        dj = DecisionJustifier(all_decision_metrics)
+        for decision in probe.decisions:
+            dmetrics = decision.metrics
+            justifications = []
+            for metric in dj.get_metric_names():
+                if metric not in dmetrics.keys():
+                    continue
+                justification = dj.generate_justification(metric, dmetrics[metric], decision.value)
+                justifications.append(justification)
+            decision.justifications = justifications
         return analysis
