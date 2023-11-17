@@ -231,8 +231,24 @@ class ProbeToAnalyze(Probe):
     def analyze(self):
         tad_scenario = self.as_tad_scenario()
         tad_probe = self.as_tad_probe(tad_scenario)
+        # temporarily give them one of each of the supplies if it is a monte carlo analyzer
+        # this is because monte carlo only handles a subset of supplies (in tinymed_enums.Supplies)
+        if isinstance(self.decision_analyzer, MonteCarloAnalyzer):
+            supplies_list = []
+            for supply in tinymed_enums.Supplies:
+                supply = TA3.Supply(supply.value, 1)
+                supplies_list.append(supply)
+            tad_scenario.state.supplies = supplies_list
+
+        decision_actions = []
         for probe_response in self.probe.responses:
             # send the whole probe to decision analytics as separate actions
+            KDMAs = []
+            for kdma in probe_response.kdmas:
+                # new internal kdma object
+                tad_kdma = TAD.KDMA(id_=kdma.kdma_name, value=kdma.kdma_value)
+                KDMAs.append(tad_kdma)
+
             for action in probe_response.actions:
                 casualty = action.casualty
                 param_dict = {}
@@ -245,26 +261,28 @@ class ProbeToAnalyze(Probe):
                     value=tad_action,
                     justifications=[],
                     metrics={},
-                    kdmas=None,
+                    kdmas=TAD.KDMAs(KDMAs),
                 )
+                decision_actions.append(tad_decision)
 
-                tad_probe.decisions = tad_decision
-                # give them one of each of the supplies if it is a monte carlo analyzer
-                # this is because monte carlo only handles a subset of supplies (in tinymed_enums.Supplies)
-                if isinstance(self.decision_analyzer, MonteCarloAnalyzer):
-                    supplies_list = []
-                    for supply in tinymed_enums.Supplies:
-                        supply = TA3.Supply(supply.value, 1)
-                        supplies_list.append(supply)
-                    tad_scenario.state.supplies = supplies_list
-                result = self.decision_analyzer.analyze(tad_scenario, tad_probe)
-                print(result)
-        # figure out how to return a bunch of decisions, maybe a db table?
-        # if the decision_analyzer is a MonteCarloDecisionAnalyzer, we need to check if the supplies are empty
-        is_mc = isinstance(self.decision_analyzer, MonteCarloAnalyzer)
-        if isinstance(self.decision_analyzer, MonteCarloAnalyzer):
-            if not tad_scenario.state.supplies:
-                return "No supplies available to run Monte Carlo Analysis"
+        # remove duplicates when value.name and parameters are the same
+        for decision_action in decision_actions:
+            for other_decision_action in decision_actions:
+                if (
+                    decision_action.value.name == other_decision_action.value.name
+                    and decision_action.value.params
+                    == other_decision_action.value.params
+                    and decision_action != other_decision_action
+                ):
+                    decision_actions.remove(other_decision_action)
+
+        # renumber the decision_actions consecutively
+        for i, decision_action in enumerate(decision_actions):
+            decision_action.id_ = "action" + str(i + 1)
+
+        tad_probe.decisions = decision_actions
+
+        metrics = self.decision_analyzer.analyze(tad_scenario, tad_probe)
 
         return self.decision_analyzer.analyze(tad_scenario, tad_probe)
 
