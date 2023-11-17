@@ -385,6 +385,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
                 # - - - add one to treatment score of treatment with max sum
                 treatment_sums[tpair[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else tpair[1]] += 1
+                if len(search_tree) > 0: search_tree += ","
                 search_tree += ",".join(
                     [treatment_idx[tpair[0]], str(treatment_predictor_sums[0]), treatment_idx[tpair[1]], str(treatment_predictor_sums[1])])
 
@@ -408,6 +409,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                         treatment_sums[
                             tpair[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else tpair[1]] += 1
 
+                        if len(search_tree) > 0: search_tree += ","
                         search_tree += ",".join([treatment_idx[tpair[0]], str(treatment_predictor_sums[0]), treatment_idx[tpair[1]], str(treatment_predictor_sums[1])])
                         break
 

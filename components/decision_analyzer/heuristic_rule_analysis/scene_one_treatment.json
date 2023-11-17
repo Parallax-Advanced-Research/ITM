@@ -5,9 +5,14 @@
         "urgency":"high",
         "error_prone":"high"
     },
+    "kdma":
+    {
+        "mission": 8,
+        "denial": 3
+    },
     "predictors":
     {
-        "relevance":{"system":["equal",3], "risk_reward_ratio":["low",1], "time":["seconds",1], "resources":["some",1]}
+        "relevance":{"system":"equal", "risk_reward_ratio":"low", "time":"seconds", "resources":"some"}
     },
 
     "treatment":{
