@@ -1,12 +1,14 @@
 import unittest
 import numpy as np
 import hra
+import json
 
 
 class TestHRA(unittest.TestCase):
 
     def setUp(self):
         self.hra = hra.HeuristicRuleAnalyzer()
+        self.data = {}
 
     def test_take_the_best_one_treatment_space(self):
         result = self.hra.take_the_best("scene_one_treatment.json")
@@ -66,8 +68,11 @@ class TestHRA(unittest.TestCase):
         self.assertEqual(result0, result1)
     
     def test_hra_decision_analytics(self):
-        result = self.hra.hra_decision_analytics("scene2.json", 2)
-        self.assertEqual(result, {'airway': [], 'saline lock': [], 'iv fluids': [], 'medications': ['exhaustive', 'take-the-best', 'tallying'], 'tranexamic acid': []})
+        with open("scene2.json", 'r+') as f:
+            self.data = json.load(f)
+        result = self.hra.hra_decision_analytics("scene2.json", data=self.data)
+        result = result['decision_hra_dict']['medications']
+        self.assertEqual(result, {'exhaustive': 1, 'one-bounce': 1, 'satisfactory': 1, 'take-the-best': 1, 'tallying': 1})
 
 if __name__ == '__main__':
     unittest.main()
