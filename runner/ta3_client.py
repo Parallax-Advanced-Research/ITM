@@ -26,7 +26,7 @@ class TA3Client:
     # Known arguments:
     # max_scenarios
     # kdma_training
-    def start_session(self, adm_name: str = 'TAD', session_type='test', **kwargs):
+    def start_session(self, adm_name: str = "TAD", session_type="soartech", **kwargs):
         self._session_id = self._api.start_session(adm_name, session_type, **kwargs)
 
     def start_scenario(self) -> Scenario:
@@ -37,11 +37,13 @@ class TA3Client:
         scen: Scenario = Scenario(
             name=ta3scen.name,
             id=ta3scen.id,
-            state=ta3scen.to_dict()['state'],
-            probes=[]
+            state=ta3scen.to_dict()["state"],
+            probes=[],
         )
 
-        at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
+        at: ta3.AlignmentTarget = self._api.get_alignment_target(
+            self._session_id, ta3scen.id
+        )
         kdmas: KDMAs = KDMAs([KDMA(kdma.kdma, kdma.value) for kdma in at.kdma_values])
         self._scenario = scen
         self._align_tgt = kdmas
@@ -55,10 +57,18 @@ class TA3Client:
         if state.scenario_complete:
             return None
 
-        _actions: list[ta3.Action] = self._api.get_available_actions(self._session_id, self._scenario.id)
+        _actions: list[ta3.Action] = self._api.get_available_actions(
+            self._session_id, self._scenario.id
+        )
         self._actions = {a.action_id: a for a in _actions}
         actions: list[Action] = [
-            Action(action.action_id, action.action_type, action.casualty_id, action.kdma_association, action.parameters)
+            Action(
+                action.action_id,
+                action.action_type,
+                action.casualty_id,
+                action.kdma_association,
+                action.parameters,
+            )
             for action in _actions
         ]
 
@@ -66,7 +76,7 @@ class TA3Client:
             id=f"{self._scenario.id}-{self._probe_count}",
             prompt="What do you do next?",
             state=state.to_dict(),
-            options=actions
+            options=actions,
         )
         self._probe_count += 1
 
@@ -78,7 +88,7 @@ class TA3Client:
             scenario_id=self._scenario.id,
             action_type=action.type,
             casualty_id=action.casualty,
-            parameters=action.params
+            parameters=action.params,
         )
 
         next_state = self._api.take_action(self._session_id, body=response)

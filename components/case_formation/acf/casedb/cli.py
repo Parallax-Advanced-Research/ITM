@@ -5,6 +5,13 @@ import random
 from app import create_app
 from app.case.models import CaseBase, Case
 from app.probe.models import Probe, ProbeResponse
+from app.analyze.models import (
+    ProbeToAnalyze,
+    MonteCarloAnalyzer,
+    BayesNetDiagnosisAnalyzer,
+    HeuristicRuleAnalyzer,
+    EventBasedDiagnosisAnalyzer,
+)
 
 app = create_app()
 app.app_context().push()
@@ -44,9 +51,14 @@ def listprobes():
 @cli.command()
 def randomprobe():
     """Get a random probe for testing"""
-    probes = Probe.query.all()
+    # get casebase id 2
+    case = Case.query.filter_by(casebase_id=2).first()
+    scenario = case.scenarios[0]
+    probes = scenario.probes
     random_probe = random.choice(probes)
-    click.echo(random_probe.prompt)
+    mc = MonteCarloAnalyzer()
+    probe_to_analyze = ProbeToAnalyze(random_probe, mc)
+    click.echo(probe_to_analyze.analyze())
 
 
 @cli.command()

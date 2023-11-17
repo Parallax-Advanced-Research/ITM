@@ -6,11 +6,12 @@ from runner import TA3Driver, TA3Client
 from util import logger, dict_difference
 from domain.ta3 import TA3State
 
+
 def clean_state(instate: TA3State) -> TA3State:
     copy = deepcopy(instate)
-    copy['actions_performed'] = list()
-    for act in instate['actions_performed']:
-        copy['actions_performed'] = act.to_json()
+    copy["actions_performed"] = list()
+    for act in instate["actions_performed"]:
+        copy["actions_performed"] = act.to_json()
     return copy
 
 
@@ -22,16 +23,17 @@ def main():
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
-            self.kedsd = False
+            self.hra = True
+            self.keds = False
             self.csv = True
             self.verbose = False
             self.bayes = False
             self.mc = True
             self.rollouts = 1000
             self.decision_verbose = False
-            self.variant = 'aligned'
+            self.variant = "aligned"
             self.training = True  # Added flag
+
     ta3args = TA3ARGS()
 
     # Initialize the drivers
@@ -39,9 +41,8 @@ def main():
     driver = TA3Driver(ta3args)
     client = TA3Client()
 
-
     # Set KDMA Trainiung to True to get kdma traimning mode from ta3 server
-    sid = client.start_session(f'TAD-Manual', kdma_training=True)
+    sid = client.start_session(f"TAD-Manual", kdma_training=True)
 
     # Iterate over all TA3 sessions until complete
     #  NOTE: If a session is interrupted, the TA3 server must be restarted

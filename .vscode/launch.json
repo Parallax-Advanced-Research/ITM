@@ -26,6 +26,16 @@
             "request": "attach",
             "port": 8080,
             "host": "localhost"
-        }
+        },
+        {
+            "name": "CLI",
+            "type": "python",
+            "request": "launch",
+            "program": "D:/Code/itm-local/components/case_formation/acf/casedb/cli.py",
+            "args": [
+                "randomprobe",
+            ],
+            "justMyCode": true
+        },
     ]
 }

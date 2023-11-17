@@ -131,6 +131,7 @@ class Injury(db.Model):
     injury_type = db.Column(String(50), nullable=True)
     injury_severity = db.Column(String(50), nullable=True)
     injury_location = db.Column(String(50), nullable=True)
+    # injury_treated = db.Column(Boolean, nullable=True, default=False)
     casualty_id = db.Column(Integer, ForeignKey("casualty.id"), nullable=True)
 
     def get_feature_dict(self):

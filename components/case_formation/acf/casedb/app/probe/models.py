@@ -4,11 +4,6 @@ from sqlalchemy import Integer, String, DateTime, ForeignKey, Text, Float, Boole
 import sys
 import importlib
 
-# give access to top level modules
-sys.path.append("../../../../")  # TODO: fix this hack
-
-import domain.internal as TAD
-
 
 class Probe(db.Model):
     __tablename__ = "probe"
@@ -66,9 +61,6 @@ class ProbeResponse(db.Model):
         return {
             "treatment": self.value,
         }
-
-    def as_tad_probe(self) -> TAD.TADProbe:
-        return TAD.TADProbe(self.probe_id, self.value, self.prompt)
 
     def get_parent_state(self):
         """
