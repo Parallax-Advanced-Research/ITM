@@ -274,21 +274,56 @@ class Case(db.Model):
                                     "NONDETERMINISM": "None",
                                 }
 
+                                if action_type_val == "CHECK_ALL_VITALS":
+                                    for metric in enumerate(metrics):
+                                        label = metric[1]
+                                        if label.find(casualty_name) != -1:
+                                            for key, value in metrics[label].items():
+                                                analysis_dict.update({key: value.value})
+
                             for parameter in response.actions[i].parameters:
                                 if parameter.parameter_type == "tag":
+                                    continue
                                     # the first dictionary in metrics
-                                    for metric in enumerate(metrics):
-                                        # the label of the first dictionary
-                                        label = metric[1]
-                                        # if the label contains the matching action type, it corresponds to the current tag action
-                                        # so this is the matching metrics dictionary
-                                        if label.find(parameter.parameter_value) != -1:
-                                            # extract inner dictionary
-                                            for key, value in metrics[label].items():
-                                                # add the inner dictionary to the tag dictionary
-                                                analysis_dict.update({key: value.value})
+                                    if do_analysis:
+                                        for metric in enumerate(metrics):
+                                            # the label of the first dictionary
+                                            label = metric[1]
+                                            # if the label contains the matching action type, it corresponds to the current tag action
+                                            # so this is the matching metrics dictionary
+                                            if (
+                                                label.find(parameter.parameter_value)
+                                                != -1
+                                            ):
+                                                # extract inner dictionary
+                                                for key, value in metrics[
+                                                    label
+                                                ].items():
+                                                    # add the inner dictionary to the tag dictionary
+                                                    analysis_dict.update(
+                                                        {key: value.value}
+                                                    )
                                     tag_dict.update(parameter.get_feature_dict())
                                 if parameter.parameter_type == "treatment":
+                                    if do_analysis:
+                                        # the second dictionary in metrics
+                                        for metric in enumerate(metrics):
+                                            # the label of the second dictionary
+                                            label = metric[1]
+                                            # if the label contains the matching action type, it corresponds to the current treatment action
+                                            # so this is the matching metrics dictionary
+                                            if (
+                                                label.find(parameter.parameter_value)
+                                                != -1
+                                            ):
+                                                # extract inner dictionary
+                                                for key, value in metrics[
+                                                    label
+                                                ].items():
+                                                    # add the inner dictionary to the treatment dictionary
+                                                    analysis_dict.update(
+                                                        {key: value.value}
+                                                    )
                                     treat_dict.update(parameter.get_feature_dict())
                                 if parameter.parameter_type == "location":
                                     location_dict.update(parameter.get_feature_dict())
