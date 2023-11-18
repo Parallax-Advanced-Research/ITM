@@ -70,7 +70,7 @@ def treatmentprobe():
     probes = Probe.query.filter_by(type="SelectTreatment").all()
     for probe in probes:
         click.echo(probe.prompt)
-    click.echo(probe.analyze())
+        click.echo(probe.analyze())
 
 
 @cli.command()

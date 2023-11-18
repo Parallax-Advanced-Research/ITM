@@ -17,6 +17,7 @@ from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAn
 from components.decision_analyzer.event_based_diagnosis import (
     EventBasedDiagnosisAnalyzer,
 )
+from components.elaborator.default import TA3Elaborator
 
 # import tinymed enums
 import components.decision_analyzer.monte_carlo.medsim.util.medsim_enums as tinymed_enums
@@ -255,7 +256,23 @@ class Probe(db.Model):
                 param_dict = {}
                 param_dict["casualty"] = casualty.name
                 for param in action.parameters:
-                    param_dict[param.parameter_type] = param.parameter_value
+                    # if is_mc and param.parameter_type == "treatment":
+                    #    param_dict[param.parameter_type] = tinymed_enums.Supplies[
+                    #        param.parameter_value
+                    #    ]
+                    if is_mc:
+                        if param.parameter_type == "treatment":
+                            tinymed_val = param_dict[
+                                param.parameter_type
+                            ] = tinymed_enums.Supplies[param.parameter_value].value
+                            param_dict[param.parameter_type] = tinymed_val
+                        if param.parameter_type == "location":
+                            tinymed_val = param_dict[
+                                param.parameter_type
+                            ] = tinymed_enums.Locations[param.parameter_value].value
+                            param_dict[param.parameter_type] = tinymed_val
+                    else:
+                        param_dict[param.parameter_type] = param.parameter_value
                 tad_action = TAD.Action(action.action_type, param_dict)
                 tad_decision = TAD.Decision(
                     id_="action1",
@@ -265,7 +282,7 @@ class Probe(db.Model):
                     kdmas=TAD.KDMAs(KDMAs),
                 )
                 decision_actions.append(tad_decision)
-                tad_probe.state.actions_performed = [tad_action]
+                tad_probe.state.actions_performed.append(tad_action)
 
         # remove duplicates when value.name and parameters are the same
         for decision_action in decision_actions:
@@ -283,7 +300,8 @@ class Probe(db.Model):
             decision_action.id_ = "action" + str(i + 1)
 
         tad_probe.decisions = decision_actions
-
+        # elaborator = TA3Elaborator().elaborate(tad_scenario, tad_probe)
+        decisions = tad_probe.decisions
         metrics = decision_analyzer.analyze(tad_scenario, tad_probe)
 
         return metrics
