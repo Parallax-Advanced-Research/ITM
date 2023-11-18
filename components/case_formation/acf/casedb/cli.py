@@ -57,9 +57,11 @@ def randomprobe():
     probes = scenario.probes
     random_probe = random.choice(probes)
     mc = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
-    probe_to_analyze = ProbeToAnalyze(random_probe, mc)
-    metrics = probe_to_analyze.analyze()
-    click.echo(metrics)
+    click.echo(random_probe.analyze(mc))
+    # mc = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
+    # probe_to_analyze = ProbeToAnalyze(random_probe, mc)
+    # metrics = probe_to_analyze.analyze()
+    # click.echo(metrics)
 
 
 @cli.command()
