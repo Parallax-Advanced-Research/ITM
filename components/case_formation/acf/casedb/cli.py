@@ -72,6 +72,9 @@ def analyze():
 
     casebase2 = CaseBase.query.filter_by(id=2).first()
     casebase2_df = casebase2.as_dataframe(feature_as_action=False, do_analysis=True)
+    print(casebase2_df.to_string())
+    # to csv
+    casebase2_df.to_csv("casebase2_with_da.csv")
 
 
 cli.add_command(listcasebase)

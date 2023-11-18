@@ -227,7 +227,10 @@ class Case(db.Model):
         for scenario in self.scenarios:
             for probe in scenario.probes:
                 if do_analysis:
-                    metrics = probe.analyze()
+                    try:
+                        metrics = probe.analyze()
+                    except:
+                        metrics = {}
                 case_dict.update(probe.get_feature_dict())
                 for response in probe.responses:
                     # case_dict.update(response.get_feature_dict())
@@ -280,12 +283,16 @@ class Case(db.Model):
                                         # if the label contains the matching action type, it corresponds to the current tag action
                                         # so this is the matching metrics dictionary
                                         if label.find(parameter.parameter_value) != -1:
-                                            analysis_dict.update(metrics[label])
+                                            # extract inner dictionary
+                                            for key, value in metrics[label].items():
+                                                # add the inner dictionary to the tag dictionary
+                                                analysis_dict.update({key: value.value})
                                     tag_dict.update(parameter.get_feature_dict())
                                 if parameter.parameter_type == "treatment":
                                     treat_dict.update(parameter.get_feature_dict())
                                 if parameter.parameter_type == "location":
                                     location_dict.update(parameter.get_feature_dict())
+                            case_dict.update(analysis_dict)
 
                             if feature_as_action:
                                 case_dict.update(tag_dict)
@@ -327,6 +334,7 @@ class Case(db.Model):
 
                     for kdma in response.kdmas:
                         case_dict.update(kdma.get_feature_dict())
+
                     case_dict_list.append(case_dict.copy())
 
         return case_dict_list
