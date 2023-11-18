@@ -4,14 +4,7 @@ import random
 # creates a context so SQLAlchemy can find the app and access the database
 from app import create_app
 from app.case.models import CaseBase, Case
-from app.probe.models import Probe, ProbeResponse
-from app.analyze.models import (
-    ProbeToAnalyze,
-    MonteCarloAnalyzer,
-    BayesNetDiagnosisAnalyzer,
-    HeuristicRuleAnalyzer,
-    EventBasedDiagnosisAnalyzer,
-)
+from app.probe.models import Probe, ProbeResponse, MonteCarloAnalyzer
 
 app = create_app()
 app.app_context().push()
