@@ -121,10 +121,10 @@ class CaseBase(db.Model):
     def evaluate():
         pass
 
-    def as_dataframe(self, feature_as_action):
+    def as_dataframe(self, feature_as_action, do_analysis=False):
         casebase_df = pd.DataFrame()
         for case in self.cases:
-            caselist = case.as_ta3dict_list(feature_as_action)
+            caselist = case.as_ta3dict_list(feature_as_action, do_analysis)
             case_df = pd.DataFrame(caselist)
             casebase_df = pd.concat([casebase_df, case_df])
         return casebase_df
@@ -221,7 +221,7 @@ class Case(db.Model):
                     # print(case_dict)
         return case_dict_list
 
-    def as_ta3dict_list(self, feature_as_action):
+    def as_ta3dict_list(self, feature_as_action, do_analysis):
         case_dict_list = []
         case_dict = {}
         for scenario in self.scenarios:
