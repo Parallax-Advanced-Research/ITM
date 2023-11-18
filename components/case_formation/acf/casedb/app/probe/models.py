@@ -224,7 +224,8 @@ class Probe(db.Model):
     def as_tad_scenario(self) -> TAD.Scenario:
         return convert_to_tad_scenario(self.scenario)
 
-    def analyze(self, decision_analyzer: DecisionAnalyzer):
+    def analyze(self):
+        decision_analyzer = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
         tad_scenario = self.as_tad_scenario()
         tad_probe = self.as_tad_probe(tad_scenario)
 
