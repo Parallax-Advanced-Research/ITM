@@ -232,6 +232,7 @@ class Case(db.Model):
                 for response in probe.responses:
                     # case_dict.update(response.get_feature_dict())
                     for i in range(len(response.actions)):
+                        casualty_name = response.actions[i].casualty.name
                         val = response.actions[i].get_feature_dict()
                         action_type = val["action_type"]
                         action = "action" + str(i + 1)
@@ -250,8 +251,36 @@ class Case(db.Model):
                                 "location": "None",
                             }
 
+                            analysis_dict = {}
+
+                            # the montecarlo values
+                            if do_analysis:
+                                # severity to dict
+                                analysis_dict = {
+                                    "SEVERITY": "None",
+                                    "SUPPLIES_REMAINING": "None",
+                                    "AVERAGE_TIME_USED": "None",
+                                    "DAMAGE_PER_SECOND": "None",
+                                    "MEDSIM_P_DEATH": "None",
+                                    "SEVERITY_CHANGE": "None",
+                                    "SUPPLIES_USED": "None",
+                                    "ACTION_TARGET_SEVERITY": "None",
+                                    "ACTION_TARGET_SEVERITY_CHANGE": "None",
+                                    "SEVEREST_SEVERITY": "None",
+                                    "SEVEREST_SEVERITY_CHANGE": "None",
+                                    "NONDETERMINISM": "None",
+                                }
+
                             for parameter in response.actions[i].parameters:
                                 if parameter.parameter_type == "tag":
+                                    # the first dictionary in metrics
+                                    for metric in enumerate(metrics):
+                                        # the label of the first dictionary
+                                        label = metric[1]
+                                        # if the label contains the matching action type, it corresponds to the current tag action
+                                        # so this is the matching metrics dictionary
+                                        if label.find(parameter.parameter_value) != -1:
+                                            analysis_dict.update(metrics[label])
                                     tag_dict.update(parameter.get_feature_dict())
                                 if parameter.parameter_type == "treatment":
                                     treat_dict.update(parameter.get_feature_dict())
@@ -274,13 +303,12 @@ class Case(db.Model):
                                         + location_dict["location"]
                                     }
                                 )
+
                             # case_dict.update(tag_dict)
                             # case_dict.update(treat_dict)
                             # case_dict.update(location_dict)
 
-                        case_dict.update(
-                            {"casualty_name": response.actions[i].casualty.name}
-                        )
+                        case_dict.update({"casualty_name": casualty_name})
                         case_dict.update(
                             {"casualty_age": response.actions[i].casualty.age}
                         )
