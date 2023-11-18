@@ -70,6 +70,15 @@ def randomtadprobe():
     click.echo(random_probe.value)
 
 
+@cli.command()
+def analyze():
+    """Analyze a probe response"""
+    # get casebase id 2
+
+    casebase2 = CaseBase.query.filter_by(id=2).first()
+    casebase2_df = casebase2.as_dataframe(feature_as_action=False)
+
+
 cli.add_command(listcasebase)
 cli.add_command(listcases)
 cli.add_command(listprobes)

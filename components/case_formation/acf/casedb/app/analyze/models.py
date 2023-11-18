@@ -2,7 +2,7 @@ import sys
 import typing
 
 from app.probe.models import Probe
-from app.scenario.models import Scenario
+
 
 # give access to top level modules
 # sys.path.append("../../../../")  # TODO: fix this hack
