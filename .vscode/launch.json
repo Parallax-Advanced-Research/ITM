@@ -33,7 +33,7 @@
             "request": "launch",
             "program": "D:/Code/itm-local/components/case_formation/acf/casedb/cli.py",
             "args": [
-                "analyze",
+                "treatmentprobe",
             ],
             "justMyCode": true
         },

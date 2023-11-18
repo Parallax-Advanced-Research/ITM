@@ -66,6 +66,14 @@ def randomtadprobe():
 
 
 @cli.command()
+def treatmentprobe():
+    probes = Probe.query.filter_by(type="SelectTreatment").all()
+    for probe in probes:
+        click.echo(probe.prompt)
+    click.echo(probe.analyze())
+
+
+@cli.command()
 def analyze():
     """Analyze a probe response"""
     # get casebase id 2
@@ -82,6 +90,7 @@ cli.add_command(listcases)
 cli.add_command(listprobes)
 cli.add_command(randomprobe)
 cli.add_command(randomtadprobe)
+cli.add_command(treatmentprobe)
 
 if __name__ == "__main__":
     cli()
