@@ -226,7 +226,8 @@ class Case(db.Model):
         case_dict = {}
         for scenario in self.scenarios:
             for probe in scenario.probes:
-                metrics = probe.analyze()
+                if do_analysis:
+                    metrics = probe.analyze()
                 case_dict.update(probe.get_feature_dict())
                 for response in probe.responses:
                     # case_dict.update(response.get_feature_dict())

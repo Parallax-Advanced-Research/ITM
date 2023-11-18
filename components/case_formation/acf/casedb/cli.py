@@ -71,7 +71,7 @@ def analyze():
     # get casebase id 2
 
     casebase2 = CaseBase.query.filter_by(id=2).first()
-    casebase2_df = casebase2.as_dataframe(feature_as_action=False, do_analysis=False)
+    casebase2_df = casebase2.as_dataframe(feature_as_action=False, do_analysis=True)
 
 
 cli.add_command(listcasebase)
