@@ -3,7 +3,11 @@ from datetime import datetime
 from sqlalchemy import Integer, String, DateTime, ForeignKey, Text, Float, Boolean
 import sys
 
-sys.path.append("D:\Code\itm-local")
+
+current_path = sys.path[0]
+sys.path.append(current_path + "/../../../../")
+
+
 import domain.internal as TAD
 import domain.ta3 as TA3
 from components import DecisionAnalyzer
