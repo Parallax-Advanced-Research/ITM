@@ -16,16 +16,9 @@ from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAn
 from components.decision_analyzer.event_based_diagnosis import (
     EventBasedDiagnosisAnalyzer,
 )
-import random
 
 # import tinymed enums
 import components.decision_analyzer.monte_carlo.medsim.util.medsim_enums as tinymed_enums
-
-T = typing.TypeVar("T")
-
-
-def normalize_enum(value, enum):
-    return enum(value).value
 
 
 # this is here instead of in the probe object so we can run the casebase outside of the TAD repo
@@ -286,97 +279,3 @@ class ProbeToAnalyze(Probe):
     @classmethod
     def __str__(self):
         return self.probe.prompt
-
-
-"""
-class ProbeConverter(db.TypeDecorator):
-    impl = db.String
-
-    def process_bind_param(self, value, dialect):
-        if value is None:
-            return None
-        return value.to_json()
-
-    def process_result_value(self, value, dialect):
-        if value is None:
-            return None
-        return Probe.from_json(value)
-
-
-class ProbeAnalysis:
-    __tablename__ = "probe_analysis"
-    id = db.Column(Integer, primary_key=True)
-    timestamp = db.Column(DateTime, nullable=True, default=datetime.utcnow)
-    created_by = db.Column(String(50), nullable=True)
-    probe_id = db.Column(String, nullable=True)
-    decision_metrics = db.relationship("DecisionMetric", backref="probe_analysis")
-
-
-class DecisionMetric(TAD.DecisionMetric[T]):
-    __tablename__ = "decision_metric"
-    id = db.Column(Integer, primary_key=True)
-    timestamp = db.Column(DateTime, nullable=True, default=datetime.utcnow)
-    created_by = db.Column(String(50), nullable=True)
-    name = db.Column(String(50), nullable=True)
-    description = db.Column(String(50), nullable=True)
-    value = db.Column(String(50), nullable=True)
-    probe_analysis_id = db.Column(
-        Integer, ForeignKey("probe_analysis.id"), nullable=True
-    )
-
-    def as_tad(self) -> TAD.DecisionMetric[T]:
-        return TAD.DecisionMetric(self.name, self.description, self.value)
-
-    def __init__(self, name: str, description: str, value: T):
-        self.name: str = name
-        self.description: str = description
-        self.value: T = value
-
-
-class Decision(TAD.Decision):
-    __tablename__ = "decision"
-
-    def __init__(
-        self,
-        id_: str,
-        value: T,
-        justifications: list[TAD.Justification] = (),
-        metrics: typing.Mapping[TAD.DecisionName, TAD.DecisionMetric] = None,
-        kdmas: TAD.KDMAs = None,
-    ):
-        self.id_: str = id_
-        self.value: T = value
-        self.justifications: list[TAD.Justification] = justifications
-        self.metrics: TAD.DecisionMetrics = Dict_No_Overwrite()
-        if metrics:
-            self.metrics.update(metrics)
-        self.kdmas: TAD.KDMAs | None = kdmas
-
-
-class Action(TAD.Action):
-    __tablename__ = "action"
-
-    def __init__(self, name_: str, params: dict[str, typing.Any]):
-        self.name: str = name_
-        self.params: dict[str, typing.Any] = params
-
-    def __str__(self):
-        return f"{self.name}({','.join(self.params.values())})"
-
-    def to_json(self):
-        d = dict()
-
-        def get_params(params):
-            dd = {}
-            for param in self.params:
-                dd[param] = params[param]
-            return dd
-
-        d["name"] = self.name
-        d["params"] = get_params(self.params)
-        return d
-
-    # This makes it so that actions can be shown in the logger nicer
-    # def __repr__(self):
-    #     return self.__str__()
-"""
