@@ -283,7 +283,6 @@ class Case(db.Model):
 
                             for parameter in response.actions[i].parameters:
                                 if parameter.parameter_type == "tag":
-                                    continue
                                     # the first dictionary in metrics
                                     if do_analysis:
                                         for metric in enumerate(metrics):
