@@ -233,6 +233,7 @@ class Probe(db.Model):
     def analyze(self):
         decision_analyzer = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
         bn_analyzer = BayesNetDiagnosisAnalyzer()
+        hra_analyzer = HeuristicRuleAnalyzer()
         tad_scenario = self.as_tad_scenario()
         tad_probe = self.as_tad_probe(tad_scenario)
 
@@ -289,7 +290,8 @@ class Probe(db.Model):
 
         metrics = decision_analyzer.analyze(tad_scenario, tad_probe)
         bn_metrics = bn_analyzer.analyze(tad_scenario, tad_probe)
-        return metrics, bn_metrics
+        hra_metrics = hra_analyzer.analyze(tad_scenario, tad_probe)
+        return metrics, bn_metrics, hra_metrics
 
     def save(self):
         db.session.add(self)
