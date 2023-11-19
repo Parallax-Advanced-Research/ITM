@@ -228,9 +228,11 @@ class Case(db.Model):
             for probe in scenario.probes:
                 if do_analysis:
                     try:
-                        metrics = probe.analyze()
+                        metrics, bn_metrics = probe.analyze()
                     except:
                         metrics = {}
+                        bn_metrics = {}
+
                 case_dict.update(probe.get_feature_dict())
                 for response in probe.responses:
                     # case_dict.update(response.get_feature_dict())
@@ -280,6 +282,19 @@ class Case(db.Model):
                                         if label.find(casualty_name) != -1:
                                             for key, value in metrics[label].items():
                                                 analysis_dict.update({key: value.value})
+
+                                current_bn_action = bn_metrics[action]
+                                bn_dict = {
+                                    "pDeath": "None",
+                                    "pPain": "None",
+                                    "pBrainInjury": "None",
+                                    "pAirwayBlocked": "None",
+                                    "pInternalBleeding": "None",
+                                    "pExternalBleeding": "None",
+                                }
+                                for key, value in current_bn_action.items():
+                                    bn_dict.update({key: value.value})
+                                case_dict.update(bn_dict)
 
                             for parameter in response.actions[i].parameters:
                                 if parameter.parameter_type == "tag":

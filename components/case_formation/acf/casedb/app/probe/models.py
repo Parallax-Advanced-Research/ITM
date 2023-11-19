@@ -12,7 +12,9 @@ import domain.internal as TAD
 import domain.ta3 as TA3
 from components import DecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
-from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
+from components.decision_analyzer.bayesian_network.bn_analyzer import (
+    BayesNetDiagnosisAnalyzer,
+)
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from components.decision_analyzer.event_based_diagnosis import (
     EventBasedDiagnosisAnalyzer,
@@ -230,6 +232,7 @@ class Probe(db.Model):
 
     def analyze(self):
         decision_analyzer = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
+        bn_analyzer = BayesNetDiagnosisAnalyzer()
         tad_scenario = self.as_tad_scenario()
         tad_probe = self.as_tad_probe(tad_scenario)
 
@@ -285,8 +288,8 @@ class Probe(db.Model):
         tad_probe.decisions = decision_actions
 
         metrics = decision_analyzer.analyze(tad_scenario, tad_probe)
-
-        return metrics
+        bn_metrics = bn_analyzer.analyze(tad_scenario, tad_probe)
+        return metrics, bn_metrics
 
     def save(self):
         db.session.add(self)
