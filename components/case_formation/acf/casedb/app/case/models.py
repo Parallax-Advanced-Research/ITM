@@ -298,6 +298,13 @@ class Case(db.Model):
                                         bn_dict.update({key: value.value})
                                 case_dict.update(bn_dict)
 
+                                hra_dict = {}
+                                if action in hra_metrics:
+                                    current_hra_action = hra_metrics[action]
+                                    for key, value in current_hra_action.items():
+                                        hra_dict.update({key: value.value})
+                                case_dict.update(hra_dict)
+
                             for parameter in response.actions[i].parameters:
                                 if parameter.parameter_type == "tag":
                                     # the first dictionary in metrics
