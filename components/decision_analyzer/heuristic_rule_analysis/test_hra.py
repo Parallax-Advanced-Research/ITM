@@ -67,11 +67,17 @@ class TestHRA(unittest.TestCase):
         result1 = result1[0], result1[1]
         self.assertEqual(result0, result1)
 
+    # satisfactory rand predictors:  [3, 1, 0, 2] when random seed = 0
     def test_satisfactory_one_treatment_space(self):
-        result = self.hra.satisfactory("scene_one_treatment.json", 2)
+        result = self.hra.satisfactory("scene_one_treatment.json", m=2)
         result = result[0], result[1]
         self.assertEqual(result, ("iv fluids", {"risk_reward_ratio": "low", "resources": "some", "time": "seconds",
                                                 "system": ["vascular", "renal"]}))
+
+    def test_satisfactory_two_predictor(self):
+        result = self.hra.satisfactory("scene2.json", m=2)
+        result = result[0], result[1]
+        self.assertEqual(result, ("medications", {"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"all"}))
 
     def test_satisfactory_no_preference(self):
         result = self.hra.satisfactory("scene_no_preference.json", 2)

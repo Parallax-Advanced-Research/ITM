@@ -488,12 +488,13 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - data: a dictionary with the same info as file_name that may used instead of file_name
     - m, where 0 < m <= M, is the size of the set of predictors to consider when comparing 2 treatments
 
-    output: decision
+    output: 
+    - decision
     '''
 
-    def satisfactory(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> SelectedTreatment:
+    def satisfactory(self, file_name: str, m: int, seed=None, data: dict=None) -> SelectedTreatment:
 
-        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+        if (type(file_name) is not str or len(file_name) == 0) and (type(data) is not dict or data is None): raise AttributeError(
             "No info to process")
         if not (isinstance(m, numbers.Number) and m > 0): raise AttributeError("Bad value for m")
 
@@ -519,6 +520,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # select random set of m predictors
         predictor_idx = list(data['predictors']['relevance'])
         rand_predictor_idx = random.sample(range(0, len(predictor_idx)), len(predictor_idx))
+        print("rand predictors: ", rand_predictor_idx)# debug
 
         # prepare variables for comparisons
         treatment_pairs = self.make_dspace_permutation_pairs(len(treatment_idx))
@@ -1019,8 +1021,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                             seed=rand_seed)
         decision_hra[tallying_result[0]]['tallying'] += 1
 
-        satisfactory_result = self.satisfactory(new_file, m, seed=rand_seed,
-                                                search_path=search_path, data=data)
+        satisfactory_result = self.satisfactory(new_file, m, seed=rand_seed, data=data)
         decision_hra[satisfactory_result[0]]['satisfactory'] += 1
 
         one_bounce_result = self.one_bounce(new_file, m, k, search_path=search_path, data=data)
