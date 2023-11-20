@@ -259,7 +259,17 @@ class Probe(db.Model):
                 param_dict = {}
                 param_dict["casualty"] = casualty.name
                 for param in action.parameters:
-                    param_dict[param.parameter_type] = param.parameter_value
+                    if param.parameter_type == "treatment":
+                        param_dict[param.parameter_type] = tinymed_enums.Supplies[
+                            param.parameter_value
+                        ].value
+                    elif param.parameter_type == "location":
+                        param_dict[param.parameter_type] = tinymed_enums.Locations[
+                            param.parameter_value
+                        ].value
+                    else:
+                        param_dict[param.parameter_type] = param.parameter_value
+
                 tad_action = TAD.Action(action.action_type, param_dict)
                 tad_decision = TAD.Decision(
                     id_="action1",
@@ -289,9 +299,9 @@ class Probe(db.Model):
         tad_probe.decisions = decision_actions
 
         metrics = decision_analyzer.analyze(tad_scenario, tad_probe)
-        bn_metrics = bn_analyzer.analyze(tad_scenario, tad_probe)
-        hra_metrics = hra_analyzer.analyze(tad_scenario, tad_probe)
-        return metrics, bn_metrics, hra_metrics
+        # bn_metrics = bn_analyzer.analyze(tad_scenario, tad_probe)
+        # hra_metrics = hra_analyzer.analyze(tad_scenario, tad_probe)
+        return metrics  # , bn_metrics, hra_metrics
 
     def save(self):
         db.session.add(self)

@@ -45,16 +45,15 @@ def listprobes():
 def randomprobe():
     """Get a random probe for testing"""
     # get casebase id 2
-    case = Case.query.filter_by(casebase_id=2).first()
-    scenario = case.scenarios[0]
-    probes = scenario.probes
-    random_probe = random.choice(probes)
 
-    click.echo(random_probe.analyze())
-    # mc = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
-    # probe_to_analyze = ProbeToAnalyze(random_probe, mc)
-    # metrics = probe_to_analyze.analyze()
-    # click.echo(metrics)
+    # casebase2 = Case.query.filter_by(casebase_id=2).first()
+    # case = Case.query.filter_by(id=1).first()
+    # probes = case.scenarios[0].probes
+    treatment_probes = Probe.query.filter_by(type="SelectTreatment").all()
+    random_probe = random.choice(treatment_probes)
+    a = random_probe.analyze()
+    click.echo(random_probe.type)
+    click.echo(a)
 
 
 @cli.command()
