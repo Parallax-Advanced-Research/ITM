@@ -66,7 +66,29 @@ class TestHRA(unittest.TestCase):
         result1 = self.hra.exhaustive("scene2.json")
         result1 = result1[0], result1[1]
         self.assertEqual(result0, result1)
-    
+
+    def test_satisfactory_one_treatment_space(self):
+        result = self.hra.satisfactory("scene_one_treatment.json", 2)
+        result = result[0], result[1]
+        self.assertEqual(result, ("iv fluids", {"risk_reward_ratio": "low", "resources": "some", "time": "seconds",
+                                                "system": ["vascular", "renal"]}))
+
+    def test_satisfactory_no_preference(self):
+        result = self.hra.satisfactory("scene_no_preference.json", 2)
+        result = result[0], result[1]
+        self.assertEqual(result, ("no preference", {}))
+
+    def test_one_bounce_one_treatment_space(self):
+        result = self.hra.one_bounce("scene_one_treatment.json", 2, 1)
+        result = result[0], result[1]
+        self.assertEqual(result, ("iv fluids", {"risk_reward_ratio": "low", "resources": "some", "time": "seconds",
+                                                "system": ["vascular", "renal"]}))
+
+    def test_one_bounce_no_preference(self):
+        result = self.hra.one_bounce("scene_no_preference.json", 2, 1)
+        result = result[0], result[1]
+        self.assertEqual(result, ("no preference", {}))
+
     def test_hra_decision_analytics(self):
         with open("scene2.json", 'r+') as f:
             self.data = json.load(f)
