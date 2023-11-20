@@ -15,6 +15,7 @@ from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.bayesian_network.bn_analyzer import (
     BayesNetDiagnosisAnalyzer,
 )
+from components.elaborator.default.ta3_elaborator import TA3Elaborator
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from components.decision_analyzer.event_based_diagnosis import (
     EventBasedDiagnosisAnalyzer,
@@ -41,7 +42,8 @@ def convert_to_ta3_injury(Injury) -> TA3.Injury:
     # severity          # severity          # injury_severity
     # treated           # treated           # -----
 
-    injury_location = Injury.injury_location
+    injury_location = Injury.injury_location.replace("_", " ").lower()
+
     injury_name = Injury.injury_type
     injury_severity = float(Injury.injury_severity)
     injury_treated = False  # TODO: change to a real value
@@ -282,7 +284,7 @@ class Probe(db.Model):
                 tad_probe.state.actions_performed = [tad_action]
 
         # remove duplicates when value.name and parameters are the same
-        for decision_action in decision_actions:
+        """ for decision_action in decision_actions:
             for other_decision_action in decision_actions:
                 if (
                     decision_action.value.name == other_decision_action.value.name
@@ -291,7 +293,7 @@ class Probe(db.Model):
                     and decision_action != other_decision_action
                 ):
                     decision_actions.remove(other_decision_action)
-
+        """
         # renumber the decision_actions consecutively
         for i, decision_action in enumerate(decision_actions):
             decision_action.id_ = "action" + str(i + 1)
