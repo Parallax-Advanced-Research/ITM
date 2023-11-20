@@ -79,7 +79,7 @@ def convert_to_ta3_demographics(Casualty) -> TA3.Demographics:
     # [sex]             # sex               # sex
     # relationship_type
 
-    casualty_age = Casualty.age
+    casualty_age = 22  # Casualty.age
     casualty_sex = Casualty.sex
     casualty_rank = Casualty.rank
 
@@ -262,10 +262,15 @@ class Probe(db.Model):
                 param_dict["casualty"] = casualty.name
                 for param in action.parameters:
                     if param.parameter_type == "treatment":
+                        param.parameter_value = param.parameter_value.replace(
+                            " ", "_"
+                        ).upper()
                         param_dict[param.parameter_type] = tinymed_enums.Supplies[
                             param.parameter_value
                         ].value
                     elif param.parameter_type == "location":
+                        if param.parameter_value == "":
+                            param.parameter_value = "UNSPECIFIED"
                         param_dict[param.parameter_type] = tinymed_enums.Locations[
                             param.parameter_value
                         ].value
@@ -284,7 +289,7 @@ class Probe(db.Model):
                 tad_probe.state.actions_performed = [tad_action]
 
         # remove duplicates when value.name and parameters are the same
-        """ for decision_action in decision_actions:
+        for decision_action in decision_actions:
             for other_decision_action in decision_actions:
                 if (
                     decision_action.value.name == other_decision_action.value.name
@@ -293,7 +298,7 @@ class Probe(db.Model):
                     and decision_action != other_decision_action
                 ):
                     decision_actions.remove(other_decision_action)
-        """
+
         # renumber the decision_actions consecutively
         for i, decision_action in enumerate(decision_actions):
             decision_action.id_ = "action" + str(i + 1)
@@ -303,7 +308,7 @@ class Probe(db.Model):
         metrics = decision_analyzer.analyze(tad_scenario, tad_probe)
         bn_metrics = bn_analyzer.analyze(tad_scenario, tad_probe)
         hra_metrics = hra_analyzer.analyze(tad_scenario, tad_probe)
-        return metrics, bn_metrics, hra_metrics
+        return (metrics, bn_metrics, hra_metrics)
 
     def save(self):
         db.session.add(self)
