@@ -301,9 +301,9 @@ class Probe(db.Model):
         tad_probe.decisions = decision_actions
 
         metrics = decision_analyzer.analyze(tad_scenario, tad_probe)
-        # bn_metrics = bn_analyzer.analyze(tad_scenario, tad_probe)
-        # hra_metrics = hra_analyzer.analyze(tad_scenario, tad_probe)
-        return metrics  # , bn_metrics, hra_metrics
+        bn_metrics = bn_analyzer.analyze(tad_scenario, tad_probe)
+        hra_metrics = hra_analyzer.analyze(tad_scenario, tad_probe)
+        return metrics, bn_metrics, hra_metrics
 
     def save(self):
         db.session.add(self)
