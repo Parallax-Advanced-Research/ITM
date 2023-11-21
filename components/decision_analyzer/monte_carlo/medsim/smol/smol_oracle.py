@@ -152,7 +152,6 @@ def update_morbidity_calculations(cas: Casualty):
     cas.prob_bleedout = calc_prob_bleedout(cas)
     cas.prob_asphyxia = calc_prob_asphyx(cas)
     cas.prob_burndeath = calc_prob_burndeath(cas)
-    cas.prob_shock = calc_prob_shock(cas)
     cas.prob_death = calc_prob_death(cas)
     cas.prob_triss_death = calc_TRISS_deathP(cas)
 
@@ -206,71 +205,8 @@ def calc_prob_burndeath(cas: Casualty) -> float:
         return cas.CRITICAL_P_BLEEDOUT
 
 
-def calc_burn_tbsa(cas: Casualty):
-    burn_locations = {}
-    for inj in cas.injuries:
-        if inj.is_burn:
-            burn_locations[inj.location] = inj.severity
-
-    burn_coverage = 0
-    body_area = 0
-    for location in location_surface_areas:
-        # Don't consider location if amputated
-        skip = False
-        for injury in cas.injuries:
-            # TODO: Make sure this way of checking for amputations is valid
-            if injury.location == location and injury.name == Injuries.AMPUTATION.value:
-                skip = True
-                break
-        if skip:
-            continue
-
-        sa = location_surface_areas[location]
-        body_area += sa
-        if location in burn_locations:
-            burn_coverage += sa * burn_locations[location]
-
-    return burn_coverage / body_area
-
-
-def has_sufficient_hydration(cas: Casualty, tbsa: float = None) -> bool:
-    if tbsa is None:
-        tbsa = calc_burn_tbsa(cas)
-    # TODO: get hydration rate based on treatment actions
-    hydration_rate = 0  # mL/hr
-    # https://www.osmosis.org/answers/parkland-formula
-    parkland_24h_total = 4 * (tbsa * 100) * 90  # TODO: get better weight estimate
-    required_hydration = parkland_24h_total / 16  # 1/2 of parkland total over 8h
-    return hydration_rate > required_hydration
-
-
-def calc_prob_shock(cas: Casualty) -> float:
-    return 0  # TODO- Once burning and burn shock is implemented remove this, right now it just effects bleed/breath
-    shock_factors = [0]
-    # Burn shock
-    tbsa = calc_burn_tbsa(cas)
-    if tbsa > .1:
-        pbi = tbsa * 100 + cas.demographics.age
-        if has_sufficient_hydration(cas):
-            if pbi >= 105:
-                shock_factors.append(1)
-            if pbi >= 90:
-                shock_factors.append(.5 + ((pbi - 90) / 15) * .4)
-            else:
-                shock_factors.append(tbsa * 100 / pbi * .5)
-        else:  # TODO: try to find better sources for untreated burns
-            if pbi > 80:
-                shock_factors.append(1)
-            if pbi > 60:
-                shock_factors.append(.9)
-            else:
-                shock_factors.append(tbsa / pbi * .9)
-    return max(shock_factors)
-
-
 def calc_prob_death(cas: Casualty):
-    no_death = ((1 - calc_prob_bleedout(cas)) * (1 - calc_prob_asphyx(cas)) *
-                (1 - calc_prob_shock(cas) * (1 - calc_prob_burndeath(cas))))
+    no_death = ((1 - calc_prob_bleedout(cas)) * (1 - calc_prob_asphyx(cas)) * (1 - calc_prob_burndeath(cas)))
     return min(1 - no_death, 1.0)
 
 
@@ -426,9 +362,7 @@ def update_bleed_breath(inj: Injury, effect: InjuryUpdate, time_elapsed: float,
         if effect_key == SmolSystems.BURNING.value:
             inj.burn_hp_lost += (effect_value * time_elapsed) if not inj.treated else 0.0
             inj.burning_effect = effect_dict[effect_key]
-    inj.severity = ((inj.blood_lost_ml / Injury.STANDARD_BODY_VOLUME) +
-                    (inj.breathing_hp_lost / Injury.STANDARD_BODY_VOLUME) +
-                    (inj.burn_hp_lost/Injury.STANDARD_BODY_VOLUME) + inj.base_severity)
+    inj.severity = inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost
     inj.damage_per_second = (inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost) / time_elapsed if time_elapsed else 0.0
     if treated:
         inj.treated = True
@@ -436,11 +370,4 @@ def update_bleed_breath(inj: Injury, effect: InjuryUpdate, time_elapsed: float,
 
 
 def calculate_injury_severity(inj: Injury) -> float:
-    return (inj.blood_lost_ml / Injury.STANDARD_BODY_VOLUME) + (inj.breathing_hp_lost / Injury.STANDARD_BODY_VOLUME) + inj.base_severity
-
-
-def update_burn_severity(inj: Injury, treated=False):
-    # Assumes burn is being treated with gauze
-    if inj.is_burn and treated and not inj.treated:
-        inj.treated = True
-        # We never decrease severity, not sure how to do burns yet. self.severity *= .8 # TODO: get better estimate
+    return inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost

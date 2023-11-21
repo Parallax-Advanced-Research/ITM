@@ -7,7 +7,7 @@ from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric,
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.util.sort_functions import injury_to_dps
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
-                                                                               SimulatorName, MetricSet)
+                                                                               SimulatorName, MetricSet, Actions)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calc_prob_death, calculate_injury_severity
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
@@ -324,11 +324,15 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
                 decision.metrics.update(bm)
                 analysis[decision_str].update(bm)
                 value = list(bm.values())[0]
+                if decision_str == Actions.END_SCENARIO.value + "_":
+                    continue  # Dont want this averaged in
                 if value.name not in all_decision_metrics.keys():
                     all_decision_metrics[value.name] = list()
                 all_decision_metrics[value.name].append(value.value)
         dj = DecisionJustifier(all_decision_metrics)
         for decision in probe.decisions:
+            if decision.value.name == Actions.END_SCENARIO.value:
+                continue  # This is a zero time action and not really interesting..like an "I quit"
             dmetrics = decision.metrics
             justifications = []
             for metric in dj.get_metric_names():
@@ -337,4 +341,6 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
                 justification = dj.generate_justification(metric, dmetrics[metric], decision.value)
                 justifications.append(justification)
             decision.justifications = justifications
+            decision_str = decision_to_actstr(decision)
+            analysis[decision_str]['justifications'] = justifications
         return analysis
