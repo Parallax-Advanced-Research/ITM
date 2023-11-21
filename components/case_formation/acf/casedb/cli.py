@@ -59,17 +59,22 @@ def randomprobe():
 @click.command()
 def compare():
     """Compare two probes from different casebases"""
+
     casebase_1 = CaseBase.query.filter_by(id=1).first()
-    casebase_2 = CaseBase.query.filter_by(id=2).first()
+    casebase1_df = casebase_1.as_dataframe(feature_as_action=False, do_analysis=True)
+
+    casebase1_df.to_csv("casebase1_with_da.csv")
+
+    # casebase_2 = CaseBase.query.filter_by(id=2).first()
 
     # casebase 1 probe
-    casebase_1_case = Case.query.filter_by(casebase_id=1).first()
-    casebase_1_probe = casebase_1_case.scenarios[0].probes[0]
-    click.echo(casebase_1_probe.analyze())
+    # casebase_1_case = Case.query.filter_by(casebase_id=1).first()
+    # casebase_1_probe = casebase_1_case.scenarios[0].probes[0]
+    # click.echo(casebase_1_probe.analyze())
 
-    casebase_2_case = Case.query.filter_by(casebase_id=2).first()
-    casebase_2_probe = casebase_2_case.scenarios[0].probes[0]
-    click.echo(casebase_2_probe.analyze())
+    # casebase_2_case = Case.query.filter_by(casebase_id=2).first()
+    # casebase_2_probe = casebase_2_case.scenarios[0].probes[0]
+    # click.echo(casebase_2_probe.analyze())
 
 
 @cli.command()
