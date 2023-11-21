@@ -520,7 +520,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # select random set of m predictors
         predictor_idx = list(data['predictors']['relevance'])
         rand_predictor_idx = random.sample(range(0, len(predictor_idx)), len(predictor_idx))
-        print("rand predictors: ", rand_predictor_idx)# debug
 
         # prepare variables for comparisons
         treatment_pairs = self.make_dspace_permutation_pairs(len(treatment_idx))
