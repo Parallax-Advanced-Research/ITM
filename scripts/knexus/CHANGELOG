@@ -17,6 +17,7 @@ V KR 1.8.13 (11/22 before Thanksgiving)
 > Decisions in analysis are now sorted by SortableDecision class
 > Removed end_scenario action from comparisons because of unintrestingness
 > Refactored monte carlo analyzer to use helper util module
+> Dynamically setting vitals like max blood/breath hp based on the demographics of the casualty 
 
 V KR 1.8.12 (11/20 week begin)
 =======================

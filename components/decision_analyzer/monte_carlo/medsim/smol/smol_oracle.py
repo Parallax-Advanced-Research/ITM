@@ -161,13 +161,13 @@ def calc_prob_bleedout(cas: Casualty) -> float:
     total_blood_lost = 0
     for inj in cas.injuries:
         total_blood_lost += inj.blood_lost_ml
-    if total_blood_lost / cas.MAX_BLOOD_ML < cas.BLEEDOUT_CHANCE_NONE:  # < 15%
+    if total_blood_lost / cas.max_blood_ml < cas.BLEEDOUT_CHANCE_NONE:  # < 15%
         return cas.NO_P_BLEEDOUT
-    elif total_blood_lost / cas.MAX_BLOOD_ML < cas.BLEEDOUT_CHANCE_LOW:  # 15-30%
+    elif total_blood_lost / cas.max_blood_ml < cas.BLEEDOUT_CHANCE_LOW:  # 15-30%
         return cas.LOW_P_BLEEDOUT
-    elif total_blood_lost / cas.MAX_BLOOD_ML < cas.BLEEDOUT_CHANCE_MED:  # 30-40%
+    elif total_blood_lost / cas.max_blood_ml < cas.BLEEDOUT_CHANCE_MED:  # 30-40%
         return cas.MED_P_BLEEDOUT
-    elif total_blood_lost / cas.MAX_BLOOD_ML < cas.BLEEDOUT_CHANCE_HIGH:  # 40-50%
+    elif total_blood_lost / cas.max_blood_ml < cas.BLEEDOUT_CHANCE_HIGH:  # 40-50%
         return cas.HIGH_P_BLEEDOUT
     else:
         return cas.CRITICAL_P_BLEEDOUT
@@ -177,13 +177,13 @@ def calc_prob_asphyx(cas: Casualty) -> float:
     total_breath_hp_lost = 0
     for inj in cas.injuries:
         total_breath_hp_lost += inj.breathing_hp_lost
-    if total_breath_hp_lost / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_NONE:  # < 15%
+    if total_breath_hp_lost / cas.max_breath_hp < cas.BLEEDOUT_CHANCE_NONE:  # < 15%
         return cas.NO_P_BLEEDOUT
-    elif total_breath_hp_lost / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_LOW:  # 15-30%
+    elif total_breath_hp_lost / cas.max_breath_hp < cas.BLEEDOUT_CHANCE_LOW:  # 15-30%
         return cas.LOW_P_BLEEDOUT
-    elif total_breath_hp_lost / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_MED:  # 30-40%
+    elif total_breath_hp_lost / cas.max_breath_hp < cas.BLEEDOUT_CHANCE_MED:  # 30-40%
         return cas.MED_P_BLEEDOUT
-    elif total_breath_hp_lost / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_HIGH:  # 40-50%
+    elif total_breath_hp_lost / cas.max_breath_hp < cas.BLEEDOUT_CHANCE_HIGH:  # 40-50%
         return cas.HIGH_P_BLEEDOUT
     else:
         return cas.CRITICAL_P_BLEEDOUT
@@ -193,13 +193,13 @@ def calc_prob_burndeath(cas: Casualty) -> float:
     burn_damage = 0
     for inj in cas.injuries:
         burn_damage += inj.burn_hp_lost
-    if burn_damage / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_NONE:  # < 15%
+    if burn_damage / cas.MAX_BURN_HP < cas.BLEEDOUT_CHANCE_NONE:  # < 15%
         return cas.NO_P_BLEEDOUT
-    elif burn_damage / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_LOW:  # 15-30%
+    elif burn_damage / cas.MAX_BURN_HP < cas.BLEEDOUT_CHANCE_LOW:  # 15-30%
         return cas.LOW_P_BLEEDOUT
-    elif burn_damage / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_MED:  # 30-40%
+    elif burn_damage / cas.MAX_BURN_HP < cas.BLEEDOUT_CHANCE_MED:  # 30-40%
         return cas.MED_P_BLEEDOUT
-    elif burn_damage / cas.MAX_BREATH_HP < cas.BLEEDOUT_CHANCE_HIGH:  # 40-50%
+    elif burn_damage / cas.MAX_BURN_HP < cas.BLEEDOUT_CHANCE_HIGH:  # 40-50%
         return cas.HIGH_P_BLEEDOUT
     else:
         return cas.CRITICAL_P_BLEEDOUT

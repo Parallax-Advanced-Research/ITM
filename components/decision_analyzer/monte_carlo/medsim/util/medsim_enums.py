@@ -63,8 +63,6 @@ class Vitals:
 
 
 class Casualty:
-    MAX_BLOOD_ML = 5000
-    MAX_BREATH_HP = 5000
     MAX_BURN_HP = 5000
     BLEEDOUT_CHANCE_NONE = 0.15
     BLEEDOUT_CHANCE_LOW = 0.3
@@ -95,6 +93,14 @@ class Casualty:
         self.prob_shock: float = 0.0
         self.prob_death: float = 0.0
         self.prob_triss_death: float = 0.0
+
+        self.max_blood_ml = 5700 if demographics.sex == 'M' else 4300
+        if demographics.rank == 'Marine':
+            self.max_breath_hp = 6000
+        elif demographics.rank == 'Officer':
+            self.max_breath_hp = 5500
+        else:
+            self.max_breath_hp = 5000
 
     def __str__(self):
         retstr = "%s_" % self.id
