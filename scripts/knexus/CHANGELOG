@@ -9,6 +9,15 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
+V KR 1.8.13 (11/22 before Thanksgiving)
+=======================
+> Adjust severity to not be divided by total so decimals are visible
+> Fixed numberic names rendering incorrectly in decision justifications
+> Added justification to analysis dict, returns from driver
+> Decisions in analysis are now sorted by SortableDecision class
+> Removed end_scenario action from comparisons because of unintrestingness
+> Refactored monte carlo analyzer to use helper util module
+
 V KR 1.8.12 (11/20 week begin)
 =======================
 > Probability death triss calculated

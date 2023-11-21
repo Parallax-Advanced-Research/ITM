@@ -50,8 +50,11 @@ class Driver:
         return self.elaborator.elaborate(self.scenario, probe)
 
     def analyze(self, probe: TADProbe):
+        analysis = {}
         for analyzer in self.analyzers:
-            analyzer.analyze(self.scenario, probe)
+            this_analysis = analyzer.analyze(self.scenario, probe)
+            analysis.update(this_analysis)
+        return analysis
 
     def select(self, probe: TADProbe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
@@ -74,7 +77,7 @@ class Driver:
 
         # Elaborate decisions, and analyze them
         probe.decisions = self.elaborate(probe)  # Probe.decisions changes from valid to invalid here
-        self.analyze(probe)
+        analysis = self.analyze(probe)
 
         # Print info affecting decisions
         index: int = 0

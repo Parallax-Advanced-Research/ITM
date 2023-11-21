@@ -315,3 +315,4 @@ def generate_decision_justifications(dj: Decision, decision: DecisionJustifier):
             continue
         justification = dj.generate_justification(metric, dmetrics[metric], decision.value)
         justifications.append(justification)
+    return justifications
