@@ -9,11 +9,14 @@ import numpy as np
 class SortableDecision:
     def __init__(self, d: Decision):
         self.id = d.id_
-        self.dps = d.metrics[Metric.DAMAGE_PER_SECOND.value].value
-        self.severity = d.metrics[Metric.SEVERITY.value].value
-        self.severity_change = d.metrics[Metric.SEVERITY_CHANGE.value].value
-        self.resources_remaining = d.metrics[Metric.SUPPLIES_REMAINING.value].value
-        self.time_taken = d.metrics[Metric.AVERAGE_TIME_USED.value].value
+        if Metric.DAMAGE_PER_SECOND.value not in list(d.metrics.keys()):
+            self.dps, self.severity, self.severity_change, self.resources_remaining, self.time_taken = 0., 0., 0., 0., 0.
+        else:
+            self.dps = d.metrics[Metric.DAMAGE_PER_SECOND.value].value
+            self.severity = d.metrics[Metric.SEVERITY.value].value
+            self.severity_change = d.metrics[Metric.SEVERITY_CHANGE.value].value
+            self.resources_remaining = d.metrics[Metric.SUPPLIES_REMAINING.value].value
+            self.time_taken = d.metrics[Metric.AVERAGE_TIME_USED.value].value
 
     def __lt__(self, other):
         if self.dps > other.dps:
