@@ -19,7 +19,13 @@ class SmolMedicalOracle:
         Supplies.HEMOSTATIC_GAUZE.value: .05,
         Supplies.TOURNIQUET.value: .03,
         Supplies.DECOMPRESSION_NEEDLE.value: .03,
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: .05
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: .05,
+        Supplies.PULSE_OXIMETER.value: 1.0,
+        Supplies.BLANKET.value: 1.0,
+        Supplies.EPI_PEN.value: 1.0,
+        Supplies.VENTED_CHEST_SEAL.value: 1.0,
+        Supplies.PAIN_MEDICATIONS.value: 1.0,
+        Supplies.BLOOD.value: 1.0
     }
 
     CHECK_PULSE_TIME = 20.0
@@ -30,6 +36,12 @@ class SmolMedicalOracle:
         Supplies.TOURNIQUET.value: [90.0],
         Supplies.DECOMPRESSION_NEEDLE.value: [60.0, 75.0],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [35.0],
+        Supplies.PULSE_OXIMETER.value: [30.0],
+        Supplies.BLANKET.value: [30.0],
+        Supplies.EPI_PEN.value: [30.0],
+        Supplies.VENTED_CHEST_SEAL.value: [30.0],
+        Supplies.PAIN_MEDICATIONS.value: [30.0],
+        Supplies.BLOOD.value: [30.0],
         Actions.CHECK_PULSE.value: [CHECK_PULSE_TIME],
         Actions.CHECK_RESPIRATION.value: [CHECK_RESPIRATION_TIME],
         Actions.CHECK_ALL_VITALS.value: [CHECK_PULSE_TIME + CHECK_RESPIRATION_TIME],

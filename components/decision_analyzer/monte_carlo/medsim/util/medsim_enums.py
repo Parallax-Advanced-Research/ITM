@@ -175,6 +175,12 @@ class Supplies(Enum):
     HEMOSTATIC_GAUZE = "Hemostatic gauze"
     DECOMPRESSION_NEEDLE = "Decompression Needle"
     NASOPHARYNGEAL_AIRWAY = "Nasopharyngeal airway"
+    PULSE_OXIMETER = 'Pulse Oximeter'
+    BLANKET = 'Blanket'
+    EPI_PEN = 'Epi Pen'
+    VENTED_CHEST_SEAL = 'Vented Chest Seal'
+    PAIN_MEDICATIONS = 'Pain Medications'
+    BLOOD = 'Blood'
 
 
 class Locations(Enum):

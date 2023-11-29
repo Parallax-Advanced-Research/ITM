@@ -305,20 +305,26 @@ def process_probe_decisions(probe: TADProbe, simulated_state_metrics: list[mcnod
     return analysis, all_decision_metrics
 
 
-def generate_decision_justifications(dj: Decision, decision: DecisionJustifier):
+def generate_decision_justifications(dj: DecisionJustifier, decision: Decision) -> list[dict[str, str | dict]]:
     # Should return the JSON, and an english description
     if decision.value.name == Actions.END_SCENARIO.value:
-        return ''
+        return [{Metric.DECISION_JUSTIFICATION_ENGLISH.value: "End Scenario not Simulated",
+                 Metric.DECISION_JUSTIFICATION_VALUES.value: {}}]
     dmetrics = decision.metrics
     justifications = []
     for metric in dj.get_metric_names():
         if metric not in dmetrics.keys():
-            continue
-        justification_str = dj.generate_justification(metric, dmetrics[metric], decision.value)
-        justification_json = dj.generate_justification_json(metric, dmetrics[metric], decision.value)
-        justification = {
-            Metric.DECISION_JUSTIFICATION_ENGLISH.value: justification_str,
-            Metric.DECISION_JUSTIFICATION_VALUES.value: justification_json
-        }
-        justifications.append(justification)
+            just = {Metric.DECISION_JUSTIFICATION_ENGLISH.value: "%s not simulated" % decision.value.name,
+                    Metric.DECISION_JUSTIFICATION_VALUES.value: {}}
+            justifications.append(just)
+        else:
+            justification_str = dj.generate_justification(metric, dmetrics[metric], decision.value)
+            if justification_str == 'delete':
+                continue
+            justification_json = dj.generate_justification_json(metric, dmetrics[metric], decision.value)
+            justification = {
+                Metric.DECISION_JUSTIFICATION_ENGLISH.value: justification_str,
+                Metric.DECISION_JUSTIFICATION_VALUES.value: justification_json
+            }
+            justifications.append(justification)
     return justifications

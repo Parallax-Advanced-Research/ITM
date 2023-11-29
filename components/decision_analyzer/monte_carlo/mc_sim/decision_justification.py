@@ -61,7 +61,7 @@ class DecisionJustifier:
 
     def generate_justification(self, metric_name: str, metric_val: DecisionMetric, decision_name: str) -> str:
         if metric_name not in self.analyzed_values:
-            return ''
+            return 'delete'
         reverseables = [Metric.SUPPLIES_REMAINING.value]
         reverse = True if metric_name in reverseables else False
         ranked_title, total = get_ranked_title(self.analyzed_values[metric_name], metric_val, reverse)
@@ -75,7 +75,7 @@ class DecisionJustifier:
 
     def generate_justification_json(self, metric_name: str, metric_val: DecisionMetric, decision_name: str) -> dict[str, int | float]:
         if metric_name not in self.analyzed_values:
-            return {Metric.N_ROLLOUTS.value: 0}
+            return {}
         reverseables = [Metric.SUPPLIES_REMAINING.value]
         reverse = True if metric_name in reverseables else False
         ranked_title, total = get_ranked_title(self.analyzed_values[metric_name], metric_val, reverse)

@@ -9,6 +9,12 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
+V KR 1.9.14 (11/28 week)
+=======================
+> Returns an english string decision justification, as well as JSON values
+> Handles new supplies (no effect, no crashing)
+> Refined decision justification output for edge cases (end scenario, etc)
+
 V KR 1.8.13 (11/22 before Thanksgiving)
 =======================
 > Adjust severity to not be divided by total so decimals are visible
