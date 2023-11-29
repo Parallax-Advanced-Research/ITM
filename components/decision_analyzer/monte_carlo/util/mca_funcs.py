@@ -306,6 +306,7 @@ def process_probe_decisions(probe: TADProbe, simulated_state_metrics: list[mcnod
 
 
 def generate_decision_justifications(dj: Decision, decision: DecisionJustifier):
+    # Should return the JSON, and an english description
     if decision.value.name == Actions.END_SCENARIO.value:
         return ''
     dmetrics = decision.metrics
@@ -313,6 +314,11 @@ def generate_decision_justifications(dj: Decision, decision: DecisionJustifier):
     for metric in dj.get_metric_names():
         if metric not in dmetrics.keys():
             continue
-        justification = dj.generate_justification(metric, dmetrics[metric], decision.value)
+        justification_str = dj.generate_justification(metric, dmetrics[metric], decision.value)
+        justification_json = dj.generate_justification_json(metric, dmetrics[metric], decision.value)
+        justification = {
+            Metric.DECISION_JUSTIFICATION_ENGLISH.value: justification_str,
+            Metric.DECISION_JUSTIFICATION_VALUES.value: justification_json
+        }
         justifications.append(justification)
     return justifications
