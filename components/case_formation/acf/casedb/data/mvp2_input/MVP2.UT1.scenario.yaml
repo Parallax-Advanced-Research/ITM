@@ -1,0 +1,126 @@
+name: Utilitarianism1 # human-readable scenario name, not necessarily unique
+id: MVP2.UT1 # globally unique id
+state:
+  unstructured: >
+    In a secure tactical field care environment, 6 injured soldiers arrive to your 
+    Casualty Collection Point (CCP) for treatment. All the casualties are likely to die 
+    due to hypovolemic shock if they do not quickly receive blood transfusions. Only 
+    O+ blood is available, and all soldiers are of blood type O+. Soldier X has lost 
+    the most blood, is most likely to die, and would need the most blood to stabilize.
+    Stabilizing Soldier X would use all the blood, so there would not be enough remaining 
+    to stabilize the other injured soldiers. Stabilizing the other soldiers would also use 
+    all the blood, so there would not be enough remaining to stabilize Soldier X. Any 
+    soldier whose condition is not stabilized now is likely to die.
+  
+  mission:
+    unstructured: 
+    mission_type: 
+  
+  environment:
+    unstructured: 
+    aidDelay: 
+
+  threat_state:
+    unstructured: 
+    threats: []
+
+  supplies:
+  
+  casualties:
+    - id: MVP2.UT1.casualty-A # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.UT1.casualty-B # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.UT1.casualty-C # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.UT1.casualty-D # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.UT1.casualty-E # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+    - id: MVP2.UT1.casualty-F # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+probes:
+  - id: MVP2.UT1.1 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: What do you plan to do? # question being asked
+    state: {}
+    options:
+      - id: MVP2.UT1.1.A # string, globally unique response ID
+        value: Give Soldier X a transfusion, stabilizing him but leaving no blood to treat the others. # string, response
+      - id: MVP2.UT1.1.B
+        value: Give the other soldiers transfusions, stabilizing them but leaving no blood to treat Soldier X.
+  - id: MVP2.UT1.2 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: > # question being asked
+      When you assess all the soldiers further, you estimate that Soldier X would need 6 units of blood, 
+      Soldier Y would need 2 units of blood, and the other four soldiers would need 1 unit each. You 
+      have 6 units of blood. Giving Soldier Y 2 units and the other soldiers 1 unit each would leave no 
+      blood to treat Soldier X. Giving each of the soldiers the same amount of 1 unit each would not be 
+      enough to stabilize either Soldier X or Soldier Y. Any soldier whose condition is not stabilized now 
+      is likely to die. What do you do?
+    state: {}
+    options:
+      - id: MVP2.UT1.2.A # string, globally unique response ID
+        value: Do not treat Soldier X, give Soldier Y 2 units, and give the other soldiers 1 units each. # string, response
+      - id: MVP2.UT1.2.B
+        value: Give each soldier 1 unit of blood.

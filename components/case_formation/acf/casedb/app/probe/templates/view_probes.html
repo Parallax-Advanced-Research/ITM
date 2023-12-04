@@ -1,0 +1,60 @@
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title">Probes</h5>
+        <p class="card-text">
+        <div class="table-responsive">
+            <table class="table table-primary">
+                <thead>
+                    <tr>
+                        <th scope="col">Prompt</th>
+                        <th scope="col">Probe State</th>
+                        <th scope="col">Options</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for probe in scenario.probes %}
+                    <tr class="">
+                        <td>[{{ probe.probe_id}}] {{ probe.prompt }}</td>
+                        <td>{{ probe.state }}</td>
+                        <td>
+
+                            <ul class="list-group list-group-flush">
+                                {% for option in probe.options %}
+                                <li class="list-group-item">{{ option.value}}</li>
+                                {% endfor %}
+                            </ul>
+                            <ul>
+                                {% for alignment in probe.alignments %}
+                                {{ alignment.score}}
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td><a href="{{ url_for('probe.edit_probe', probe_id=probe.id) }}">[edit]</a></td>
+                        <td><a class="text-danger"
+                                href="{{ url_for('probe.delete_probe', probe_id=probe.id) }}">[delete]</a></td>
+                    </tr>
+                    <tr>
+                        <td>Responses</td>
+                        <td colspan="2">
+                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapsePanel" aria-expanded="false" aria-controls="collapsePanel">
+                                Expand/Collapse Responses
+                            </button>
+                            {% include '_view_response.html' %}
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+
+
+                </tbody>
+            </table>
+            <a href="{{ url_for('probe.add_probe', scenario_id=scenario.id)}}">{{ render_icon('plus-circle-fill', 15,
+                'secondary')}}</a>
+        </div>
+        </p>
+    </div>
+</div>

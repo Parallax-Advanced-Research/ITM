@@ -23,8 +23,11 @@ class TA3Client:
     def align_tgt(self) -> KDMAs:
         return self._align_tgt
 
-    def start_session(self, adm_name: str = 'TAD', session_type='test'):
-        self._session_id = self._api.start_session(adm_name, session_type)
+    # Known arguments:
+    # max_scenarios
+    # kdma_training
+    def start_session(self, adm_name: str = 'TAD', session_type='test', **kwargs):
+        self._session_id = self._api.start_session(adm_name, session_type, **kwargs)
 
     def start_scenario(self) -> Scenario:
         ta3scen: models.Scenario = self._api.start_scenario(self._session_id)

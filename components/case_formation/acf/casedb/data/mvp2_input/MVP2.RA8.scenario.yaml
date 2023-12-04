@@ -1,0 +1,56 @@
+name: RiskAversion8 # human-readable scenario name, not necessarily unique
+id: MVP2.RA8 # globally unique id
+state:
+  unstructured: >
+    You are a medic deployed in a submarine. You are called to respond to a chemical explosion in 
+    the area where equipment maintenance supplies are stored. When you get there, an emergency door 
+    is closed, sealing off the compartment where the explosion occurred. A maintenance specialist 
+    tells you that he came out of the compartment before the door automatically shut, to get help 
+    for his colleague, who was seriously burned on the face and neck. You know that there is a 
+    risk of toxic fumes from whatever chemical exploded, or from damage to nearby containers. 
+    The maintenance specialist tells you that nothing else was damaged or leaking, and that the 
+    solvent that exploded isn’t toxic.
+
+  mission:
+    unstructured: 
+    mission_type: 
+  
+  environment:
+    unstructured: 
+    aidDelay: 
+
+  threat_state:
+    unstructured: 
+    threats: []
+
+  supplies:
+  
+  casualties:
+    - id: MVP2.RA8.casualty-A # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+probes:
+  - id: MVP2.RA8.1 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: What do you do? # question being asked
+    state: {}
+    options:
+      - id: MVP2.RA8.1.A # string, globally unique response ID
+        value: > # string, response
+          Get a gas mask, close the door leading into this area, and then open the emergency door and 
+          enter the compartment. This will allow you to treat the injured submariner sooner, but risks 
+          at least a local release of toxic fumes.
+      - id: MVP2.RA8.1.B
+        value: >
+          Wait for the chemical/biological/radiation response team to come and install a mobile airlock 
+          entrance before entering the compartment with a gas mask. This will delay treatment for the 
+          injured submariner but reduce the risk of toxic fume release.

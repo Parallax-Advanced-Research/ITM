@@ -1,19 +1,47 @@
 import json
 import logging
+from copy import deepcopy
 
 from runner import TA3Driver, TA3Client
 from util import logger, dict_difference
+from domain.ta3 import TA3State
+
+def clean_state(instate: TA3State) -> TA3State:
+    copy = deepcopy(instate)
+    copy['actions_performed'] = list()
+    for act in instate['actions_performed']:
+        copy['actions_performed'] = act.to_json()
+    return copy
 
 
 def main():
     # NOTE: TA3 server must be running for this to work.
     #  Ensure that `python -m swagger_server` has been run in the ta3 server directory. See Running-TAD.md
 
+    class TA3ARGS:
+        def __init__(self):
+            self.human = False
+            self.ebd = False
+            self.hra = False
+            self.kedsd = False
+            self.csv = True
+            self.verbose = False
+            self.bayes = False
+            self.mc = True
+            self.rollouts = 1000
+            self.decision_verbose = False
+            self.variant = 'aligned'
+            self.training = True  # Added flag
+    ta3args = TA3ARGS()
+
     # Initialize the drivers
     #  NOTE: Update TA3 Driver with any updated components you want used (e.g., analyzers)
-    driver = TA3Driver()
+    driver = TA3Driver(ta3args)
     client = TA3Client()
-    sid = client.start_session(f'TAD-Manual')
+
+
+    # Set KDMA Trainiung to True to get kdma traimning mode from ta3 server
+    sid = client.start_session(f'TAD-Manual', kdma_training=True)
 
     # Iterate over all TA3 sessions until complete
     #  NOTE: If a session is interrupted, the TA3 server must be restarted
@@ -29,6 +57,7 @@ def main():
         logger.info(f"Started Scenario-{scen.id}")
         driver.set_scenario(scen)
         driver.set_alignment_tgt(client.align_tgt)
+        scen.state = clean_state(scen.state)
         logger.info(f"-Initial State: {json.dumps(scen.state, indent=4)}")
 
         # Gets the first probe

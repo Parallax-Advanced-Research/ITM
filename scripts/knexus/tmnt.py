@@ -1,56 +1,113 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
-from components.decision_analyzer.monte_carlo.tinymed import TinymedState, TinymedSim, TinymedAction
-from components.decision_analyzer.monte_carlo.tinymed.medactions import get_TMNT_demo_casualties, get_TMNT_supplies
-from components.decision_analyzer.monte_carlo.tinymed.tinymed_enums import Casualty
-from components.decision_analyzer.monte_carlo.tinymed.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
+from components.decision_analyzer.monte_carlo.medsim import MedsimState, MedicalSimulator, MedsimAction
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates_KNX, BreathingDescriptions_KNX, Demographics, Supplies
+from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
+
 from runner import TA3Driver
-from runner import simple_driver
 from domain.internal import KDMAs
 from util import logger, dict_difference
 from domain.external import Action
 
 
+def get_TMNT_demo_casualties() -> list[Casualty]:
+    # wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
+    treat_first_or_die = Injury(Injuries.AMPUTATION.value, location=Locations.RIGHT_CALF.value, severity= .9)
+    treat_secondish = Injury(Injuries.LACERATION.value, location=Locations.RIGHT_SIDE.value, severity=.7)
+    also_treat_secondish = Injury(Injuries.CHEST_COLLAPSE.value, location=Locations.LEFT_CHEST.value, severity=.7)
+    treat_third = Injury(Injuries.SHRAPNEL.value, location=Locations.LEFT_FACE.value, severity=.4)
+    treat_last = Injury(Injuries.FOREHEAD_SCRAPE.value, location=Locations.RIGHT_FACE.value, severity=.1)
+
+    raphael_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.DANDY.value,
+                            breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=49)
+    michelangelo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.FINE.value,
+                                 breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=68)
+    donatello_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.FINE.value,
+                              breathing=BreathingDescriptions_KNX.HEAVY.value, hrpmin=81)
+    leonardo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.PANICKED.value,
+                             breathing=BreathingDescriptions_KNX.COLLAPSED.value, hrpmin=50)
+    casualties = [
+        Casualty('raphael', 'raphael scraped his head and is fine', name='raphael',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='muscle'),
+                       injuries=[treat_last],
+                       vitals=raphael_vitals,
+                       complete_vitals=raphael_vitals,
+                       assessed=False,
+                       tag="tag"),
+        Casualty('michelangelo', 'michelangelo got some non fatal shrapnel to the face, and a severe laceration on his right side that needs to be treated.',
+                       name='michelangelo',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='the wild one'),
+                       injuries=[treat_secondish, treat_third],
+                       vitals=michelangelo_vitals,
+                       complete_vitals=michelangelo_vitals,
+                       assessed=False,
+                       tag="tag"),
+        Casualty('donatello', 'donatello has a chest collapse that needs to be treated.',
+                       name='donatello',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='the brains'),
+                       injuries=[also_treat_secondish],
+                       vitals=donatello_vitals,
+                       complete_vitals=donatello_vitals,
+                       assessed=False,
+                       tag="tag"),
+        Casualty('leonardo', 'leonardo has had his calf blown off and is bleeding profusely. If he his not treated first, he will die.',
+                       name='leonardo',
+                       relationship='same unit',
+                       demographics=Demographics(age=15, sex='M', rank='the leader'),
+                       injuries=[treat_first_or_die],
+                       vitals=leonardo_vitals,
+                       complete_vitals=leonardo_vitals,
+                       assessed=False,
+                       tag="tag"),
+    ]
+    return casualties
+
+
+def get_TMNT_supplies() -> dict[str, int]:
+    supplies = {
+        Supplies.TOURNIQUET.value: 3,
+        Supplies.PRESSURE_BANDAGE.value: 2,
+        Supplies.HEMOSTATIC_GAUZE.value: 2,
+        Supplies.DECOMPRESSION_NEEDLE.value: 2,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 3
+    }
+    return supplies
 class TMNTClient:
-    SUPPLIES = [{'quantity': 3, 'type': 'Hemostatic gauze'}, {'quantity': 3, 'type': 'Tourniquet'}, {'quantity': 3, 'type': 'Pressure bandage'}, {'quantity': 3, 'type': 'Decompression Needle'}, {'quantity': 3, 'type': 'Nasopharyngeal airway'}]
-    CASUALTIES = [{'id': 'Donatello', 'unstructured': 'Donatello has a horrific (0.9) burn and bad (0.7) neck puncture', 'name': 'Donatello', 'relationship': None, 'demographics': {'age': 15, 'sex': 'M', 'rank': 'turtle'}, 'injuries': [{'name': 'Puncture', 'location': 'left neck', 'severity': 0.8}, {'name': 'Burn', 'location': 'unspecified', 'severity': 0.9}], 'vitals': {'conscious': None, 'mental_status': None, 'breathing': None, 'hrpmin': None}, 'complete_vitals': None, 'assessed': False, 'tag': None},
-                  {'id': 'Raphael', 'unstructured': 'Raphael has a moderate burn (0.5)', 'name': 'Unknown', 'relationship': None, 'demographics': {'age': 15, 'sex': 'M', 'rank': 'turtle'}, 'injuries': [{'name': 'Burn', 'location': 'unspecified', 'severity': 0.5}], 'vitals': {'conscious': None, 'mental_status': None, 'breathing': None, 'hrpmin': None}, 'complete_vitals': None, 'assessed': False, 'tag': None},
-                  {'id': 'Leonardo', 'unstructured': 'Leonardo has a modeate amputation (.4) of right calf', 'name': 'Unknown', 'relationship': None, 'demographics': {'age': 15, 'sex': 'M', 'rank': 'turtle'}, 'injuries': [{'name': 'Amputation', 'location': 'right calf', 'severity': .4}], 'vitals': {'conscious': None, 'mental_status': None, 'breathing': None, 'hrpmin': None}, 'complete_vitals': None, 'assessed': False, 'tag': None},
-                  {'id': 'Michaelangelo', 'unstructured': 'Michealangelo is unharmed.', 'name': 'Unknown', 'relationship': None, 'demographics': {'age': 15, 'sex': 'M', 'rank': 'turtle'}, 'injuries': [], 'vitals': {'conscious': None, 'mental_status': None, 'breathing': None, 'hrpmin': None}, 'complete_vitals': None, 'assessed': False, 'tag': None}]
     UNSTRUCTURED = 'Turtles are in trouble!'
-    ELAPSED_TIME = 0.0
-    SCENARIO_COMPLETE = False
-    MISSION = {'unstructured': 'Heal the turtles', 'mission_type': 'Disaster Relief'}
     ENVIRONMENT = {'unstructured': 'Sewers under New York', 'weather': None, 'location': None, 'terrain': None,
                    'flora': None, 'fauna': None, 'soundscape': None, 'aid_delay': None, 'temperature': None,
                    'humidity': None, 'lighting': None, 'visibility': None, 'noise_ambient': None,
                    'noise_peak': None}
     THREAT_STATE = {'threats': [{'severity': 0.4, 'type': 'Gunfire'}],
                     'unstructured': 'Gunfire and shouting heard at a distance; Participant appears in scene in crouched position under cover by trees'}
+
     def __init__(self, alignment_target: KDMAs, max_actions=9):  # 9 is overkill
         self.align_tgt: KDMAs = alignment_target
         self.actions: dict[str, Action] = {}
         self.probe_count = 1
         casualties: list[Casualty] = get_TMNT_demo_casualties()
         supplies: dict[str, int] = get_TMNT_supplies()
-        self.init_state: TinymedState = TinymedState(casualties, supplies, time=0.0,
-                                                        unstructured="Turtles in a half shell, TURTLE POWER!!!")
-        self.current_state: TinymedState = self.init_state
-        self.simulator = TinymedSim(init_state=self.init_state)
+        self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
+                                                   unstructured="Turtles in a half shell, TURTLE POWER!!!")
+        self.current_state: MedsimState = self.init_state
+        self.simulator = MedicalSimulator(init_state=self.init_state)
         self.probe_count: int = 0
         self.max_actions: int = max_actions
 
-    def get_init(self) -> TinymedState:
+    def get_init(self) -> MedsimState:
         return self.init_state
 
-    def get_probe(self, state: TinymedState | None) -> ITMProbe | None:
+    def get_probe(self, state: MedsimState | None) -> ITMProbe | None:
         if self.probe_count > self.max_actions:
             return None
         self.probe_count += 1
         state = state if state is not None else self.init_state
 
         ta3_state = reverse_convert_state(state)
-        actions: list[TinymedAction] = self.simulator.actions(state)
+        actions: list[MedsimAction] = self.simulator.actions(state)
         ta3_actions: list[Action] = []
         for i, internal_action in enumerate(actions):  # Only one direct mobile casualties in actions
             ta3_action = _reverse_convert_action(internal_action, action_num=i)
@@ -96,15 +153,22 @@ if __name__ == '__main__':
             self.human = False
             self.ebd = False
             self.hra = False
+            self.kedsd = False
+            self.csv = True
+            self.verbose = False
+            self.bayes = False
+            self.mc = True
+            self.rollouts = 1000
+            self.decision_verbose = False
             self.variant = 'aligned'
     tmnt_args = TMNTARGS()
 
-    driver = simple_driver.SimpleDriver(tmnt_args)
+    driver = TA3Driver(tmnt_args)
     client = TMNTClient(kdmas)
     driver.set_alignment_tgt(kdmas)
     logger.debug("Driver and TMNT Client loaded.")
 
-    initial_state: TinymedState = client.get_init()
+    initial_state: MedsimState = client.get_init()
     probe = client.get_probe(initial_state)
     scenario = Scenario(name='TMNT DEMO', id='tmnt-demo', state=probe.state, probes=[])
     driver.set_scenario(scenario=scenario)

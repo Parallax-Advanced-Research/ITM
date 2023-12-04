@@ -161,6 +161,19 @@ class MonteCarloTree:
 
         # propagate the node score up the parents
         parent = node.parent
+
+        prob_bleed = 0
+        prob_asphyxia = 0
+        prob_death = 0
+        dps = 0.
+        for cas in node.state.casualties:
+            prob_bleed += cas.prob_bleedout
+            prob_asphyxia += cas.prob_asphyxia
+            prob_death += cas.prob_death
+            for injury in cas.injuries:
+                dps += injury.damage_per_second
+        node.justification['severity'] = f'DPS {dps} probability bleed out: {min(prob_bleed, 1.0)} probability asphixia: {min(prob_asphyxia, 1.0)} probability death: {min(prob_death, 1.0)} elapsed time: {node.state.time}'
+
         while parent is not None:
             parent.score = score_merger(parent)
             parent = parent.parent

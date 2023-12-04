@@ -1,0 +1,36 @@
+<div class="table-responsive-sm">
+    <table class="table table-light">
+        <thead>
+            <tr>
+                <th scope="col">hrpm</th>
+                <th scope="col">mmHg</th>
+                <th scope="col">spO2</th>
+                <th scope="col">RR</th>
+                <th scope="col">Pain</th>
+                <th scope="col">Breathing</th>
+                <th scope="col">Conscious</th>
+                <th scope="col">Mental Status</th>
+                <th scope="col">Time</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vitals in casualty.vitals %}
+            <tr class="">
+                <td scope="row" class="bg-warning">
+                    {{ vitals.heart_rate }}</td>
+                <td>{{ vitals.blood_pressure }}</td>
+                <td>{{ vitals.oxygen_saturation }}</td>
+                <td>{{ vitals.respiratory_rate }}</td>
+                <td>{{ vitals.pain }}</td>
+                <td class="bg-danger">{{ vitals.breathing }}</td>
+                <td class="bg-danger">{{ vitals.concious }}</td>
+                <td class="bg-danger">{{ vitals.mental_status }}</td>
+                <td>{{ vitals.timestamp }}</td>
+                <td><a href="{{ url_for('scenario.edit_vitals', vitals_id=vitals.id) }}">[edit]</a>
+                    <a href="{{ url_for('scenario.delete_vitals', vitals_id=vitals.id) }}">[delete]</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>

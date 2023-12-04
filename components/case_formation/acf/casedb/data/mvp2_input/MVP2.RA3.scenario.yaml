@@ -1,0 +1,55 @@
+name: RiskAversion3 # human-readable scenario name, not necessarily unique
+id: MVP2.RA3 # globally unique id
+state:
+  unstructured: >
+    During a patrol mission at night, your unit comes under fire, and one soldier is 
+    seriously injured. They are unable to walk, so must be carried in a litter. You 
+    assess them as “immediate”, needing medical evaluation quickly. Your commander asks 
+    you which medical evacuation option you would recommend.
+  
+  mission:
+    unstructured: 
+    mission_type: 
+  
+  environment:
+    unstructured: 
+    aidDelay: 
+
+  threat_state:
+    unstructured: 
+    threats: []
+
+  supplies:
+  
+  casualties:
+    - id: MVP2.RA3.casualty-A # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex:  # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+probes:
+  - id: MVP2.RA3.1 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: What do you pick? # question being asked
+    state: {}
+    options:
+      - id: MVP2.RA3.1.A # string, globally unique response ID
+        value: > # string, response
+          The pre-designated helicopter landing zone, through a forest. This location is 2 miles away and the 
+          helicopter would be fastest. You have no direct way to contact the helicopter, so you would pass the evacuation 
+          request through your base as an intermediary. You are not familiar with routes through the forest. 
+          If the evacuation request is not received, or if you get lost in the forest, the patient will likely die. 
+          But this is the fastest option if things go according to plan.
+      - id: MVP2.RA3.1.B
+        value: >
+          Go 4 miles across some fields to meet up with a paved road. This is farther away. Once there, vehicle 
+          transportation would be slower than the helicopter. You could directly contact your base to dispatch the 
+          vehicle and coordinate the meet-up, so you are also certain that transport will be available. This option 
+          is slower but more reliable.
