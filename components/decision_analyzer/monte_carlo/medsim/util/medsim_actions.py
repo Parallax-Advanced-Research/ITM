@@ -1,7 +1,7 @@
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Injuries, Casualty, Locations, \
-    Actions, Tags, Injury
+    Actions, Tags, Injury, Supply
 
 
 def supply_location_match(action: MedsimAction):
@@ -118,9 +118,9 @@ def get_possible_actions(casualties: list[Casualty], supplies: list[str]) -> lis
     return possible_action_tuples
 
 
-def supply_dict_to_list(supplies: dict[str, int]) -> list[str]:
-    nonzero_supplies = {x: y for x, y in supplies.items() if y != 0}
-    keylist = list(nonzero_supplies.keys())
+def supply_dict_to_list(supplies: list[Supply]) -> list[str]:
+    nonzero_supplies = [x for x in supplies if x.amount != 0]
+    keylist = [x.name for x in nonzero_supplies]
     return list(set(keylist))   # Set removes non  uniques
 
 

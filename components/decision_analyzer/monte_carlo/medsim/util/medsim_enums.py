@@ -169,6 +169,15 @@ class BreathingDescriptions_KNX(Enum):
     COLLAPSED = "collapsed"
 
 
+class Supply:
+    def __init__(self, name, reusable, amount):
+        self.name = name
+        self.reusable = reusable
+        self.amount = amount
+
+    def __eq__(self, other: 'Supply'):
+        return self.amount == other.amount and self.name == other.name and self.reusable == other.reusable
+
 class Supplies(Enum):
     TOURNIQUET = "Tourniquet"
     PRESSURE_BANDAGE = "Pressure bandage"

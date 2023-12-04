@@ -68,8 +68,8 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
 
         casualty_p_death[cas.id] = calc_prob_death(cas)
         casualty_severities[cas.id] = cas_severity
-    for supply, num in state.supplies.items():
-        resource_score += num
+    for supply in state.supplies:
+        resource_score += supply.amount
     retdict[Metric.SEVERITY.value] = severity
     retdict[Metric.AVERAGE_TIME_USED.value] = state.time
     retdict[Metric.CASUALTY_SEVERITY.value] = casualty_severities

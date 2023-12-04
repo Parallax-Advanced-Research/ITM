@@ -26,21 +26,16 @@ def get_simple_casualties():
     return casualties
 
 
-def get_simple_supplies() -> dict[str, int]:
-    supplies = {
-        Supplies.TOURNIQUET.value: 0,
-        Supplies.PRESSURE_BANDAGE.value: 3,
-        Supplies.HEMOSTATIC_GAUZE.value: 0,
-        Supplies.DECOMPRESSION_NEEDLE.value: 0,
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: 0
-    }
+def get_simple_supplies() -> list[Supply]:
+    supplies = [Supply(Supplies.TOURNIQUET.value, False, 0),
+                Supply(Supplies.PRESSURE_BANDAGE.value, False, 3),
+                Supply(Supplies.HEMOSTATIC_GAUZE.value, False, 0),
+                Supply(Supplies.DECOMPRESSION_NEEDLE.value, False, 0),
+                Supply(Supplies.NASOPHARYNGEAL_AIRWAY.value, False, 0)]
     return supplies
 
 
 class SimpleClient:
-    SUPPLIES = [{'quantity': 3, 'type': tenums.Supplies.HEMOSTATIC_GAUZE}, {'quantity': 3, 'type': tenums.Supplies.TOURNIQUET},
-                {'quantity': 3, 'type': tenums.Supplies.PRESSURE_BANDAGE}, {'quantity': 0, 'type': tenums.Supplies.DECOMPRESSION_NEEDLE},
-                {'quantity': 0, 'type': tenums.Supplies.NASOPHARYNGEAL_AIRWAY}]
     CASUALTIES = [{'id': 'JT', 'unstructured': 'JT has a minor eft bicep puncture',
                    'name': 'JT', 'relationship': None, 'demographics': {'age': 33, 'sex': 'M',
                                                                         'rank': 'director of social media'},
@@ -63,7 +58,7 @@ class SimpleClient:
         self.actions: dict[str, Action] = {}
         self.probe_count = 1
         casualties: list[Casualty] = get_simple_casualties()
-        supplies: dict[str, int] = get_simple_supplies()
+        supplies: list[Supply] = get_simple_supplies()
         self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
                                                    unstructured="JT tore his bicep getting ripped.")
         self.current_state: MedsimState = self.init_state

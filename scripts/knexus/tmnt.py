@@ -1,6 +1,6 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
 from components.decision_analyzer.monte_carlo.medsim import MedsimState, MedicalSimulator, MedsimAction
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates_KNX, BreathingDescriptions_KNX, Demographics, Supplies
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates_KNX, BreathingDescriptions_KNX, Demographics, Supplies, Supply
 from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
 
@@ -67,15 +67,15 @@ def get_TMNT_demo_casualties() -> list[Casualty]:
     return casualties
 
 
-def get_TMNT_supplies() -> dict[str, int]:
-    supplies = {
-        Supplies.TOURNIQUET.value: 3,
-        Supplies.PRESSURE_BANDAGE.value: 2,
-        Supplies.HEMOSTATIC_GAUZE.value: 2,
-        Supplies.DECOMPRESSION_NEEDLE.value: 2,
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: 3
-    }
+def get_TMNT_supplies() -> list[Supply]:
+    supplies = [Supply(Supplies.TOURNIQUET.value, False, 3),
+                Supply(Supplies.PRESSURE_BANDAGE.value, False, 2),
+                Supply(Supplies.HEMOSTATIC_GAUZE.value, False, 2),
+                Supply(Supplies.DECOMPRESSION_NEEDLE.value, False, 2),
+                Supply(Supplies.NASOPHARYNGEAL_AIRWAY.value, False, 3)]
     return supplies
+
+
 class TMNTClient:
     UNSTRUCTURED = 'Turtles are in trouble!'
     ENVIRONMENT = {'unstructured': 'Sewers under New York', 'weather': None, 'location': None, 'terrain': None,
@@ -90,7 +90,7 @@ class TMNTClient:
         self.actions: dict[str, Action] = {}
         self.probe_count = 1
         casualties: list[Casualty] = get_TMNT_demo_casualties()
-        supplies: dict[str, int] = get_TMNT_supplies()
+        supplies: list[Supply] = get_TMNT_supplies()
         self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
                                                    unstructured="Turtles in a half shell, TURTLE POWER!!!")
         self.current_state: MedsimState = self.init_state
