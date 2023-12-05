@@ -1,9 +1,11 @@
 from domain.ta3 import TA3State, Casualty, TagCategory
 from domain.internal import Decision, Action, Scenario, TADProbe
 from components import Elaborator
-
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import supply_injury_match
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle
 
 class TA3Elaborator(Elaborator):
+
     def elaborate(self, scenario: Scenario, probe: TADProbe) -> list[Decision[Action]]:
         d: Decision[Action]
         to_return: list[Decision[Action]] = []
@@ -38,42 +40,24 @@ class TA3Elaborator(Elaborator):
         action = decision.value
 
         # Ground the decision for all casualties with injuries
-        cas_grounded = self._ground_casualty(state.casualties, decision)
+        cas_grounded = self._ground_treatments(state, decision)
+        cas_possible_treatments : list[Decision[Action]] = []
+        
+        for action in cas_grounded:
+            cas_id = action.value.params['casualty']
+            cas = [c for c in state.casualties if c.id == cas_id][0]
+            treatment = action.value.params['treatment']
+            for injury in cas.injuries:
+                if supply_injury_match(treatment, injury.name) and self.location_safe(treatment, injury.location) \
+                   and injury.location == action.value.params['location']:
+                    cas_possible_treatments.append(action)
+                    break
+            
+        return cas_possible_treatments
 
-        # Ground the decision for all treatments
-        treat_grounded: list[Decision[Action]] = []
-        for cas_action in cas_grounded:
-            # If no treatment set, enumerate the supplies
-            if 'treatment' not in cas_action.value.params:
-                for supply in state.supplies:
-                    sup_params = cas_action.value.params.copy()
-                    if supply.quantity > 0:
-                        sup_params['treatment'] = supply.type
-                        treat_grounded.append(Decision(cas_action.id_, Action(action.name, sup_params), kdmas=cas_action.kdmas))
-            else:
-                supply_needed = cas_action.value.params.copy()['treatment']
-                for s in state.supplies:
-                    if s.type == supply_needed and s.quantity > 0:
-                        treat_grounded.append(cas_action)
-                        break
-
-        # Ground the location
-        grounded: list[Decision[Action]] = []
-        for treat_action in treat_grounded:
-            # If no location set, enumerate the injured locations
-            if 'location' not in treat_action.value.params:
-                cas_id = treat_action.value.params['casualty']
-                cas = [c for c in state.casualties if c.id == cas_id][0]
-                if cas.assessed and not cas.tag:
-                    continue
-                for injury in cas.injuries:
-                    treat_params = treat_action.value.params.copy()
-                    treat_params['location'] = injury.location
-                    grounded.append(Decision(treat_action.id_, Action(action.name, treat_params), kdmas=treat_action.kdmas))
-            else:
-                grounded.append(treat_action)
-
-        return grounded
+    def location_safe(self, treatment: str, location: str):
+        locs : dict[str, list[str]] = SmolMedicalOracle.TREATABLE_AREAS.get(treatment, None)
+        return locs is None or location in locs
 
     def _tag(self, casualties: list[Casualty], decision: Decision[Action]) -> list[Decision[Action]]:
         action = decision.value
@@ -96,6 +80,44 @@ class TA3Elaborator(Elaborator):
             else:
                 tag_grounded.append(cas_action)
         return tag_grounded
+
+    @staticmethod
+    def _ground_treatments(state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
+        actions = TA3Elaborator._ground_casualty(state.casualties, decision)
+        # Ground the decision for all treatments
+        treat_grounded: list[Decision[Action]] = []
+        for cas_action in actions:
+            # If no treatment set, enumerate the supplies
+            if 'treatment' not in cas_action.value.params:
+                for supply in state.supplies:
+                    sup_params = cas_action.value.params.copy()
+                    if supply.quantity > 0:
+                        sup_params['treatment'] = supply.type
+                        treat_grounded.append(Decision(cas_action.id_, Action(decision.value.name, sup_params), kdmas=cas_action.kdmas))
+            else:
+                supply_needed = cas_action.value.params.copy()['treatment']
+                for s in state.supplies:
+                    if s.type == supply_needed and s.quantity > 0:
+                        treat_grounded.append(cas_action)
+                        break
+
+        # Ground the location
+        grounded: list[Decision[Action]] = []
+        for treat_action in treat_grounded:
+            # If no location set, enumerate the injured locations
+            if 'location' not in treat_action.value.params:
+                cas_id = treat_action.value.params['casualty']
+                cas = [c for c in state.casualties if c.id == cas_id][0]
+                if cas.assessed and not cas.tag:
+                    continue
+                for injury in cas.injuries:
+                    treat_params = treat_action.value.params.copy()
+                    treat_params['location'] = injury.location
+                    grounded.append(Decision(treat_action.id_, Action(decision.value.name, treat_params), kdmas=treat_action.kdmas))
+            else:
+                grounded.append(treat_action)
+
+        return grounded
 
     @staticmethod
     def _ground_casualty(casualties: list[Casualty], decision: Decision[Action], injured_only = True) -> list[Decision[Action]]:
