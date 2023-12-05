@@ -40,11 +40,11 @@ class SmolMedicalOracle:
     }
 
     TREATABLE_AREAS = {
-        Supplies.TOURNIQUET.value: [Locations.UNSPECIFIED.value, Locations.LEFT_SIDE.value, Locations.LEFT_NECK.value,
-                               Locations.LEFT_CHEST.value, Locations.LEFT_SHOULDER.value, Locations.LEFT_FACE.value,
-                               Locations.LEFT_STOMACH.value, Locations.RIGHT_SIDE.value, Locations.RIGHT_NECK.value,
-                               Locations.RIGHT_CHEST.value, Locations.RIGHT_SHOULDER.value, Locations.RIGHT_FACE.value,
-                               Locations.RIGHT_STOMACH.value],
+        Supplies.TOURNIQUET.value: [
+            Locations.LEFT_FOREARM.value, Locations.LEFT_CALF.value, Locations.LEFT_THIGH.value,
+            Locations.LEFT_BICEP.value, Locations.LEFT_WRIST.value, Locations.LEFT_SHOULDER.value,
+            Locations.RIGHT_FOREARM.value, Locations.RIGHT_CALF.value, Locations.RIGHT_THIGH.value,
+            Locations.RIGHT_BICEP.value, Locations.RIGHT_WRIST.value, Locations.RIGHT_SHOULDER.value],
         Supplies.DECOMPRESSION_NEEDLE.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]}
 

@@ -13,8 +13,8 @@ def supply_location_match(action: MedsimAction):
         return True
     if action.supply == Supplies.DECOMPRESSION_NEEDLE:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.DECOMPRESSION_NEEDLE.value]:
-            return True
-        return False
+            return False
+        return True
     if action.supply == Supplies.NASOPHARYNGEAL_AIRWAY:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.NASOPHARYNGEAL_AIRWAY.value]:
             return True

@@ -157,6 +157,7 @@ class MentalStates_KNX(Enum):
 
 
 class BreathingDescriptions_KNX(Enum):
+    NONE = "none"
     NORMAL = "normal"
     HEAVY = "heavy"
     COLLAPSED = "collapsed"
