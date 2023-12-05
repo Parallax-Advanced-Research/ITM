@@ -1,8 +1,10 @@
 from domain.ta3 import TA3State, Casualty, TagCategory
 from domain.internal import Decision, Action, Scenario, TADProbe
 from components import Elaborator
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import supply_injury_match
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import supply_injury_match, supply_location_match
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Actions
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
+
 
 class TA3Elaborator(Elaborator):
 
@@ -37,27 +39,34 @@ class TA3Elaborator(Elaborator):
         return final_list
 
     def _treatment(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
-        action = decision.value
-
         # Ground the decision for all casualties with injuries
         cas_grounded = self._ground_treatments(state, decision)
         cas_possible_treatments : list[Decision[Action]] = []
         
-        for action in cas_grounded:
-            cas_id = action.value.params['casualty']
+        for decision in cas_grounded:
+            cas_id = decision.value.params['casualty']
             cas = [c for c in state.casualties if c.id == cas_id][0]
-            treatment = action.value.params['treatment']
             for injury in cas.injuries:
-                if supply_injury_match(treatment, injury.name) and self.location_safe(treatment, injury.location) \
-                   and injury.location == action.value.params['location']:
-                    cas_possible_treatments.append(action)
+                if injury.location == decision.value.params['location'] \
+                   and self.medsim_allows_action(decision.value, injury.name):
+                    cas_possible_treatments.append(decision)
                     break
             
         return cas_possible_treatments
-
-    def location_safe(self, treatment: str, location: str):
-        locs : dict[str, list[str]] = SmolMedicalOracle.TREATABLE_AREAS.get(treatment, None)
-        return locs is None or location in locs
+        
+    def medsim_allows_action(self, action: Action, injury: str):
+        if not supply_injury_match(action.params['treatment'], injury):
+            return False
+        medact = MedsimAction(
+                    Actions.APPLY_TREATMENT, 
+                    action.params['casualty'], 
+                    action.params['treatment'], 
+                    action.params['location'], 
+                    None)
+        if not supply_location_match(medact): 
+            return False
+        return True
+     
 
     def _tag(self, casualties: list[Casualty], decision: Decision[Action]) -> list[Decision[Action]]:
         action = decision.value
