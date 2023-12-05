@@ -33,7 +33,7 @@ class Action:
 
 class Decision(typing.Generic[T]):
     def __init__(self, id_: str, value: T,
-                 justifications: list[Justification] = (),
+                 justifications: list[Justification] = list(),
                  metrics: typing.Mapping[DecisionName, DecisionMetric] = None,
                  kdmas: KDMAs = None):
         self.id_: str = id_
