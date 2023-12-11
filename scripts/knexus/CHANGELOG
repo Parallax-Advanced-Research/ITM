@@ -9,6 +9,11 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
+V KR 1.10.15 (12/11 week)
+=======================
+> Tiebreakers for same values now in justifications
+
+
 V KR 1.9.14 (11/28 week)
 =======================
 > Returns an english string decision justification, as well as JSON values

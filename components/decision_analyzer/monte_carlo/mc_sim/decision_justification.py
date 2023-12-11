@@ -27,11 +27,12 @@ def get_numeric(val_idx):
 
 
 def get_ranked_title(ranking_list: list[float], val: DecisionMetric, reverse=False) -> tuple:
-    relevant_list = ranking_list['all']
+    orig_list = ranking_list['all']
+    relevant_list = sorted(list(set(ranking_list['all'])))
     if reverse:
         relevant_list = sorted(relevant_list, reverse=True)
     val_idx = relevant_list.index(val.value) + 1
-    is_tie = True if relevant_list.count(val.value) > 1 else False
+    is_tie = True if orig_list.count(val.value) > 1 else False
     return "%s%d%s" % ('T-' if is_tie else '', val_idx, get_numeric(val_idx)), len(relevant_list)
 
 
