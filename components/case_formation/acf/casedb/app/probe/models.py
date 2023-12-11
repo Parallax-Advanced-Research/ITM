@@ -12,7 +12,10 @@ import domain.internal as TAD
 import domain.ta3 as TA3
 from components import DecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
-from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
+from components.decision_analyzer.bayesian_network.bn_analyzer import (
+    BayesNetDiagnosisAnalyzer,
+)
+from components.elaborator.default.ta3_elaborator import TA3Elaborator
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from components.decision_analyzer.event_based_diagnosis import (
     EventBasedDiagnosisAnalyzer,
@@ -40,7 +43,8 @@ def convert_to_ta3_injury(Injury) -> TA3.Injury:
     # severity          # severity          # injury_severity
     # treated           # treated           # -----
 
-    injury_location = Injury.injury_location
+    injury_location = Injury.injury_location.replace("_", " ").lower()
+
     injury_name = Injury.injury_type
     injury_severity = float(Injury.injury_severity)
     injury_treated = False  # TODO: change to a real value
@@ -76,7 +80,7 @@ def convert_to_ta3_demographics(Casualty) -> TA3.Demographics:
     # [sex]             # sex               # sex
     # relationship_type
 
-    casualty_age = Casualty.age
+    casualty_age = 22  # Casualty.age
     casualty_sex = Casualty.sex
     casualty_rank = Casualty.rank
 
@@ -231,6 +235,8 @@ class Probe(db.Model):
 
     def analyze(self):
         decision_analyzer = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
+        bn_analyzer = BayesNetDiagnosisAnalyzer()
+        hra_analyzer = HeuristicRuleAnalyzer()
         tad_scenario = self.as_tad_scenario()
         tad_probe = self.as_tad_probe(tad_scenario)
 
@@ -256,23 +262,22 @@ class Probe(db.Model):
                 param_dict = {}
                 param_dict["casualty"] = casualty.name
                 for param in action.parameters:
-                    # if is_mc and param.parameter_type == "treatment":
-                    #    param_dict[param.parameter_type] = tinymed_enums.Supplies[
-                    #        param.parameter_value
-                    #    ]
-                    if is_mc:
-                        if param.parameter_type == "treatment":
-                            tinymed_val = param_dict[
-                                param.parameter_type
-                            ] = tinymed_enums.Supplies[param.parameter_value].value
-                            param_dict[param.parameter_type] = tinymed_val
-                        if param.parameter_type == "location":
-                            tinymed_val = param_dict[
-                                param.parameter_type
-                            ] = tinymed_enums.Locations[param.parameter_value].value
-                            param_dict[param.parameter_type] = tinymed_val
+                    if param.parameter_type == "treatment":
+                        param.parameter_value = param.parameter_value.replace(
+                            " ", "_"
+                        ).upper()
+                        param_dict[param.parameter_type] = tinymed_enums.Supplies[
+                            param.parameter_value
+                        ].value
+                    elif param.parameter_type == "location":
+                        if param.parameter_value == "":
+                            param.parameter_value = "UNSPECIFIED"
+                        param_dict[param.parameter_type] = tinymed_enums.Locations[
+                            param.parameter_value
+                        ].value
                     else:
                         param_dict[param.parameter_type] = param.parameter_value
+
                 tad_action = TAD.Action(action.action_type, param_dict)
                 tad_decision = TAD.Decision(
                     id_="action1",
@@ -303,8 +308,9 @@ class Probe(db.Model):
         # elaborator = TA3Elaborator().elaborate(tad_scenario, tad_probe)
         decisions = tad_probe.decisions
         metrics = decision_analyzer.analyze(tad_scenario, tad_probe)
-
-        return metrics
+        bn_metrics = bn_analyzer.analyze(tad_scenario, tad_probe)
+        hra_metrics = hra_analyzer.analyze(tad_scenario, tad_probe)
+        return (metrics, bn_metrics, hra_metrics)
 
     def save(self):
         db.session.add(self)

@@ -45,16 +45,36 @@ def listprobes():
 def randomprobe():
     """Get a random probe for testing"""
     # get casebase id 2
-    case = Case.query.filter_by(casebase_id=2).first()
-    scenario = case.scenarios[0]
-    probes = scenario.probes
-    random_probe = random.choice(probes)
 
-    click.echo(random_probe.analyze())
-    # mc = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2)
-    # probe_to_analyze = ProbeToAnalyze(random_probe, mc)
-    # metrics = probe_to_analyze.analyze()
-    # click.echo(metrics)
+    # casebase2 = Case.query.filter_by(casebase_id=2).first()
+    # case = Case.query.filter_by(id=1).first()
+    # probes = case.scenarios[0].probes
+    treatment_probes = Probe.query.filter_by(type="SelectTreatment").all()
+    random_probe = random.choice(treatment_probes)
+    a = random_probe.analyze()
+    click.echo(random_probe.type)
+    click.echo(a)
+
+
+@click.command()
+def compare():
+    """Compare two probes from different casebases"""
+
+    casebase_1 = CaseBase.query.filter_by(id=1).first()
+    casebase1_df = casebase_1.as_dataframe(feature_as_action=False, do_analysis=True)
+
+    casebase1_df.to_csv("casebase1_with_da.csv")
+
+    # casebase_2 = CaseBase.query.filter_by(id=2).first()
+
+    # casebase 1 probe
+    # casebase_1_case = Case.query.filter_by(casebase_id=1).first()
+    # casebase_1_probe = casebase_1_case.scenarios[0].probes[0]
+    # click.echo(casebase_1_probe.analyze())
+
+    # casebase_2_case = Case.query.filter_by(casebase_id=2).first()
+    # casebase_2_probe = casebase_2_case.scenarios[0].probes[0]
+    # click.echo(casebase_2_probe.analyze())
 
 
 @cli.command()
@@ -90,7 +110,8 @@ cli.add_command(listcases)
 cli.add_command(listprobes)
 cli.add_command(randomprobe)
 cli.add_command(randomtadprobe)
-cli.add_command(treatmentprobe)
+cli.add_command(analyze)
+cli.add_command(compare)
 
 if __name__ == "__main__":
     cli()
