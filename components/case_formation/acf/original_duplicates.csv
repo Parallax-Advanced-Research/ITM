@@ -1,0 +1,186 @@
+,type,prompt,action1,tag,treatment,location,casualty_name,casualty_age,casualty_sex,casualty_rank,injury_type,injury_severity,injury_location,mission,denial,risktol,timeurg
+3,SelectTag,How would you tag A?,TAG_CASUALTY,EXPECTANT,,,casualty-A,22.0,M,MARINE,PUNCTURE,0.5,LEFT_SIDE,8,8,2,8
+15,SelectTag,How would you tag A?,TAG_CASUALTY,EXPECTANT,,,casualty-A,22.0,M,MARINE,PUNCTURE,0.5,LEFT_SIDE,8,8,2,8
+81,SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS,,,,casualty-B,25.0,M,MARINE,SHRAPNEL,0.25,LEFT_SIDE,7,7,7,3
+85,SelectCasualty,"Who do you treat first between casualties A, B, C and D?",CHECK_ALL_VITALS,,,,casualty-B,25.0,M,MARINE,SHRAPNEL,0.25,LEFT_SIDE,7,7,7,3
+148,SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-C,36.0,M,MARINE,SHRAPNEL,0.25,LEFT_FOREARM,7,3,3,3
+157,SelectTreatment,"You decide to treat casualty C first, which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-C,36.0,M,MARINE,SHRAPNEL,0.25,LEFT_FOREARM,7,3,3,3
+161,SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-D,40.0,M,Civilian,SHRAPNEL,0.25,RIGHT_FACE,2,2,8,2
+162,SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-D,40.0,M,Civilian,SHRAPNEL,0.25,RIGHT_FACE,2,2,8,2
+164,SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-D,40.0,M,Civilian,SHRAPNEL,0.25,RIGHT_FACE,3,3,6,6
+165,SelectTreatment,"You decide to treat casualty D first, which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-D,40.0,M,Civilian,SHRAPNEL,0.25,RIGHT_FACE,3,3,6,6
+180,SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-E,26.0,M,MARINE,AMPUTATION,1.0,RIGHT_CALF,2,3,7,4
+181,SelectTreatment,"You decide to treat casualty E first, which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-E,26.0,M,MARINE,AMPUTATION,1.0,RIGHT_CALF,2,3,7,4
+221,SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-B,25.0,M,MARINE,SHRAPNEL,0.25,LEFT_SIDE,6,4,4,4
+222,SelectTreatment,"You decide to assess casualty B, now which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-B,25.0,M,MARINE,SHRAPNEL,0.25,LEFT_SIDE,6,4,4,4
+233,SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-C,36.0,M,MARINE,SHRAPNEL,0.25,LEFT_FOREARM,7,3,7,6
+234,SelectTreatment,"You decide to assess casualty C, now which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-C,36.0,M,MARINE,SHRAPNEL,0.25,LEFT_FOREARM,7,3,7,6
+241,SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-D,40.0,M,Civilian,SHRAPNEL,0.25,RIGHT_FACE,2,2,8,2
+242,SelectTreatment,"You decide to assess casualty D, now which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-D,40.0,M,Civilian,SHRAPNEL,0.25,RIGHT_FACE,2,2,8,2
+257,SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-E,26.0,M,MARINE,AMPUTATION,1.0,RIGHT_CALF,2,2,2,2
+264,SelectTreatment,"You decide to assess casualty E, now which treatment do you apply?",CHECK_ALL_VITALS,,,,casualty-E,26.0,M,MARINE,AMPUTATION,1.0,RIGHT_CALF,2,2,2,2
+289,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+290,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,10,6,0
+291,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+293,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+295,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+297,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+299,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+301,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+303,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+305,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+307,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+309,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+310,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,5,10,6,0
+311,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+312,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,3,5,8,0
+313,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+315,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+316,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,5,10,6,0
+317,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+319,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+320,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,7,10,2,2
+321,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+322,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,10,8,5
+323,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+324,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,2,10,8,0
+325,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+327,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,10,10,0
+328,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+329,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,5,5,0
+330,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+331,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,10,10,0
+332,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+334,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+336,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+337,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,10,8,5
+338,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+340,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+342,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+344,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+347,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+349,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+350,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,10,10,0
+351,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+353,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+354,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,8,9,0
+355,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+357,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+359,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+361,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+363,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+365,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+367,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+369,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+371,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+373,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+374,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,5,10,6,0
+375,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+377,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+379,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+381,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+383,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+384,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,5,10,6,0
+385,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+387,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+389,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+391,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+393,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+394,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,10,6,0
+395,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+397,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+399,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+400,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,3,10,8,0
+401,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+403,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+405,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+407,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+409,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+410,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,10,6,0
+411,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+412,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,4,10,8,0
+413,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+415,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+417,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+419,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+421,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+423,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+425,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+426,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,7,10,2,2
+427,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+428,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,8,9,0
+429,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+431,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+433,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+435,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+437,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+439,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+441,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+443,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+445,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+447,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+449,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+450,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,3,5,8,0
+451,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+452,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,2,10,8,0
+453,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+455,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+457,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+459,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+461,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+463,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+465,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+467,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+469,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+470,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,7,10,8,0
+471,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+473,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+475,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+476,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,4,7,6,0
+477,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+479,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+480,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,4,10,5,2
+481,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+483,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+485,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+487,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+489,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+491,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+493,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+495,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+496,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,5,5,0
+497,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+498,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,4,10,8,0
+499,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+501,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+502,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,3,10,8,0
+503,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+505,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+506,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,1,10,9,5
+507,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+509,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+510,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,4,10,8,0
+511,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+512,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,1,10,9,5
+513,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+514,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,5,10,6,0
+515,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+517,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+519,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+521,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+523,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+525,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+527,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+529,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+531,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+532,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,4,7,6,0
+533,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+534,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,7,10,8,0
+535,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+537,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+538,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,6,10,6,0
+539,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+541,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+542,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,4,10,5,2
+543,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
+545,MultipleChoice,What do you do?,APPLY_TREATMENT,,Tourniquet,LEFT_CALF,MVP2.BK1.casualty-A,,,CIVILIAN,LACERATION,0.05,LEFT_CALF,0,0,0,0
