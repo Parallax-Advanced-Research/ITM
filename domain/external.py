@@ -1,4 +1,4 @@
-from pydantic import validator
+from pydantic import field_validator
 from dataclasses import dataclass, field
 
 
@@ -33,7 +33,7 @@ class Scenario:
     state: dict = field(default_factory={})
     probes: list[ITMProbe] = None
 
-    @validator("probes")
+    @field_validator("probes")
     def none_probes(cls, probes: list[ITMProbe] | None):
         if probes is None:
             return []
