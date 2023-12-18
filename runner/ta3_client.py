@@ -5,7 +5,7 @@ from domain.internal import KDMA, KDMAs
 
 
 class TA3Client:
-    def __init__(self, endpoint: str = None):
+    def __init__(self, endpoint: str = None, target = None):
         if endpoint is None:
             endpoint = "http://127.0.0.1:8080"
         _config = ta3.Configuration()
@@ -15,7 +15,7 @@ class TA3Client:
         self._api: ta3.ItmTa2EvalApi = ta3.ItmTa2EvalApi(self._client)
         self._session_id: str = "NO_SESSION"
         self._scenario: Scenario = None
-        self._align_tgt: KDMAs = None
+        self._align_tgt: KDMAs = target
         self._actions: dict[ta3.Action] = {}
         self._probe_count: int = 0
 
@@ -23,8 +23,11 @@ class TA3Client:
     def align_tgt(self) -> KDMAs:
         return self._align_tgt
 
-    def start_session(self, adm_name: str = 'TAD', session_type='test'):
-        self._session_id = self._api.start_session(adm_name, session_type)
+    # Known arguments:
+    # max_scenarios
+    # kdma_training
+    def start_session(self, adm_name: str = 'TAD', session_type='test', **kwargs):
+        self._session_id = self._api.start_session(adm_name, session_type, **kwargs)
 
     def start_scenario(self) -> Scenario:
         ta3scen: models.Scenario = self._api.start_scenario(self._session_id)
@@ -38,10 +41,11 @@ class TA3Client:
             probes=[]
         )
 
-        at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
-        kdmas: KDMAs = KDMAs([KDMA(kdma.kdma, kdma.value) for kdma in at.kdma_values])
+        if self._align_tgt is None:
+            at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
+            kdmas: KDMAs = KDMAs([KDMA(kdma.kdma, kdma.value) for kdma in at.kdma_values])
+            self._align_tgt = kdmas
         self._scenario = scen
-        self._align_tgt = kdmas
         self._probe_count = 0
 
         return scen

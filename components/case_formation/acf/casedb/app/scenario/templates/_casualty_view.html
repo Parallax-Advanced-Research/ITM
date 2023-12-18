@@ -1,0 +1,83 @@
+<div class="card mt-2">
+    <div class="card-body">
+        <h6 class="card-title">Casualties <a href="{{ url_for('scenario.add_casualty', scenario_id=scenario.id)
+                                    }}">{{ render_icon('plus-circle-fill', 15, 'primary')}}</a></h6>
+        <p class="card-text">
+        <ul class="list-group list-group-flush">
+            {% for casualty in scenario.casualties.all()|sort(attribute="name") %}
+            <li class="list-group-item">
+                <div>
+                    <a href="{{ url_for('scenario.edit_casualty', casualty_id=casualty.id) }}">[edit casualty]</a>
+                    <a class="text-danger"
+                        href="{{ url_for('scenario.delete_casualty', casualty_id=casualty.id) }}">[delete casualty]</a>
+                </div>
+
+
+                <div class="card bg-warning p-2">
+                    <div class="card-body">
+                        <h6 class="fw-bold">{{ casualty.name }}</h6>
+                        <div class="card-text ">
+                            <p>Description: {{ casualty.description }}</p>
+                            <p>Age: {{casualty.age}} | Sex: {{ casualty.sex}} | Rank: {{
+                                casualty.rank }} | Relationship: {{
+                                casualty.relationship_type | validate_relationship_type | safe}}</p>
+                        </div>
+                    </div>
+                </div>
+                <p>Triage Category: <span class="fw-bold">{{casualty.tag_label}}</span> {{casualty.triage_criteria}}
+                    {{casualty.triage_description}} </p>
+            </li>
+            <li class="list-group-item">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Vitals <a href="{{ url_for('scenario.add_vitals', casualty_id=casualty.id)
+                                    }}">{{ render_icon('plus-circle-fill', 15, 'primary')}}</a>
+                        </h6>
+                        <p class="card-text">
+                            {% if casualty.vitals.all()|count > 0 %}
+                            {% include '_vitals_view.html' %}
+
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div class="card bg-danger">
+                    <div class="card-body">
+                        <h6 class="card-title text-light">Injuries <a href="{{ url_for('scenario.add_injury', casualty_id=casualty.id)
+                                    }}">{{ render_icon('plus-circle-fill', 15, 'primary')}}</a>
+                        </h6>
+                        <p class="card-text">
+                            {% if casualty.injuries|count > 0 %}
+                        <div class="card-group">
+                            {% for injury in casualty.injuries %}
+
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ injury.injury_type}}</h6>
+                                    <p class="card-text">
+                                        {% if injury.created_by %}
+                                        (added by {{ injury.created_by}})
+                                        {% endif %}
+                                    <div>Location: {{injury.injury_location}}</div>
+                                    <div>Severity: {{injury.injury_severity}}</div>
+                                    <div><a href="{{ url_for('scenario.edit_injury', injury_id=injury.id) }}">[edit]</a>
+                                        <a class="text-danger"
+                                            href="{{ url_for('scenario.delete_injury', injury_id=injury.id) }}">[delete]</a>
+                                    </div>
+                                    </p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </li>
+
+            {% endfor %}
+        </ul>
+    </div>
+</div>

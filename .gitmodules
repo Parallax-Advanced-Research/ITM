@@ -1,0 +1,9 @@
+[submodule "itm-api"]
+	path = itm-api
+	url = https://github.com/ITM-Soartech/itm-api.git
+[submodule "itm-evaluation-server"]
+	path = itm-evaluation-server
+	url = https://github.com/NextCenturyCorporation/itm-evaluation-server.git
+[submodule "itm-evaluation-client"]
+	path = itm-evaluation-client
+	url = https://github.com/NextCenturyCorporation/itm-evaluation-client.git

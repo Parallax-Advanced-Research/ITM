@@ -1,1 +1,1 @@
-from .monte_carlo_analyzer import MonteCarloAnalyzer
+from components.decision_analyzer.monte_carlo.monte_carlo_analyzer import MonteCarloAnalyzer
