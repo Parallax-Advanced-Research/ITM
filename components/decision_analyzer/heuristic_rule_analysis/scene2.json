@@ -2,7 +2,7 @@
     "scenario":
     {
         "danger":"high",
-        "urgency":"high",
+        "urgency":"low",
         "error_prone":"high"
     },
     "kdma":
