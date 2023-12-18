@@ -491,7 +491,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     output: 
     - decision
     '''
-
     def satisfactory(self, file_name: str, m: int, seed=None, data: dict=None) -> SelectedTreatment:
 
         if (type(file_name) is not str or len(file_name) == 0) and (type(data) is not dict or data is None): raise AttributeError(
@@ -594,7 +593,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     output:
     - casualty id as string
     '''
-
     def satisfactory_priority(self, casualty_dict: dict) -> dict:
 
         if type(casualty_dict) != dict: raise AttributeError("Incorrect arg types or size")
@@ -627,7 +625,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     output: decision
     '''
-
     def one_bounce(self, file_name: str, m: int, k: int, search_path=False, data: dict = None) -> SelectedTreatment:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
@@ -778,7 +775,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     output:
     - casualty id as string
     '''
-
     def one_bounce_priority(self, casualty_dict: dict) -> dict:
 
         if type(casualty_dict) != dict: raise AttributeError("Incorrect arg types or size")
@@ -836,7 +832,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     '''map between kdmas and treatment predictors (for future work may include casualty and scenario predictors)
     '''
-
     # TODO: for now convert functions are stubs, they will be flushed out later
     def convert_kdma_predictor(self, mission, denial, predictor):
         if not isinstance(mission, numbers.Number) and (0 <= mission <= 10): raise AttributeError("Incorrect arg types or size")
@@ -867,7 +862,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     ''' placeholder data needed by hra strategies until functionality is implemented. Currently creates a scenario file
         with kdma associated predictor values (should be learned), predictor values for possible decisions (will be educated guess), kdma values (should be learned)
     '''
-
     def preprocess(self, decision_list:list) -> str:
 
         if type(decision_list) != list: raise AttributeError("Incorrect arg types or size")
@@ -938,7 +932,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     ''' determines the system likely to be impacted by the injury, and by extension the important treatment
     '''
-
     def guess_injury_body_system(self, location: str, injury: str) -> str:
 
         if type(location) != str or type(injury) != str: raise AttributeError("Incorrect arg types or size")
@@ -971,7 +964,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - dict of dicts, where each key-value pair is the hra strategy and l if the strategy returned the decision or 0 otherwise
     - tree of search path (not implemented)
     '''
-
     def hra_decision_analytics(self, file_name: str, m: int = 2, k: int = 2, search_path = False, rand_seed=0, data: dict = None) -> dict:
 
         if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError("No info to process")
@@ -1063,7 +1055,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                            "conscious": ele.vitals.conscious, "mental_status": ele.vitals.mental_status},
                 "tag": ele.tag, "assessed": ele.assessed, "relationship": ele.relationship
             }
-
         # get priority for each hra strategy
         priority_take_the_best = self.take_the_best_priority(casualty_data, data['kdma'])
         priority_exhaustive = self.exhaustive_priority(casualty_data)
@@ -1089,7 +1080,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
             result = {}
             for pred in predictor_combos:
-
                 temp_data['predictors'] = {'relevance': pred}
                 for treatment in data['treatment']:
                     rel_treatment_found = [x for x in probe.decisions if x.value.name == treatment and x.value.params['casualty'] == casualty]
@@ -1141,7 +1131,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     # How?
                     breakpoint()
                     raise Exception()
-            
             
             metrics: DecisionMetrics = {
                 "All Predictors": DecisionMetric(name="All Predictors", description="Full set of predictors with kdma associated values", value={'-'.join(key + '(' + str(val) + ')' for key, val in data['kdma'].items()):all_predictors}),\
