@@ -95,6 +95,24 @@ class TestHRA(unittest.TestCase):
         result = result[0], result[1]
         self.assertEqual(result, ("no preference", {}))
 
+    def test_one_bounce_two_predictor(self):
+        return False
+
+    def test_take_the_best_priority(self):
+        return False
+
+    def test_exhaustive_priority(self):
+        return False
+
+    def test_tallying_priority(self):
+        return False
+
+    def test_satisfactory_priority(self):
+        return False
+
+    def test_one_bounce_priority(self):
+        return False
+
     def test_hra_decision_analytics(self):
         with open("scene2.json", 'r+') as f:
             self.data = json.load(f)
