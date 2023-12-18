@@ -33,20 +33,24 @@ def train(args):
     logger.info(f"CaseBase created and written to: {MODEL_DIR}/{model_name}.p")
 
 
+def parse_kdmas(kdma_args: list[str]):
+    if kdma_args is None: 
+        return None
+
+    kdma_lst = []
+    for kdmastr in kdma_args:
+        k, v = kdmastr.replace("-", "=").split('=')
+        kdma_lst.append(KDMA(k, float(v)))
+    return KDMAs(kdma_lst)
+
+
 def ltest(args):
     if args.verbose:
         logger.setLevel(VERBOSE_LEVEL)
     else:
         logger.setLevel(LogLevel.INFO)
 
-    kdma_lst = []
-    # if args.kdma_association is not None:
-    #     for kdmastr in args.kdma_association:
-    if args.kdmas is not None:
-        for kdmastr in args.kdmas:
-            k, v = kdmastr.split('=')
-            kdma_lst.append(KDMA(k, v))
-    kdmas: KDMAs = KDMAs(kdma_lst)
+    kdmas: KDMAs = parse_kdmas(args.kdmas)
 
     logger.info(f"Setting alignment to: {kdmas} for variant: {args.variant}")
     logger.info(f"Loading CaseBase at {MODEL_DIR}/{args.model}.p")
@@ -90,8 +94,12 @@ def api_test(args):
         logger.setLevel(LogLevel.INFO)
 
     driver = TA3Driver(args)
-    client = TA3Client(args.endpoint)
-    sid = client.start_session(f'TAD')
+    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas))
+    if args.training:
+        sid = client.start_session(adm_name=f'TAD', session_type='soartech', kdma_training=True)
+    else:
+        sid = client.start_session(f'TAD', session_type=args.session_type)
+        
     logger.info(f"Started Session-{sid}")
     while True:
         scen = client.start_scenario()
@@ -101,6 +109,7 @@ def api_test(args):
         logger.info(f"Started Scenario-{scen.id}")
         driver.set_scenario(scen)
         driver.set_alignment_tgt(client.align_tgt)
+        logger.debug(f"-Alignment target: {client.align_tgt}")
         logger.debug(f"-Initial State: {scen.state}")
 
         probe = client.get_probe()

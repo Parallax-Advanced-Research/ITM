@@ -1148,19 +1148,19 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 "HRA Strategy": DecisionMetric(name="HRA Strategy", description="Applicable hra strategies", value=ret),\
                 "Take-The-Best Priority": DecisionMetric(name="Take-The-Best Priority",
                                                          description="Priority for take-the-best strategy",
-                                                         value=str(str(list(priority_take_the_best.keys())[0]) in str(decision_complete.value))), \
+                                                         value=str(list(priority_take_the_best.keys())[0]) in str(decision_complete.value)), \
                 "Exhaustive Priority": DecisionMetric(name="Exhaustive Priority",
                                                       description="Priority for exhaustive strategy",
-                                                      value=str(str(list(priority_exhaustive.keys())[0]) in str(decision_complete.value))), \
+                                                      value=str(list(priority_exhaustive.keys())[0]) in str(decision_complete.value)), \
                 "Tallying Priority": DecisionMetric(name="Tallying Priority",
                                                     description="Priority for tallying strategy",
-                                                    value=str(str(list(priority_tallying.keys())[0]) in str(decision_complete.value))), \
+                                                    value=str(list(priority_tallying.keys())[0]) in str(decision_complete.value)), \
                 "Satisfactory Priority": DecisionMetric(name="Satisfactory Priority",
                                                         description="Priority for satisfactory strategy",
-                                                        value=str(str(list(priority_satisfactory.keys())[0]) in str(decision_complete.value))), \
+                                                        value=str(list(priority_satisfactory.keys())[0]) in str(decision_complete.value)), \
                 "One-Bounce Priority": DecisionMetric(name="One-Bounce Priority",
                                                       description="Priority for one-bounce strategy",
-                                                      value=str(str(list(priority_one_bounce.keys())[0]) in str(decision_complete.value)))
+                                                      value=str(list(priority_one_bounce.keys())[0]) in str(decision_complete.value))
                 }
             # Update the metrics in the decision with our currently calculated metrics
             decision_complete.metrics.update(metrics)

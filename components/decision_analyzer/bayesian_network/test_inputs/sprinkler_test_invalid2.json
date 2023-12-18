@@ -1,0 +1,87 @@
+{
+    "zeus": {
+        "baseline": "false",
+        "values": { "false": 0, "true": 1 },
+        "parents": [],
+        "distribution": [
+            {
+                "parent_assignment": {},
+                "probabilities": {
+                    "false": 0.85,
+                    "true": 0.15
+                }
+            }
+        ]
+    },
+    "clouds": {
+        "baseline": "false",
+        "values": { "false": 0, "true": 1 },
+        "parents": [],
+        "distribution": [
+            {
+                "parent_assignment": {},
+                "probabilities": {
+                    "false": 0.75,
+                    "true": 0.25
+                }
+            }
+        ]
+    },
+    "rain": {
+        "baseline": "false",
+        "values": { "false": 0, "true": 1 },
+        "parents": [ "clouds", "zeus" ],
+        "distribution": [
+            {
+                "parent_assignment": { "clouds": "false", "zeus": "false" },
+                "probabilities": { "false": 0.97, "true": 0.03 }
+            },
+            {
+                "parent_assignment": { "clouds": "false", "zeus": "true" },
+                "probabilities": { "false": 0.4, "true": 0.61 }
+            },
+            {
+                "parent_assignment": { "clouds": "true", "zeus": "false" },
+                "probabilities": { "false": 0.32, "true": 0.68 }
+            },
+            {
+                "parent_assignment": { "clouds": "true", "zeus": "true" },
+                "probabilities": { "false": 0.1, "true": 0.9 }
+            }
+        ]
+    },
+    "sprinkler": {
+        "baseline": "false",
+        "values": { "false": 0, "true": 1 },
+        "parents": [ "rain" ],
+        "distribution": [
+            {
+                "parent_assignment": { "rain": "false" },
+                "probabilities": { "false": 0.55, "true": 0.45 }
+            },
+            {
+                "parent_assignment": { "rain": "true" },
+                "probabilities": { "false": 0.88, "true": 0.12 }
+            }
+        ]
+    },
+    "wet": {
+        "baseline": "false",
+        "values": { "false": 0, "true": 1 },
+        "parents": [ "rain", "sprinkler" ],
+        "distribution": [
+            {
+                "parent_assignment": { "rain": "false", "sprinkler": "false" },
+                "probabilities": { "false": 1.0, "true": 0.0 }
+            },
+            {
+                "parent_assignment": { "rain": "true", "sprinkler": "false" },
+                "probabilities": { "false": 0.18, "true": 0.82 }
+            },
+            {
+                "parent_assignment": { "rain": "true", "sprinkler": "true" },
+                "probabilities": { "false": 0.02, "true": 0.98 }
+            }
+        ]
+    }
+}
