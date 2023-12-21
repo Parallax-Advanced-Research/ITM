@@ -9,6 +9,42 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
+V KR 1.9.14 (11/28 week)
+=======================
+> Returns an english string decision justification, as well as JSON values
+> Handles new supplies (no effect, no crashing)
+> Refined decision justification output for edge cases (end scenario, etc)
+
+V KR 1.8.13 (11/22 before Thanksgiving)
+=======================
+> Adjust severity to not be divided by total so decimals are visible
+> Fixed numberic names rendering incorrectly in decision justifications
+> Added justification to analysis dict, returns from driver
+> Decisions in analysis are now sorted by SortableDecision class
+> Removed end_scenario action from comparisons because of unintrestingness
+> Refactored monte carlo analyzer to use helper util module
+> Dynamically setting vitals like max blood/breath hp based on the demographics of the casualty 
+
+V KR 1.8.12 (11/20 week begin)
+=======================
+> Probability death triss calculated
+> Fixed driver and montecarlo sim outputting errors in superlow rollout numbers
+> Added Knexus jedi tester script
+> Added decision justifications
+
+V KR 1.7.11 (11/13 week begin)
+========================
+> TA1 client incorperated
+> Burn death and burn suffocation are sepearated, so that a nasopharengeal airway decreases asphyxiation chances in
+  burn victims now.
+> Updated justifications
+
+V KR 1.6.10 (Veterans day week)
+=========================
+> Added genericized metrics instead of mass casualty specific as default flag
+> Sorting of metrics by damage per second (deterioration per second?)
+
+
 V KR 1.5.9 (11/6 BOW)
 =========================
 > Updated justifications to use morbidity/bleedout

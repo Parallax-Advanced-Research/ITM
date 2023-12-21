@@ -50,8 +50,11 @@ class Driver:
         return self.elaborator.elaborate(self.scenario, probe)
 
     def analyze(self, probe: TADProbe):
+        analysis = {}
         for analyzer in self.analyzers:
-            analyzer.analyze(self.scenario, probe)
+            this_analysis = analyzer.analyze(self.scenario, probe)
+            analysis.update(this_analysis)
+        return analysis
 
     def select(self, probe: TADProbe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
@@ -74,19 +77,14 @@ class Driver:
 
         # Elaborate decisions, and analyze them
         probe.decisions = self.elaborate(probe)  # Probe.decisions changes from valid to invalid here
-        self.analyze(probe)
+        analysis = self.analyze(probe)
 
         # Print info affecting decisions
         index: int = 0
-        not_simulated = list()
         sorted_decisions = sort_decisions(probe.decisions)
         for d in sorted_decisions:
-            if d.metrics['SEVERITY'].value is None:
-                not_simulated.append(str(d.value))
-            else:
-                logger.debug(f"Available Action {index}: {d}")
+            logger.debug(f"Available Action {index}: {d}")
             index += 1
-        logger.debug("Not simulated, but probed: %s" % ', '.join(not_simulated))
         for cas in probe.state.casualties:
             logger.debug(f"Casualty: {cas.id} Injuries: {cas.injuries} Vitals: {cas.vitals} Tag: {cas.tag}")
 

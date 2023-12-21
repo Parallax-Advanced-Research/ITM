@@ -17,6 +17,7 @@ def get_TMNT_demo_casualties() -> list[Casualty]:
     also_treat_secondish = Injury(Injuries.CHEST_COLLAPSE.value, location=Locations.LEFT_CHEST.value, severity=.7)
     treat_third = Injury(Injuries.SHRAPNEL.value, location=Locations.LEFT_FACE.value, severity=.4)
     treat_last = Injury(Injuries.FOREHEAD_SCRAPE.value, location=Locations.RIGHT_FACE.value, severity=.1)
+    burned_crispy = Injury(Injuries.BURN.value, location=Locations.UNSPECIFIED.value, severity=.8)
 
     raphael_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.DANDY.value,
                             breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=49)
@@ -27,10 +28,10 @@ def get_TMNT_demo_casualties() -> list[Casualty]:
     leonardo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.PANICKED.value,
                              breathing=BreathingDescriptions_KNX.COLLAPSED.value, hrpmin=50)
     casualties = [
-        Casualty('raphael', 'raphael scraped his head and is fine', name='raphael',
+        Casualty('raphael', 'raphael scraped his head and is fine. Hes also really burned and not okay', name='raphael',
                        relationship='same unit',
                        demographics=Demographics(age=15, sex='M', rank='muscle'),
-                       injuries=[treat_last],
+                       injuries=[treat_last, burned_crispy],
                        vitals=raphael_vitals,
                        complete_vitals=raphael_vitals,
                        assessed=False,
