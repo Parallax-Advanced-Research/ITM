@@ -48,23 +48,50 @@ auto decompress_by_line(string path, uint chunk_size = 4096) {
 	});
 }
 
+string[][string] headers;// headers[name] -> list of files containing it
 void print_headers(string path) {
-	writef("%20s : ", path.baseName);
-	path.decompress_by_line
+	writef("%26s : ", path.baseName);
+	auto pipeline = path.decompress_by_line
 		.take(2)
 		.joiner("\n")
 		.csvReader!(string[string])(null)
 		.front
-		.keys
-		.writeln
-	;
+		.keys;
+
+	foreach (k; pipeline) {
+		if (k !in headers) headers[k] = [];
+		headers[k] ~= path.baseName;
+		writef("%s  ", k);
+	}
+	writef("\n");
 }
 
 void main(string[] argv) {
 	// The original zip file needs to be extracted first; zip library is for the non-extended zip format, which doesn't support files over 4GB.
-	//writef("%s\n", argv[1..$]);
+	
+	auto use_these = [ "diagnoses_icd": 0, "d_labitems": 0, "d_icd_procedures": 0, "emar": 0, "emar_detail": 0, 
+		"diagnoses_icd": 0, "d_icd_diagnoses": 0, "procedures_icd": 0, "d_icd_procedures": 0, "drgcodes": 0 ];
+
+	writef("# Headers for each file\n");
 	foreach (path; argv[1..$]) {
+		assert(".csv.gz" == path[$-7..$], format("Bogus name: %s ::: %s\n", path, path[$-8..$]));
+		auto k = path.baseName[0..$-7];
+		if (k !in use_these) continue;
+		use_these[k] = 1;
 		print_headers(path);
 	}
+	foreach (k,v; use_these) {
+		assert(1 == v, format("%s missing\n", k));
+	}
+
+
+	writef("\n# Possible foreign keys\n");
+	foreach (k,v; headers) {
+		if (1 == v.length) continue;
+		writef("%16s: %s\n", k, v);
+	}
+
+	//TODO: filter out anything that isn't a trauma code
+	// Then get a list of all patient IDs or some other toplevel key, and chunk it by merging ones that match any of the patients in the current chunk.
 }
 
