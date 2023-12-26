@@ -9,6 +9,8 @@ import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 import util.logger
 from domain import Scenario
 from domain.internal import TADProbe, DecisionMetrics
+import pickle
+import os.path as osp
 
 logger = util.logger
 
@@ -36,4 +38,6 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             decision.justifications = decision_justifications
             decision_str = decision_to_actstr(decision)
             analysis[decision_str]['justifications'] = decision_justifications
+        pickle.dump(probe.decisions, open(osp.join('components', 'webpage_production', 'tmp', 'decisions.pkl'), 'wb'))
+        pickle.dump(probe.state, open(osp.join('components', 'webpage_production', 'tmp', 'state.pkl'), 'wb'))
         return analysis

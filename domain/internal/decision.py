@@ -47,4 +47,10 @@ class Decision(typing.Generic[T]):
     def __repr__(self):
         return f"{self.id_}: {self.value} - {self.kdmas} - {[(dm.name, dm.value) for dm in self.metrics.values()]}"
 
+    def __lt__(self, other):
+        return self.metrics['DAMAGE_PER_SECOND'].value < other.metrics['DAMAGE_PER_SECOND'].value
+
+    def __eq__(self, other):
+        return self.metrics['DAMAGE_PER_SECOND'].value < other.metrics['DAMAGE_PER_SECOND'].value
+
 
