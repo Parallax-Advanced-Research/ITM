@@ -9,12 +9,18 @@ if osp.abspath('.') not in sys.path:
 import domain
 
 
-def _get_casualty_from_decision(decision):
+def _get_casualty_from_decision(decision, div_text=False):
     casualty = None
     if isinstance(decision, str):
         return 'NA'
     param_dict = decision.value.params
-    return casualty if 'casualty' not in param_dict.keys() else param_dict['casualty']
+    if not div_text:
+        return casualty if 'casualty' not in param_dict.keys() else param_dict['casualty']
+    else:
+        if 'casualty' not in param_dict.keys():
+            return None
+        retstr = '''<div title=\"%s\">%s</div>''' % ('Random hovertext', param_dict['casualty'])
+        return retstr
 
 
 def _get_params_from_decision(decision):
@@ -28,18 +34,18 @@ def _get_params_from_decision(decision):
     return retdict
 
 
-def decisions_to_df(decision_list) -> pd.DataFrame:
-    df = pd.DataFrame(columns=['Decision', 'Casualty', 'Location', 'Treatment', 'Tag', 'Probability Death',
-                               'Damage Per Second', 'Params'])
-    for decision in decision_list:
-        casualty = _get_casualty_from_decision(decision)
-        additional = _get_params_from_decision(decision)
-        line = {'Decision': decision.value.name, 'Casualty': casualty, 'Location': additional['Location'],
-                'Treatment': additional['Treatment'], 'Tag': additional['Tag'],
-                'Probability Death': decision.metrics['MEDSIM_P_DEATH'].value,
-                'Damage Per Second': decision.metrics['DAMAGE_PER_SECOND'].value}
-        df = pd.concat([df, pd.DataFrame([line])], ignore_index=True)
-    return df
+# def decisions_to_df(decision_list) -> pd.DataFrame:
+#     df = pd.DataFrame(columns=['Decision', 'Casualty', 'Location', 'Treatment', 'Tag', 'Probability Death',
+#                                'Damage Per Second', 'Params'])
+#     for decision in decision_list:
+#         casualty = _get_casualty_from_decision(decision)
+#         additional = _get_params_from_decision(decision)
+#         line = {'Decision': decision.value.name, 'Casualty': casualty, 'Location': additional['Location'],
+#                 'Treatment': additional['Treatment'], 'Tag': additional['Tag'],
+#                 'Probability Death': decision.metrics['MEDSIM_P_DEATH'].value,
+#                 'Damage Per Second': decision.metrics['DAMAGE_PER_SECOND'].value}
+#         df = pd.concat([df, pd.DataFrame([line])], ignore_index=True)
+#     return df
 
 
 def casualty_df_from_state(state) -> pd.DataFrame:
@@ -52,18 +58,18 @@ def supply_df_from_state(state) -> pd.DataFrame:
     return df
 
 
-def display_mca_analysis(analysis_df, scenario):
-    st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
-    # st.subheader('Hi Im JT :wave:')
-    # st.title("This page shows stats for itm decisions")
-    # st.write('return 3')
-    decision_df = decisions_to_df(decision_list=analysis_df)
-    decision_df.sort_values(by='Damage Per Second', inplace=True)
-    casualty_df = casualty_df_from_state(scenario)
-    supply_df = supply_df_from_state(scenario)
-    st.markdown(decision_df.to_html(), unsafe_allow_html=True)
-    st.table(casualty_df)
-    st.table(supply_df)
+# def display_mca_analysis(analysis_df, scenario):
+#     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
+#     # st.subheader('Hi Im JT :wave:')
+#     # st.title("This page shows stats for itm decisions")
+#     # st.write('return 3')
+#     decision_df = decisions_to_df(decision_list=analysis_df)
+#     decision_df.sort_values(by='Damage Per Second', inplace=True)
+#     casualty_df = casualty_df_from_state(scenario)
+#     supply_df = supply_df_from_state(scenario)
+#     st.markdown(decision_df.to_html(), unsafe_allow_html=True)
+#     st.table(casualty_df)
+#     st.table(supply_df)
 
 
 def make_html_table_header():
@@ -72,7 +78,7 @@ def make_html_table_header():
 
 
 def get_html_line(decision):
-    casualty = _get_casualty_from_decision(decision)
+    casualty = _get_casualty_from_decision(decision,)
     additional = _get_params_from_decision(decision)
     justifications = get_html_justification(decision.justifications)
     medsim_pdeath_english = justifications['pdeath'].split('is')[-1]
@@ -85,7 +91,12 @@ def get_html_line(decision):
 
 
 def get_html_decision(decision):
-    return decision.value.name
+    hoverstring = """%s:, Average Severity: %.2f, Supplies Remaining: %d (%d used), Average Time Used: %d""" % (decision.value.name, decision.metrics['SEVERITY'].value,
+                            decision.metrics['SUPPLIES_USED'].value, decision.metrics['SUPPLIES_REMAINING'].value,
+                            decision.metrics['AVERAGE_TIME_USED'].value)
+    retstr = '''<div title=\"%s\">%s</div>''' % (hoverstring, decision.value.name)
+    return retstr
+
 
 def construct_decision_table(analysis_df):
     st.set_page_config(page_title='ITM Decision Viewer HTML VERSION YEE-HAW', page_icon=':fire:', layout='wide')

@@ -1,3 +1,5 @@
+import sys
+
 from components.decision_analyzer.monte_carlo.mc_sim.decision_justification import DecisionJustifier
 from components.decision_analyzer.monte_carlo.util.mca_funcs import (decision_to_actstr, train_mc_tree,
                                                                      extract_medsim_state,get_simulated_states_from_dnl,
@@ -40,4 +42,5 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             analysis[decision_str]['justifications'] = decision_justifications
         pickle.dump(probe.decisions, open(osp.join('components', 'webpage_production', 'tmp', 'decisions.pkl'), 'wb'))
         pickle.dump(probe.state, open(osp.join('components', 'webpage_production', 'tmp', 'state.pkl'), 'wb'))
+        # sys.exit(1)
         return analysis
