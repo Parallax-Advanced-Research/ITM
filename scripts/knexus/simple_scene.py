@@ -101,7 +101,7 @@ class SimpleClient:
                          'mission': {'unstructured': self.UNSTRUCTURED, 'mission_type': 'Extraction'},
                          'environment': self.ENVIRONMENT, 'threat_state': self.THREAT_STATE,
                          'supplies': supplies_as_dict, 'casualties': casualties_as_dict}
-        probe: ITMProbe = ITMProbe(id='tmnt-probe', type=ProbeType.MC, prompt="what do?",
+        probe: ITMProbe = ITMProbe(id='simple-probe', type=ProbeType.MC, prompt="what do?",
                                    state=swagger_state, options=ta3_actions)
         return probe
 

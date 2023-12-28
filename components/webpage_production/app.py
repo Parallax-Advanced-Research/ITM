@@ -34,20 +34,6 @@ def _get_params_from_decision(decision):
     return retdict
 
 
-# def decisions_to_df(decision_list) -> pd.DataFrame:
-#     df = pd.DataFrame(columns=['Decision', 'Casualty', 'Location', 'Treatment', 'Tag', 'Probability Death',
-#                                'Damage Per Second', 'Params'])
-#     for decision in decision_list:
-#         casualty = _get_casualty_from_decision(decision)
-#         additional = _get_params_from_decision(decision)
-#         line = {'Decision': decision.value.name, 'Casualty': casualty, 'Location': additional['Location'],
-#                 'Treatment': additional['Treatment'], 'Tag': additional['Tag'],
-#                 'Probability Death': decision.metrics['MEDSIM_P_DEATH'].value,
-#                 'Damage Per Second': decision.metrics['DAMAGE_PER_SECOND'].value}
-#         df = pd.concat([df, pd.DataFrame([line])], ignore_index=True)
-#     return df
-
-
 def casualty_df_from_state(state) -> pd.DataFrame:
     df = pd.DataFrame()
     return df
@@ -99,27 +85,53 @@ def get_html_decision(decision):
 
 
 def construct_decision_table(analysis_df):
-    st.set_page_config(page_title='ITM Decision Viewer HTML VERSION YEE-HAW', page_icon=':fire:', layout='wide')
     table_header = make_html_table_header()
     lines = ""
     # analysis_df.sort_values(by='Damage Per Second', inplace=True)
     for decision in sorted(analysis_df):
         lines += get_html_line(decision)
-    full_html = table_header + lines
+    full_html = table_header + lines + '<hr>'
     return full_html
 
 
 def get_html_justification(justification_list):
-    # print(justification_list)
     if justification_list[0]['DECISION_JUSTIFICATION_ENGLISH'] == 'End Scenario not Simulated':
         return {'dps': 'End Scenario not Simulated', 'pdeath': 'End Scenario not Simulated'}
     return {'dps': justification_list[3]['DECISION_JUSTIFICATION_ENGLISH'],
             'pdeath': justification_list[4]['DECISION_JUSTIFICATION_ENGLISH']}
 
+def get_casualty_table(scenario):
+    return '''|Casualty| Injury | Location| Treated|
+|---|---|---|---|
+|JT| Blown Knee | Left Knee | False|
+<hr>'''
+
+
+def get_supplies_table(scenario):
+    return '''|Supplies| Quantity|
+|---|---|
+|Heavy Books| 1 |
+<hr>'''
+
+
+def get_environmental_table(scenario):
+    return '''|Environmental Factor| Threat|
+|---|---|
+|Cat| Low|
+|Flatulance| Medium|
+<hr>'''
+
 
 if __name__ == '__main__':
     analysis_df = pickle.load(open(osp.join('components', 'webpage_production', 'tmp', 'decisions.pkl'), 'rb'))
     scenario = pickle.load(open(osp.join('components', 'webpage_production', 'tmp', 'state.pkl'), 'rb'))
-    # display_mca_analysis(analysis_df, scenario)
-    full_html = construct_decision_table(analysis_df)
-    st.markdown(full_html, unsafe_allow_html=True)
+    st.set_page_config(page_title='ITM Decision Viewer HTML VERSION YEE-HAW', page_icon=':fire:', layout='wide')
+    st.title("This page shows stats for itm decisions")
+    decision_table_html = construct_decision_table(analysis_df)
+    casualty_html = get_casualty_table(scenario)
+    supply_html = get_supplies_table(scenario)
+    environmental_html = get_environmental_table(scenario)
+    st.markdown(decision_table_html, unsafe_allow_html=True)
+    st.markdown(casualty_html, unsafe_allow_html=True)
+    st.markdown(supply_html, unsafe_allow_html=True)
+    st.markdown(environmental_html, unsafe_allow_html=True)
