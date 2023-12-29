@@ -123,8 +123,8 @@ def get_environmental_table(scenario):
 
 
 if __name__ == '__main__':
-    analysis_df = pickle.load(open(osp.join('components', 'webpage_production', 'tmp', 'decisions.pkl'), 'rb'))
-    scenario = pickle.load(open(osp.join('components', 'webpage_production', 'tmp', 'state.pkl'), 'rb'))
+    analysis_df = pickle.load(open(osp.join('components', 'probe_dumper', 'tmp', 'decisions.pkl'), 'rb'))
+    scenario = pickle.load(open(osp.join('components', 'probe_dumper', 'tmp', 'state.pkl'), 'rb'))
     st.set_page_config(page_title='ITM Decision Viewer HTML VERSION YEE-HAW', page_icon=':fire:', layout='wide')
     st.title("This page shows stats for itm decisions")
     decision_table_html = construct_decision_table(analysis_df)

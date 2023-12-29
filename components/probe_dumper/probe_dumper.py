@@ -1,4 +1,3 @@
-from components.probe_dumper.dump_config import DumpConfig
 import os
 import sys
 import os.path as osp
@@ -6,6 +5,15 @@ import pickle as pkl
 
 from domain.internal import TADProbe, Decision
 from domain.ta3 import TA3State
+
+
+class DumpConfig:
+    def __init__(self):
+        self.dump_path = osp.join('components', 'probe_dumper', 'tmp')
+        self.clean_start = True
+
+
+DEFAULT_DUMP = DumpConfig()
 
 
 class Dump:

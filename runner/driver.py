@@ -2,8 +2,7 @@ import typing
 import domain as ext
 from components import Elaborator, DecisionSelector, DecisionAnalyzer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
-from components.probe_dumper.probe_dumper import ProbeDumper
-from components.probe_dumper.dump_config import DumpConfig, DEFAULT_DUMP
+from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
 from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs
 from util import logger
 
@@ -30,7 +29,6 @@ class Driver:
     def set_scenario(self, scenario: ext.Scenario):
         state = self._extract_state(scenario.state)
         self.scenario = Scenario(scenario.id, state)
-
 
     def translate_probe(self, itm_probe: ext.ITMProbe) -> TADProbe:
         # Translate probe external state into internal state
