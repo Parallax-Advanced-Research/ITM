@@ -4,6 +4,8 @@ from typing import Iterable, Optional, TypeVar, Callable, Any
 
 PYTHON = 'python3'
 SCRIPTDIR = 'testscripts'
+COMMAND_LIST = 'tests.commands'
+ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 SKIPLIST = [ 
 	r'^\..',  # matches `./foo`. `.` and `..` aren't returned by os.scandir() in the first place
@@ -36,9 +38,16 @@ def static_vars(**kwargs: Any) -> Callable[[T], T]:
 			setattr(f, k, v)
 		return f
 	return decorate
+
+def color(color: str, s: str) -> None:
+	""" Like print, but with ANSI color codes on either end of the string """
+
+	ansi = { 'bold': 1, 'red': 91, 'green': 92, 'yellow': 93, 'blue': 94 }
+	assert color in ansi
+	print(f"\x1b[{ansi[color]}m{s}\x1b[0m")
 	
 def error(s: str) -> None:
-	print(f"\x1b[91m{s}\x1b[0m")
+	color('red', s)
 
 def print_output(lines: list[str]) -> None:
 	print("-" * 70)
@@ -76,7 +85,7 @@ def find_python_files(dirname: str) -> Iterable[str]:
 				for a in find_python_files(entry.path):
 					yield a
 		elif re.match(r"^.*\.py$", entry.name):
-			yield entry.path
+			yield os.path.relpath(entry.path, ROOT_DIR)
 
 def to_module_path(path: str) -> str:
 	""" foo/bar/baz.py -> foo.bar.baz
@@ -97,20 +106,20 @@ def to_module_path(path: str) -> str:
 
 	return '.'.join(components)
 
-def run_tests(verbose: bool) -> None:
+def run_tests(paths: list[str], verbose: bool) -> None:
+	""" If `paths` isn't empty, we only run paths in it. Otherwise, we run all
+		test scripts under the current directory.
+		`verbose` is what it sounds like. """
 	file_list = list(find_python_files('.'))
+	if len(paths):
+		file_list = [ a for a in file_list if a in paths ]
+
 	basedir = os.getcwd()
 
 	pytest_results: dict[str, int | pytest.ExitCode] = {}
 	unittest_results: dict[str, unittest.TestResult] = {}
 
 	# Run tests
-#	lst = [os.path.basename(path) for path in file_list
-#		if re.match(r"^test_.*\.py", os.path.basename(path)) and not uses_unittest(path) ]
-	#print(lst)
-	#pytest.main([os.path.basename(path) for path in file_list] + ['--no-header'], plugins=[])
-	#return
-
 	for path in file_list:
 		if os.path.realpath(__file__) == os.path.realpath(path):
 			continue
@@ -120,7 +129,7 @@ def run_tests(verbose: bool) -> None:
 			dirname = '.'
 	
 		if uses_unittest(path):
-			sys.stdout.write(f"\x1b[1mUNITTEST: {path}\x1b[0m\n")
+			color('bold', f'\n## UNITTEST: {path}')
 			name = to_module_path(path)
 			__import__(name, globals(), {}, [], 0) # loads each module and sets __package__ so imports actually work
 
@@ -130,7 +139,7 @@ def run_tests(verbose: bool) -> None:
 			unittest_results[path] = r.result
 			os.chdir(basedir)
 		elif re.match(r"^test_.*\.py", os.path.basename(path)) and not uses_unittest(path):
-			sys.stdout.write(f"\x1b[1mPYTEST: {path}:\x1b[0m\n")
+			color('bold', f'\n## PYTEST: {path}:')
 			os.chdir(dirname)
 			assert path not in pytest_results
 			pytest_argv = [os.path.basename(path), '--no-header', '--no-summary', '-q']
@@ -140,32 +149,59 @@ def run_tests(verbose: bool) -> None:
 			os.chdir(basedir)
 
 	# Results summary
+
 	failures = not all(a == pytest.ExitCode.OK for a in pytest_results.values()) \
 		or not all(a.wasSuccessful() for a in unittest_results.values())
 
+	if 0 == len(pytest_results) and 0 == len(unittest_results):
+		color('yellow', 'No tests found')
+		return
 	if not failures:
-		print("\x1b[92mAll tests passed\x1b[0m")
-	longest_path = max(max(len(a) for a in pytest_results), max(len(a) for a in unittest_results)) + 1
+		color('green', 'All tests passed')
+		return
+	
+	with open(COMMAND_LIST, encoding='utf-8') as fin:
+		commands = [
+			a for a in [cmd.strip() for cmd in fin]
+			if len(a) and '#' != a[0]
+		]
+
+	longest_path = max(
+		max(len(a) for a in pytest_results), 
+		max(len(a) for a in unittest_results),
+		max(len(a) for a in commands)
+	) + 1
+
+	color('bold', '\n## Summary')
 	for path,result in pytest_results.items():
 		pathfmt = ("%-" + str(longest_path) + "s") % path
 		if pytest.ExitCode.NO_TESTS_COLLECTED == result:
-			print(f"\x1b[93m{pathfmt}: {str(result)}\x1b[0m")
+			color('yellow', f"{pathfmt}: {str(result)}")
 		elif pytest.ExitCode.OK != result:
-			print(f"\x1b[91m{pathfmt}: {str(result)}\x1b[0m")
+			color('red', f"{pathfmt}: {str(result)}")
 		else:
-			print(f"\x1b[92m{pathfmt}: passed\x1b[0m")
+			color('green', f"{pathfmt}: passed")
 			
 
 	for path,unittest_result in unittest_results.items():
 		if not unittest_result.wasSuccessful():
 			pathfmt = ("%-" + str(longest_path) + "s") % path
-			print(f"\x1b[91m{pathfmt}: {unittest_result}\x1b[0m")
+			color('red', f"{pathfmt}: {unittest_result}")
 
-	# TODO: move this code inside the existing test script
+
+	# Run test commands from COMMAND_LIST
+	for cmd in commands:
+		# TODO: verbose mode
+		ret = subprocess.run(cmd, shell=True, check=False).returncode
+		fmt = ("%-" + str(longest_path) + "s") % cmd
+		if 0 == ret:
+			color('green', f"{fmt}: passed")
+		else:
+			color('red', f"{fmt}: failure")
+
+
 	# NOTE: all tests should be set up to run from the project root. e.g., "from . import hra" instead of "import hra"
-
 	# permit comments of the form `# pwd=root` `# pwd=file`, `# searchpath=file` etc. to override default settings
-
 	# tad_tester now lets us specify what order we get the session data in, so we can add a global integration test to the unit tests
 
 
@@ -202,7 +238,7 @@ def mypy_all(paths: list[str]) -> dict[str, list[str]]:
 		a = re.split(r'\.py:[0-9]+: (error|note): ', line)
 		assert 3 == len(a), "Line doesn't match expected pattern" # also catches cases where the path name matches the delimiter regex (which will never happen)
 		path, msg_type, msg = a
-		path = f"./{path}.py"
+		path = os.path.relpath(f"{path}.py", ROOT_DIR)
 
 		assert path in results
 		if 'error' == msg_type:
@@ -228,56 +264,46 @@ def compile_filter(paths: list[str], verbose: bool) -> list[str]:
 	return ret
 
 def delint(path: str, mypy_results: dict[str, list[str]], verbose: bool) -> None:
-	results: dict[str, Result] = {}
-
-	# TODO: maybe do a single mypy run, passing it all files that are python files and compile.
-	# Can filter lines by pathname
-	# Probably don't need to do this for pylint and pyflakes. Those don't do the same level of following imports.
-
-	# TODO: permit script to be run for a single file, so we can do verbose for just the one we're fixing
-
-	# TODO: align all these lines
-
-	basedir = os.getcwd()
 	pyflakes3 = cmd([ 'pyflakes3', path ])
 	pylint = cmd([ PYTHON, '-m', 'pylint', '-sn', path ], env={ 'PYLINTRC' : os.path.join(SCRIPTDIR, 'pylintrc') })
 
-	fail = len(mypy_results[path]) or pyflakes3.code or pylint.code
+	mypy_errors = len(mypy_results[path])
+	pyflakes_errors = len(pyflakes3.output)
+	pylint_errors = len(pylint.output)
+	def entry(lbl: str, errorcount: int) -> str:
+		return f"{lbl}: \x1b[91m{errorcount} errors\x1b[0m" if errorcount \
+			else f"{lbl}: \x1b[92mpassed\x1b[0m"
+	
+	print(f"{path} --- {entry('mypy', mypy_errors)}, {entry('pyflakes', pyflakes_errors)}, {entry('pylint', pylint_errors)}")
+	if verbose:
+		if mypy_errors:
+			color('bold', '## mypy')
+			for line in mypy_results[path]:
+				print(line)
+			print()
+		
+		if pyflakes_errors:
+			color('bold', '## pyflakes')
+			for line in pyflakes3.output:
+				print(line)
+			print()
 
-	if fail or True:
-		mypy_errors = len(mypy_results[path])
-		pyflakes_errors = len(pyflakes3.output)
-		pylint_errors = len(pylint.output)
-		def entry(lbl: str, errorcount: int) -> str:
-			return f"{lbl}: \x1b[91m{errorcount} errors\x1b[0m" if errorcount \
-				else f"{lbl}: \x1b[92mpassed\x1b[0m"
-		print(f"{path} --- {entry('mypy', mypy_errors)}, {entry('pyflakes', pyflakes_errors)}, {entry('pylint', pylint_errors)}")
-	
-#		if 0 != mypy.returncode:
-#			error(f"MYPYPATH='{basedir}' mypy {' '.join(MYPY_FLAGS)} '{path}' failed")
-#			if verbose:
-#				print_output(mypy)
-#			else:
-#				lines = bytes.decode(mypy.stdout, encoding='utf-8').split("\n")
-#				lastline = [ line for line in lines if len(line.strip()) ][-1]
-#				print(lastline)
-#
-#		if 0 != pyflakes.returncode:
-#			error(f"pyflakes3 {path} failed")
-#			if verbose:
-#				print_output(pyflakes)
-#			else:
-#				print(f"Errors: {len(pyflakes.stdout)}")
-#
-#		if 0 != pylint.returncode:
-#			error(f"{PYTHON} -m pylint -sn '{path}' failed")
-#			if verbose:
-#				print_output(pylint)
-#			else:
-#				print(f"Errors: {len(pylint.stdout) - 1}")
-	
+		if pylint_errors:
+			color('bold', '## pylint')
+			for line in pylint.output:
+				print(line)
+			print()
+
+		print()
+
+
 def main() -> None:
-	parser = argparse.ArgumentParser(description = 'Runs unit tests and lint tools')
+	parser = argparse.ArgumentParser(
+		description = 'Runs unit tests and lint tools',
+		epilog='I recommend running it without any arguments first, for the summary, then ' +
+			'running with --verbose on specific files. Otherwise, there will be too much ' +
+			'detail to be useful.')
+
 	parser.add_argument('paths', nargs='*',
 		help='List of python files to check. If empty, will check all python files under the current directory')
 	parser.add_argument('--notest', action='store_true', help="Don't run unit tests")
@@ -287,24 +313,23 @@ def main() -> None:
 	sys.argv = [ __file__ ] # pytest's main() function uses this
 
 	if not args.notest:
-		print("\x1b[94m# Unit Tests\x1b[0m")
-		run_tests(args.verbose)
+		color('blue', '# Unit Tests')
+		run_tests([] if args.paths is None else args.paths, args.verbose)
 		print()
 
-	print("\x1b[94m# Compilation\x1b[0m")
+	color('blue', '# Compilation')
 	paths = compile_filter(\
 		args.paths if len(args.paths) else find_python_files('.'),
 		args.verbose)
+	paths = [ os.path.relpath(path, ROOT_DIR) for path in paths ]
 	print()
 
 	if (not args.nolint) and len(paths):
-		print("\x1b[94m# Lint Tools\x1b[0m")
+		color('blue', '# Lint Tools')
 		mypy_results = mypy_all(paths)
 		for path in paths:
 			delint(path, mypy_results, args.verbose)
 
 if __name__ == '__main__':
 	main()
-
-# TODO: write a color(color: str, s: str) function instead of doing ANSI magic numbers everywhere
 
