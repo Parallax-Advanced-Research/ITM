@@ -3,7 +3,7 @@ import os, re, pytest, unittest, subprocess, argparse, sys
 from typing import Iterable, Optional, TypeVar, Callable, Any
 
 PYTHON = 'python3'
-SCRIPTDIR = 'testscripts'
+SCRIPTDIR = 'scripts'
 COMMAND_LIST = 'tests.commands'
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 
