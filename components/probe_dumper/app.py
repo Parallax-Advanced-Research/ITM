@@ -1,12 +1,17 @@
+import os
+
 import streamlit as st
 import pandas as pd
-import pickle
+import pickle as pkl
 import os.path as osp
 import sys
-import numpy as np
+
+
 if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
+from components.probe_dumper.probe_dumper import DUMP_PATH
+from domain.mvp.mvp_state import Casualty, Supply
 
 
 def _get_casualty_from_decision(decision, div_text=False):
@@ -30,7 +35,7 @@ def _get_params_from_decision(decision):
     param_dict = decision.value.params
     retdict = {'Location': None if 'location' not in param_dict.keys() else param_dict['location'],
                'Treatment': None if 'treatment' not in param_dict.keys() else param_dict['treatment'],
-               'Tag': None if 'tag' not in param_dict.keys() else param_dict['tag']}
+               'Tag': None if 'category' not in param_dict.keys() else param_dict['category']}
     return retdict
 
 
@@ -42,20 +47,6 @@ def casualty_df_from_state(state) -> pd.DataFrame:
 def supply_df_from_state(state) -> pd.DataFrame:
     df = pd.DataFrame()
     return df
-
-
-# def display_mca_analysis(analysis_df, scenario):
-#     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
-#     # st.subheader('Hi Im JT :wave:')
-#     # st.title("This page shows stats for itm decisions")
-#     # st.write('return 3')
-#     decision_df = decisions_to_df(decision_list=analysis_df)
-#     decision_df.sort_values(by='Damage Per Second', inplace=True)
-#     casualty_df = casualty_df_from_state(scenario)
-#     supply_df = supply_df_from_state(scenario)
-#     st.markdown(decision_df.to_html(), unsafe_allow_html=True)
-#     st.table(casualty_df)
-#     st.table(supply_df)
 
 
 def make_html_table_header():
@@ -100,37 +91,77 @@ def get_html_justification(justification_list):
     return {'dps': justification_list[3]['DECISION_JUSTIFICATION_ENGLISH'],
             'pdeath': justification_list[4]['DECISION_JUSTIFICATION_ENGLISH']}
 
+
+def htmlify_casualty(casualty: Casualty):
+    if len(casualty.injuries) == 0:
+        return '|%s| None | N/A | N/A|\n' % casualty.id
+    lines = ''
+    for injury in casualty.injuries:
+        lines += '|%s|%s|%s|%s|\n' % (casualty.id, injury.name, injury.location, injury.treated)
+    return lines
+
+
 def get_casualty_table(scenario):
-    return '''|Casualty| Injury | Location| Treated|
-|---|---|---|---|
-|JT| Blown Knee | Left Knee | False|
-<hr>'''
+    header = '''|Casualty| Injury | Location| Treated|
+|---|---|---|---|\n'''
+    lines = ''
+    for casualty in scenario.casualties:
+        lines += htmlify_casualty(casualty)
+    return '''%s%s<hr>''' % (header, lines)
+
+
+def htmlify_supply(supply: Supply):
+    return '''|%s|%d|\n''' % (supply.type, supply.quantity)
 
 
 def get_supplies_table(scenario):
-    return '''|Supplies| Quantity|
-|---|---|
-|Heavy Books| 1 |
-<hr>'''
+    header = '''|Supplies| Quantity|
+|---|---|\n'''
+    lines = ''
+    for supply in scenario.supplies:
+        lines += htmlify_supply(supply)
+    return '''%s%s<hr>''' % (header, lines)
 
 
-def get_environmental_table(scenario):
-    return '''|Environmental Factor| Threat|
-|---|---|
-|Cat| Low|
-|Flatulance| Medium|
-<hr>'''
+def htmlify_action(idx, action_performed):
+    return '''|%s|%d|\n''' % (action_performed, idx + 1)
+
+
+def get_previous_actions(scenario):
+    header = '''|Decision|Decision Number|
+|---|---|\n'''
+    lines = ''
+    for idx, action_performed in enumerate(scenario.actions_performed):
+        lines += htmlify_action(idx, action_performed)
+    return '''%s%s\n''' % (header, lines)
+
+
+def read_saved_scenarios():
+    scenarios_run = os.listdir(DUMP_PATH)
+    scenarios_run = [osp.join(DUMP_PATH, x) for x in scenarios_run if 'pkl' in x]
+    scenario_hash = {}
+    for sr in scenarios_run:
+        scenario_hash[sr.split('.')[0].split('/')[-1]] = pkl.load(file=open(sr, mode='rb'))
+    return scenario_hash
 
 
 if __name__ == '__main__':
-    analysis_df = pickle.load(open(osp.join('components', 'probe_dumper', 'tmp', 'decisions.pkl'), 'rb'))
-    scenario = pickle.load(open(osp.join('components', 'probe_dumper', 'tmp', 'state.pkl'), 'rb'))
+    # analysis_df = pickle.load(open(osp.join('components', 'probe_dumper', 'tmp', 'decisions.pkl'), 'rb'))
+    # scenario = pickle.load(open(osp.join('components', 'probe_dumper', 'tmp', 'state.pkl'), 'rb'))
     st.set_page_config(page_title='ITM Decision Viewer HTML VERSION YEE-HAW', page_icon=':fire:', layout='wide')
-    st.title("This page shows stats for itm decisions")
+    scenario_pkls = read_saved_scenarios()
+    with st.sidebar:  # Legal term
+        chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
+        num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
+        chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
+    st.header("""Scenario: %s""" % chosen_scenario)
+    st.subheader("""Decision %d/%d""" % (chosen_decision, len(num_decisions)))
+    analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
+    state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
     decision_table_html = construct_decision_table(analysis_df)
-    casualty_html = get_casualty_table(scenario)
-    supply_html = get_supplies_table(scenario)
-    environmental_html = get_environmental_table(scenario)
+    casualty_html = get_casualty_table(state)
+    supply_html = get_supplies_table(state)
+    environmental_html = get_previous_actions(state)
     st.markdown(decision_table_html, unsafe_allow_html=True)
     st.markdown(casualty_html, unsafe_allow_html=True)
     st.markdown(supply_html, unsafe_allow_html=True)
