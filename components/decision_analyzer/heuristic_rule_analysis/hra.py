@@ -1064,35 +1064,55 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         #  for each casualty and each predictor set combination get the hra analytics
         temp_data = copy.deepcopy(data)
-        set_sz = 2
+        ensemble_set = {}
         all_predictors = {'time': 'seconds', 'resources': 'few', 'risk_reward_ratio': 'low', 'system': 'equal'} # TODO calculate predictors based on kdmas
-        predictor_combos = self.gen_predictor_combo(all_predictors, set_sz)  # run hra for each of the possible combinations of predictors
+        for n in range(2, len(all_predictors) + 1):
+            set_sz = n
+
+            predictor_combos = self.gen_predictor_combo(all_predictors, set_sz)  # run hra for each of the possible combinations of predictors
+            casualty_analytics = []
+
+            for casualty in casualty_data:
+                injury_cnt = min(1, len(casualty_data[casualty]['injuries']))
+                injury_cnt = range(injury_cnt)
+                casualty_data[casualty]['injury'] = {'system':"None"}
+                for i in injury_cnt:
+                    casualty_data[casualty]['injury']['system'] = self.guess_injury_body_system(casualty_data[casualty]['injuries'][i]['location'], casualty_data[casualty]['injuries'][i]['name'])
+                temp_data['casualty'] = casualty_data[casualty]
+                temp_data['treatment'] = {}
+
+                result = {}
+                for pred in predictor_combos:
+                    temp_data['predictors'] = {'relevance': pred}
+                    for treatment in data['treatment']:
+                        rel_treatment_found = [x for x in probe.decisions if x.value.name == treatment and x.value.params['casualty'] == casualty]
+                        if len(rel_treatment_found):
+                            for name, val in data['treatment'][treatment].items():
+                                temp_data['treatment'][name] = {}
+                                for vpred in val:
+                                    if vpred in pred:
+                                        temp_data['treatment'][name][vpred] = val[vpred]
+                    hash_ele = '-'.join(x for x in pred)
+                    m_arg = int(set_sz * 0.8) # number of predictors to start with before increasing for tallying, one-bounce, and satisfactory
+                    result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data, m=m_arg)
+                casualty_analytics.append({casualty: result})
+
+            ensemble_set[n] = copy.deepcopy(casualty_analytics)
+
+        # extract casualty analytics of all predictor combinations from ensemble_set
         casualty_analytics = []
-
-        for casualty in casualty_data:
-            injury_cnt = min(1, len(casualty_data[casualty]['injuries']))
-            injury_cnt = range(injury_cnt)
-            casualty_data[casualty]['injury'] = {'system':"None"}
-            for i in injury_cnt:
-                casualty_data[casualty]['injury']['system'] = self.guess_injury_body_system(casualty_data[casualty]['injuries'][i]['location'], casualty_data[casualty]['injuries'][i]['name'])
-            temp_data['casualty'] = casualty_data[casualty]
-            temp_data['treatment'] = {}
-
-            result = {}
-            for pred in predictor_combos:
-                temp_data['predictors'] = {'relevance': pred}
-                for treatment in data['treatment']:
-                    rel_treatment_found = [x for x in probe.decisions if x.value.name == treatment and x.value.params['casualty'] == casualty]
-                    if len(rel_treatment_found):
-                        for name, val in data['treatment'][treatment].items():
-                            temp_data['treatment'][name] = {}
-                            for vpred in val:
-                                if vpred in pred:
-                                    temp_data['treatment'][name][vpred] = val[vpred]
-                hash_ele = '-'.join(x for x in pred)
-                m_arg = int(set_sz * 0.8) # number of predictors to start with before increasing for tallying, one-bounce, and satisfactory
-                result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data, m=m_arg)
-            casualty_analytics.append({casualty: result})
+        for key in casualty_data.keys():
+            casualty_val = {}
+            for ensemble_key, ensemble_val in ensemble_set.items():
+                #if ensemble_val == key:
+                for s in range(len(ensemble_val)):
+                    #obj = ensemble_val[s].keys()
+                    if list(ensemble_val[s].keys())[0] == key:
+                        for combo_key, combo_val in ensemble_val[s].items():
+                            for ele_key, ele_val in combo_val.items():
+                                casualty_val[ele_key] = ele_val
+            combo_result = {copy.deepcopy(key):copy.deepcopy(casualty_val)}
+            casualty_analytics.append(copy.deepcopy(combo_result))
 
         # package decision metrics by decision
         analysis = {}
