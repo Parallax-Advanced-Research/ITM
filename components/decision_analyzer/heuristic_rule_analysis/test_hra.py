@@ -113,6 +113,9 @@ class TestHRA(unittest.TestCase):
     def test_one_bounce_priority(self):
         return False
 
+    def test_new_test(self):
+        return False
+
     def test_hra_decision_analytics(self):
         with open("scene2.json", 'r+') as f:
             self.data = json.load(f)
