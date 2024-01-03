@@ -253,14 +253,19 @@ def compile_filter(paths: list[str], verbose: bool) -> list[str]:
 	    returns list of those that succeed. """
 
 	ret: list[str] = []
+	fail = False
 	for path in paths:
 		r = cmd([PYTHON, '-m', 'py_compile', path])
 		if 0 != r.code:
 			error(f"{path} failed to compile")
+			fail = True
 			if verbose:
 				print_output(r.output)
 		else:
 			ret.append(path)
+
+	if not fail:
+		color('green', 'All files compiled')
 	return ret
 
 def delint(path: str, mypy_results: dict[str, list[str]], verbose: bool) -> None:

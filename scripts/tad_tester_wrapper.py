@@ -3,11 +3,12 @@
 # Starts the evaluation server, runs tad_tester, checks return code and searches output for things that look like errors
 # Must be run from project root directory
 
-# TODO: Sometimes tad_tester fails with a message that the server might be overloaded
 # TODO: stdout and stderr of tad_tester aren't interleaved. Maybe write a wrapper program that dup2s
 # the file descriptors to the right thing then execs argv[1..$]?
 
-import subprocess, signal, time, sys, re, os, argparse, json
+# TODO: mypy loses its line info
+
+import subprocess, signal, sys, re, os, argparse, json, typing, types
 
 TAD_TESTER_ARGS = [ '--no-ebd', '--no-verbose' ]
 TAD_TESTER_TIMEOUT = 240 # seconds
@@ -16,7 +17,7 @@ def clean_line(s: str) -> str:
 	""" removes ANSI escape codes and surrounding space """
 	return re.sub('\x1b' + r'\[[0-9;]*m', '', s.strip())
 		
-def colorprint(color: str, s: str, stream=sys.stdout) -> None:
+def colorprint(color: str, s: str, stream: typing.TextIO=sys.stdout) -> str:
 	colors = { "red": 91, 'green': 92 }
 
 	s = f"\x1b[{colors[color]}m{s}\x1b[0m"
@@ -24,15 +25,12 @@ def colorprint(color: str, s: str, stream=sys.stdout) -> None:
 		stream.write(s)
 	return s
 		
-def errmsg(s: str) -> None:
-	colorprint('red', errmsg + '\n', sys.stderr)
-
-def timeout(signum: int, _) -> None:
+def timeout(signum: int, frame: types.FrameType | None) -> None:
 	raise Exception("timeout")
 
 def run_tad_tester(warnings_fail: bool, verbosity: int) -> bool:
 	""" fails if tad_tester exits nonzero *or* if we see 'ERROR: ' in stderr 
-		verbosity \in [0..2]
+		verbosity in [0..2]
 	"""
 
 	result = subprocess.run([ 'python', '-m', 'scripts.tad_tester' ] + TAD_TESTER_ARGS,
@@ -97,7 +95,7 @@ def main() -> int:
 		""" Heuristic to check if we're pointing at a valid server """
 		return os.path.exists(os.path.join(path, 'swagger_server', 'itm', 'itm_scenario_configs'))
 		
-	cfg_path = os.path.join(os.path.dirname(__file__), 'test_tad_tester.cfg')
+	cfg_path = os.path.join(os.path.dirname(__file__), 'tad_tester_wrapper.cfg')
 	cfg: dict[str, str] = {}
 	if os.path.exists(cfg_path):
 		with open(cfg_path, encoding='utf-8') as fin:
@@ -113,7 +111,7 @@ def main() -> int:
 	else:
 		cfg['server_dir'] = args.server_dir
 		if not valid_server_dir(cfg['server_dir']):
-			colorprint('red', f"ERROR: --server_dir does not point to a valid itm-evaluation-server directory\n")
+			colorprint('red', "ERROR: --server_dir does not point to a valid itm-evaluation-server directory\n")
 			return 3
 			
 		with open(cfg_path, 'w', encoding='utf-8') as fout:
@@ -122,12 +120,13 @@ def main() -> int:
 	# start server
 	startdir = os.getcwd()
 	os.chdir(cfg['server_dir'])
-	server = subprocess.Popen([ 'python', '-m', 'swagger_server' ],
-		stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, encoding='utf-8')
+	server = subprocess.Popen([ 'python', '-m', 'swagger_server' ],# pylint: disable=consider-using-with
+		stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, encoding='utf-8') 
 	os.chdir(startdir)
 	
 	def verbose_results(if_verbosity: int) -> None:
 		if verbosity >= if_verbosity:
+			assert server.stdout is not None
 			for line in server.stdout:
 				print(line)
 			print()
@@ -135,6 +134,7 @@ def main() -> int:
 	signal.signal(signal.SIGALRM, timeout)
 	signal.alarm(20)
 	try:
+		assert server.stdout is not None
 		for line in server.stdout:
 			line = clean_line(line)
 			if line == 'Press CTRL+C to quit':
