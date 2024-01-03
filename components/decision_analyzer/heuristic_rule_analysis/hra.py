@@ -1104,9 +1104,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         for key in casualty_data.keys():
             casualty_val = {}
             for ensemble_key, ensemble_val in ensemble_set.items():
-                #if ensemble_val == key:
                 for s in range(len(ensemble_val)):
-                    #obj = ensemble_val[s].keys()
                     if list(ensemble_val[s].keys())[0] == key:
                         for combo_key, combo_val in ensemble_val[s].items():
                             for ele_key, ele_val in combo_val.items():
