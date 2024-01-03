@@ -162,7 +162,7 @@ def main() -> int:
 		server.kill()
 
 	if not fail:
-		colorprint('green', 'tad_tester: passed\n')
+		colorprint('green', "tad_tester: ran successfully (doesn't necessarily mean decisions are good)\n")
 	return 2 if fail else 0
 
 sys.exit(main())
