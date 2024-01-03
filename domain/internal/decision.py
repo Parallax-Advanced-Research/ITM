@@ -48,9 +48,13 @@ class Decision(typing.Generic[T]):
         return f"{self.id_}: {self.value} - {self.kdmas} - {[(dm.name, dm.value) for dm in self.metrics.values()]}"
 
     def __lt__(self, other):
+        if 'DAMAGE_PER_SECOND' not in self.metrics.keys() or 'DAMAGE_PER_SECOND' not in other.metrics.keys():
+            return self.id_ < other.id_
         return self.metrics['DAMAGE_PER_SECOND'].value < other.metrics['DAMAGE_PER_SECOND'].value
 
     def __eq__(self, other):
-        return self.metrics['DAMAGE_PER_SECOND'].value < other.metrics['DAMAGE_PER_SECOND'].value
+        if 'DAMAGE_PER_SECOND' not in self.metrics.keys() or 'DAMAGE_PER_SECOND' not in other.metrics.keys():
+            return self.id_ < other.id_
+        return self.metrics['DAMAGE_PER_SECOND'].value == other.metrics['DAMAGE_PER_SECOND'].value
 
 

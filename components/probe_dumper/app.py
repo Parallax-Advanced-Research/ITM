@@ -63,14 +63,17 @@ def get_html_line(decision):
     decision_html_string = get_html_decision(decision)
     return '|%s|%s|%s|%s|%s|%s|%s|\n' % (decision_html_string, casualty, additional['Location'],
                                          additional['Treatment'], additional['Tag'],
-                                         '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english, decision.metrics['MEDSIM_P_DEATH'].value),
-                                         '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics['DAMAGE_PER_SECOND'].value))
+                                         '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english,
+                                                                               decision.metrics['MEDSIM_P_DEATH'].value) if 'MEDSIM_P_DEATH' in decision.metrics.keys() else -1.0,
+                                         '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics['DAMAGE_PER_SECOND'].value) if 'DAMAGE_PER_SECOND' in decision.metrics.keys() else -1.0)
 
 
 def get_html_decision(decision):
-    hoverstring = """%s:, Average Severity: %.2f, Supplies Remaining: %d (%d used), Average Time Used: %d""" % (decision.value.name, decision.metrics['SEVERITY'].value,
-                            decision.metrics['SUPPLIES_USED'].value, decision.metrics['SUPPLIES_REMAINING'].value,
-                            decision.metrics['AVERAGE_TIME_USED'].value)
+    hoverstring = """%s:, Average Severity: %.2f, Supplies Remaining: %d (%d used), Average Time Used: %d""" % (
+        decision.value.name, decision.metrics['SEVERITY'].value if 'SEVERITY' in decision.metrics.keys() else -1.0,
+        decision.metrics['SUPPLIES_USED'].value if 'SUPPLIES_USED' in decision.metrics.keys() else -1.0,
+        decision.metrics['SUPPLIES_REMAINING'].value if 'SUPPLIES_REMAINING' in decision.metrics.keys() else -1.0,
+        decision.metrics['AVERAGE_TIME_USED'].value if 'AVERAGE_TIME_USED' in decision.metrics.keys() else -1.0)
     retstr = '''<div title=\"%s\">%s</div>''' % (hoverstring, decision.value.name)
     return retstr
 
@@ -146,9 +149,7 @@ def read_saved_scenarios():
 
 
 if __name__ == '__main__':
-    # analysis_df = pickle.load(open(osp.join('components', 'probe_dumper', 'tmp', 'decisions.pkl'), 'rb'))
-    # scenario = pickle.load(open(osp.join('components', 'probe_dumper', 'tmp', 'state.pkl'), 'rb'))
-    st.set_page_config(page_title='ITM Decision Viewer HTML VERSION YEE-HAW', page_icon=':fire:', layout='wide')
+    st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
     with st.sidebar:  # Legal term
         chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
