@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 
 # Starts the evaluation server, runs tad_tester, checks return code and searches output for things that look like errors
+# Must be run from project root directory
 
-import subprocess, signal, time, sys, re, os
+# TODO: Sometimes tad_tester fails with a message that the server might be overloaded
+# TODO: stdout and stderr of tad_tester aren't interleaved. Maybe write a wrapper program that dup2s
+# the file descriptors to the right thing then execs argv[1..$]?
+
+import subprocess, signal, time, sys, re, os, argparse, json
 
 TAD_TESTER_ARGS = [ '--no-ebd', '--no-verbose' ]
 TAD_TESTER_TIMEOUT = 240 # seconds
-VERBOSE = True
-
-SERVER_DIR = '/home/rdk/ITM/itm-evaluation-server' # TODO: move to config file (not in repo)
 
 def clean_line(s: str) -> str:
 	""" removes ANSI escape codes and surrounding space """
 	return re.sub('\x1b' + r'\[[0-9;]*m', '', s.strip())
 		
 def colorprint(color: str, s: str, stream=sys.stdout) -> None:
-	colors = { "red": 91 }
+	colors = { "red": 91, 'green': 92 }
 
 	s = f"\x1b[{colors[color]}m{s}\x1b[0m"
 	if stream:
@@ -28,22 +30,25 @@ def errmsg(s: str) -> None:
 def timeout(signum: int, _) -> None:
 	raise Exception("timeout")
 
-def run_tad_tester(warnings_fail: bool) -> bool:
-	""" fails if tad_tester exits nonzero *or* if we see 'ERROR: ' in stderr """
+def run_tad_tester(warnings_fail: bool, verbosity: int) -> bool:
+	""" fails if tad_tester exits nonzero *or* if we see 'ERROR: ' in stderr 
+		verbosity \in [0..2]
+	"""
 
 	result = subprocess.run([ 'python', '-m', 'scripts.tad_tester' ] + TAD_TESTER_ARGS,
 		stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=TAD_TESTER_TIMEOUT,
 		check=False, text=True, bufsize=1, encoding='utf-8')
 
-	def verbose_results() -> None:
-		if VERBOSE:
+	def verbose_results(if_verbosity: int) -> None:
+		if verbosity >= if_verbosity:
 			print(result.stdout)
 			print()
 
 	if 0 != result.returncode:
-		verbose_results()
-		colorprint('red', 'tad_tester returned nonzero.\n', sys.stderr)
+		verbose_results(1)
+		colorprint('red', 'tad_tester (and/or evaluation server) returned nonzero.\n', sys.stderr)
 		return False
+	verbose_results(2)
 
 	for line in result.stdout.split('\n'):
 		line = clean_line(line)
@@ -55,7 +60,7 @@ def run_tad_tester(warnings_fail: bool) -> bool:
 		for header in bad_headers:
 			if header == line[0:len(header)]:
 				# print all output if there are error messages
-				verbose_results()
+				verbose_results(1)
 
 				if warnings_fail:
 					colorprint('red', 'tad_tester printed error or warning messages.\n', sys.stderr)
@@ -66,44 +71,88 @@ def run_tad_tester(warnings_fail: bool) -> bool:
 	return True
 
 def main() -> int:
-	startdir = os.getcwd()
+	parser = argparse.ArgumentParser(
+		description = 'Starts a local copy of the evaluation server, runs tad_tester, checks for errors, then kills server.'
+	)
+	parser.add_argument('-q', '--quiet', action='store_true',
+		help='Displays very little output, even on error')
+	parser.add_argument('-v', '--verbose', action='store_true',
+		help='Displays server/tad_tester output even on success')
+	parser.add_argument('--server-dir', 
+		help="Sets the directory of the local itm-evaluation-server. "
+			+ "Once set, it'll be stored in a config file so you don't need to set it again.")
+	args = parser.parse_args()
+	
+	if args.quiet and args.verbose:
+		sys.stderr.write("ERROR: Can't set both --quiet and --verbose")
+		return 3
+	verbosity = 1 - args.quiet + args.verbose
+	
+	if not os.path.exists(os.path.join(os.getcwd(), 'components')):
+		colorprint('red', "ERROR: Must be run from project root\n")
+		return 3
+
+	# read/write config file
+	def valid_server_dir(path: str) -> bool:
+		""" Heuristic to check if we're pointing at a valid server """
+		return os.path.exists(os.path.join(path, 'swagger_server', 'itm', 'itm_scenario_configs'))
+		
+	cfg_path = os.path.join(os.path.dirname(__file__), 'test_tad_tester.cfg')
+	cfg: dict[str, str] = {}
+	if os.path.exists(cfg_path):
+		with open(cfg_path, encoding='utf-8') as fin:
+			cfg = json.load(fin)
+
+	if args.server_dir is None:
+		if 'server_dir' not in cfg:
+			colorprint('red', f"ERROR IN TEST SCRIPT: server_dir is not set in {cfg_path}. Run this with --server_dir to set.\n")
+			return 3
+		if not valid_server_dir(cfg['server_dir']):
+			colorprint('red', f"ERROR IN TEST SCRIPT: server_dir set in {cfg_path} does not point to a valid itm-evaluation-server directory\n")
+			return 3
+	else:
+		cfg['server_dir'] = args.server_dir
+		if not valid_server_dir(cfg['server_dir']):
+			colorprint('red', f"ERROR: --server_dir does not point to a valid itm-evaluation-server directory\n")
+			return 3
+			
+		with open(cfg_path, 'w', encoding='utf-8') as fout:
+			json.dump(cfg, fout)
 
 	# start server
-	os.chdir(SERVER_DIR)
+	startdir = os.getcwd()
+	os.chdir(cfg['server_dir'])
 	server = subprocess.Popen([ 'python', '-m', 'swagger_server' ],
 		stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, encoding='utf-8')
 	os.chdir(startdir)
 	
-	def verbose_results() -> None:
-		if VERBOSE:
+	def verbose_results(if_verbosity: int) -> None:
+		if verbosity >= if_verbosity:
 			for line in server.stdout:
 				print(line)
 			print()
 
 	signal.signal(signal.SIGALRM, timeout)
 	signal.alarm(20)
-	running = False
-	# TODO: stderr wasn't getting captured to stdout, but now it is, and I can't tell what changed
 	try:
 		for line in server.stdout:
 			line = clean_line(line)
 			if line == 'Press CTRL+C to quit':
-				running = True
 				break
 	except:
-		verbose_results()
-
-	signal.alarm(0)
-	if not running:
-		verbose_results()
-		colorprint('red', 'Failed to start server.\n', sys.stderr)
+		signal.alarm(0)
+		verbose_results(1)
+		colorprint('red', 'Failed to start server (before timeout).\n', sys.stderr)
 		return 1
+
+	verbose_results(2)
+	signal.alarm(0)
 
 	# run tad_tester
 	fail = True
 	try:
-		run_tad_tester(warnings_fail=False)
-		fail = False
+		if run_tad_tester(warnings_fail=False, verbosity=verbosity):
+			fail = False
 	except:
 		pass
 
@@ -114,6 +163,8 @@ def main() -> int:
 	except:
 		server.kill()
 
+	if not fail:
+		colorprint('green', 'tad_tester: passed\n')
 	return 2 if fail else 0
 
 sys.exit(main())
