@@ -1,8 +1,12 @@
 # TODO: Right now, this just tests Dict_No_Overwrite. It should also test the functions that
 # already existed.
 
-import inspect, pytest
+import inspect
 from .dict_tools import Dict_No_Overwrite
+
+f1_lineno = -1
+g0_lineno = -1
+
 
 def f(a: Dict_No_Overwrite[str,int]) -> None:
 	global f1_lineno

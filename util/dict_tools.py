@@ -56,7 +56,7 @@ class Dict_No_Overwrite(dict[K,V]):
         
     # NOTE: We don't support the kwargs method of calling update, since that doesn't
     # permit us to make type assertions.
-    def _update(self, other: Optional[UpdateOtherType[K,V]], call_depth: int, permit_overwrite = False) -> None: # type: ignore[override]
+    def _update(self, other: Optional[UpdateOtherType[K,V]], call_depth: int, permit_overwrite: bool = False) -> None:
         """ If any of the keys would clobber existing values, we don't change the dictionary at all. """
         if other is None:
             return
@@ -71,7 +71,7 @@ class Dict_No_Overwrite(dict[K,V]):
 
         elif hasattr(other, '__iter__'): # iterable of tuple
             if not permit_overwrite:
-                for k in other.keys():
+                for k,_ in other:
                     self._check_key(k)
 
             for k,v in other:
@@ -84,7 +84,7 @@ class Dict_No_Overwrite(dict[K,V]):
     def overwrite(self, key: K, val: V) -> None:
         self._set(key, val, call_depth=1)
 
-    def update_overwrite(self, other: Optional[UpdateOtherType[K,V]]) -> None: # type: ignore[override]
+    def update_overwrite(self, other: Optional[UpdateOtherType[K,V]]) -> None:
         self._update(other, call_depth=1, permit_overwrite=True)
     
     # NOTE: need to disable some type errors because we introduce the additional restriction that

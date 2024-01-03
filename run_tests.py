@@ -242,7 +242,7 @@ def mypy_all(paths: list[str]) -> dict[str, list[str]]:
 
 		assert path in results
 		if 'error' == msg_type:
-			results[path].append(msg)
+			results[path].append(line)
 		else:
 			assert 'note' == msg_type, f"Unrecognized message type from mypy: {msg_type}"
 		

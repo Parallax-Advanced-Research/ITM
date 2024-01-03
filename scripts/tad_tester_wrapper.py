@@ -6,8 +6,6 @@
 # TODO: stdout and stderr of tad_tester aren't interleaved. Maybe write a wrapper program that dup2s
 # the file descriptors to the right thing then execs argv[1..$]?
 
-# TODO: mypy loses its line info
-
 import subprocess, signal, sys, re, os, argparse, json, typing, types
 
 TAD_TESTER_ARGS = [ '--no-ebd', '--no-verbose' ]
