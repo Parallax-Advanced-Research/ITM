@@ -10,8 +10,10 @@ import sys
 if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric
 from components.probe_dumper.probe_dumper import DUMP_PATH
 from domain.mvp.mvp_state import Casualty, Supply
+from domain.internal import Decision
 
 
 def _get_casualty_from_decision(decision, div_text=False):
@@ -64,35 +66,38 @@ def get_html_line(decision):
     return '|%s|%s|%s|%s|%s|%s|%s|\n' % (decision_html_string, casualty, additional['Location'],
                                          additional['Treatment'], additional['Tag'],
                                          '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english,
-                                                                               decision.metrics['MEDSIM_P_DEATH'].value) if 'MEDSIM_P_DEATH' in decision.metrics.keys() else -1.0,
-                                         '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics['DAMAGE_PER_SECOND'].value) if 'DAMAGE_PER_SECOND' in decision.metrics.keys() else -1.0)
+                                                                               decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else -1.0,
+                                         '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else -1.0)
 
 
 def get_html_decision(decision):
     hoverstring = """%s:, Average Severity: %.2f, Supplies Remaining: %d (%d used), Average Time Used: %d""" % (
-        decision.value.name, decision.metrics['SEVERITY'].value if 'SEVERITY' in decision.metrics.keys() else -1.0,
-        decision.metrics['SUPPLIES_USED'].value if 'SUPPLIES_USED' in decision.metrics.keys() else -1.0,
-        decision.metrics['SUPPLIES_REMAINING'].value if 'SUPPLIES_REMAINING' in decision.metrics.keys() else -1.0,
-        decision.metrics['AVERAGE_TIME_USED'].value if 'AVERAGE_TIME_USED' in decision.metrics.keys() else -1.0)
+        decision.value.name, decision.metrics[Metric.SEVERITY.value].value if Metric.SEVERITY.value in decision.metrics.keys() else -1.0,
+        decision.metrics[Metric.SUPPLIES_REMAINING.value].value if Metric.SUPPLIES_REMAINING.value in decision.metrics.keys() else -1.0,
+        decision.metrics[Metric.SUPPLIES_USED.value].value if Metric.SUPPLIES_USED.value in decision.metrics.keys() else -1.0,
+        decision.metrics[Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else -1.0)
     retstr = '''<div title=\"%s\">%s</div>''' % (hoverstring, decision.value.name)
     return retstr
 
 
-def construct_decision_table(analysis_df):
+def construct_decision_table(analysis_df, sort_metric=Metric.DAMAGE_PER_SECOND.value):
     table_header = make_html_table_header()
     lines = ""
-    # analysis_df.sort_values(by='Damage Per Second', inplace=True)
     for decision in sorted(analysis_df):
         lines += get_html_line(decision)
     full_html = table_header + lines + '<hr>'
     return full_html
 
 
+def sort_decisions_function(decisions: list[Decision], sort_fn: callable):
+    pass
+
+
 def get_html_justification(justification_list):
-    if justification_list[0]['DECISION_JUSTIFICATION_ENGLISH'] == 'End Scenario not Simulated':
+    if justification_list[0][Metric.DECISION_JUSTIFICATION_ENGLISH.value] == 'End Scenario not Simulated':
         return {'dps': 'End Scenario not Simulated', 'pdeath': 'End Scenario not Simulated'}
-    return {'dps': justification_list[3]['DECISION_JUSTIFICATION_ENGLISH'],
-            'pdeath': justification_list[4]['DECISION_JUSTIFICATION_ENGLISH']}
+    return {'dps': justification_list[3][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+            'pdeath': justification_list[4][Metric.DECISION_JUSTIFICATION_ENGLISH.value]}
 
 
 def htmlify_casualty(casualty: Casualty):
