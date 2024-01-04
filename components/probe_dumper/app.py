@@ -10,7 +10,7 @@ import sys
 if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash
 from components.probe_dumper.probe_dumper import DUMP_PATH
 from domain.mvp.mvp_state import Casualty, Supply
 from domain.internal import Decision
@@ -51,23 +51,53 @@ def supply_df_from_state(state) -> pd.DataFrame:
     return df
 
 
-def make_html_table_header():
-    return '''| Decision         | Casualty     | Location | Treatment  | Tag | Probability Death | DPS |
+def make_html_table_header(demo_mode):
+    if not demo_mode:
+        return '''| Decision         | Casualty     | Location | Treatment  | Tag | %s | %s | %s |
+|------------------|--------------|----------|------------|-------|----------|-------------------|-----|\n''' % (
+            """<div title=\"%s\">Average Time Used</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
+            """<div title=\"%s\">Probability Death</div>""" % metric_description_hash[Metric.P_DEATH.value],
+            """<div title=\"%s\">Total Deterioration Per Second</div>""" % metric_description_hash[Metric.DAMAGE_PER_SECOND.value]
+        )
+    return '''| Decision         | Casualty     | Location | Treatment  | Tag | Probability Death | P(Death) Justification |
 |------------------|--------------|----------|------------|-------|-------------------|-----|\n'''
 
 
-def get_html_line(decision):
+def select_proper_justification(justification_list, metric):
+    for justification in justification_list:
+        eng_justification = justification[Metric.DECISION_JUSTIFICATION_ENGLISH.value]
+        metric_name = eng_justification.split(' ')[0]
+        if metric == metric_name:
+            return eng_justification
+    return 'No justification found for %s' % metric
+
+def get_html_line(decision, demo_mode):
     casualty = _get_casualty_from_decision(decision,)
     additional = _get_params_from_decision(decision)
     justifications = get_html_justification(decision.justifications)
+    time_english = justifications['time'].split('is')[-1]
     medsim_pdeath_english = justifications['pdeath'].split('is')[-1]
     dps_english = justifications['dps'].split('is')[-1]
     decision_html_string = get_html_decision(decision)
-    return '|%s|%s|%s|%s|%s|%s|%s|\n' % (decision_html_string, casualty, additional['Location'],
-                                         additional['Treatment'], additional['Tag'],
-                                         '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english,
-                                                                               decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else -1.0,
-                                         '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else -1.0)
+    is_pink = decision.selected
+    if not demo_mode:
+        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|\n'
+        if is_pink:
+            base_string = base_string.replace("""%""", """<font color="#FF69B4">%""")
+            base_string = base_string.replace("""s""", """s</font>""")
+
+        return base_string % (decision_html_string, casualty, additional['Location'],
+                                               additional['Treatment'], additional['Tag'],
+                                               '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else -1.0),
+                                               '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english,
+                                                                                   decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else -1.0,
+                                               '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else -1.0)
+    else:
+        base_string = '|%s|%s|%s|%s|%s|%s|%s|\n'
+        return base_string % (decision_html_string, casualty, additional['Location'], additional['Treatment'],
+                              additional['Tag'], '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english,
+                            decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else -1.0,
+                            select_proper_justification(decision.justifications, Metric.P_DEATH.value))
 
 
 def get_html_decision(decision):
@@ -80,11 +110,11 @@ def get_html_decision(decision):
     return retstr
 
 
-def construct_decision_table(analysis_df, sort_metric=Metric.DAMAGE_PER_SECOND.value):
-    table_header = make_html_table_header()
+def construct_decision_table(analysis_df, demo_mode=False, sort_metric=Metric.DAMAGE_PER_SECOND.value):
+    table_header = make_html_table_header(demo_mode)
     lines = ""
     for decision in sorted(analysis_df):
-        lines += get_html_line(decision)
+        lines += get_html_line(decision, demo_mode)
     full_html = table_header + lines + '<hr>'
     return full_html
 
@@ -95,9 +125,10 @@ def sort_decisions_function(decisions: list[Decision], sort_fn: callable):
 
 def get_html_justification(justification_list):
     if justification_list[0][Metric.DECISION_JUSTIFICATION_ENGLISH.value] == 'End Scenario not Simulated':
-        return {'dps': 'End Scenario not Simulated', 'pdeath': 'End Scenario not Simulated'}
+        return {'dps': 'End Scenario not Simulated', 'pdeath': 'End Scenario not Simulated', 'time': 'Undefined by TA3'}
     return {'dps': justification_list[3][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
-            'pdeath': justification_list[4][Metric.DECISION_JUSTIFICATION_ENGLISH.value]}
+            'pdeath': justification_list[4][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+            'time': justification_list[2][Metric.DECISION_JUSTIFICATION_ENGLISH.value]}
 
 
 def htmlify_casualty(casualty: Casualty):
@@ -131,16 +162,23 @@ def get_supplies_table(scenario):
     return '''%s%s<hr>''' % (header, lines)
 
 
-def htmlify_action(idx, action_performed):
-    return '''|%s|%d|\n''' % (action_performed, idx + 1)
+def htmlify_action(idx, action_performed, make_pink=False):
+    if make_pink:
+        action_string = '''|<font color="#FF69B4">%s</font>|<font color="#FF69B4">%d</font>|\n''' % (action_performed, idx + 1)
+    else:
+        action_string = '''|%s|%d|\n''' % (action_performed, idx + 1)
+    return action_string
 
 
 def get_previous_actions(scenario):
     header = '''|Decision|Decision Number|
 |---|---|\n'''
     lines = ''
-    for idx, action_performed in enumerate(scenario.actions_performed):
-        lines += htmlify_action(idx, action_performed)
+    num_actions = len(scenario.actions_performed)
+    flipped_list = reversed(scenario.actions_performed)
+    for idx, action_performed in enumerate(flipped_list):
+        pink = idx == 0
+        lines += htmlify_action(num_actions - idx - 1, action_performed, pink)
     return '''%s%s\n''' % (header, lines)
 
 
@@ -164,11 +202,14 @@ if __name__ == '__main__':
     st.subheader("""Decision %d/%d""" % (chosen_decision, len(num_decisions)))
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
-    decision_table_html = construct_decision_table(analysis_df)
+
+    demo_mode = False  # Only used once probably to show justifications in table. Leave false.
+
+    decision_table_html = construct_decision_table(analysis_df, demo_mode)
     casualty_html = get_casualty_table(state)
     supply_html = get_supplies_table(state)
-    environmental_html = get_previous_actions(state)
+    previous_action_table = get_previous_actions(state)
     st.markdown(decision_table_html, unsafe_allow_html=True)
     st.markdown(casualty_html, unsafe_allow_html=True)
     st.markdown(supply_html, unsafe_allow_html=True)
-    st.markdown(environmental_html, unsafe_allow_html=True)
+    st.markdown(previous_action_table, unsafe_allow_html=True)

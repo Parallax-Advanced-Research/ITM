@@ -40,6 +40,7 @@ class Decision(typing.Generic[T]):
         self.value: T = value
         self.justifications: list[Justification] = justifications
         self.metrics: DecisionMetrics = Dict_No_Overwrite()
+        self.selected = False
         if metrics:
             self.metrics.update(metrics)
         self.kdmas: KDMAs | None = kdmas

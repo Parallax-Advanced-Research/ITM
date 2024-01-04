@@ -64,6 +64,7 @@ class Driver:
     def select(self, probe: TADProbe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
         self.actions_performed.append(d.value)
+        d.selected = True
         if d.value.name == "APPLY_TREATMENT":
             casualty_name = d.value.params["casualty"]
             past_list: list[str] = self.treatments.get(casualty_name, [])
