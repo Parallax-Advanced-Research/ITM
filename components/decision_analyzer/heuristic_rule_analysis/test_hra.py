@@ -9,6 +9,10 @@ class TestHRA(unittest.TestCase):
     def setUp(self):
         self.hra = hra.HeuristicRuleAnalyzer()
         self.data = {}
+        self.kdma_list = {"mission": 8, "denial": 3}
+        with open("casualty_list.json", 'r') as f:
+            casualty_data = json.load(f)
+        self.casualty_list = casualty_data['casualty']
 
     def test_take_the_best_one_treatment_space(self):
         result = self.hra.take_the_best("scene_one_treatment.json")
@@ -99,19 +103,24 @@ class TestHRA(unittest.TestCase):
         return False
 
     def test_take_the_best_priority(self):
-        return False
+        result = self.hra.take_the_best_priority(self.casualty_list, self.kdma_list)
+        self.assertEqual(result, ("Intelligence-Officer", result))
 
     def test_exhaustive_priority(self):
-        return False
+        result = self.hra.exhaustive_priority(self.casualty_list, self.kdma_list)
+        self.assertEqual(result, ("Intelligence-Officer", result))
 
     def test_tallying_priority(self):
-        return False
+        result = self.hra.tallying_priority(self.casualty_list, self.kdma_list)
+        self.assertEqual(result, ("MarineA", result))
 
     def test_satisfactory_priority(self):
-        return False
+        result = self.hra.satisfactory_priority(self.casualty_list, self.kdma_list)
+        self.assertEqual(result, ("MarineA", result))
 
     def test_one_bounce_priority(self):
-        return False
+        result = self.hra.one_bounce_priority(self.casualty_list, self.kdma_list)
+        self.assertEqual(result, ("Intelligence-Officer", result))
 
     def test_new_test(self):
         return False
