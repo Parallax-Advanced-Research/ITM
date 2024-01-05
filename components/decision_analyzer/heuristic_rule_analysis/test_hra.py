@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-import hra
+from . import hra
 
 
 class TestHRA(unittest.TestCase):
