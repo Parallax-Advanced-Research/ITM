@@ -2,13 +2,16 @@ import typing
 import domain as ext
 from components import Elaborator, DecisionSelector, DecisionAnalyzer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
+from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
 from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs
 from util import logger
+import uuid
 
 
 class Driver:
 
-    def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer]):
+    def __init__(self, elaborator: Elaborator, selector: DecisionSelector,
+                 analyzers: list[DecisionAnalyzer], dumper_config: DumpConfig = DEFAULT_DUMP):
         self.session: str = ''
         self.scenario: typing.Optional[Scenario] = None
         self.alignment_tgt: KDMAs = KDMAs([])
@@ -16,7 +19,8 @@ class Driver:
         self.elaborator: Elaborator = elaborator
         self.selector: DecisionSelector = selector
         self.analyzers: list[DecisionAnalyzer] = analyzers
-
+        self.dumper = ProbeDumper(dumper_config)
+        self.session_uuid = uuid.uuid4()
 
     def new_session(self, session_id: str):
         self.session = session_id
@@ -27,7 +31,8 @@ class Driver:
     def set_scenario(self, scenario: ext.Scenario):
         state = self._extract_state(scenario.state)
         self.scenario = Scenario(scenario.id, state)
-
+        self.session_uuid = uuid.uuid4()
+        self.actions_performed = []
 
     def translate_probe(self, itm_probe: ext.ITMProbe) -> TADProbe:
         # Translate probe external state into internal state
@@ -59,6 +64,7 @@ class Driver:
     def select(self, probe: TADProbe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
         self.actions_performed.append(d.value)
+        d.selected = True
         if d.value.name == "APPLY_TREATMENT":
             casualty_name = d.value.params["casualty"]
             past_list: list[str] = self.treatments.get(casualty_name, [])
@@ -90,6 +96,8 @@ class Driver:
 
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
+
+        self.dumper.dump(probe, decision, self.session_uuid)
 
         # Extract external decision for response
         return self.respond(decision)

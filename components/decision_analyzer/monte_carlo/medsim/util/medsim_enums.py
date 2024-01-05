@@ -158,16 +158,18 @@ class Actions(Enum):
 
 
 class MentalStates_KNX(Enum):
-    DANDY = "dandy"
-    FINE = "fine"
-    PANICKED = "panicked"
+    CALM = "CALM"
+    CONFUSED = 'CONFUSED'
+    UPSET = 'UPSET'
+    AGONY = 'AGONY'
+    UNRESPONSIVE = 'UNRESPONSIVE'
 
 
 class BreathingDescriptions_KNX(Enum):
-    NONE = "none"
-    NORMAL = "normal"
-    HEAVY = "heavy"
-    COLLAPSED = "collapsed"
+    NONE = "NONE"
+    NORMAL = "NORMAL"
+    FAST = "FAST"
+    RESTRICTED = "RESTRICTED"
 
 
 class Supply:
@@ -328,7 +330,7 @@ metric_description_hash: dict[str, str] = {
     Metric.PROBABILITY.value: 'probability of this outcome being selected',
     Metric.JUSTIFICATION.value: 'Justified reason for why this state is chosen versus siblings if applicable',
     Metric.UNTREATED_CASUALTIES.value: 'Casualties with zero treated injuries, and at least one not treated injury',
-    Metric.P_DEATH.value: 'Medical simulator probability at least one patient bleeds out or asphyxiates from action',
+    Metric.P_DEATH.value: 'Medical simulator probability at least one patient bleeds out, dies of burn shock or asphyxiates from action',
     Metric.P_BLEEDOUT.value: 'Medical simulator probability at least one patient bleeds out from action',
     Metric.P_ASPHYXIA.value: 'Medical simulator probability at least one patient asphyxiates from action',
     Metric.TOT_BLOOD_LOSS.value: 'Total blood loss from all casualties resulting from action',
@@ -341,7 +343,7 @@ metric_description_hash: dict[str, str] = {
     Metric.HIGHEST_BLOOD_LOSS.value: 'casualty with the most blood loss',
     Metric.HIGHEST_LUNG_LOSS.value: 'casualty with the most lung function loss',
     Metric.MORBIDITY.value: 'Morbidity dictionary',
-    Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec',
+    Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec + burn shock/second for ALL casualties',
     Metric.CASUALTY_DAMAGE_PER_SECOND.value: 'dictionary of dps for all casualties ',
     Metric.CASUALTY_P_DEATH.value: 'dictionary of probability of death for all casualties',
     Metric.CASUALTY_DAMAGE_PER_SECOND_CHANGE.value: 'dictionary for the change in dps per casualty',
