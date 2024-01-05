@@ -194,10 +194,14 @@ def read_saved_scenarios():
 if __name__ == '__main__':
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
+    sort_options = {
+        'Time': 
+    }
     with st.sidebar:  # Legal term
         chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
         num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
         chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
+        sort_by = st.selectbox(label="Sort by")
     st.header("""Scenario: %s""" % chosen_scenario)
     st.subheader("""Decision %d/%d""" % (chosen_decision, len(num_decisions)))
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
