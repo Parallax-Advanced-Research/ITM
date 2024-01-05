@@ -110,17 +110,20 @@ def get_html_decision(decision):
     return retstr
 
 
-def construct_decision_table(analysis_df, demo_mode=False, sort_metric=Metric.DAMAGE_PER_SECOND.value):
+def construct_decision_table(analysis_df, demo_mode=False, sort_metric='Time'):
     table_header = make_html_table_header(demo_mode)
     lines = ""
-    for decision in sorted(analysis_df):
+    sort_funcs = {
+        'Time': lambda x: x.metrics[Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in x.metrics.keys() else x.id_,
+        'Probability Death': lambda x: x.metrics[Metric.P_DEATH.value].value if Metric.P_DEATH.value in x.metrics.keys() else x.id_,
+        'Deterioration': lambda x: x.metrics[Metric.DAMAGE_PER_SECOND.value].value if Metric.DAMAGE_PER_SECOND.value in x.metrics.keys() else x.id_,
+        'Casualty': lambda x: x.value.params['casualty'] if 'casualty' in x.value.params else x.id_
+    }
+    sorted_df = sorted(analysis_df, key=sort_funcs[sort_metric])
+    for decision in sorted_df:
         lines += get_html_line(decision, demo_mode)
     full_html = table_header + lines + '<hr>'
     return full_html
-
-
-def sort_decisions_function(decisions: list[Decision], sort_fn: callable):
-    pass
 
 
 def get_html_justification(justification_list):
@@ -194,14 +197,12 @@ def read_saved_scenarios():
 if __name__ == '__main__':
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
-    sort_options = {
-        'Time': 
-    }
+    sort_options = ['Time', 'Probability Death', 'Deterioration', 'Casualty']
     with st.sidebar:  # Legal term
         chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
         num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
         chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
-        sort_by = st.selectbox(label="Sort by")
+        sort_by = st.selectbox(label="Sort by", options=sort_options)
     st.header("""Scenario: %s""" % chosen_scenario)
     st.subheader("""Decision %d/%d""" % (chosen_decision, len(num_decisions)))
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
@@ -209,7 +210,7 @@ if __name__ == '__main__':
 
     demo_mode = False  # Only used once probably to show justifications in table. Leave false.
 
-    decision_table_html = construct_decision_table(analysis_df, demo_mode)
+    decision_table_html = construct_decision_table(analysis_df, demo_mode, sort_metric=sort_by)
     casualty_html = get_casualty_table(state)
     supply_html = get_supplies_table(state)
     previous_action_table = get_previous_actions(state)
