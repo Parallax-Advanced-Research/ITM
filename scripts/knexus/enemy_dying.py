@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     initial_state: MedsimState = client.get_init()
     probe = client.get_probe(initial_state)
-    scenario = Scenario(name='Enemy Dying DEMO', id='enemy-dying-demo', state=probe.state, probes=[])
+    scenario = Scenario(name='Enemy-Dying-DEMO', id='enemy-dying-demo', state=probe.state, probes=[])
     driver.set_scenario(scenario=scenario)
 
     while probe is not None:

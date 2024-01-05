@@ -11,7 +11,6 @@ from domain.external import Action
 
 
 def get_TMNT_demo_casualties() -> list[Casualty]:
-    # wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
     treat_first_or_die = Injury(Injuries.AMPUTATION.value, location=Locations.RIGHT_CALF.value, severity= .9)
     treat_secondish = Injury(Injuries.LACERATION.value, location=Locations.RIGHT_SIDE.value, severity=.7)
     also_treat_secondish = Injury(Injuries.CHEST_COLLAPSE.value, location=Locations.LEFT_CHEST.value, severity=.7)
