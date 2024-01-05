@@ -233,6 +233,7 @@ def mypy_all(paths: list[str]) -> dict[str, list[str]]:
 	
 	results: dict[str,list[str]] = { path:[] for path in paths }
 	output = cmd([ 'mypy' ] + MYPY_FLAGS + paths, env={ 'MYPYPATH': os.getcwd() })
+	# TODO: if mypy exits due to exception, print the whole message
 
 	for line in output.output[:-1]: # skip the summary line at the end
 		a = re.split(r'\.py:[0-9]+: (error|note): ', line)
