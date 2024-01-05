@@ -12,7 +12,7 @@ from domain.external import Action
 
 def get_simple_casualties():
     bicep_tear = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_BICEP.value, severity=4.0, treated=False)
-    jt_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.DANDY.value,
+    jt_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.CONFUSED.value,
                        breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=69)
     casualties = [
         Casualty('JT', 'JT tore his bicep', name='JT',

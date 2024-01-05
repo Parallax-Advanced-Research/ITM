@@ -158,16 +158,18 @@ class Actions(Enum):
 
 
 class MentalStates_KNX(Enum):
-    DANDY = "dandy"
-    FINE = "fine"
-    PANICKED = "panicked"
+    CALM = "CALM"
+    CONFUSED = 'CONFUSED'
+    UPSET = 'UPSET'
+    AGONY = 'AGONY'
+    UNRESPONSIVE = 'UNRESPONSIVE'
 
 
 class BreathingDescriptions_KNX(Enum):
-    NONE = "none"
-    NORMAL = "normal"
-    HEAVY = "heavy"
-    COLLAPSED = "collapsed"
+    NONE = "NONE"
+    NORMAL = "NORMAL"
+    FAST = "FAST"
+    RESTRICTED = "RESTRICTED"
 
 
 class Supply:
