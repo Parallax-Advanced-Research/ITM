@@ -53,9 +53,9 @@ def apply_zeroornone_action(casualties: list[Casualty], supplies: list[Supply],
         for c in casualties:
             action.casualty_id = c.id
             retlist.extend(apply_singlecaualty_action(casualties, supplies, action, rng, start_time))
-            casualty_injuries: list[Injury] = c.injuries
-            for ci in casualty_injuries:
-                update_smol_injury(ci, time_taken)
+            # casualty_injuries: list[Injury] = c.injuries
+            # for ci in casualty_injuries:
+            #     update_smol_injury(ci, time_taken)
         action.casualty_id = None
         return retlist
     else:

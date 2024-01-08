@@ -76,6 +76,8 @@ def get_html_line(decision, demo_mode):
     additional = _get_params_from_decision(decision)
     justifications = get_html_justification(decision.justifications)
     time_english = justifications['time'].split('is')[-1]
+    if casualty is None:
+        pass
     medsim_pdeath_english = justifications['pdeath'].split('is')[-1]
     dps_english = justifications['dps'].split('is')[-1]
     decision_html_string = get_html_decision(decision)
