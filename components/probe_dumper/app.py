@@ -217,6 +217,14 @@ if __name__ == '__main__':
     supply_html = get_supplies_table(state)
     previous_action_table = get_previous_actions(state)
     st.markdown(decision_table_html, unsafe_allow_html=True)
-    st.markdown(casualty_html, unsafe_allow_html=True)
-    st.markdown(supply_html, unsafe_allow_html=True)
-    st.markdown(previous_action_table, unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.header('Supplies')
+        st.markdown(supply_html, unsafe_allow_html=True)
+    with col2:
+        st.header('Previous Action')
+        st.markdown(previous_action_table, unsafe_allow_html=True)
+    with col3:
+        st.header('Casualties')
+        st.markdown(casualty_html, unsafe_allow_html=True)
