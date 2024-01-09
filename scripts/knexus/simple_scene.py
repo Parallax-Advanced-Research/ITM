@@ -31,7 +31,14 @@ def get_simple_supplies() -> list[Supply]:
                 Supply(Supplies.PRESSURE_BANDAGE.value, False, 3),
                 Supply(Supplies.HEMOSTATIC_GAUZE.value, False, 0),
                 Supply(Supplies.DECOMPRESSION_NEEDLE.value, False, 0),
-                Supply(Supplies.NASOPHARYNGEAL_AIRWAY.value, False, 0)]
+                Supply(Supplies.NASOPHARYNGEAL_AIRWAY.value, False, 0),
+                Supply(Supplies.PULSE_OXIMETER.value, False, 1),
+                Supply(Supplies.BLANKET.value, False, 3),
+                Supply(Supplies.EPI_PEN.value, False, 2),
+                Supply(Supplies.VENTED_CHEST_SEAL.value, False, 3),
+                Supply(Supplies.PAIN_MEDICATIONS.value, False, 3),
+                Supply(Supplies.BLOOD.value, False, 3)
+    ]
     return supplies
 
 
