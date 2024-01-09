@@ -40,9 +40,4 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             decision.justifications = decision_justifications
             decision_str = decision_to_actstr(decision)
             analysis[decision_str]['justifications'] = decision_justifications
-        # pickle.dump(probe.decisions, open(osp.join('components', 'webpage_production', 'tmp', 'decisions.pkl'), 'wb'))
-        # pickle.dump(probe.state, open(osp.join('components', 'webpage_production', 'tmp', 'state.pkl'), 'wb'))
-        # sys.exit(1)
-        # make an object at probe level, point server at directory, choose decision/scenario
-        # make the pickle dumper an object, on construction specify analytics
         return analysis

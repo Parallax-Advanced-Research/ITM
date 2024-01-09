@@ -1,9 +1,11 @@
+from copy import deepcopy
+
 from components.decision_analyzer.monte_carlo.mc_sim import MCState
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import ScoreT
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
 from components.decision_analyzer.monte_carlo.util.sort_functions import injury_to_dps
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calculate_injury_severity
-
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calculate_injury_severity, \
+    update_smol_injury, update_morbidity_calculations
 
 
 def tiny_med_severity_score(state: MCState) -> ScoreT:
@@ -75,3 +77,13 @@ def med_casualty_prob_death(state: MCState) -> ScoreT:
     for casualty in state.casualties:
         injury_scores[casualty.id] = casualty.prob_death
     return injury_scores
+
+
+def prob_death_after_minute(state: MCState) -> ScoreT:
+    notreal_state = deepcopy(state)
+    for cas in notreal_state.casualties:
+        for injury in cas.injuries:
+            update_smol_injury(injury, 60, injury.treated)
+        update_morbidity_calculations(cas)
+    return med_prob_death(notreal_state)
+

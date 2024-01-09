@@ -282,6 +282,7 @@ class Metric(Enum):
     CASUALTY_DAMAGE_PER_SECOND = 'CASUALTY_DAMAGE_PER_SECOND'
     CASUALTY_P_DEATH = 'CASUALTY_P_DEATH'
     CASUALTY_DAMAGE_PER_SECOND_CHANGE = 'CASUALTY DPS CHANGE'
+    P_DEATH_ONEMINLATER = 'MEDSIM_P_DEATH_ONE_MIN_LATER'
 
     AVERAGE_DECISION_DPS = 'AVERAGE_DECISION_DPS'
     AVERAGE_DECISION_SUPPLIES_REMAINING = 'AVERAGE_DECISION_SUPPLIES_REMAINING'
@@ -350,7 +351,8 @@ metric_description_hash: dict[str, str] = {
     Metric.AVERAGE_DECISION_DPS.value: 'how this compares to other deciosions in damage per second',
     Metric.AVERAGE_DECISION_SUPPLIES_REMAINING.value: 'how this metric compares to others in supplies remaining',
     Metric.AVERAGE_PDEATH.value: 'how this metric compares to others in probability of death',
-    Metric.AVERAGE_URGENCY.value: 'how this metric compares to others in terms of average time used'
+    Metric.AVERAGE_URGENCY.value: 'how this metric compares to others in terms of average time used',
+    Metric.P_DEATH_ONEMINLATER.value: 'Probability of death after one minute of inactivity after action performed'
 }
 
 
@@ -368,7 +370,8 @@ class MetricSet:
             return [Metric.SEVERITY.value, Metric.SUPPLIES_REMAINING.value, Metric.SUPPLIES_USED.value,
                     Metric.AVERAGE_TIME_USED.value, Metric.TARGET_SEVERITY.value, Metric.TARGET_SEVERITY_CHANGE.value,
                     Metric.SEVEREST_SEVERITY.value, Metric.SEVEREST_SEVERITY_CHANGE.value, Metric.SEVERITY_CHANGE.value,
-                    Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value]
+                    Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value,
+                    Metric.P_DEATH_ONEMINLATER.value]
         elif self.set_name == 'full':
             return []
 
