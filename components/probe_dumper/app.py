@@ -53,14 +53,21 @@ def supply_df_from_state(state) -> pd.DataFrame:
 
 def make_html_table_header(demo_mode):
     if not demo_mode:
-        return '''| Decision         | Casualty     | Location | Treatment  | Tag | %s | %s | %s | %s |
-|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|\n''' % (
-            """<div title=\"%s\">Average Time Used</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
-            """<div title=\"%s\">Total Deterioration Per Second</div>""" % metric_description_hash[
+        return '''| Decision         | Casualty     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
+|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|--|--|--|--|--|--|--|\n''' % (
+            """<div title=\"%s\">MCA<br>Time</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
+            """<div title=\"%s\">MCA<br>Deterioration</div>""" % metric_description_hash[
                 Metric.DAMAGE_PER_SECOND.value],
-            """<div title=\"%s\">Probability Death</div>""" % metric_description_hash[Metric.P_DEATH.value],
-            """<div title=\"%s\">Probability of Death 1 minute later</div>""" % metric_description_hash[
-                Metric.P_DEATH_ONEMINLATER.value]
+            """<div title=\"%s\">MCA<br>P(Death)</div>""" % metric_description_hash[Metric.P_DEATH.value],
+            """<div title=\"%s\">MCA<br>P(Death) + 60s</div>""" % metric_description_hash[
+                Metric.P_DEATH_ONEMINLATER.value],
+            """<div title=\"%s\">HRA<br>Strategy</div>""" % """Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce""",
+            """<div title=\"%s\">BNDA<br>P(Death)</div>""" % """Posterior probability of death with no action""",
+            """<div title=\"%s\">BNDA<br>P(Pain)</div>""" % """Posterior probability of severe pain""",
+            """<div title=\"%s\">BNDA<br>P(BrainInjury)</div>""" % """Posterior probability of a brain injury""",
+            """<div title=\"%s\">BNDA<br>P(AirwayBlocked)</div>""" % """Posterior probability of airway blockage""",
+            """<div title=\"%s\">BNDA<br>P(InternalBleeding)</div>""" % """Posterior probability of internal bleeding""",
+            """<div title=\"%s\">BNDA<br>P(ExternalBleeding)</div>""" % """Posterior probability of external bleeding"""
         )
     return '''| Decision         | Casualty     | Location | Treatment  | Tag | Probability Death | P(Death) Justification |
 |------------------|--------------|----------|------------|-------|-------------------|-----|\n'''
@@ -75,6 +82,18 @@ def select_proper_justification(justification_list, metric):
     return 'No justification found for %s' % metric
 
 
+def get_hra_strategy(decision):
+    metrics, justifications = decision.metrics, decision.justifications
+    selected_strategy = "None"
+    selected_justification = "No justification provided"
+    hra_strategies = ['Take-The-Best Priority', 'Exhaustive Priority', 'Tallying Priority',
+                      'Satisfactory Priority', 'One-Bounce Priority']
+    for hra_s in hra_strategies:
+        if metrics[hra_s].value:
+            selected_strategy = hra_s
+            break
+    return selected_strategy, selected_justification
+
 def get_html_line(decision, demo_mode):
     casualty = _get_casualty_from_decision(decision,)
     additional = _get_params_from_decision(decision)
@@ -86,9 +105,11 @@ def get_html_line(decision, demo_mode):
     dps_english = justifications['dps'].split('is')[-1]
     death_60s_english = justifications['60spdeath'].split('is')[-1]
     decision_html_string = get_html_decision(decision)
+    hra_strategy_selector = get_hra_strategy(decision)
     is_pink = decision.selected
+    no_just = "No justification given"
     if not demo_mode:
-        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
+        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
         if is_pink:
             base_string = base_string.replace("""%""", """<font color="#FF69B4">%""")
             base_string = base_string.replace("""s""", """s</font>""")
@@ -98,7 +119,16 @@ def get_html_line(decision, demo_mode):
                                                '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[Metric.AVERAGE_TIME_USED.value].value) if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else -1.0,
                                                '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else -1.0,
                                                '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english, decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else -1.0,
-                                               '''<div title=\"%s\">%.2f</div>''' % (death_60s_english,  decision.metrics[Metric.P_DEATH_ONEMINLATER.value].value) if Metric.P_DEATH_ONEMINLATER.value in decision.metrics.keys() else -1.0)
+                                               '''<div title=\"%s\">%.2f</div>''' % (death_60s_english,  decision.metrics[Metric.P_DEATH_ONEMINLATER.value].value) if Metric.P_DEATH_ONEMINLATER.value in decision.metrics.keys() else -1.0,
+                                               '''<div title=\"%s\">%s</div>''' % (hra_strategy_selector[1], hra_strategy_selector[0]),
+
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pDeath'].value if 'pDeath' in decision.metrics.keys() else -1.0),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pPain'].value if 'pPain' in decision.metrics.keys() else -1.0),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pBrainInjury'].value if 'pBrainInjury' in decision.metrics.keys() else -1.0),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pAirwayBlocked'].value if 'pAirwayBlocked' in decision.metrics.keys() else -1.0),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pInternalBleeding'].value if 'pInternalBleeding' in decision.metrics.keys() else -1.0),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pExternalBleeding'].value if 'pExternalBleeding' in decision.metrics.keys() else -1.0)
+                              )
     else:
         base_string = '|%s|%s|%s|%s|%s|%s|%s|\n'
         return base_string % (decision_html_string, casualty, additional['Location'], additional['Treatment'],
@@ -207,11 +237,11 @@ if __name__ == '__main__':
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
     sort_options = ['Time', 'Probability Death', 'Deterioration', 'Casualty']
-    with st.sidebar:  # Legal term
-        chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
-        num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
-        chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
-        sort_by = st.selectbox(label="Sort by", options=sort_options)
+    # with st.sidebar:  # Legal term
+    chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
+    num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
+    chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
+    sort_by = st.selectbox(label="Sort by", options=sort_options)
     st.header("""Scenario: %s""" % chosen_scenario)
     st.subheader("""Decision %d/%d""" % (chosen_decision, len(num_decisions)))
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
