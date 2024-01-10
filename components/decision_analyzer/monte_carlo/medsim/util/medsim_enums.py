@@ -72,7 +72,7 @@ class Casualty:
     LOW_P_BLEEDOUT = 0.1
     MED_P_BLEEDOUT = 0.5
     HIGH_P_BLEEDOUT = 0.75
-    CRITICAL_P_BLEEDOUT = 0.999
+    CRITICAL_P_BLEEDOUT = 0.9999
 
     def __init__(self, id: str, unstructured: str, name: str, relationship: str, demographics: Demographics,
                  injuries: list[Injury], vitals: Vitals, complete_vitals: Vitals, assessed: bool, tag: str):

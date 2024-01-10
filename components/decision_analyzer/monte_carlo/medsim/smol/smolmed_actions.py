@@ -44,24 +44,6 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: list[Supply],
     return [new_state]
 
 
-def apply_zeroornone_action(casualties: list[Casualty], supplies: list[Supply],
-                            action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
-    time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.action])
-    if action.casualty_id is None:
-        # Apply for all if not other instructions
-        retlist = []
-        for c in casualties:
-            action.casualty_id = c.id
-            retlist.extend(apply_singlecaualty_action(casualties, supplies, action, rng, start_time))
-            # casualty_injuries: list[Injury] = c.injuries
-            # for ci in casualty_injuries:
-            #     update_smol_injury(ci, time_taken)
-        action.casualty_id = None
-        return retlist
-    else:
-        return apply_singlecaualty_action(casualties, supplies, action, rng, start_time)
-
-
 def apply_casualtytag_action(casualties: list[Casualty], supplies: list[Supply],
                              action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c1 = find_casualty(action, casualties)
@@ -109,10 +91,10 @@ smol_action_map: typing.Mapping[str, resolve_action] = {
     Actions.CHECK_ALL_VITALS.value: apply_singlecaualty_action,
     Actions.CHECK_PULSE.value: apply_singlecaualty_action,
     Actions.CHECK_RESPIRATION.value: apply_singlecaualty_action,
-    Actions.DIRECT_MOBILE_CASUALTY.value: apply_zeroornone_action,
+    Actions.DIRECT_MOBILE_CASUALTY.value: apply_singlecaualty_action,
     Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
     Actions.TAG_CASUALTY.value: apply_casualtytag_action,
-    Actions.SITREP.value: apply_zeroornone_action,
+    Actions.SITREP.value: apply_singlecaualty_action,
     Actions.UNKNOWN.value: apply_default_action,
-    Actions.END_SCENARIO.value: apply_zeroornone_action
+    Actions.END_SCENARIO.value: apply_singlecaualty_action
 }
