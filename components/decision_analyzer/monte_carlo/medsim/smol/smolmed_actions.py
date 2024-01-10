@@ -108,7 +108,7 @@ smol_action_map: typing.Mapping[str, resolve_action] = {
     Actions.CHECK_RESPIRATION.value: apply_singlecaualty_action,
     Actions.DIRECT_MOBILE_CASUALTY.value: apply_zeroornone_action,
     Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
-    Actions.TAG_CASUALTY.value: apply_casualtytag_action,
+    Actions.TAG_CHARACTER.value: apply_casualtytag_action,
     Actions.SITREP.value: apply_zeroornone_action,
     Actions.UNKNOWN.value: apply_default_action,
     Actions.END_SCENARIO.value: apply_zeroornone_action

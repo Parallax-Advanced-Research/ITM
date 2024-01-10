@@ -91,7 +91,7 @@ def get_tag_options(casualties: list[Casualty]) -> list[tuple]:
     for c in casualties:
         casualty_id: str = c.id
         for tag in tags:
-            action_tuple = (Actions.TAG_CASUALTY.value, casualty_id, tag)
+            action_tuple = (Actions.TAG_CHARACTER.value, casualty_id, tag)
             actions.append(action_tuple)
     return actions
 
@@ -137,7 +137,7 @@ def create_medsim_actions(actions: list[tuple]) -> list[MedsimAction]:
             tm_action = MedsimAction(action, casualty_id=casualty)
         elif action == Actions.DIRECT_MOBILE_CASUALTY.value:
             tm_action = MedsimAction(action=action)
-        elif action == Actions.TAG_CASUALTY.value:
+        elif action == Actions.TAG_CHARACTER.value:
             casualty, tag = act_tuple[1:]
             tm_action = MedsimAction(action=action, casualty_id=casualty, tag=tag)
         elif action == Actions.SITREP.value:

@@ -130,7 +130,7 @@ def add_action(response_id):
         if action_form.action_type.data == "APPLY_TREATMENT":
             action.apply_treatment(action_form.treatment_type.data)
 
-        if action_form.action_type.data == "TAG_CASUALTY":
+        if action_form.action_type.data == "TAG_CHARACTER":
             action.tag_casualty(action_form.tag_label.data)
             # casualty.tag_label = action_form.tag_label.data
 

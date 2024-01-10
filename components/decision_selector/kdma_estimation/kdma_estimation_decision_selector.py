@@ -361,11 +361,11 @@ def make_case(s: State, d: Decision) -> dict[str, Any]:
     a: Action = d.value
     case['assessing'] = a.name in ["CHECK_ALL_VITALS", "SITREP"]
     case['treating'] = a.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]
-    case['tagging'] = a.name == "TAG_CASUALTY"
+    case['tagging'] = a.name == "TAG_CHARACTER"
     case['leaving'] = a.name == "END_SCENARIO"
     if a.name == "APPLY_TREATMENT":
         case['treatment'] = a.params.get("treatment", None)
-    if a.name == "TAG_CASUALTY":
+    if a.name == "TAG_CHARACTER":
         case['category'] = a.params.get("category", None)
     for dm in d.metrics.values():
         if type(dm.value) is not dict:
@@ -435,7 +435,7 @@ def make_case_drexel(s: State, d: Decision) -> dict[str, Any]:
             raise Exception("Malformed supplies: " + str(s.supplies)) 
         case['Supplies: type'] = supply[0].type
         case['Supplies: quantity'] = supply[0].quantity
-    if a.name == "TAG_CASUALTY":
+    if a.name == "TAG_CHARACTER":
         case['triage category'] = TAGS.index(a.params.get("category", None))
     for dm in d.metrics.values():
         if dm.name == "severity":
@@ -452,7 +452,7 @@ def make_tag_decision_list(s: State):
     dlist = []
     for c in s.casualties:
         for tag in TAGS:
-            dlist.append(Decision(str(index), Action("TAG_CASUALTY", {"casualty": c.id, "category": tag})))
+            dlist.append(Decision(str(index), Action("TAG_CHARACTER", {"casualty": c.id, "category": tag})))
             index += 1
     return dlist
 
@@ -532,7 +532,7 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
     
     # Assumed that select-casualty-* probes would be answered whether or not missing casualty has 
     # been treated. Assume that "APPLY_TREATMENT" actions are relevant to these probes, but not 
-    # "CHECK_ALL_VITALS" or "TAG_CASUALTY". Correct.
+    # "CHECK_ALL_VITALS" or "TAG_CHARACTER". Correct.
 
     st: State = make_previsit_state(["casualty-A", "casualty-B", "casualty-C", "casualty-D"])
     p: TADProbe = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers_without_HRA)
