@@ -24,7 +24,7 @@ def tad_tester():
             self.rollouts = 1000
             self.decision_verbose = False
             self.endpoint = '127.0.0.1:8080'
-            self.training = True
+            self.training = False
             self.variant = 'aligned'
     tad_args = TADArgs()
 
