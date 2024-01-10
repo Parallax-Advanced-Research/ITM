@@ -57,11 +57,11 @@ class TA3Driver(Driver):
         super().__init__(elaborator, selector, analyzers)
 
     def _extract_state(self, dict_state: dict):
-        for casualty in dict_state['casualties']:
-            casulty_id = casualty['id']
-            if casulty_id in self.treatments.keys():
-                casualty['treatments'] = self.treatments[casulty_id]
+        for character in dict_state['characters']:
+            character_id = character['id']
+            if character_id in self.treatments.keys():
+                character['treatments'] = self.treatments[character_id]
             else:
-                casualty['treatments'] = list()
+                character['treatments'] = list()
         dict_state['actions_performed'] = self.actions_performed
         return TA3State.from_dict(dict_state)
