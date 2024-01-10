@@ -15,6 +15,8 @@ from components.probe_dumper.probe_dumper import DUMP_PATH
 from domain.mvp.mvp_state import Casualty, Supply
 from domain.internal import Decision
 
+UNKNOWN_NUMBER = -12.34
+UNKOWN_STRING = "Not Calculated"
 
 def _get_casualty_from_decision(decision, div_text=False):
     casualty = None
@@ -117,18 +119,19 @@ def get_html_line(decision, demo_mode):
 
         return base_string % (decision_html_string, casualty, additional['Location'],
                                                additional['Treatment'], additional['Tag'],
-                                               '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[Metric.AVERAGE_TIME_USED.value].value) if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else -1.0,
-                                               '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else -1.0,
-                                               '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english, decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else -1.0,
-                                               '''<div title=\"%s\">%.2f</div>''' % (death_60s_english,  decision.metrics[Metric.P_DEATH_ONEMINLATER.value].value) if Metric.P_DEATH_ONEMINLATER.value in decision.metrics.keys() else -1.0,
-                                               '''<div title=\"%s\">%s</div>''' % (hra_strategy_selector[1], hra_strategy_selector[0]),
+                                               '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[Metric.AVERAGE_TIME_USED.value].value) if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                                               '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                                               '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english, decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                                               '''<div title=\"%s\">%.2f</div>''' % (death_60s_english,  decision.metrics[Metric.P_DEATH_ONEMINLATER.value].value) if Metric.P_DEATH_ONEMINLATER.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                                               '''<div title=\"%s\">%s</div>''' % (hra_strategy_selector[1],
+                                                                                   hra_strategy_selector[0]),
 
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pDeath'].value if 'pDeath' in decision.metrics.keys() else -1.0),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pPain'].value if 'pPain' in decision.metrics.keys() else -1.0),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pBrainInjury'].value if 'pBrainInjury' in decision.metrics.keys() else -1.0),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pAirwayBlocked'].value if 'pAirwayBlocked' in decision.metrics.keys() else -1.0),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pInternalBleeding'].value if 'pInternalBleeding' in decision.metrics.keys() else -1.0),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pExternalBleeding'].value if 'pExternalBleeding' in decision.metrics.keys() else -1.0)
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pDeath'].value if 'pDeath' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pPain'].value if 'pPain' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pBrainInjury'].value if 'pBrainInjury' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pAirwayBlocked'].value if 'pAirwayBlocked' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pInternalBleeding'].value if 'pInternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pExternalBleeding'].value if 'pExternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER)
                               )
     else:
         base_string = '|%s|%s|%s|%s|%s|%s|%s|\n'
@@ -159,7 +162,9 @@ def construct_decision_table(analysis_df, demo_mode=False, sort_metric='Time'):
     }
     sorted_df = sorted(analysis_df, key=sort_funcs[sort_metric])
     for decision in sorted_df:
-        lines += get_html_line(decision, demo_mode)
+        raw = get_html_line(decision, demo_mode)
+        fixed = raw.replace(str(UNKNOWN_NUMBER), UNKOWN_STRING)
+        lines += fixed
     full_html = table_header + lines + '<hr>'
     return full_html
 
