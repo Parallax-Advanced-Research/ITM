@@ -106,8 +106,9 @@ def main():
     parser.add_argument('--endpoint', type=str, help="The URL of the TA3 api", default=None)
     parser.add_argument('--variant', type=str, help="TAD variant", default="aligned")
     parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=False, help="Asks for KDMA associations to actions")
-    parser.add_argument('--session_type', type=str, default='test', help="Modifies the server session type. possible values are 'soartech', 'adept', 'eval', and 'test'. Default is 'test'.")
-    parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to target. Format is <kdma_name>-<kdma_value>")
+    parser.add_argument('--session_type', type=str, default='eval', help="Modifies the server session type. possible values are 'soartech', 'adept', and 'eval'. Default is 'eval'.")
+    parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to alignment target for selection purposes. Format is <kdma_name>-<kdma_value>")
+    parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, requires --training.")
     args = parser.parse_args()
 
     test_endpoint(args)
