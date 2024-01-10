@@ -58,7 +58,7 @@ def make_html_table_header(demo_mode):
         return '''| Decision         | Casualty     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
 |------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|--|--|--|--|--|--|--|\n''' % (
             """<div title=\"%s\">MCA<br>Time</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
-            """<div title=\"%s\">MCA<br>Deterioration</div>""" % metric_description_hash[
+            """<div title=\"%s\">MCA<br>Deterioration<br>per second</div>""" % metric_description_hash[
                 Metric.DAMAGE_PER_SECOND.value],
             """<div title=\"%s\">MCA<br>P(Death)</div>""" % metric_description_hash[Metric.P_DEATH.value],
             """<div title=\"%s\">MCA<br>P(Death) + 60s</div>""" % metric_description_hash[
@@ -121,17 +121,17 @@ def get_html_line(decision, demo_mode):
                                                additional['Treatment'], additional['Tag'],
                                                '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[Metric.AVERAGE_TIME_USED.value].value) if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                                                '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else UNKNOWN_NUMBER,
-                                               '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english, decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else UNKNOWN_NUMBER,
-                                               '''<div title=\"%s\">%.2f</div>''' % (death_60s_english,  decision.metrics[Metric.P_DEATH_ONEMINLATER.value].value) if Metric.P_DEATH_ONEMINLATER.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                                               '''<div title=\"%s\">%.2f %%</div>''' % (medsim_pdeath_english, 100 * decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                                               '''<div title=\"%s\">%.2f %%</div>''' % (death_60s_english,  100 * decision.metrics[Metric.P_DEATH_ONEMINLATER.value].value) if Metric.P_DEATH_ONEMINLATER.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                                                '''<div title=\"%s\">%s</div>''' % (hra_strategy_selector[1],
                                                                                    hra_strategy_selector[0]),
 
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pDeath'].value if 'pDeath' in decision.metrics.keys() else UNKNOWN_NUMBER),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pPain'].value if 'pPain' in decision.metrics.keys() else UNKNOWN_NUMBER),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pBrainInjury'].value if 'pBrainInjury' in decision.metrics.keys() else UNKNOWN_NUMBER),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pAirwayBlocked'].value if 'pAirwayBlocked' in decision.metrics.keys() else UNKNOWN_NUMBER),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pInternalBleeding'].value if 'pInternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER),
-                              '''<div title=\"%s\">%.2f</div>''' % (no_just, decision.metrics['pExternalBleeding'].value if 'pExternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER)
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics['pDeath'].value if 'pDeath' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics['pPain'].value if 'pPain' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics['pBrainInjury'].value if 'pBrainInjury' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics['pAirwayBlocked'].value if 'pAirwayBlocked' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics['pInternalBleeding'].value if 'pInternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics['pExternalBleeding'].value if 'pExternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER)
                               )
     else:
         base_string = '|%s|%s|%s|%s|%s|%s|%s|\n'
