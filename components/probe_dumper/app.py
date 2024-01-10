@@ -94,16 +94,17 @@ def get_hra_strategy(decision):
             break
     return selected_strategy, selected_justification
 
+
 def get_html_line(decision, demo_mode):
     casualty = _get_casualty_from_decision(decision,)
     additional = _get_params_from_decision(decision)
     justifications = get_html_justification(decision.justifications)
-    time_english = justifications['time'].split('is')[-1]
+    time_english = justifications[Metric.AVERAGE_TIME_USED.value].split('is')[-1]
     if casualty is None:
         pass
-    medsim_pdeath_english = justifications['pdeath'].split('is')[-1]
-    dps_english = justifications['dps'].split('is')[-1]
-    death_60s_english = justifications['60spdeath'].split('is')[-1]
+    medsim_pdeath_english = justifications[Metric.P_DEATH.value].split('is')[-1]
+    dps_english = justifications[Metric.DAMAGE_PER_SECOND.value].split('is')[-1]
+    death_60s_english = justifications[Metric.P_DEATH_ONEMINLATER.value].split('is')[-1]
     decision_html_string = get_html_decision(decision)
     hra_strategy_selector = get_hra_strategy(decision)
     is_pink = decision.selected
@@ -165,12 +166,14 @@ def construct_decision_table(analysis_df, demo_mode=False, sort_metric='Time'):
 
 def get_html_justification(justification_list):
     if justification_list[0][Metric.DECISION_JUSTIFICATION_ENGLISH.value] == 'End Scenario not Simulated':
-        return {'dps': 'End Scenario not Simulated', 'pdeath': 'End Scenario not Simulated',
-                'time': 'Undefined by TA3', '60spdeath': 'End Scenario not Simulated'}
-    return {'dps': justification_list[3][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
-            'pdeath': justification_list[4][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
-            'time': justification_list[2][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
-            '60spdeath': justification_list[5][Metric.DECISION_JUSTIFICATION_ENGLISH.value]}
+        return {Metric.DAMAGE_PER_SECOND.value: 'End Scenario not Ranked',
+                Metric.P_DEATH.value: 'End Scenario not Ranked',
+                Metric.AVERAGE_TIME_USED.value: 'Undefined by TA3',
+                Metric.P_DEATH_ONEMINLATER.value: 'End Scenario not Ranked'}
+    return {Metric.DAMAGE_PER_SECOND.value: justification_list[3][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+            Metric.P_DEATH.value: justification_list[4][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+            Metric.AVERAGE_TIME_USED.value: justification_list[2][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+            Metric.P_DEATH_ONEMINLATER.value: justification_list[5][Metric.DECISION_JUSTIFICATION_ENGLISH.value]}
 
 
 def htmlify_casualty(casualty: Casualty):
