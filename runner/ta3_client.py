@@ -5,7 +5,7 @@ from domain.internal import KDMA, KDMAs
 
 
 class TA3Client:
-    def __init__(self, endpoint: str = None, target = None, evalTargetNames = []):
+    def __init__(self, endpoint: str = None, target = None, evalTargetNames = None):
         if endpoint is None:
             endpoint = "http://127.0.0.1:8080"
         _config = ta3.Configuration()
@@ -18,7 +18,10 @@ class TA3Client:
         self._align_tgt: KDMAs = target
         self._actions: dict[ta3.Action] = {}
         self._probe_count: int = 0
-        self._eval_target_names = evalTargetNames
+        if evalTargetNames is None:
+            self._eval_target_names = []
+        else:
+            self._eval_target_names = evalTargetNames
 
     @property
     def align_tgt(self) -> KDMAs:
@@ -55,7 +58,6 @@ class TA3Client:
         return scen
         
     def get_session_alignment(self) -> list[ta3.AlignmentResults]:
-        breakpoint()
         return [self._api.get_session_alignment(self._session_id, targetName) 
                  for targetName in self._eval_target_names]
 
