@@ -48,7 +48,7 @@ class Driver:
             params.update({'casualty': option.casualty})
             # Add decision
             decisions.append(Decision(option.id, Action(option.type, params), kdmas=kdmas))
-        probe = TADProbe(itm_probe.id, state, itm_probe.prompt, decisions)
+        probe = TADProbe(itm_probe.id, state, itm_probe.prompt, itm_probe.state['environment'], decisions)
         return probe
 
     def elaborate(self, probe: TADProbe) -> list[Decision[Action]]:

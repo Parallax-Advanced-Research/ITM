@@ -16,7 +16,7 @@ from domain.mvp.mvp_state import Casualty, Supply
 from domain.internal import Decision
 
 UNKNOWN_NUMBER = -12.34
-UNKOWN_STRING = "Not Calculated"
+UNKOWN_STRING = "--"
 
 def _get_casualty_from_decision(decision, div_text=False):
     casualty = None
@@ -61,15 +61,15 @@ def make_html_table_header(demo_mode):
             """<div title=\"%s\">MCA<br>Deterioration<br>per second</div>""" % metric_description_hash[
                 Metric.DAMAGE_PER_SECOND.value],
             """<div title=\"%s\">MCA<br>P(Death)</div>""" % metric_description_hash[Metric.P_DEATH.value],
-            """<div title=\"%s\">MCA<br>P(Death) + 60s</div>""" % metric_description_hash[
+            """<div title=\"%s\">MCA<br>P(Death)<br> + 60s</div>""" % metric_description_hash[
                 Metric.P_DEATH_ONEMINLATER.value],
             """<div title=\"%s\">HRA<br>Strategy</div>""" % """Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce""",
             """<div title=\"%s\">BNDA<br>P(Death)</div>""" % """Posterior probability of death with no action""",
             """<div title=\"%s\">BNDA<br>P(Pain)</div>""" % """Posterior probability of severe pain""",
-            """<div title=\"%s\">BNDA<br>P(BrainInjury)</div>""" % """Posterior probability of a brain injury""",
-            """<div title=\"%s\">BNDA<br>P(AirwayBlocked)</div>""" % """Posterior probability of airway blockage""",
-            """<div title=\"%s\">BNDA<br>P(InternalBleeding)</div>""" % """Posterior probability of internal bleeding""",
-            """<div title=\"%s\">BNDA<br>P(ExternalBleeding)</div>""" % """Posterior probability of external bleeding"""
+            """<div title=\"%s\">BNDA<br>P(Brain<br>Injury)</div>""" % """Posterior probability of a brain injury""",
+            """<div title=\"%s\">BNDA<br>P(Airway<br>Blocked)</div>""" % """Posterior probability of airway blockage""",
+            """<div title=\"%s\">BNDA<br>P(Internal<br>Bleeding)</div>""" % """Posterior probability of internal bleeding""",
+            """<div title=\"%s\">BNDA<br>P(External<br>Bleeding)</div>""" % """Posterior probability of external bleeding"""
         )
     return '''| Decision         | Casualty     | Location | Treatment  | Tag | Probability Death | P(Death) Justification |
 |------------------|--------------|----------|------------|-------|-------------------|-----|\n'''
@@ -245,11 +245,11 @@ if __name__ == '__main__':
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
     sort_options = ['Time', 'Probability Death', 'Deterioration', 'Casualty']
-    # with st.sidebar:  # Legal term
-    chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
-    num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
-    chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
-    sort_by = st.selectbox(label="Sort by", options=sort_options)
+    with st.sidebar:  # Legal term
+        chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
+        num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
+        chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
+        sort_by = st.selectbox(label="Sort by", options=sort_options)
     st.header("""Scenario: %s""" % chosen_scenario)
     st.subheader("""Decision %d/%d""" % (chosen_decision, len(num_decisions)))
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
