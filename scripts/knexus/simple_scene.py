@@ -16,8 +16,8 @@ def get_simple_casualties():
                        breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=69)
     casualties = [
         Casualty('JT', 'JT tore his bicep', name='JT',
-                       relationship='himself',
-                       demographics=Demographics(age=33, sex='M', rank='director of social media'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=33, sex='M', rank='vip'),
                        injuries=[bicep_tear],
                        vitals=jt_vitals,
                        complete_vitals=jt_vitals,
@@ -32,13 +32,13 @@ def get_simple_supplies() -> list[Supply]:
                 Supply(Supplies.HEMOSTATIC_GAUZE.value, False, 0),
                 Supply(Supplies.DECOMPRESSION_NEEDLE.value, False, 0),
                 Supply(Supplies.NASOPHARYNGEAL_AIRWAY.value, False, 0),
-                Supply(Supplies.PULSE_OXIMETER.value, False, 1),
-                Supply(Supplies.BLANKET.value, False, 3),
-                Supply(Supplies.EPI_PEN.value, False, 2),
-                Supply(Supplies.VENTED_CHEST_SEAL.value, False, 3),
-                Supply(Supplies.PAIN_MEDICATIONS.value, False, 3),
-                Supply(Supplies.BLOOD.value, False, 3)
-    ]
+                # Supply(Supplies.PULSE_OXIMETER.value, False, 1),
+                # Supply(Supplies.BLANKET.value, False, 3),
+                # Supply(Supplies.EPI_PEN.value, False, 2),
+                # Supply(Supplies.VENTED_CHEST_SEAL.value, False, 3),
+                # Supply(Supplies.PAIN_MEDICATIONS.value, False, 3),
+                # Supply(Supplies.BLOOD.value, False, 3)
+                ]
     return supplies
 
 
@@ -121,6 +121,15 @@ class SimpleClient:
         return new_probe
 
 
+def probe_stripper(probe):
+    '''
+    remove probes that aren't supported in hra
+    '''
+    new_options = [x for x in probe.options if x.type != 'SITREP' and x.type != 'DIRECT_MOBILE_CASUALTY']
+    probe.options = new_options
+    return probe
+
+
 def main():
     kdmas: KDMAs = KDMAs([])
 
@@ -128,14 +137,14 @@ def main():
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
+            self.hra = True
             self.kedsd = False
             self.verbose = False
             self.decision_verbose = False
             self.mc = True
             self.rollouts = 1234
             self.csv = True
-            self.bayes = False
+            self.bayes = True
             self.variant = 'aligned'
     tmnt_args = SIMPLEARGS()
 
@@ -152,6 +161,8 @@ def main():
     while probe is not None:
 
         logger.info(f"Responding to probe-{probe.id}")
+        # take out the direct_mobile and sitrep
+        probe = probe_stripper(probe)
         action = driver.decide(probe)
         logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)

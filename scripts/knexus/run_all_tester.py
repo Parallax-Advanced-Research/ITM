@@ -10,6 +10,15 @@ from util import logger
 from util.logger import LogLevel
 
 
+def probe_stripper(probe):
+    '''
+    remove probes that aren't supported in hra
+    '''
+    new_options = [x for x in probe.options if x.type != 'SITREP' and x.type != 'DIRECT_MOBILE_CASUALTY']
+    probe.options = new_options
+    return probe
+
+
 def tad_tester():
     class TADArgs:
         def __init__(self):
@@ -59,14 +68,14 @@ def simple_scene():
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
+            self.hra = True
             self.kedsd = False
             self.verbose = False
             self.decision_verbose = False
             self.mc = True
             self.rollouts = 1234
             self.csv = True
-            self.bayes = False
+            self.bayes = True
             self.variant = 'aligned'
     tmnt_args = SIMPLEARGS()
 
@@ -80,6 +89,8 @@ def simple_scene():
     driver.set_scenario(scenario=scenario)
 
     while probe is not None:
+        # take out the direct_mobile and sitrep
+        probe = probe_stripper(probe)
         action = driver.decide(probe)
         new_probe = client.take_action(action)
         probe = new_probe
@@ -93,14 +104,14 @@ def enemy_dying():
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
+            self.hra = True
             self.kedsd = False
             self.verbose = False
             self.decision_verbose = False
             self.mc = True
             self.rollouts = 1234
             self.csv = True
-            self.bayes = False
+            self.bayes = True
             self.variant = 'aligned'
     enemy_dying_args = SIMPLEARGS()
 
@@ -114,6 +125,8 @@ def enemy_dying():
     driver.set_scenario(scenario=scenario)
 
     while probe is not None:
+        # take out the direct_mobile and sitrep
+        probe = probe_stripper(probe)
         action = driver.decide(probe)
         new_probe = client.take_action(action)
         probe = new_probe
@@ -127,14 +140,14 @@ def vip_collapse():
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
+            self.hra = True
             self.kedsd = False
             self.verbose = False
             self.decision_verbose = False
             self.mc = True
             self.rollouts = 1234
             self.csv = True
-            self.bayes = False
+            self.bayes = True
             self.variant = 'aligned'
     enemy_dying_args = SIMPLEARGS()
 
@@ -148,6 +161,8 @@ def vip_collapse():
     driver.set_scenario(scenario=scenario)
 
     while probe is not None:
+        # take out the direct_mobile and sitrep
+        probe = probe_stripper(probe)
         action = driver.decide(probe)
         new_probe = client.take_action(action)
         probe = new_probe
@@ -161,11 +176,11 @@ def turtle_script():
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
+            self.hra = True
             self.kedsd = False
             self.csv = True
             self.verbose = False
-            self.bayes = False
+            self.bayes = True
             self.mc = True
             self.rollouts = 1000
             self.decision_verbose = False
@@ -182,6 +197,8 @@ def turtle_script():
     driver.set_scenario(scenario=scenario)
 
     while probe is not None:
+        # take out the direct_mobile and sitrep
+        probe = probe_stripper(probe)
         action = driver.decide(probe)  # Probe is good here
         new_probe = client.take_action(action)
         probe = new_probe

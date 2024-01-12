@@ -24,8 +24,8 @@ def get_VIP_demo_casualties() -> list[Casualty]:
 
     casualties = [
         Casualty('vip', 'severe chest collapse needs help', name='vip',
-                       relationship='same unit',
-                       demographics=Demographics(age=25, sex='M', rank='VIP'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=25, sex='M', rank='vip'),
                        injuries=[vip_injury],
                        vitals=vip_vitals,
                        complete_vitals=vip_vitals,
@@ -33,8 +33,8 @@ def get_VIP_demo_casualties() -> list[Casualty]:
                        tag="tag"),
         Casualty('captain', 'serious burn on the face needs treatment',
                        name='captain',
-                       relationship='same unit',
-                       demographics=Demographics(age=25, sex='M', rank='Captain'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=25, sex='M', rank='intel officer'),
                        injuries=[captain_injury],
                        vitals=captain_vitals,
                        complete_vitals=captain_vitals,
@@ -42,8 +42,8 @@ def get_VIP_demo_casualties() -> list[Casualty]:
                        tag="tag"),
         Casualty('soldier', 'sharpnel to the neck and is bleeding',
                        name='soldier',
-                       relationship='same unit',
-                       demographics=Demographics(age=25, sex='M', rank='ally'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=25, sex='M', rank='marine'),
                        injuries=[soldier_injury],
                        vitals=soldier_vitals,
                        complete_vitals=soldier_vitals,
@@ -59,12 +59,14 @@ def get_VIP_supplies() -> list[Supply]:
                 Supply(Supplies.HEMOSTATIC_GAUZE.value, False, 2),
                 Supply(Supplies.DECOMPRESSION_NEEDLE.value, False, 2),
                 Supply(Supplies.NASOPHARYNGEAL_AIRWAY.value, False, 3),
-                Supply(Supplies.PULSE_OXIMETER.value, False, 1),
-                Supply(Supplies.BLANKET.value, False, 3),
-                Supply(Supplies.EPI_PEN.value, False, 1),
-                Supply(Supplies.VENTED_CHEST_SEAL.value, False, 1),
-                Supply(Supplies.PAIN_MEDICATIONS.value, False, 3),
-                Supply(Supplies.BLOOD.value, False, 3)]
+                # Supply(Supplies.PULSE_OXIMETER.value, False, 1),
+                # Supply(Supplies.BLANKET.value, False, 3),
+                # Supply(Supplies.EPI_PEN.value, False, 1),
+                # Supply(Supplies.VENTED_CHEST_SEAL.value, False, 1),
+                # Supply(Supplies.PAIN_MEDICATIONS.value, False, 3),
+                # Supply(Supplies.BLOOD.value, False, 3)
+                ]
+
     return supplies
 
 
@@ -138,6 +140,15 @@ class VIPClient:
         return new_probe
 
 
+def probe_stripper(probe):
+    '''
+    remove probes that aren't supported in hra
+    '''
+    new_options = [x for x in probe.options if x.type != 'SITREP' and x.type != 'DIRECT_MOBILE_CASUALTY']
+    probe.options = new_options
+    return probe
+
+
 if __name__ == '__main__':
     kdmas: KDMAs = KDMAs([])
 
@@ -145,11 +156,11 @@ if __name__ == '__main__':
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
+            self.hra = True
             self.kedsd = False
             self.csv = True
             self.verbose = False
-            self.bayes = False
+            self.bayes = True
             self.mc = True
             self.rollouts = 1000
             self.decision_verbose = False
@@ -169,6 +180,8 @@ if __name__ == '__main__':
     while probe is not None:
 
         logger.info(f"Responding to probe-{probe.id}")
+        # take out the direct_mobile and sitrep
+        probe = probe_stripper(probe)
         action = driver.decide(probe)  # Probe is good here
         logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)
