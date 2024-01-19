@@ -25,17 +25,19 @@ check_version(){
 if [[ ! -z $PYTHON3_REF ]]; then
     version=($(python_ref python3))
     check_version ${version[0]} ${version[1]} $PYTHON3_REF
-    PYTHON="python3"
+    PYTHON_EXEC="python3"
 elif [[ ! -z $PYTHON_REF ]]; then
     # Didn't find python3, let's try python
     version=($(python_ref python))
     check_version ${version[0]} ${version[1]} $PYTHON_REF
-    PYTHON="python"
+    PYTHON_EXEC="python"
 else
     # Python is not installed at all
     error_msg
     exit 1
 fi
+
+export PYTHON_EXEC
 
 if [[ ! -z $(which pip3) ]]; then
     PIP=pip3
@@ -51,29 +53,20 @@ if [[ -z $(which git) ]]; then
     exit 1
 fi
 
-$PYTHON -m venv venv
-source venv/Scripts/activate
-$PIP install -r requirements.txt
+$PYTHON_EXEC -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+deactivate
 mkdir .deprepos
 cd .deprepos
+echo "Installing TA3 client"
 git clone git@github.com:NextCenturyCorporation/itm-evaluation-client.git
-git clone git@github.com:NextCenturyCorporation/itm-evaluation-server.git
-cd itm-evaluation-server
-$PYTHON -m venv venv
-source venv/Scripts/activate
-$PIP install -r requirements.txt
-cd ..
 
-git clone git@gitlab.com:itm-ta1-adept-shared/adept_server.git
-cd adept_server
-$PYTHON -m venv venv
-source venv/Scripts/activate
-$PIP install -r requirements.txt
-cd ..
+echo "Installing TA3 server"
+../start.sh git@github.com:NextCenturyCorporation/itm-evaluation-server.git
 
-git clone git@github.com:ITM-Soartech/ta1-server-mvp.git
-cd ta1-server-mvp
-$PYTHON -m venv venv
-source venv/Scripts/activate
-$PIP install -r requirements.txt
-cd ..
+echo "Installing ADEPT server"
+../start.sh git@gitlab.com:itm-ta1-adept-shared/adept_server.git
+
+echo "Installing SoarTech server"
+../start.sh git@github.com:ITM-Soartech/ta1-server-mvp.git
