@@ -157,7 +157,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(list_indices) == 1:
             return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            return "no preference", {}, search_tree
+            #return "no preference", {}, search_tree
+            return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by take-the-best
 
@@ -267,7 +268,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(list_indices) == 1:
             return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            return "no preference", {}, search_tree
+            #return "no preference", {}, search_tree
+            return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by exhaustive
 
@@ -422,7 +424,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(list_indices) == 1:
             return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            return "no preference", {}, search_tree
+            #return "no preference", {}, search_tree
+            return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by tallying
 
@@ -583,7 +586,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(list_indices) == 1:
             return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            return "no preference", {}, search_tree
+            #return "no preference", {}, search_tree
+            return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by satisfactory
 
@@ -765,7 +769,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     break
 
         # if outside of while loop no definitive winner was reached
-        return "no preference", {}, ""
+        #return "no preference", {}, ""
+        return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by one-bounce
 
@@ -904,12 +909,16 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 "TAG_CASUALTY": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "none", "life_impact": "high"}},
             "SITREP": {
                 "SITREP": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all", "life_impact": "low"}},
+            #"END_SCENARIO": {
+            #    "END_SCENARIO": {"risk_reward_ratio": "null", "resources": "null", "time": "null", "system": "null",
+            #               "life_impact": "null"}}
         }
         file['treatment'] = {}
         file['treatment']["APPLY_TREATMENT"] = dict()
         for decision_complete in decision_list:
             decision = decision_complete.value.name
             if decision == 'END_SCENARIO': continue
+            #if decision == "APPLY_TREATMENT":
             elif decision == "APPLY_TREATMENT":
                 for ele in temp_file['treatment']['APPLY_TREATMENT']:
                     if ele in file['treatment']["APPLY_TREATMENT"]: continue
@@ -1001,6 +1010,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         decision_hra["no preference"] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
                                          'one-bounce': 0}
 
+        decision_hra["END_SCENARIO"] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
+                                         'one-bounce': 0}
+
         # call each HRA strategy and store the result with the matching decision list
         take_the_best_result = self.take_the_best(new_file, search_path=search_path, data=data)
         decision_hra[take_the_best_result[0]]['take-the-best'] += 1
@@ -1085,6 +1097,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 for pred in predictor_combos:
                     temp_data['predictors'] = {'relevance': pred}
                     for treatment in data['treatment']:
+                        #if "2" in Animals:
+                        #rel_treatment_found = [x for x in probe.decisions if
+                        #                           x.value.name == treatment and 'casualty' in x.value.params and x.value.params['casualty'] == casualty]
                         rel_treatment_found = [x for x in probe.decisions if x.value.name == treatment and x.value.params['casualty'] == casualty]
                         if len(rel_treatment_found):
                             for name, val in data['treatment'][treatment].items():
