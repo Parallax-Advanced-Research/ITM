@@ -56,11 +56,12 @@ fi
 $PYTHON_EXEC -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-deactivate
 mkdir .deprepos
 cd .deprepos
 echo "Installing TA3 client"
 git clone git@github.com:NextCenturyCorporation/itm-evaluation-client.git
+pip install -e itm-evaluation-client
+deactivate
 
 echo "Installing TA3 server"
 ../repo-cfgs/start.sh git@github.com:NextCenturyCorporation/itm-evaluation-server.git
