@@ -60,14 +60,28 @@ mkdir .deprepos
 cd .deprepos
 echo "Installing TA3 client"
 git clone git@github.com:NextCenturyCorporation/itm-evaluation-client.git
+if [ $? != 0 ] ; then
+  echo "Could not download evaluation client code, check internet connection."
+  exit 1
+fi
+
 pip install -e itm-evaluation-client
 deactivate
 
 echo "Installing TA3 server"
 ../repo-cfgs/start.sh git@github.com:NextCenturyCorporation/itm-evaluation-server.git
+if [ $? != 0 ] ; then
+  exit 1
+fi
 
 echo "Installing ADEPT server"
 ../repo-cfgs/start.sh git@gitlab.com:itm-ta1-adept-shared/adept_server.git
+if [ $? != 0 ] ; then
+  exit 1
+fi
 
 echo "Installing SoarTech server"
 ../repo-cfgs/start.sh git@github.com:ITM-Soartech/ta1-server-mvp.git
+if [ $? != 0 ] ; then
+  exit 1
+fi
