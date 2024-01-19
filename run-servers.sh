@@ -1,11 +1,11 @@
 #/bin/bash
 
-cd .deprepos/itm-evaluation-client
-git checkout e9fe3673056ab1cb7aabfb64ef3055d0ef088ac1
-git pull
-cd ../..
+repo-cfgs/update-server.sh itm-evaluation-client
+repo-cfgs/update-server.sh itm-evaluation-server
+repo-cfgs/update-server.sh ta1-server-mvp
+repo-cfgs/update-server.sh adept_server
 
-./run-ta3-server.sh &
-./run-adept-server.sh &
-./run-soartech-server.sh &
+repo-cfgs/run-ta3-server.sh &
+repo-cfgs/run-adept-server.sh &
+repo-cfgs/run-soartech-server.sh &
 

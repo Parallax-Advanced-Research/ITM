@@ -1,0 +1,15 @@
+diff --git a/swagger_server/itm/itm_scenario_session.py b/swagger_server/itm/itm_scenario_session.py
+index 2ab3d65..9242315 100644
+--- a/swagger_server/itm/itm_scenario_session.py
++++ b/swagger_server/itm/itm_scenario_session.py
+@@ -308,9 +308,9 @@ class ITMScenarioSession:
+ 
+         if self.session_type == 'eval':
+             self.save_history = True
+-            self.ta1_integration = True
+             max_scenarios = None
+ 
++        self.ta1_integration = self.kdma_training
+         self.history.add_history(
+                 "Start Session",
+                 {"session_id": self.session_id,
