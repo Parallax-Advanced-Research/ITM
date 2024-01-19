@@ -63,10 +63,10 @@ echo "Installing TA3 client"
 git clone git@github.com:NextCenturyCorporation/itm-evaluation-client.git
 
 echo "Installing TA3 server"
-../start.sh git@github.com:NextCenturyCorporation/itm-evaluation-server.git
+../repo-cfgs/start.sh git@github.com:NextCenturyCorporation/itm-evaluation-server.git
 
 echo "Installing ADEPT server"
-../start.sh git@gitlab.com:itm-ta1-adept-shared/adept_server.git
+../repo-cfgs/start.sh git@gitlab.com:itm-ta1-adept-shared/adept_server.git
 
 echo "Installing SoarTech server"
-../start.sh git@github.com:ITM-Soartech/ta1-server-mvp.git
+../repo-cfgs/start.sh git@github.com:ITM-Soartech/ta1-server-mvp.git
