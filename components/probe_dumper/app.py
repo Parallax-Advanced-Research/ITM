@@ -241,14 +241,41 @@ def read_saved_scenarios():
     return scenario_hash
 
 
+def url_scen_helper(param):
+    convert_scens = {
+        'adept': "components\probe_dumper\\tmp\\adept-september-demo-scenario-1",
+        'enemy': 'components\probe_dumper\\tmp\enemy-dying',
+        'simple': 'components\probe_dumper\\tmp\simple',
+        'soar': 'components\probe_dumper\tmp\soartech-september-demo-scenario-1',
+        'tmnt': 'components\probe_dumper\\tmp\\tmnt',
+        'vip': 'components\probe_dumper\\tmp\\vip'
+    }
+    return convert_scens[param]
+
+
+def url_decision_checker(param, num_dec):
+    if 0 < param <= num_dec:
+        return param
+    else:
+        return 1  # defaulting to first decision if param is bad
+
+
 if __name__ == '__main__':
+    params = st.experimental_get_query_params()
+
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
     sort_options = ['Time', 'Probability Death', 'Deterioration', 'Casualty']
     # with st.sidebar:  # Legal term
-    chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
+    if params.get('scen', None) is not None:
+        chosen_scenario = url_scen_helper(params['scen'][0])
+    else:
+        chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
     num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
-    chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
+    if params.get('decision', None) is not None:
+        chosen_decision = url_decision_checker(int(params['decision'][0]), len(num_decisions))
+    else:
+        chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
     sort_by = st.selectbox(label="Sort by", options=sort_options)
     st.header("""Scenario: %s""" % chosen_scenario)
     st.subheader("""Decision %d/%d""" % (chosen_decision, len(num_decisions)))
