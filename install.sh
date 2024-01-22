@@ -54,10 +54,11 @@ if [[ -z $(which git) ]]; then
 fi
 
 $PYTHON_EXEC -m venv venv
-if [ -d ./venv ] ; then
-  echo "Virtual Environment installation successful."
+if [ $? == 0 ] && [ -d ./venv ] ; then
+  echo "Virtual environment installation successful."
 else
   echo 'Virtual environment installation failed. On Ubuntu, try "sudo apt get install python3-venv".'
+  exit 1
 fi
 
 source venv/bin/activate
