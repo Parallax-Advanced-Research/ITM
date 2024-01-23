@@ -277,7 +277,7 @@ if __name__ == '__main__':
     else:
         chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
     sort_by = st.selectbox(label="Sort by", options=sort_options)
-    st.header("""Scenario: %s""" % chosen_scenario)
+    st.header("""Scenario: %s""" % chosen_scenario.split('\\')[-1])
     st.subheader("""Decision %d/%d""" % (chosen_decision, len(num_decisions)))
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
