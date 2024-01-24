@@ -27,7 +27,7 @@ def handle_download_problem(repo_name):
 
 def install_repo(git_ssh_path):
     dir = os.path.join(".deprepos", re.search(".*/(.*)\.git", git_ssh_path).group(1))
-    p = subprocess.run(["git", "clone", git_ssh_path, dir], shell=True)
+    p = subprocess.run(["git", "clone", git_ssh_path, dir])
     if p.returncode != 0:
         handle_download_problem(dir)
     return dir
@@ -37,8 +37,7 @@ def install_server(git_ssh_path):
     builder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
     builder.create(os.path.join(dir, "venv"))
     ctxt = builder.ensure_directories(os.path.join(dir, "venv"))
-    p = subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-r", os.path.join(dir, "requirements.txt")], shell=True)    
-    
+    p = subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-r", os.path.join(dir, "requirements.txt")])
 
 try:
     if sys.version_info.major < 3 or sys.version_info.minor < 10 \
