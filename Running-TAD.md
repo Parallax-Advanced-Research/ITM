@@ -2,6 +2,45 @@
 
 ## Installation
 
+On Linux, ensure you have installed packages python3, python3-venv, and git first. Python must be 
+version 3.10 or 3.11. You will also need gitlab and github accounts with ssh key access; contact 
+Soartech (Nick Paul, nicholas.paul@soartech.com) with your github account name to be added to their 
+repository for access. Then to install:
+
+cd [TAD root]
+./install.sh
+
+To run in training mode:
+
+cd [TAD root]
+source venv/bin/activate
+./run-servers.sh
+./tad_tester.sh --training 
+./stop-servers.sh
+
+To run in testing mode: 
+
+cd [TAD root]
+source venv/bin/activate
+./tad_tester.sh
+
+Integration Developers: After you change the source state of any of the other teams' repositories 
+in .deprepos/, and test the changes in TAD, run the following to update the state of the TAD 
+repository so others will use the changes. This will record specific commits to the other repos to 
+be used, and patches for any code you've changed, that will be reused the next time someone calls 
+"run-servers.sh" with your changes:
+
+cd [TAD root]
+source venv/bin/activate
+./save-repos-state.sh
+git add repo-cfgs/*.patch
+git add repo-cfgs/*-commit-hash
+git commit -m "Updated dependent repository configuration."
+git push
+
+
+
+
 TAD is tested to work on Python 3.10 and 3.11.
 TAD is currently setup to run via the commandline via the tad.py script in this projects root directory.
 
