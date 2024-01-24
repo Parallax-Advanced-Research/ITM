@@ -18,6 +18,7 @@ from domain.internal import Decision
 UNKNOWN_NUMBER = -12.34
 UNKOWN_STRING = "Not Calculated"
 
+
 def _get_casualty_from_decision(decision, div_text=False):
     casualty = None
     if isinstance(decision, str):
@@ -41,16 +42,6 @@ def _get_params_from_decision(decision):
                'Treatment': None if 'treatment' not in param_dict.keys() else param_dict['treatment'],
                'Tag': None if 'category' not in param_dict.keys() else param_dict['category']}
     return retdict
-
-
-def casualty_df_from_state(state) -> pd.DataFrame:
-    df = pd.DataFrame()
-    return df
-
-
-def supply_df_from_state(state) -> pd.DataFrame:
-    df = pd.DataFrame()
-    return df
 
 
 def make_html_table_header(demo_mode):
@@ -158,7 +149,15 @@ def construct_decision_table(analysis_df, demo_mode=False, sort_metric='Time'):
         'Time': lambda x: x.metrics[Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in x.metrics.keys() else x.id_,
         'Probability Death': lambda x: x.metrics[Metric.P_DEATH.value].value if Metric.P_DEATH.value in x.metrics.keys() else x.id_,
         'Deterioration': lambda x: x.metrics[Metric.DAMAGE_PER_SECOND.value].value if Metric.DAMAGE_PER_SECOND.value in x.metrics.keys() else x.id_,
+        'HRA Strategy': lambda x: get_hra_strategy(x)[0] if 'HRA Strategy' in x.metrics.keys() else x.id_,
+        'P(Death) (Bayes)': lambda x: x.metrics['pDeath'].value if 'pDeath' in x.metrics.keys() else 0.0,
+        'P(Pain) (Bayes)': lambda x: x.metrics['pPain'].value if 'pDeath' in x.metrics.keys() else 0.0,
+        'P(BI) (Bayes)': lambda x: x.metrics['pBrainInjury'].value if 'pBrainInjury' in x.metrics.keys() else 0.0,
+        'P(Airway Blocked) (Bayes)': lambda x: x.metrics['pAirwayBlocked'].value if 'pAirwayBlocked' in x.metrics.keys() else 0.0,
+        'P(Internal Bleeding) (Bayes)': lambda x: x.metrics['pInternalBleeding'].value if 'pInternalBleeding' in x.metrics.keys() else 0.0,
+        'P(External Bleeding) (Bayes)': lambda x: x.metrics['pExternalBleeding'].value if 'pExternalBleeding' in x.metrics.keys() else 0.0,
         'Casualty': lambda x: x.value.params['casualty'] if 'casualty' in x.value.params else x.id_
+
     }
     sorted_df = sorted(analysis_df, key=sort_funcs[sort_metric])
     for decision in sorted_df:
@@ -265,7 +264,9 @@ if __name__ == '__main__':
 
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
-    sort_options = ['Time', 'Probability Death', 'Deterioration', 'Casualty']
+    sort_options = ['Time', 'Probability Death', 'Deterioration', 'Casualty', 'HRA Strategy', 'P(Death) (Bayes)',
+                    'P(Pain) (Bayes)', 'P(BI) (Bayes)', 'P(Airway Blocked) (Bayes)', 'P(Internal Bleeding) (Bayes)',
+                    'P(External Bleeding) (Bayes)']
     # with st.sidebar:  # Legal term
     if params.get('scen', None) is not None:
         chosen_scenario = url_scen_helper(params['scen'][0])
