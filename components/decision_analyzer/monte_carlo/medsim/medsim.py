@@ -31,6 +31,7 @@ class MedicalSimulator(MCSim):
         self.simulator_name = simulator_name
         if simulator_name == SimulatorName.SMOL.value:
             self.action_map = smol_action_map
+        self.action_map['aid_delay'] = init_state.aid_delay
         super().__init__()
 
     def get_simulator(self) -> str:

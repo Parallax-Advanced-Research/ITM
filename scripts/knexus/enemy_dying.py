@@ -24,8 +24,8 @@ def get_enemy_dying_demo_casualties() -> list[Casualty]:
 
     casualties = [
         Casualty('enemy', 'enemy was found with something through his chest and is not responding', name='enemy',
-                       relationship='same unit',
-                       demographics=Demographics(age=25, sex='M', rank='enemy'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=25, sex='M', rank='civilian'),  # closest rank to enemy i guess
                        injuries=[enemy_injury],
                        vitals=enemy_vitals,
                        complete_vitals=enemy_vitals,
@@ -33,8 +33,8 @@ def get_enemy_dying_demo_casualties() -> list[Casualty]:
                        tag="tag"),
         Casualty('soldier_1', 'took some shrapnel to the stomach needs to be treated',
                        name='soldier_1',
-                       relationship='same unit',
-                       demographics=Demographics(age=25, sex='M', rank='ally'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=25, sex='M', rank='marine'),
                        injuries=[soldier_1_injury],
                        vitals=soldier_1_vitals,
                        complete_vitals=soldier_1_vitals,
@@ -42,8 +42,8 @@ def get_enemy_dying_demo_casualties() -> list[Casualty]:
                        tag="tag"),
         Casualty('soldier_2', 'leg is missing, not sure how, but needs help',
                        name='soldier_2',
-                       relationship='same unit',
-                       demographics=Demographics(age=25, sex='M', rank='ally'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=25, sex='M', rank='marine'),
                        injuries=[soldier_2_injury],
                        vitals=soldier_2_vitals,
                        complete_vitals=soldier_2_vitals,
@@ -59,12 +59,13 @@ def get_supplies() -> list[Supply]:
                 Supply(Supplies.HEMOSTATIC_GAUZE.value, False, 2),
                 Supply(Supplies.DECOMPRESSION_NEEDLE.value, False, 2),
                 Supply(Supplies.NASOPHARYNGEAL_AIRWAY.value, False, 3),
-                Supply(Supplies.PULSE_OXIMETER.value, False, 1),
-                Supply(Supplies.BLANKET.value, False, 3),
-                Supply(Supplies.EPI_PEN.value, False, 1),
-                Supply(Supplies.VENTED_CHEST_SEAL.value, False, 1),
-                Supply(Supplies.PAIN_MEDICATIONS.value, False, 3),
-                Supply(Supplies.BLOOD.value, False, 3)]
+                # Supply(Supplies.PULSE_OXIMETER.value, False, 1),
+                # Supply(Supplies.BLANKET.value, False, 3),
+                # Supply(Supplies.EPI_PEN.value, False, 1),
+                # Supply(Supplies.VENTED_CHEST_SEAL.value, False, 1),
+                # Supply(Supplies.PAIN_MEDICATIONS.value, False, 3),
+                # Supply(Supplies.BLOOD.value, False, 3)
+                ]
     return supplies
 
 
@@ -138,6 +139,15 @@ class EnemyClient:
         return new_probe
 
 
+def probe_stripper(probe):
+    '''
+    remove probes that aren't supported in hra
+    '''
+    new_options = [x for x in probe.options if x.type != 'SITREP' and x.type != 'DIRECT_MOBILE_CASUALTY']
+    probe.options = new_options
+    return probe
+
+
 if __name__ == '__main__':
     kdmas: KDMAs = KDMAs([])
 
@@ -145,11 +155,11 @@ if __name__ == '__main__':
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
+            self.hra = True
             self.kedsd = False
             self.csv = True
             self.verbose = False
-            self.bayes = False
+            self.bayes = True
             self.mc = True
             self.rollouts = 1000
             self.decision_verbose = False
@@ -169,6 +179,8 @@ if __name__ == '__main__':
     while probe is not None:
 
         logger.info(f"Responding to probe-{probe.id}")
+        # take out the direct_mobile and sitrep
+        probe = probe_stripper(probe)
         action = driver.decide(probe)  # Probe is good here
         logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)

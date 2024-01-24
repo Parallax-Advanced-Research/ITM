@@ -5,6 +5,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Ca
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import (calc_prob_bleedout,
                                                                               calc_prob_asphyx,
                                                                               calc_prob_death)
+from domain.internal import TADProbe
 
 
 def get_prob(pvals: list[float]):
@@ -23,6 +24,10 @@ class MedsimState(MCState):
         self.supplies: list[Supply] = supplies
         self.unstructured = unstructured
         self.time = time
+        self.aid_delay: float = 0.0
+
+    def set_aid_delay(self, probe: TADProbe):
+        self.aid_delay = probe.environment['aid_delay'] if probe.environment['aid_delay'] is not None else 0.0
 
     def __eq__(self, other: 'MedsimState'):
         # fastest checks are lengths

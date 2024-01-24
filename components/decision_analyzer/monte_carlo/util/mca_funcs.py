@@ -253,6 +253,7 @@ def get_decision_justification(decision: mcnode.MCDecisionNode) -> dict[str, int
 def extract_medsim_state(probe: TADProbe) -> MedsimState:
     ta3_state: TA3State = probe.state
     medsim_state: MedsimState = ta3_conv.convert_state(ta3_state)
+    medsim_state.set_aid_delay(probe)
     return medsim_state
 
 
