@@ -18,7 +18,7 @@ def handle_creation_error(path):
     exit(-1)
 
 def handle_git_missing():
-    print("Please install git.")
+    print("Please install git and ensure it's in your PATH.")
     exit(-1)
 
 def handle_download_problem(repo_name):
@@ -37,7 +37,7 @@ def install_server(git_ssh_path):
     builder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
     builder.create(os.path.join(dir, "venv"))
     ctxt = builder.ensure_directories(os.path.join(dir, "venv"))
-    p = subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-r", "requirements.txt"], shell=True)    
+    p = subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-r", os.path.join(dir, "requirements.txt")], shell=True)    
     
 
 try:
@@ -76,7 +76,9 @@ except:
 
     
 print("Installing TA3 client")
-install_repo("git@github.com:NextCenturyCorporation/itm-evaluation-client.git"]))
+install_repo("git@github.com:NextCenturyCorporation/itm-evaluation-client.git")
+
+subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-e", os.path.join(".deprepos", "itm-evaluation-client")])
 
 print("Installing TA3 server")
 install_server("git@github.com:NextCenturyCorporation/itm-evaluation-server.git")
