@@ -31,7 +31,7 @@ class MedicalSimulator(MCSim):
         self.simulator_name = simulator_name
         if simulator_name == SimulatorName.SMOL.value:
             self.action_map = smol_action_map
-        self.action_map['aid_delay'] = init_state.aid_delay
+        self.aid_delay = init_state.aid_delay
         super().__init__()
 
     def get_simulator(self) -> str:
@@ -41,7 +41,12 @@ class MedicalSimulator(MCSim):
     def exec(self, state: MedsimState, action: MedsimAction) -> list[SimResult]:
         supplies: list[Supply] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
-        new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action, self._rand, state.time)
+        new_state = None
+        if action.action == 'END_SCENARIO':
+            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, state.time, state.aid_delay)
+        else:
+            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action,
+                                                                          self._rand, state.time)
         outcomes = []
         for new_s in new_state:
             new_state_casualties = new_s.casualties
