@@ -94,7 +94,6 @@ class TMNTClient:
     def __init__(self, alignment_target: KDMAs, max_actions=9):  # 9 is overkill
         self.align_tgt: KDMAs = alignment_target
         self.actions: dict[str, Action] = {}
-        self.probe_count = 1
         casualties: list[Casualty] = get_TMNT_demo_casualties()
         supplies: list[Supply] = get_TMNT_supplies()
         self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
@@ -110,7 +109,6 @@ class TMNTClient:
     def get_probe(self, state: MedsimState | None) -> ITMProbe | None:
         if self.probe_count > self.max_actions:
             return None
-        self.probe_count += 1
         state = state if state is not None else self.init_state
 
         ta3_state = reverse_convert_state(state)
@@ -139,8 +137,9 @@ class TMNTClient:
                          'mission': {'unstructured': self.UNSTRUCTURED, 'mission_type': 'Extraction'},
                          'environment': self.ENVIRONMENT, 'threat_state': self.THREAT_STATE,
                          'supplies': supplies_as_dict, 'casualties': casualties_as_dict}
-        probe: ITMProbe = ITMProbe(id='tmnt-probe', type=ProbeType.MC, prompt="what do?",
+        probe: ITMProbe = ITMProbe(id=f'tmnt-{self.probe_count}', type=ProbeType.MC, prompt="what do?",
                                    state=swagger_state, options=ta3_actions)
+        self.probe_count += 1  # increment for next
         return probe  # Probe actions only has one dmc
 
     def take_action(self, action: Action) -> ITMProbe:

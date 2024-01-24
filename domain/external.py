@@ -15,6 +15,7 @@ class Action:
     casualty: str = ''
     kdmas: dict = field(default_factory={})
     params: dict = field(default_factory={})
+    url: str = ''
 
 
 @dataclass

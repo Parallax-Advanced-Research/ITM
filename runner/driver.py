@@ -73,10 +73,10 @@ class Driver:
         return d
 
     @staticmethod
-    def respond(decision: Decision[Action]) -> ext.Action:
+    def respond(decision: Decision[Action], url: str = None) -> ext.Action:
         params = decision.value.params.copy()
         casualty = params.pop('casualty') if 'casualty' in params.keys() else None  # Sitrep can take no casualty
-        return ext.Action(decision.id_, decision.value.name, casualty, {}, params)
+        return ext.Action(decision.id_, decision.value.name, casualty, {}, params, url)
 
     def decide(self, itm_probe: ext.ITMProbe) -> ext.Action:
         probe: TADProbe = self.translate_probe(itm_probe)
@@ -100,7 +100,9 @@ class Driver:
         self.dumper.dump(probe, decision, self.session_uuid)
 
         # Extract external decision for response
-        return self.respond(decision)
+        # url construction
+        url = f'http://localhost:8501/?scen={probe.id_}'
+        return self.respond(decision, url)
 
     def _extract_state(self, dict_state: dict) -> State:
         raise NotImplementedError

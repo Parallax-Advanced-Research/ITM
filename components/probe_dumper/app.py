@@ -240,23 +240,9 @@ def read_saved_scenarios():
     return scenario_hash
 
 
-def url_scen_helper(param):
-    convert_scens = {
-        'adept': "components\probe_dumper\\tmp\\adept-september-demo-scenario-1",
-        'enemy': 'components\probe_dumper\\tmp\enemy-dying',
-        'simple': 'components\probe_dumper\\tmp\simple',
-        'soar': 'components\probe_dumper\tmp\soartech-september-demo-scenario-1',
-        'tmnt': 'components\probe_dumper\\tmp\\tmnt',
-        'vip': 'components\probe_dumper\\tmp\\vip'
-    }
-    return convert_scens[param]
-
-
-def url_decision_checker(param, num_dec):
-    if 0 < param <= num_dec:
-        return param
-    else:
-        return 1  # defaulting to first decision if param is bad
+def url_scen_helper(scen_name):
+    file_location = f"components\probe_dumper\\tmp\\{scen_name}"
+    return file_location
 
 
 if __name__ == '__main__':
@@ -264,32 +250,29 @@ if __name__ == '__main__':
 
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
-# <<<<<<< HEAD
-#     sort_options = ['Time', 'Probability Death', 'Deterioration', 'Casualty']
-#     with st.sidebar:  # Legal term
-#         chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
-#         num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
-#         chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
-#         sort_by = st.selectbox(label="Sort by", options=sort_options)
-#     st.header("""Scenario: %s""" % chosen_scenario)
-# =======
     sort_options = ['Time', 'Probability Death', 'Deterioration', 'Casualty', 'HRA Strategy', 'P(Death) (Bayes)',
                     'P(Pain) (Bayes)', 'P(BI) (Bayes)', 'P(Airway Blocked) (Bayes)', 'P(Internal Bleeding) (Bayes)',
                     'P(External Bleeding) (Bayes)']
     # with st.sidebar:  # Legal term
+
     if params.get('scen', None) is not None:
-        chosen_scenario = url_scen_helper(params['scen'][0])
+        scen = params['scen'][0].split('-')[:-1]
+        scen = '-'.join(scen)
+        chosen_scenario = url_scen_helper(scen)
     else:
         chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
     num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
-    if params.get('decision', None) is not None:
-        chosen_decision = url_decision_checker(int(params['decision'][0]), len(num_decisions))
+    # have to check again, for the probe number, need the total number of decision from the scen though
+    if params.get('scen', None) is not None:
+        probe = params['scen'][0].split('-')[-1]
+        chosen_decision = int(probe) + 1  # adding 1 for display
     else:
         chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
+
     sort_by = st.selectbox(label="Sort by", options=sort_options)
     st.header("""Scenario: %s""" % chosen_scenario.split('\\')[-1])
-# >>>>>>> develop
-    st.subheader("""Decision %d/%d""" % (chosen_decision, len(num_decisions)))
+    st.subheader("""Probe %d/%d""" % (chosen_decision, len(num_decisions)))
+    st.caption("The pink decision in the table below is the chosen decision. ")
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
 
