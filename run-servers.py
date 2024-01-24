@@ -106,7 +106,7 @@ if is_port_open(8084):
 if not ready:
     print("Please stop the processes that are already using ports before running this script. " + 
           "The ports used are not yet configurable within the script. Remember to run " +
-          "stop-server.py to remove your own prior servers if necessary.")
+          "stop-servers.py to remove your own prior servers if necessary.")
     exit(-1)
     
 start_server("itm-evaluation-server", ["swagger_server"])
