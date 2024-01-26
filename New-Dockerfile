@@ -1,3 +1,5 @@
+# to build using buildx, use `docker build . -t tad --target prod --file ./New-Dockerfile`
+
 # syntax=docker/dockerfile:latest
 FROM python:3.10 AS prod
 
