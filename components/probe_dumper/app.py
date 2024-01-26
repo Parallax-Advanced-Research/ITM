@@ -240,11 +240,6 @@ def read_saved_scenarios():
     return scenario_hash
 
 
-def url_scen_helper(scen_name):
-    file_location = scen_name
-    return file_location
-
-
 if __name__ == '__main__':
     params = st.experimental_get_query_params()
 
@@ -258,7 +253,7 @@ if __name__ == '__main__':
     if params.get('scen', None) is not None:
         scen = params['scen'][0].split('-')[:-1]
         scen = '-'.join(scen)
-        chosen_scenario = url_scen_helper(scen)
+        chosen_scenario = scen
     else:
         chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
     num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
