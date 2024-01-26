@@ -5,33 +5,18 @@
 # Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
-stages:
-- build
-- test
-- deploy
-- review
-- dast
-- staging
-- canary
-- production
-- incremental rollout 10%
-- incremental rollout 25%
-- incremental rollout 50%
-- incremental rollout 100%
-- performance
-- cleanup
-sast:
-  stage: test
 include:
 - template: Auto-DevOps.gitlab-ci.yml
 
-run_test:
-  stage: test
-  script:
-    - python run_tests.py
+stages:
+  - prep
+  - lint
+  - secret-scan
+  - code-quality
+  - build
+  - sast
+  - scanning
+  - check-cves
 
-tad_tester:
-  stage: test
-  script:
-    - python -m scripts.tad_tester --no-ebd --no-verbose # TODO: remove --no-ebd once that works
+ 
 
