@@ -11,6 +11,7 @@ include:
 stages:
   - prep
   - lint
+  - test
   - secret-scan
   - code-quality
   - build
@@ -18,5 +19,58 @@ stages:
   - scanning
   - check-cves
 
- 
+variables:
+  BUILD_IMAGE_NAME:
+    value: ${CI_REGISTRY}/${CI_PROJECT_PATH}/ci_env:${CI_COMMIT_BRANCH}
+    description: Name of the image created to test/lint repo
+  RUFF_CHECK_OPTIONS:
+    # these options ignore `line-too-long` lint errors and allows `ruff check` to exit with code 0 if there are lint errors
+    # this allows it to be added to the existing pipeline; nothing will break
+    value: "--ignore E501 --exit-zero"
+    description: Adds additional options when running `ruff check`.
+  PYTEST_OPTIONS:
+    value: ""
+    description: Adds additional options when running `pytest`.
 
+build_container:
+  stage: prep
+  image: docker:latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "default" || $CI_PIPELINE_SOURCE == "post-merge-pipeline"
+      when: always
+    - when: never
+  script:
+    # login to gitlab registry
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - docker build --pull --cache-from ${CI_REGISTRY}/${CI_PROJECT_PATH}/ci_env:develop --tag ${BUILD_IMAGE_NAME} --file Dockerfile .
+    - docker push ${BUILD_IMAGE_NAME}
+
+ruff_check:
+  stage: lint
+  image: ${BUILD_IMAGE_NAME}
+  script:
+    - pip install ruff
+    - echo ${RUFF_CHECK_OPTIONS}
+    - ruff check --output-format gitlab --output-file ruff_linter.json ${RUFF_CHECK_OPTIONS}
+  artifacts:
+    when: always
+    reports:
+      codequality: ruff_linter.json
+    expire_in: 4 weeks
+
+pytest:
+  stage: test
+  image: ${BUILD_IMAGE_NAME}
+  script:
+    - pip install pytest pytest-cov pytest-randomly
+    - echo ${PYTEST_OPTIONS}
+    - pytest --cov=python --cov-report=xml --cov-report=term --junitxml=tests.xml ${PYTEST_OPTIONS}
+  coverage: '/^TOTAL.+?(\d+\%)$/'
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/coverage.xml
+      junit: tests.xml
+    expire_in: 4 weeks
