@@ -92,6 +92,7 @@ def simple_scene():
         # take out the direct_mobile and sitrep
         probe = probe_stripper(probe)
         action = driver.decide(probe)
+        logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)
         probe = new_probe
     return 0
@@ -128,6 +129,7 @@ def enemy_dying():
         # take out the direct_mobile and sitrep
         probe = probe_stripper(probe)
         action = driver.decide(probe)
+        logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)
         probe = new_probe
     return 0
@@ -164,6 +166,7 @@ def vip_collapse():
         # take out the direct_mobile and sitrep
         probe = probe_stripper(probe)
         action = driver.decide(probe)
+        logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)
         probe = new_probe
     return 0
@@ -200,26 +203,27 @@ def turtle_script():
         # take out the direct_mobile and sitrep
         probe = probe_stripper(probe)
         action = driver.decide(probe)  # Probe is good here
+        logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)
         probe = new_probe
     return 0
 
 
 logger.setLevel(LogLevel.INFO)
-logger.info("Beginning Knexus Test Harness...")
-logger.info("Running TAD Tester")
+logger.critical("Beginning Knexus Test Harness...")
+logger.warning("Running TAD Tester")
 tad_tester()
-logger.info("TAD Tester complete")
-logger.info("Running Turtles")
+logger.warning("TAD Tester complete")
+logger.warning("Running Turtles")
 turtle_script()
-logger.info("Turtles succeeded")
-logger.info("Running Simple Scene")
+logger.warning("Turtles succeeded")
+logger.warning("Running Simple Scene")
 simple_scene()
-logger.info("Simple Scene succeeded")
-logger.info("Running Enemy Dying")
+logger.warning("Simple Scene succeeded")
+logger.warning("Running Enemy Dying")
 enemy_dying()
-logger.info("Enemy Dying succeeded")
-logger.info("Running VIP Collapse")
+logger.warning("Enemy Dying succeeded")
+logger.warning("Running VIP Collapse")
 vip_collapse()
-logger.info("VIP Collapse completed")
-logger.info("Jedi Tester Completed. May the force be with you.")
+logger.warning("VIP Collapse completed")
+logger.critical("Jedi Tester Completed. May the force be with you.")

@@ -37,7 +37,6 @@ class MedicalSimulator(MCSim):
     def get_simulator(self) -> str:
         return self.simulator_name
 
-
     def exec(self, state: MedsimState, action: MedsimAction) -> list[SimResult]:
         supplies: list[Supply] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
