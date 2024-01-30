@@ -45,7 +45,7 @@ build_container:
   script:
     # login to gitlab registry
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-    - docker build --pull --cache-from ${CI_REGISTRY}/${CI_PROJECT_PATH}/ci_env:develop --tag ${BUILD_IMAGE_NAME} --file Dockerfile .
+    - docker build --pull --cache-from ${CI_REGISTRY}/${CI_PROJECT_PATH}/ci_env:develop --cache-from ${BUILD_IMAGE_NAME} --tag ${BUILD_IMAGE_NAME} --file Dockerfile .
     - docker push ${BUILD_IMAGE_NAME}
 
 ruff_check:
