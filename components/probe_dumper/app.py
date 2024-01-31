@@ -160,12 +160,19 @@ def construct_decision_table(analysis_df, demo_mode=False, sort_metric='Time'):
 
     }
     sorted_df = sorted(analysis_df, key=sort_funcs[sort_metric])
+    supply_used = None
     for decision in sorted_df:
+        # get the supply if one was used
+        if decision.selected:
+            try:
+                supply_used = decision.value.params['treatment']
+            except:
+                supply_used = None
         raw = get_html_line(decision, demo_mode)
         fixed = raw.replace(str(UNKNOWN_NUMBER), UNKOWN_STRING)
         lines += fixed
     full_html = table_header + lines + '<hr>'
-    return full_html
+    return full_html, supply_used
 
 
 def get_html_justification(justification_list):
@@ -198,16 +205,23 @@ def get_casualty_table(scenario):
     return '''%s%s<hr>''' % (header, lines)
 
 
-def htmlify_supply(supply: Supply):
-    return '''|%s|%d|\n''' % (supply.type, supply.quantity)
+def htmlify_supply(supply: Supply, make_pink=False):
+    if make_pink:
+        html_sup = '''|<font color="#FF69B4">%s</font>|<font color="#FF69B4">%d</font>|\n''' % (supply.type, supply.quantity - 1)
+    else:
+        html_sup = '''|%s|%d|\n''' % (supply.type, supply.quantity)
+    return html_sup
 
 
-def get_supplies_table(scenario):
+def get_supplies_table(scenario, sup_used):
     header = '''|Supplies| Quantity|
 |---|---|\n'''
     lines = ''
     for supply in scenario.supplies:
-        lines += htmlify_supply(supply)
+        if supply.type == sup_used:
+            lines += htmlify_supply(supply, True)
+        else:
+            lines += htmlify_supply(supply)
     return '''%s%s<hr>''' % (header, lines)
 
 
@@ -267,21 +281,22 @@ if __name__ == '__main__':
     sort_by = st.selectbox(label="Sort by", options=sort_options)
     st.header("""Scenario: %s""" % chosen_scenario.split('\\')[-1])
     st.subheader("""Probe %d/%d""" % (chosen_decision, len(num_decisions)))
-    st.caption("The pink decision in the table below is the chosen decision. ")
+    st.caption("The pink decision in the table below is the chosen decision.")
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
 
     demo_mode = False  # Only used once probably to show justifications in table. Leave false.
 
-    decision_table_html = construct_decision_table(analysis_df, demo_mode, sort_metric=sort_by)
+    decision_table_html, supply_used = construct_decision_table(analysis_df, demo_mode, sort_metric=sort_by)
     casualty_html = get_casualty_table(state)
-    supply_html = get_supplies_table(state)
+    supply_html = get_supplies_table(state, supply_used)
     previous_action_table = get_previous_actions(state)
     st.markdown(decision_table_html, unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
     with col1:
         st.header('Supplies')
+        st.caption("The pink supply in the table below is the used supply. Count of supply has been adjusted")
         st.markdown(supply_html, unsafe_allow_html=True)
     with col2:
         st.header('Previous Action')
