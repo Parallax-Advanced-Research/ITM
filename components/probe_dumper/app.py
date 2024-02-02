@@ -255,7 +255,7 @@ def read_saved_scenarios():
 
 
 if __name__ == '__main__':
-    params = st.experimental_get_query_params()
+    params = st.query_params.to_dict()
 
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
@@ -265,7 +265,7 @@ if __name__ == '__main__':
     # with st.sidebar:  # Legal term
 
     if params.get('scen', None) is not None:
-        scen = params['scen'][0].split('-')[:-1]
+        scen = params['scen'].split('-')[:-1]
         scen = '-'.join(scen)
         chosen_scenario = scen
     else:
@@ -273,7 +273,7 @@ if __name__ == '__main__':
     num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
     # have to check again, for the probe number, need the total number of decision from the scen though
     if params.get('scen', None) is not None:
-        probe = params['scen'][0].split('-')[-1]
+        probe = params['scen'].split('-')[-1]
         chosen_decision = int(probe) + 1  # adding 1 for display
     else:
         chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
