@@ -9,23 +9,23 @@ nicholas.paul@soartech.com) with your github account name to be added to their r
 access. Then to install:
 
 cd [TAD root]
-python install.sh
+python install.py
 
 To run in training mode:
 
 cd [TAD root]
 [Linux] source venv/bin/activate
 [Windows] venv\Scripts\activate
-python run-servers.sh
-python tad_tester.sh --training 
-python stop-servers.sh
+python run-servers.py
+python tad_tester.py --training 
+python stop-servers.py
 
 To run in testing mode: 
 
 cd [TAD root]
 [Linux] source venv/bin/activate
 [Windows] venv\Scripts\activate
-python tad_tester.sh
+python tad_tester.py
 
 Integration Developers: After you change the source state of any of the other teams' repositories 
 in .deprepos/, and test the changes in TAD, run the following to update the state of the TAD 
@@ -36,7 +36,7 @@ be used, and patches for any code you've changed, that will be reused the next t
 cd [TAD root]
 [Linux] source venv/bin/activate
 [Windows] venv\Scripts\activate
-python save-repos-state.sh
+python save-repo-states.py
 git add repo-cfgs/*.patch
 git add repo-cfgs/*-commit-hash
 git commit -m "Updated repository dependency configuration."
