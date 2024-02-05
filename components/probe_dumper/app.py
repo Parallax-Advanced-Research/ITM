@@ -255,7 +255,8 @@ def read_saved_scenarios():
 
 
 if __name__ == '__main__':
-    params = st.query_params.to_dict()
+    # params = st.query_params.to_dict()
+    params = st._get_query_params()
 
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()

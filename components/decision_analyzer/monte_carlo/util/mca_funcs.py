@@ -277,11 +277,30 @@ def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int) 
 def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode],
                                   medsim_state: MedsimState) -> list[mcnode.MCDecisionNode]:
     simulated_state_metrics: dict[str, MetricResultsT] = {}
+    casualty_best_worst = dict()
+    for cas in medsim_state.casualties:
+        casualty_best_worst[cas.id] = dict()
+        casualty_best_worst[cas.id][Metric.CAS_HIGH_P_DEATH.value] = 0.0
+        casualty_best_worst[cas.id][Metric.CAS_LOW_P_DEATH.value] = 1.0
+        casualty_best_worst[cas.id][Metric.CAS_HIGH_P_DEATH_DECISION.value] = []
+        casualty_best_worst[cas.id][Metric.CAS_LOW_P_DEATH_DECISION.value] = []
     for decision in decision_node_list:
         dec_str = tinymedact_to_actstr(decision)
         if not len(decision.children):
             continue
         simulated_state_metrics[dec_str] = get_future_and_change_metrics(medsim_state, decision)
+        for cas in list(decision.score[Metric.CASUALTY_P_DEATH.value].keys()):
+            cas_p_death = decision.score[Metric.CASUALTY_P_DEATH.value][cas]
+            if cas_p_death < casualty_best_worst[cas][Metric.CAS_LOW_P_DEATH.value]:
+                casualty_best_worst[cas][Metric.CAS_LOW_P_DEATH.value] = cas_p_death
+                casualty_best_worst[cas][Metric.CAS_LOW_P_DEATH_DECISION.value] = [dec_str]
+            elif cas_p_death == casualty_best_worst[cas][Metric.CAS_LOW_P_DEATH.value]:
+                casualty_best_worst[cas][Metric.CAS_LOW_P_DEATH_DECISION.value].append(dec_str)
+            if cas_p_death > casualty_best_worst[cas][Metric.CAS_HIGH_P_DEATH.value]:
+                casualty_best_worst[cas][Metric.CAS_HIGH_P_DEATH.value] = cas_p_death
+                casualty_best_worst[cas][Metric.CAS_HIGH_P_DEATH_DECISION.value] = [dec_str]
+            elif cas_p_death == casualty_best_worst[cas][Metric.CAS_HIGH_P_DEATH.value]:
+                casualty_best_worst[cas][Metric.CAS_HIGH_P_DEATH_DECISION.value].append(dec_str)
     return simulated_state_metrics
 
 
