@@ -90,7 +90,9 @@ def row_to_hems_program (row, hems, mask=None):
         return hems.compile_program_from_file(fp.name)
 
 def row_to_hems_program2 (idx, row):
-    with open("Programs/HEMS_Agile_Manager/prog{0}.hems".format(idx), mode='w+b') as fp:
+    pth = os.path.dirname(os.path.abspath(__file__))
+    suffix = "Programs/HEMS_Agile_Manager/prog{0}.hems".format(idx)
+    with open(os.path.join(pth, suffix), mode='w+b') as fp:
         i = 1
         edges_dict = {}
         feat_idx_dict = {}
@@ -159,7 +161,7 @@ train, test = train_test_split(df, test_size=0.2)
 print(len(train))
 print(len(test))
 
-train= train.head(100)
+train= train.head(50)
 test = test.head(10)
 
 num = 0
@@ -171,7 +173,7 @@ for idx, row in train.iterrows():
         print(num)
         num += 1
 
-        hems.push_from_files("Programs/HEMS_Agile_Manager/prog*.hems")
+        hems.push_from_files("./Programs/HEMS_Agile_Manager/prog*.hems")
 gt_kdmas = []
 pred_kdmas = []
 metric = "Worker Agent Reputation"
