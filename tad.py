@@ -117,7 +117,9 @@ def api_test(args):
             if probe is None:
                 logger.info(f"Scenario Complete")
                 if args.training:
-                    print("Alignment found: " + str(client.get_session_alignment()))
+                    for alignment in client.get_session_alignments():
+                        driver.train(alignment)
+                    print("Alignments found: " + str(client.get_session_alignments()))
                 break
 
             logger.info(f"Responding to probe-{probe.id}")

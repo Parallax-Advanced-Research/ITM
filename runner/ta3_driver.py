@@ -3,6 +3,7 @@ from components.decision_selector.default import HumanDecisionSelector
 from components.decision_selector.sept_cbr import CSVDecisionSelector
 from components.decision_selector.kdma_estimation import KDMAEstimationDecisionSelector
 from components.decision_selector.severity import SeverityDecisionSelector
+from components.alignment_trainer import KDMACaseBaseRetainer
 from components.elaborator.default import TA3Elaborator
 from components.decision_analyzer.default import BaselineDecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
@@ -54,7 +55,9 @@ class TA3Driver(Driver):
         analyzers = [ebd, hra, bnd, mca]
         analyzers = [a for a in analyzers if a is not None]
 
-        super().__init__(elaborator, selector, analyzers)
+        trainer = KDMACaseBaseRetainer()
+
+        super().__init__(elaborator, selector, analyzers, trainer)
 
     def _extract_state(self, dict_state: dict):
         for character in dict_state['characters']:

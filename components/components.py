@@ -1,4 +1,4 @@
-from domain.internal import Scenario, TADProbe, Decision, KDMAs, DecisionMetrics
+from domain.internal import Scenario, TADProbe, Decision, KDMAs, DecisionMetrics, AlignmentFeedback
 
 
 class DecisionAnalyzer:
@@ -13,6 +13,11 @@ class DecisionAnalyzer:
 
 class DecisionSelector:
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+        raise NotImplementedError
+
+
+class AlignmentTrainer:
+    def train(self, scenario: Scenario, feedback: AlignmentFeedback):
         raise NotImplementedError
 
 

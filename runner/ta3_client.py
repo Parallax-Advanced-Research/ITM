@@ -57,7 +57,7 @@ class TA3Client:
 
         return scen
         
-    def get_session_alignment(self) -> list[ta3.AlignmentResults]:
+    def get_session_alignments(self) -> list[ta3.AlignmentResults]:
         return [self._api.get_session_alignment(self._session_id, targetName) 
                  for targetName in self._eval_target_names]
 
