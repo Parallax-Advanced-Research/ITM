@@ -24,12 +24,14 @@ class Dump:
         self.decisions_presented: list[list[Decision]] = list()
         self.made_decisions: list[Decision] = list()
         self.states: list[TA3State] = list()
+        self.environments: list[dict] = list()
         self.session_uuid = session_uuid
 
     def add_decisionstate(self, probe: TADProbe, decision: Decision):
         self.decisions_presented.append(probe.decisions)
         self.made_decisions.append(decision)
         self.states.append(probe.state)
+        self.environments.append(probe.environment)
 
 
 class ProbeDumper:

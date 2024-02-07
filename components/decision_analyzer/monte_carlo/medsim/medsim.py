@@ -42,7 +42,9 @@ class MedicalSimulator(MCSim):
         casualties: list[Casualty] = self.current_casualties
         new_state = None
         if action.action == 'END_SCENARIO':
-            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, state.time, state.aid_delay)
+            # * 60 because aid delay seems to be given in minutes
+            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, state.time,
+                                                                          state.aid_delay * 60)
         else:
             new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action,
                                                                           self._rand, state.time)

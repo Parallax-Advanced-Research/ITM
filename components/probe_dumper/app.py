@@ -254,6 +254,14 @@ def read_saved_scenarios():
     return scenario_hash
 
 
+def construct_environment_table(environment: dict):
+    header = '''|Environment Variable| State|
+|---|---|\n'''
+    for env, state in environment.items():
+        header += '|%s|%s|\n' % (env, str(state).strip())
+    return header
+
+
 if __name__ == '__main__':
     # params = st.query_params.to_dict()
     params = st._get_query_params()
@@ -285,6 +293,7 @@ if __name__ == '__main__':
     st.caption("The pink decision in the table below is the chosen decision.")
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
+    environment = scenario_pkls[chosen_scenario].environments[chosen_decision - 1]
 
     demo_mode = False  # Only used once probably to show justifications in table. Leave false.
 
@@ -294,10 +303,17 @@ if __name__ == '__main__':
     previous_action_table = get_previous_actions(state)
     st.markdown(decision_table_html, unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
+    environment_table = construct_environment_table(environment)
+
+    col0, col1, col2, col3 = st.columns(4)
+    with col0:
+        st.header('Environment')
+        st.markdown(environment_table, unsafe_allow_html=True)
     with col1:
         st.header('Supplies')
-        st.caption("The pink supply in the table below is the used supply. Count of supply has been adjusted")
+        if supply_used is not None:
+            st.caption("""The <font color="#FF69B4">pink supply</font> in the table below is the used supply. Count of supply has been adjusted""",
+                       unsafe_allow_html=True)
         st.markdown(supply_html, unsafe_allow_html=True)
     with col2:
         st.header('Previous Action')
@@ -305,3 +321,4 @@ if __name__ == '__main__':
     with col3:
         st.header('Casualties')
         st.markdown(casualty_html, unsafe_allow_html=True)
+
