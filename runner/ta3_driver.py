@@ -3,6 +3,7 @@ from components.decision_selector.default import HumanDecisionSelector
 from components.decision_selector.sept_cbr import CSVDecisionSelector
 from components.decision_selector.kdma_estimation import KDMAEstimationDecisionSelector
 from components.decision_selector.severity import SeverityDecisionSelector
+from components.decision_selector.exhaustive import ExhaustiveSelector
 from components.alignment_trainer import KDMACaseBaseRetainer
 from components.elaborator.default import TA3Elaborator
 from components.decision_analyzer.default import BaselineDecisionAnalyzer
@@ -38,6 +39,8 @@ class TA3Driver(Driver):
             selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
                                            variant = args.variant,
                                            verbose = args.verbose)
+        elif args.exhaustive:
+            selector = ExhaustiveSelector()
         elif args.training:
             selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
         else:
@@ -48,11 +51,11 @@ class TA3Driver(Driver):
 
 
         ebd = EventBasedDiagnosisAnalyzer() if args.ebd else None
-        hra = HeuristicRuleAnalyzer() if args.hra else None  # Crashes in TMNT/differenct scenario
+        br = HeuristicRuleAnalyzer() if args.br else None  # Crashes in TMNT/differenct scenario
         bnd = BayesNetDiagnosisAnalyzer() if args.bayes else None
         mca = MonteCarloAnalyzer(max_rollouts=args.rollouts, max_depth=2) if args.mc else None
 
-        analyzers = [ebd, hra, bnd, mca]
+        analyzers = [ebd, br, bnd, mca]
         analyzers = [a for a in analyzers if a is not None]
 
         trainer = KDMACaseBaseRetainer()
