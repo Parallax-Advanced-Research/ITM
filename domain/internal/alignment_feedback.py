@@ -12,3 +12,8 @@ class AlignmentFeedback:
                 " ".join(["%s: %f" % (att, val) 
                            for (att, val) in self.scored_kdmas.kdma_map.items()]))
         
+    def to_json(self):
+        return {"target" : self.target_name,
+                "kdmas" : self.scored_kdmas.kdma_map,
+                "score" : self.alignment_score}
+                
