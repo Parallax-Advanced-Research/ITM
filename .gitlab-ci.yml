@@ -31,6 +31,7 @@ stages:
 install_dependencies:
   stage: build
   script:
+    - python -m pip install wheel setuptools pip --upgrade
     - python -m pip install -r requirements.txt
 
 run_test:
