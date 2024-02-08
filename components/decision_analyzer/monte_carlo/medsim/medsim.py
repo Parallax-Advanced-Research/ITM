@@ -42,7 +42,7 @@ class MedicalSimulator(MCSim):
         casualties: list[Casualty] = self.current_casualties
         new_state = None
         if action.action == 'END_SCENARIO':
-            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, state.time, state.aid_delay)
+            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action, self._rand, state.time + state.aid_delay)
         else:
             new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action,
                                                                           self._rand, state.time)
