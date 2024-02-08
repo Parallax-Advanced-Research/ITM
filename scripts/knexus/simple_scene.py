@@ -12,12 +12,12 @@ from domain.external import Action
 
 def get_simple_casualties():
     bicep_tear = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_BICEP.value, severity=4.0, treated=False)
-    jt_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.DANDY.value,
+    jt_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.CONFUSED.value,
                        breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=69)
     casualties = [
         Casualty('JT', 'JT tore his bicep', name='JT',
-                       relationship='himself',
-                       demographics=Demographics(age=33, sex='M', rank='director of social media'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=33, sex='M', rank='vip'),
                        injuries=[bicep_tear],
                        vitals=jt_vitals,
                        complete_vitals=jt_vitals,
@@ -26,21 +26,23 @@ def get_simple_casualties():
     return casualties
 
 
-def get_simple_supplies() -> dict[str, int]:
-    supplies = {
-        Supplies.TOURNIQUET.value: 0,
-        Supplies.PRESSURE_BANDAGE.value: 3,
-        Supplies.HEMOSTATIC_GAUZE.value: 0,
-        Supplies.DECOMPRESSION_NEEDLE.value: 0,
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: 0
-    }
+def get_simple_supplies() -> list[Supply]:
+    supplies = [Supply(Supplies.TOURNIQUET.value, False, 0),
+                Supply(Supplies.PRESSURE_BANDAGE.value, False, 3),
+                Supply(Supplies.HEMOSTATIC_GAUZE.value, False, 0),
+                Supply(Supplies.DECOMPRESSION_NEEDLE.value, False, 0),
+                Supply(Supplies.NASOPHARYNGEAL_AIRWAY.value, False, 0),
+                # Supply(Supplies.PULSE_OXIMETER.value, False, 1),
+                # Supply(Supplies.BLANKET.value, False, 3),
+                # Supply(Supplies.EPI_PEN.value, False, 2),
+                # Supply(Supplies.VENTED_CHEST_SEAL.value, False, 3),
+                # Supply(Supplies.PAIN_MEDICATIONS.value, False, 3),
+                # Supply(Supplies.BLOOD.value, False, 3)
+                ]
     return supplies
 
 
 class SimpleClient:
-    SUPPLIES = [{'quantity': 3, 'type': tenums.Supplies.HEMOSTATIC_GAUZE}, {'quantity': 3, 'type': tenums.Supplies.TOURNIQUET},
-                {'quantity': 3, 'type': tenums.Supplies.PRESSURE_BANDAGE}, {'quantity': 0, 'type': tenums.Supplies.DECOMPRESSION_NEEDLE},
-                {'quantity': 0, 'type': tenums.Supplies.NASOPHARYNGEAL_AIRWAY}]
     CASUALTIES = [{'id': 'JT', 'unstructured': 'JT has a minor eft bicep puncture',
                    'name': 'JT', 'relationship': None, 'demographics': {'age': 33, 'sex': 'M',
                                                                         'rank': 'director of social media'},
@@ -61,9 +63,8 @@ class SimpleClient:
     def __init__(self, alignment_target: KDMAs, max_actions=9):
         self.align_tgt: KDMAs = alignment_target
         self.actions: dict[str, Action] = {}
-        self.probe_count = 1
         casualties: list[Casualty] = get_simple_casualties()
-        supplies: dict[str, int] = get_simple_supplies()
+        supplies: list[Supply] = get_simple_supplies()
         self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
                                                    unstructured="JT tore his bicep getting ripped.")
         self.current_state: MedsimState = self.init_state
@@ -77,7 +78,6 @@ class SimpleClient:
     def get_probe(self, state: MedsimState | None) -> ITMProbe | None:
         if self.probe_count > self.max_actions:
             return None
-        self.probe_count += 1
         state = state if state is not None else self.init_state
 
         ta3_state = reverse_convert_state(state)
@@ -106,8 +106,9 @@ class SimpleClient:
                          'mission': {'unstructured': self.UNSTRUCTURED, 'mission_type': 'Extraction'},
                          'environment': self.ENVIRONMENT, 'threat_state': self.THREAT_STATE,
                          'supplies': supplies_as_dict, 'casualties': casualties_as_dict}
-        probe: ITMProbe = ITMProbe(id='tmnt-probe', type=ProbeType.MC, prompt="what do?",
+        probe: ITMProbe = ITMProbe(id=f'simple-{self.probe_count}', type=ProbeType.MC, prompt="what do?",
                                    state=swagger_state, options=ta3_actions)
+        self.probe_count += 1  # increment for next
         return probe
 
     def take_action(self, action: Action) -> ITMProbe:
@@ -119,6 +120,15 @@ class SimpleClient:
         return new_probe
 
 
+def probe_stripper(probe):
+    '''
+    remove probes that aren't supported in hra
+    '''
+    new_options = [x for x in probe.options if x.type != 'SITREP' and x.type != 'DIRECT_MOBILE_CASUALTY']
+    probe.options = new_options
+    return probe
+
+
 def main():
     kdmas: KDMAs = KDMAs([])
 
@@ -126,14 +136,14 @@ def main():
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
+            self.hra = True
             self.kedsd = False
             self.verbose = False
             self.decision_verbose = False
             self.mc = True
             self.rollouts = 1234
             self.csv = True
-            self.bayes = False
+            self.bayes = True
             self.variant = 'aligned'
     tmnt_args = SIMPLEARGS()
 
@@ -150,6 +160,8 @@ def main():
     while probe is not None:
 
         logger.info(f"Responding to probe-{probe.id}")
+        # take out the direct_mobile and sitrep
+        probe = probe_stripper(probe)
         action = driver.decide(probe)
         logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)

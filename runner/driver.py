@@ -3,13 +3,15 @@ import domain as ext
 import swagger_client as ta3
 from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
+from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
 from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback
 from util import logger
+import uuid
 
 
 class Driver:
 
-    def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer], trainer: AlignmentTrainer):
+    def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer], trainer: AlignmentTrainer, dumper_config: DumpConfig = DEFAULT_DUMP):
         self.session: str = ''
         self.scenario: typing.Optional[Scenario] = None
         self.alignment_tgt: KDMAs = KDMAs([])
@@ -18,6 +20,8 @@ class Driver:
         self.selector: DecisionSelector = selector
         self.analyzers: list[DecisionAnalyzer] = analyzers
         self.trainer: AlignmentTrainer = trainer
+        self.dumper = ProbeDumper(dumper_config)
+        self.session_uuid = uuid.uuid4()
 
 
     def new_session(self, session_id: str):
@@ -29,7 +33,8 @@ class Driver:
     def set_scenario(self, scenario: ext.Scenario):
         state = self._extract_state(scenario.state)
         self.scenario = Scenario(scenario.id, state)
-
+        self.session_uuid = uuid.uuid4()
+        self.actions_performed = []
 
     def translate_probe(self, itm_probe: ext.ITMProbe) -> TADProbe:
         # Translate probe external state into internal state
@@ -45,7 +50,7 @@ class Driver:
             params.update({'casualty': option.casualty})
             # Add decision
             decisions.append(Decision(option.id, Action(option.type, params), kdmas=kdmas))
-        probe = TADProbe(itm_probe.id, state, itm_probe.prompt, decisions)
+        probe = TADProbe(itm_probe.id, state, itm_probe.prompt, itm_probe.state['environment'], decisions)
         return probe
         
     def translate_feedback(self, feedback: ta3.AlignmentResults) -> AlignmentFeedback:
@@ -67,6 +72,7 @@ class Driver:
     def select(self, probe: TADProbe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
         self.actions_performed.append(d.value)
+        d.selected = True
         if d.value.name == "APPLY_TREATMENT":
             casualty_name = d.value.params["casualty"]
             past_list: list[str] = self.treatments.get(casualty_name, [])
@@ -75,10 +81,10 @@ class Driver:
         return d
 
     @staticmethod
-    def respond(decision: Decision[Action]) -> ext.Action:
+    def respond(decision: Decision[Action], url: str = None) -> ext.Action:
         params = decision.value.params.copy()
         casualty = params.pop('casualty') if 'casualty' in params.keys() else None  # Sitrep can take no casualty
-        return ext.Action(decision.id_, decision.value.name, casualty, {}, params)
+        return ext.Action(decision.id_, decision.value.name, casualty, {}, params, url)
 
     def decide(self, itm_probe: ext.ITMProbe) -> ext.Action:
         probe: TADProbe = self.translate_probe(itm_probe)
@@ -98,9 +104,12 @@ class Driver:
 
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
+        self.dumper.dump(probe, decision, self.session_uuid)
 
         # Extract external decision for response
-        return self.respond(decision)
+        # url construction
+        url = f'http://localhost:8501/?scen={probe.id_}'
+        return self.respond(decision, url)
         
     def train(self, feedback: ta3.AlignmentResults):
         self.trainer.train(self.scenario, self.translate_feedback(feedback))

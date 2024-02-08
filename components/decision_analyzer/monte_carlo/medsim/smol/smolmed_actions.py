@@ -13,7 +13,8 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
     fail = rng.random() < SmolMedicalOracle.FAILURE_CHANCE[action.supply]
     time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.supply])
     supply_location_logical = supply_location_match(action)
-    if action.supply not in supplies.keys() or supplies[action.supply] <= 0:
+    supply_dict = {supply.name:supply.amount for supply in supplies}
+    if action.supply not in supply_dict.keys() or supply_dict[action.supply] <= 0:
         fail = True
     for ci in casualty.injuries:
         supply_injury_logical = supply_injury_match(action.supply, ci.name)
@@ -29,8 +30,9 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c = find_casualty(action, casualties)
     time_taken = apply_generic_treatment(c, supplies, action, rng)
-    if action.supply in supplies.keys():
-        supplies[action.supply] -= 1
+    supply_dict = {supply.name:supply.amount for supply in supplies}
+    if action.supply in supply_dict.keys():
+        supply_dict[action.supply] -= 1
     for c2 in casualties:
         if c.id == c2.id:
             continue  # already updated, casualty of action

@@ -4,7 +4,7 @@
 import csv, os, sys
 
 # If a given table only has one of these, we accept the rows that match that field. If it has both, it must match both.
-# TODO: hadm_id -> subject_id should be many to one, no?
+# hadm_id -> subject_id is many to one
 Hospital_Admission = str
 Subject = str
 OUTPUT_SUBDIR = 'trauma_only'
@@ -29,9 +29,9 @@ def filter_mimic(dirname: str) -> None:
 
 	print("\x1b[94mFiltering files:\x1b[0m")
 
-	assert not os.path.exists(OUTPUT_SUBDIR) or os.isdir(OUTPUT_SUBDIR),\
+	assert not os.path.exists(OUTPUT_SUBDIR) or os.path.isdir(OUTPUT_SUBDIR),\
 		f"{OUTPUT_SUBDIR} exists, but is not a directory"	
-	os.mkdir(OUTPUT_SUBDIR)
+	os.makedirs(OUTPUT_SUBDIR, exist_ok=True)
 
 	for path in paths:
 		print(path)
@@ -83,14 +83,20 @@ def get_trauma_admissions(paths: list[str], headers: dict[str, list[str]]) -> di
 		""" Returns true if it's a trauma code, false if it isn't, and None if we can't parse it """
 		if '9' == icd_version:
 			icd_code = remove_foofix(icd_code, ['V','Z'])
-			if 'E' == icd_code[0]:
+			if 'E' == icd_code[0]: # supplementary classification of external causes of injury and poisoning
 				# describes type of event rather than type of injury. 
 				# A few ranges are specifically military or war related, but I'm including all.
 				# Also, the ones that are more than 4 characters are probably really something like E000.42, so I should only filter by the first 4.
-				return True 
+				if len(icd_code) < 4 or not all(a.isdigit() for a in icd_code[1:4]):
+					sys.stderr.write("WARNING: Weird E-code: {icd_code} (including for now, but look up)")
+					return True
+				
+				code = int(icd_code[1:4])
+				return code <= 930 or code >= 955 # exclude drugs/poisons/toxins and suicide by hanging or drowning
+
 			try:
 				icd = int(icd_code)
-				return 800 <= icd <= 999
+				return 800 <= icd <= 959 or 990 <= icd <= 999 # injury&poison, filtering out drugs/poisons/toxins
 			except:
 				#sys.stderr.write(f"BOGUS: ICD-{icd_version}: {icd_code}\n")
 				return None
@@ -102,9 +108,10 @@ def get_trauma_admissions(paths: list[str], headers: dict[str, list[str]]) -> di
 				#	sys.stderr.write(f"BOGUS: ICD-{icd_version}: {icd_code} ({icd_code[0].isalpha()}, {icd_code[1].isdigit()}, {icd_code[2].isdigit()})\n")
 				return None
 			else:
-				letter = icd_version[0].upper()
-				n = int(icd_version[1:2])
-				return 'S' == letter or ('T' == letter and 7 <= n <= 88) # Weird: The rest of T doesn't seem to be used.
+				letter = icd_code[0].upper()
+				n = int(icd_code[1:2])
+				#print(f"ICD-10 code: {icd_code} -> {letter} {n}")
+				return 'S' == letter or ('T' == letter and (7 <= n <= 35 or 66 <= n <= 88)) # Filtering out drugs/toxins/poison
 
 		assert False, f"Unrecognized icd_version: {icd_version}"
 
@@ -136,4 +143,9 @@ def get_trauma_admissions(paths: list[str], headers: dict[str, list[str]]) -> di
 
 	return valid_entries
 
+if 2 != len(sys.argv):
+	sys.stderr.write(f"Usage: python {sys.argv[0]} directory-with-all-mimic-iv-csv-files\n\n")
+	sys.stderr.write("It's fine if some of the .csv files are symlinks\n")
+	sys.stderr.write(f"Will create a `{OUTPUT_SUBDIR}` directory under that one with the filtered files.\n")
+	sys.exit(1)
 filter_mimic(sys.argv[1])
