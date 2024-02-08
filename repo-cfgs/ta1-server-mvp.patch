@@ -1,0 +1,10 @@
+diff --git a/itm_app/data/scenarios/st-september-2023-mvp2/anchors.yaml b/itm_app/data/scenarios/st-september-2023-mvp2/anchors.yaml
+index 110d2d5..b8fabbf 100644
+--- a/itm_app/data/scenarios/st-september-2023-mvp2/anchors.yaml
++++ b/itm_app/data/scenarios/st-september-2023-mvp2/anchors.yaml
+@@ -1,4 +1,4 @@
+-st-september-2023-mvp:
++st-september-2023-mvp2:
+ 
+   select-casualty-abc:
+     A:
