@@ -28,6 +28,11 @@ stages:
 #include:
 #- template: Auto-DevOps.gitlab-ci.yml
 
+install_dependencies:
+  stage: build
+  script:
+    - python -m pip install -r requirements.txt
+
 run_test:
   stage: test
   script:
