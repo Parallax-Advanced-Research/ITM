@@ -81,6 +81,15 @@ def row_to_hems_program (row, hems, mask=None):
                     candidate_edges.remove(mask)
                 edges_dict[i] = candidate_edges
                 i += 1
+            elif index == "Round" and mask != "Round":
+                fp.write(bytes("c{0} = (percept-node {1} :value {2})\n".format(i, index.replace(" ", "_"), "\"" + str(round(value, 1)) + "\""), 'utf-8'))
+                #print(bytes("c{0} = (percept-node {1} :value {2})\n".format(i, index.replace(" ", "_"), "\"" + str(round(value, 1)) + "\""), 'utf-8'))
+                feat_idx_dict[index] = i
+                candidate_edges = ["Worker Agent Reputation"]
+                if mask in candidate_edges:
+                    candidate_edges.remove(mask)
+                edges_dict[i] = candidate_edges
+                i += 1
         print(edges_dict)
         for (j, nodes) in edges_dict.items():
             for node in nodes:
@@ -137,6 +146,12 @@ def row_to_hems_program2 (idx, row):
                 feat_idx_dict[index] = i
                 edges_dict[i] = ["Worker Agent ID"]
                 i += 1
+            elif index == "Round":
+                fp.write(bytes("c{0} = (percept-node {1} :value {2})\n".format(i, index.replace(" ", "_"), "\"" + str(round(value, 1)) + "\""), 'utf-8'))
+                #print(bytes("c{0} = (percept-node {1} :value {2})\n".format(i, index.replace(" ", "_"), "\"" + str(round(value, 1)) + "\""), 'utf-8'))
+                feat_idx_dict[index] = i
+                edges_dict[i] = ["Worker Agent Reputation"]
+                i += 1
         for (j, nodes) in edges_dict.items():
             for node in nodes:
                 fp.write(bytes("c{0} -> c{1}\n".format(j, feat_idx_dict[node]), 'utf-8'))
@@ -156,14 +171,10 @@ hems = lisp.find_package("HEMS")
 am_path = os.path.join(ROOT_DIR, 'data/agile_manager/KDMA is strategy-Decision is Worker Agent ID.xlsx')
 print(am_path)
 
-df = pd.read_excel(am_path).drop(['ID', 'Session ID', 'User ID', 'Round'], axis=1)
-train, test = train_test_split(df, test_size=0.2)
-print(len(train))
-print(len(test))
+df = pd.read_excel(am_path).drop(['ID', 'Session ID', 'User ID'], axis=1)
+train, test = train_test_split(df, test_size=0.985)
 
-train= train.head(50)
-test = test.head(10)
-
+test = test.head(1000)
 num = 0
 for idx, row in train.iterrows():
     if idx >= -1:
@@ -173,7 +184,7 @@ for idx, row in train.iterrows():
         print(num)
         num += 1
 
-        hems.push_from_files("./Programs/HEMS_Agile_Manager/prog*.hems")
+hems.push_from_files("./Programs/HEMS_Agile_Manager/prog*.hems")
 gt_kdmas = []
 pred_kdmas = []
 metric = "Worker Agent Reputation"
@@ -242,6 +253,11 @@ print(cm)
 
 print("\nClassification Report\n")
 print(classification_report(gt_kdmas, pred_kdmas))
+
+print()
+print(len(train))
+print(len(test))
+
 
 df_cm = pd.DataFrame(cm, labels, labels)
 ax = sn.heatmap(df_cm, annot=True, annot_kws={"size": 16}, square=True, cbar=False, fmt='g')
