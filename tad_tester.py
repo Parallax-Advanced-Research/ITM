@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import tad
-from scripts.shared import parse_default_arguments()
+from scripts.shared import parse_default_arguments
 
 
 def test_endpoint(args):
