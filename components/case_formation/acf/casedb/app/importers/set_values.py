@@ -54,7 +54,7 @@ def add_tag(prompt, casualty_name, tag, label, casebase_id):
                     for response in probe.responses:
                         if response.value == tag and response.actions == []:
                             action = Action(
-                                action_type="TAG_CASUALTY",
+                                action_type="TAG_CHARACTER",
                                 created_by="import",
                             )
                             action.tag_casualty(label)

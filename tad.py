@@ -94,9 +94,9 @@ def api_test(args):
         logger.setLevel(LogLevel.INFO)
 
     driver = TA3Driver(args)
-    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas))
+    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets)
     if args.training:
-        sid = client.start_session(adm_name=f'TAD', session_type='soartech', kdma_training=True)
+        sid = client.start_session(adm_name=f'TAD', session_type=args.session_type, kdma_training=True)
     else:
         sid = client.start_session(f'TAD', session_type=args.session_type)
         
@@ -116,6 +116,8 @@ def api_test(args):
         while True:
             if probe is None:
                 logger.info(f"Scenario Complete")
+                if args.training:
+                    print("Alignment found: " + str(client.get_session_alignment()))
                 break
 
             logger.info(f"Responding to probe-{probe.id}")

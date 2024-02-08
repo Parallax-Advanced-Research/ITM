@@ -1143,8 +1143,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                            "system": "none"}},
             "MOVE_TO_EVAC": {
                 "MOVE_TO_EVAC": {"risk_reward_ratio": "high", "resources": "few", "time": "minutes", "system": "none"}},
-            "TAG_CASUALTY": {
-                "TAG_CASUALTY": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "none"}},
+            "TAG_CHARACTER": {
+                "TAG_CHARACTER": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "none"}},
             "SITREP": {
                 "SITREP": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all"}},
         }

@@ -18,7 +18,7 @@ class TA3Elaborator(Elaborator):
                 to_return += self._treatment(probe.state, d)
             elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CASUALTY':  # These need no param options
                 to_return += [d]
-            elif _name == 'TAG_CASUALTY':
+            elif _name == 'TAG_CHARACTER':
                 to_return += self._tag(probe.state.casualties, d)
             elif _name == 'END_SCENARIO':
                 to_return += [d]
@@ -31,7 +31,7 @@ class TA3Elaborator(Elaborator):
                 pass
             else:
                 final_list.append(tr)
-        tag_actions = [d for d in final_list if d.value.name == "TAG_CASUALTY"]
+        tag_actions = [d for d in final_list if d.value.name == "TAG_CHARACTER"]
         if len(tag_actions) > 0:
             final_list = tag_actions
         probe.decisions = final_list
