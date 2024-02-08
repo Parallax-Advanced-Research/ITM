@@ -29,9 +29,9 @@ class ExhaustiveSelector(DecisionSelector):
         print(f"Final Choice: {self.choice_final}")
         print(f"Action index: {self.action_index}")
         # Check whether the scenario has restarted since last time.
-        if len(scenario.state.actions_performed) == 0:
+        if len(probe.state.actions_performed) == 0:
             self.action_index = 0
-        elif len(scenario.state.actions_performed) != self.action_index:
+        elif len(probe.state.actions_performed) != self.action_index:
             raise Error("Expect one new action to be added after each call to select.")
             
         # Check whether any decisions have been made so far along this branch
@@ -74,7 +74,7 @@ class ExhaustiveSelector(DecisionSelector):
         
         # Make a case and record it.
         new_case = make_case(probe.state, cur_decision)
-        new_case["actions"] = [act.to_json() for act in scenario.state.actions_performed]
+        new_case["actions"] = [act.to_json() for act in probe.state.actions_performed] + [cur_decision.value.to_json()]
         with open(CASE_FILE, "a") as outfile:
             json.dump(new_case, outfile)
             outfile.write("\n")
@@ -101,7 +101,7 @@ class ExhaustiveSelector(DecisionSelector):
         return find_action_in_list(self.last_actions[self.action_index], [d.value for d in decisions])
         
     def is_finished(self) -> bool:
-        return self.is_tail_false(0)
+        return len(self.last_actions) > 0 and self.is_tail_false(0)
         
         
 def find_action_in_list(target: Action, lst: list[Action]) -> int:
