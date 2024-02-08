@@ -30,8 +30,9 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c = find_casualty(action, casualties)
     time_taken = apply_generic_treatment(c, supplies, action, rng)
-    if action.supply in supplies.keys():
-        supplies[action.supply] -= 1
+    supply_dict = {supply.name:supply.amount for supply in supplies}
+    if action.supply in supply_dict.keys():
+        supply_dict[action.supply] -= 1
     for c2 in casualties:
         if c.id == c2.id:
             continue  # already updated, casualty of action
