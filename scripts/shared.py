@@ -9,7 +9,7 @@ def parse_default_arguments():
     parser.add_argument('--br', action=argparse.BooleanOptionalAction, default=True, help="Turns Bounded Rationalizer on/off (default on)")
     parser.add_argument('--keds', action=argparse.BooleanOptionalAction, default=True, help="Uses KDMA Estimation Decision Selector for decision selection (default)")
     parser.add_argument('--kedsd', action=argparse.BooleanOptionalAction, default=False, help="Uses KDMA with Drexel cases")
-    parser.add_argument('--exhaustive', action=argparse.BooleanOptionalAction, default=True, help="Uses Exhaustive Selector")
+    parser.add_argument('--exhaustive', action=argparse.BooleanOptionalAction, default=False, help="Uses Exhaustive Selector")
     parser.add_argument('--csv', action=argparse.BooleanOptionalAction, default=False, help="Uses CSV Decision Selector")
     parser.add_argument('--bayes', action=argparse.BooleanOptionalAction, default=True, help='Perform bayes net calculations')
     parser.add_argument('--rollouts', type=int, default=1000, help="Monte Carlo rollouts to perform")
