@@ -50,6 +50,9 @@ class ExhaustiveSelector(DecisionSelector):
             # a new decision. Find out which one is next.
             next_index = self.find_index_of_last_action(probe.decisions) + 1
             # Record the new decision.
+            if next_index >= len(probe.decisions):
+                breakpoint()
+                raise Error("How did that happen?")
             cur_decision = probe.decisions[next_index]
             
             if next_index + 1 == len(probe.decisions):
@@ -85,13 +88,20 @@ class ExhaustiveSelector(DecisionSelector):
         return (cur_decision, 0.0)
 
     def are_rest_of_actions_final(self) -> bool:
-        for i in range(self.action_index + 1, len(self.last_actions)):
+        return self.is_tail_false(self.action_index+1)
+    
+    def is_tail_false(self, start_index: int) -> bool:
+        for i in range(start_index, len(self.last_actions)):
             if not self.choice_final[i]:
                 return False
         return True
+    
 
     def find_index_of_last_action(self, decisions: list[Decision]) -> int:
         return find_action_in_list(self.last_actions[self.action_index], [d.value for d in decisions])
+        
+    def is_finished(self) -> bool:
+        return self.is_tail_false(0)
         
         
 def find_action_in_list(target: Action, lst: list[Action]) -> int:
