@@ -19,7 +19,7 @@ def probe_stripper(probe):
     return probe
 
 
-def tad_tester():
+def tad_tester_adept():
     class TADArgs:
         def __init__(self):
             self.human = False
@@ -42,7 +42,49 @@ def tad_tester():
     if tad_args.training:
         sid = client.start_session(adm_name=f'TAD', session_type='soartech', kdma_training=True)
     else:
-        sid = client.start_session(f'TAD')
+        sid = client.start_session(f'TAD', session_type='adept')
+    while True:
+        scen = client.start_scenario()
+        if scen is None:
+            break
+        driver.set_scenario(scen)
+        driver.set_alignment_tgt(client.align_tgt)
+        probe = client.get_probe()
+
+        while True:
+            if probe is None:
+                break
+            action = driver.decide(probe)
+            logger.info(f"Chosen Action-{action}")
+            new_probe = client.take_action(action)
+            probe = new_probe
+    return 0
+
+
+def tad_tester_soar():
+    class TADArgs:
+        def __init__(self):
+            self.human = False
+            self.ebd = False
+            self.hra = True
+            self.kedsd = False
+            self.csv = True
+            self.verbose = False
+            self.bayes = True
+            self.mc = True
+            self.rollouts = 1000
+            self.decision_verbose = False
+            self.endpoint = '127.0.0.1:8080'
+            self.training = False
+            self.variant = 'aligned'
+    tad_args = TADArgs()
+
+    driver = TA3Driver(tad_args)
+    client = TA3Client(tad_args.endpoint)
+    if tad_args.training:
+        sid = client.start_session(adm_name=f'TAD', session_type='soartech', kdma_training=True)
+    else:
+        sid = client.start_session(f'TAD', session_type='soartech')
     while True:
         scen = client.start_scenario()
         if scen is None:
@@ -211,9 +253,12 @@ def turtle_script():
 
 logger.setLevel(LogLevel.INFO)
 logger.critical("Beginning Knexus Test Harness...")
-logger.warning("Running TAD Tester")
-tad_tester()
-logger.warning("TAD Tester complete")
+logger.warning("Running TAD Tester - adept")
+tad_tester_adept()
+logger.warning("TAD Tester adept complete")
+logger.warning("Running TAD Tester - soar")
+tad_tester_soar()
+logger.warning("TAD Tester soar complete")
 logger.warning("Running Turtles")
 turtle_script()
 logger.warning("Turtles succeeded")

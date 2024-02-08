@@ -105,7 +105,7 @@ class SimpleClient:
         swagger_state = {'unstructured': self.UNSTRUCTURED, 'elapsed_time': ta3_state.time_, 'scenario_complete': False,
                          'mission': {'unstructured': self.UNSTRUCTURED, 'mission_type': 'Extraction'},
                          'environment': self.ENVIRONMENT, 'threat_state': self.THREAT_STATE,
-                         'supplies': supplies_as_dict, 'casualties': casualties_as_dict}
+                         'supplies': supplies_as_dict, 'characters': casualties_as_dict}
         probe: ITMProbe = ITMProbe(id=f'simple-{self.probe_count}', type=ProbeType.MC, prompt="what do?",
                                    state=swagger_state, options=ta3_actions)
         self.probe_count += 1  # increment for next
