@@ -9,6 +9,16 @@ X = External entity release
 Y = Paralax Release
 Z = Internal versioning
 
+V KR 2.1.1 (1/22/24 week)
+=======================
+> JT Dubbed this a major update, because of the shift in focus to streamlit and justifications
+> Justifications now given for any scenario, link to justification provided back to client server
+
+V KR 1.10.15 (12/11 week)
+=======================
+> Tiebreakers for same values now in justifications
+
+
 V KR 1.9.14 (11/28 week)
 =======================
 > Returns an english string decision justification, as well as JSON values
