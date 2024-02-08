@@ -22,8 +22,8 @@ stages:
 - cleanup
 sast:
   stage: test
-include:
-- template: Auto-DevOps.gitlab-ci.yml
+#include:
+#- template: Auto-DevOps.gitlab-ci.yml
 
 run_test:
   stage: test
