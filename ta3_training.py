@@ -13,7 +13,7 @@ def main():
     driver = TA3Driver(args)
     
     es: ExhaustiveSelector = driver.selector
-    while len(es.last_actions) == 0 or es.last_actions[0].name != "END_SCENARIO":
+    while not es.is_finished():
         tad.api_test(args, driver)
         driver.actions_performed = []
         driver.treatments = {}
