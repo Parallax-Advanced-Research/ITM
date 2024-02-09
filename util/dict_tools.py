@@ -21,7 +21,7 @@ class Dict_No_Overwrite(dict[K,V]):
         metainformation and prevent it from being stored in the future.
     """
 
-    track_origin = True 
+    track_origin = False 
     origins: dict[K,str] = {}
 
     def _set(self, key: K, val: V, call_depth: int) -> None:
