@@ -42,7 +42,7 @@ class ExhaustiveSelector(DecisionSelector):
         if len(self.last_actions) <= self.action_index:
             # When no decisions have been made so far along this branch, just choose the first 
             # possible.
-            cur_decision = get_first_decision(probe)
+            cur_decision = self.get_first_decision(probe)
             self.last_actions.append(cur_decision.value)
             if len(probe.decisions) == 1:
                 self.choice_final.append(True)
@@ -50,7 +50,7 @@ class ExhaustiveSelector(DecisionSelector):
                 self.choice_final.append(False)
         #Check to see if last decision used at this point has any alternatives left.
         elif (self.are_rest_of_actions_final()):
-            cur_decision, last = get_next_decision(probe)
+            cur_decision, last = self.get_next_decision(probe)
             
             if last:
                 self.choice_final[self.action_index:] = [True]
@@ -95,14 +95,12 @@ class ExhaustiveSelector(DecisionSelector):
                 return False
         return True
     
-    def sorted_decisions(decisions: list[Decision]) -> list[Decision]:
-        return sorted(probe.decisions, key=lambda d: str(d.value))
     
-    def get_first_decision(probe: ITMProbe) -> Decision:
+    def get_first_decision(self, probe: TADProbe) -> Decision:
         print(f"Decision {self.action_index}: 1/{len(probe.decisions)}")
         return sorted_decisions(probe.decisions)[0]
 
-    def get_next_decision(probe: ITMProbe) -> (Decision, bool):
+    def get_next_decision(self, probe: TADProbe) -> (Decision, bool):
         # When no alternative futures are left for the last decision used, we need to move on to 
         # a new decision. Find out which one is next.
         decisions = sorted_decisions(probe.decisions)
@@ -121,6 +119,8 @@ class ExhaustiveSelector(DecisionSelector):
     def is_finished(self) -> bool:
         return len(self.last_actions) > 0 and self.is_tail_false(0)
         
+def sorted_decisions(decisions: list[Decision]) -> list[Decision]:
+    return sorted(decisions, key=lambda d: str(d.value))
         
 def find_action_in_list(target: Action, lst: list[Action]) -> int:
     for i in range(len(lst)):
