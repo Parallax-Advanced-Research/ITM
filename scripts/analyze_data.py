@@ -50,6 +50,6 @@ def input_match(example_case: dict[str, Any], case: dict[str, Any]) -> bool:
                 'breathing', 'hrpmin', 'unvisited_count', 'injured_count', 
                 'others_tagged_or_uninjured', 'assessing', 'treating', 'tagging', 'leaving', 
                 'category']:
-        if example_case[key] != case[key]:
+        if example_case.get(key, None) != case.get(key, None):
             return False
     return True
