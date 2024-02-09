@@ -12,6 +12,7 @@ from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnos
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from components.attribute_explorer.random_probe_based import RandomProbeBasedAttributeExplorer
+from components.probe_dumper.probe_dumper import DEFAULT_DUMP
 import domain.external as ext
 from .driver import Driver
 
@@ -49,6 +50,10 @@ class TA3Driver(Driver):
                                                       print_neighbors = args.decision_verbose)
         elaborator = TA3Elaborator()
 
+        if args.dump:
+            dump_config = DEFAULT_DUMP
+        else:
+            dump_config = None
 
         ebd = EventBasedDiagnosisAnalyzer() if args.ebd else None
         br = HeuristicRuleAnalyzer() if args.br else None  # Crashes in TMNT/differenct scenario
@@ -60,7 +65,7 @@ class TA3Driver(Driver):
 
         trainer = KDMACaseBaseRetainer()
 
-        super().__init__(elaborator, selector, analyzers, trainer)
+        super().__init__(elaborator, selector, analyzers, trainer, dumper_config = dump_config)
 
     def _extract_state(self, dict_state: dict):
         for character in dict_state['characters']:

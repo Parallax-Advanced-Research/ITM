@@ -12,6 +12,7 @@ def parse_default_arguments():
     parser.add_argument('--exhaustive', action=argparse.BooleanOptionalAction, default=False, help="Uses Exhaustive Selector")
     parser.add_argument('--csv', action=argparse.BooleanOptionalAction, default=False, help="Uses CSV Decision Selector")
     parser.add_argument('--bayes', action=argparse.BooleanOptionalAction, default=True, help='Perform bayes net calculations')
+    parser.add_argument('--dump', action=argparse.BooleanOptionalAction, default=True, help="Dumps probes out for UI exploration.")
     parser.add_argument('--rollouts', type=int, default=1000, help="Monte Carlo rollouts to perform")
     parser.add_argument('--endpoint', type=str, help="The URL of the TA3 api", default=None)
     parser.add_argument('--variant', type=str, help="TAD variant", default="aligned")

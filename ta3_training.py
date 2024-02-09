@@ -9,6 +9,7 @@ def main():
     args.keds = False
     args.kedsd = False
     args.verbose = False
+    args.dump = False
     
     driver = TA3Driver(args)
     

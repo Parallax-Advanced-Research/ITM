@@ -20,7 +20,10 @@ class Driver:
         self.selector: DecisionSelector = selector
         self.analyzers: list[DecisionAnalyzer] = analyzers
         self.trainer: AlignmentTrainer = trainer
-        self.dumper = ProbeDumper(dumper_config)
+        if dumper_config is None:
+            self.dumper = None
+        else:
+            self.dumper = ProbeDumper(dumper_config)
         self.session_uuid = uuid.uuid4()
 
 
@@ -104,7 +107,8 @@ class Driver:
 
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
-        self.dumper.dump(probe, decision, self.session_uuid)
+        if self.dumper is not None:
+            self.dumper.dump(probe, decision, self.session_uuid)
 
         # Extract external decision for response
         # url construction
@@ -112,7 +116,7 @@ class Driver:
         return self.respond(decision, url)
         
     def train(self, feedback: ta3.AlignmentResults):
-        self.trainer.train(self.scenario, self.translate_feedback(feedback))
+        self.trainer.train(self.scenario, self.actions_performed, self.translate_feedback(feedback))
 
     def _extract_state(self, dict_state: dict) -> State:
         raise NotImplementedError
