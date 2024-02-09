@@ -46,7 +46,7 @@ def _get_params_from_decision(decision):
 
 def make_html_table_header(demo_mode):
     if not demo_mode:
-        return '''| Decision         | Casualty     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
+        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
 |------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|--|--|--|--|--|--|--|\n''' % (
             """<div title=\"%s\">MCA<br>Time</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
             """<div title=\"%s\">MCA<br>Deterioration<br>per second</div>""" % metric_description_hash[
@@ -62,7 +62,7 @@ def make_html_table_header(demo_mode):
             """<div title=\"%s\">BNDA<br>P(Internal<br>Bleeding)</div>""" % """Posterior probability of internal bleeding""",
             """<div title=\"%s\">BNDA<br>P(External<br>Bleeding)</div>""" % """Posterior probability of external bleeding"""
         )
-    return '''| Decision         | Casualty     | Location | Treatment  | Tag | Probability Death | P(Death) Justification |
+    return '''| Decision         | Character     | Location | Treatment  | Tag | Probability Death | P(Death) Justification |
 |------------------|--------------|----------|------------|-------|-------------------|-----|\n'''
 
 
@@ -156,7 +156,7 @@ def construct_decision_table(analysis_df, demo_mode=False, sort_metric='Time'):
         'P(Airway Blocked) (Bayes)': lambda x: x.metrics['pAirwayBlocked'].value if 'pAirwayBlocked' in x.metrics.keys() else 0.0,
         'P(Internal Bleeding) (Bayes)': lambda x: x.metrics['pInternalBleeding'].value if 'pInternalBleeding' in x.metrics.keys() else 0.0,
         'P(External Bleeding) (Bayes)': lambda x: x.metrics['pExternalBleeding'].value if 'pExternalBleeding' in x.metrics.keys() else 0.0,
-        'Casualty': lambda x: x.value.params['casualty'] if 'casualty' in x.value.params else x.id_
+        'Character': lambda x: x.value.params['casualty'] if 'casualty' in x.value.params else x.id_
 
     }
     sorted_df = sorted(analysis_df, key=sort_funcs[sort_metric])
@@ -197,7 +197,7 @@ def htmlify_casualty(casualty: Casualty):
 
 
 def get_casualty_table(scenario):
-    header = '''|Casualty| Injury | Location| Treated|
+    header = '''|Character| Injury | Location| Treated|
 |---|---|---|---|\n'''
     lines = ''
     for casualty in scenario.casualties:
@@ -263,12 +263,11 @@ def construct_environment_table(environment: dict):
 
 
 if __name__ == '__main__':
-    # params = st.query_params.to_dict()
-    params = st._get_query_params()
+    params = st.query_params
 
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
-    sort_options = ['Time', 'Probability Death', 'Deterioration', 'Casualty', 'HRA Strategy', 'P(Death) (Bayes)',
+    sort_options = ['Time', 'Probability Death', 'Deterioration', 'Character', 'HRA Strategy', 'P(Death) (Bayes)',
                     'P(Pain) (Bayes)', 'P(BI) (Bayes)', 'P(Airway Blocked) (Bayes)', 'P(Internal Bleeding) (Bayes)',
                     'P(External Bleeding) (Bayes)']
     # with st.sidebar:  # Legal term
@@ -319,6 +318,6 @@ if __name__ == '__main__':
         st.header('Previous Action')
         st.markdown(previous_action_table, unsafe_allow_html=True)
     with col3:
-        st.header('Casualties')
+        st.header('Characters')
         st.markdown(casualty_html, unsafe_allow_html=True)
 
