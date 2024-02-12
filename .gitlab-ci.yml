@@ -29,16 +29,8 @@ stages:
 #include:
 #- template: Auto-DevOps.gitlab-ci.yml
 
-install_dependencies:
-  stage: build
-  script:
-    - ERR=0
-    - python install.py || ERR=$?
-    - if [ 111 -ne "$ERR" ]; then source venv/bin/activate; fi
-    - exit "$ERR"
-  allow_failure:
-    exit_codes:
-      - 111
+before_script:
+  - python install.py
 
 run_lint:
   stage: lint

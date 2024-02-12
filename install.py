@@ -93,5 +93,4 @@ try:
     install_server("git@github.com:ITM-Soartech/ta1-server-mvp.git")
 except:
     print("\x1b[91mFailed to install Soartech server\x1b[0m")
-    sys.exit(111) # gitlab set up to consider this a warning
 
