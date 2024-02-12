@@ -1,1 +1,1 @@
-./tad_tester.py
+../tad_tester.py
