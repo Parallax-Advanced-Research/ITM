@@ -44,6 +44,7 @@ run_lint:
   stage: lint
   allow_failure: true
   script:
+    - source venv/bin/activate
     - python run_tests.py --notest
 
 run_test:
