@@ -1,6 +1,9 @@
 import argparse
 
-def parse_default_arguments():
+def parse_default_arguments() -> argparse.Namespace:
+    return get_default_parser().parse_args()
+    
+def get_default_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument('--human', default=False, help="Allows human to give selections at command line", action='store_true')
     parser.add_argument('--verbose', action=argparse.BooleanOptionalAction, default=True, help="Turns logging on/off (default on)")
@@ -20,4 +23,5 @@ def parse_default_arguments():
     parser.add_argument('--session_type', type=str, default='eval', help="Modifies the server session type. possible values are 'soartech', 'adept', and 'eval'. Default is 'eval'.")
     parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to alignment target for selection purposes. Format is <kdma_name>-<kdma_value>")
     parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, requires --training.")
-    return parser.parse_args()
+    return parser
+
