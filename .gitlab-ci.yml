@@ -36,7 +36,6 @@ lint_tools:
   stage: test
   allow_failure: true
   script:
-    - sudo apt install -y pyflakes3
     - python run_tests.py --notest
 
 unit_tests:
