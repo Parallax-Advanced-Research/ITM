@@ -33,4 +33,3 @@ tomli
 streamlit==1.31.0
 pytest
 mypy
-pyflakes

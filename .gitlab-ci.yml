@@ -36,6 +36,7 @@ run_lint:
   stage: test
   allow_failure: true
   script:
+    - apt install -y pyflakes3
     - python run_tests.py --notest
 
 run_test:
