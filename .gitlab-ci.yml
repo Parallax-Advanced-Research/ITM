@@ -34,8 +34,8 @@ install_dependencies:
   script:
     - python install.py
   allow_failure:
-  	exit_codes:
-  	  - 111
+    exit_codes:
+      - 111
 
 run_lint:
   stage: lint
