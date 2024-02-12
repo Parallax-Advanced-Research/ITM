@@ -10,7 +10,6 @@ image: python:3.10
 
 stages:
 - build
-- lint
 - test
 - deploy
 - review
@@ -31,12 +30,12 @@ stages:
 
 before_script:
   - python install.py
+  - source venv/bin/activate
 
 run_lint:
-  stage: lint
+  stage: test
   allow_failure: true
   script:
-    - source venv/bin/activate
     - python run_tests.py --notest
 
 run_test:
