@@ -6,7 +6,7 @@ from components.decision_selector.kdma_estimation import make_case, write_case_b
 from typing import Any
 
 STATE_FILE: str = "temp/exhaustive_state.json"
-CASE_FILE: str = "temp/exhaustive_cases.csv"
+CASE_FILE: str = "temp/pretraining_cases.json"
 
 class ExhaustiveSelector(DecisionSelector):
     
