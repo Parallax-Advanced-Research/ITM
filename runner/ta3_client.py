@@ -19,9 +19,9 @@ class TA3Client:
         self._actions: dict[ta3.Action] = {}
         self._probe_count: int = 0
         if evalTargetNames is None:
-            self._eval_target_names = []
+            self._eval_target_names = list()
         else:
-            self._eval_target_names = evalTargetNames
+            self._eval_target_names = list(evalTargetNames)
 
     @property
     def align_tgt(self) -> KDMAs:
