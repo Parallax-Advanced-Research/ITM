@@ -75,15 +75,22 @@ except:
 
     
 print("Installing TA3 client")
-install_repo("git@github.com:NextCenturyCorporation/itm-evaluation-client.git")
+#install_repo("git@github.com:NextCenturyCorporation/itm-evaluation-client.git")
+install_repo("https://github.com/NextCenturyCorporation/itm-evaluation-client.git")
 
 subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-e", os.path.join(".deprepos", "itm-evaluation-client")])
 
 print("Installing TA3 server")
-install_server("git@github.com:NextCenturyCorporation/itm-evaluation-server.git")
+#install_server("git@github.com:NextCenturyCorporation/itm-evaluation-server.git")
+install_server("https://github.com/NextCenturyCorporation/itm-evaluation-server.git")
 
 print("Installing BBN (ADEPT) server")
-install_server("git@gitlab.com:itm-ta1-adept-shared/adept_server.git")
+#install_server("git@gitlab.com:itm-ta1-adept-shared/adept_server.git")
+install_server("https://gitlab.com/itm-ta1-adept-shared/adept_server.git")
 
-print("Installing Soartech server")
-install_server("git@github.com:ITM-Soartech/ta1-server-mvp.git")
+try:
+    print("Installing Soartech server")
+    install_server("git@github.com:ITM-Soartech/ta1-server-mvp.git")
+except:
+    print("\x1b[91mFailed to install Soartech server\x1b[0m")
+

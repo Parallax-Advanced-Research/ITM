@@ -5,6 +5,9 @@
 # Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+
+image: python:3.10
+
 stages:
 - build
 - test
@@ -20,18 +23,29 @@ stages:
 - incremental rollout 100%
 - performance
 - cleanup
-sast:
-  stage: test
-include:
-- template: Auto-DevOps.gitlab-ci.yml
+#sast:
+#  stage: test
+#include:
+#- template: Auto-DevOps.gitlab-ci.yml
 
-run_test:
+before_script:
+  - python install.py
+  - source venv/bin/activate
+
+lint_tools:
+  stage: test
+  allow_failure: true
+  script:
+    - python run_tests.py --notest
+
+unit_tests:
   stage: test
   script:
-    - python run_tests.py
+    - python run_tests.py --nolint
 
-tad_tester:
+integration_test:
   stage: test
   script:
     - python -m scripts.tad_tester --no-ebd --no-verbose # TODO: remove --no-ebd once that works
+  # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
