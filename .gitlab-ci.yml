@@ -46,6 +46,6 @@ unit_tests:
 integration_test:
   stage: test
   script:
-    - python -m scripts.tad_tester --no-ebd --no-verbose # TODO: remove --no-ebd once that works
+    - python -m scripts.tad_tester --no-verbose # TODO: remove --no-ebd once that works
   # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
