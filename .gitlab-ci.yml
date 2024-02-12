@@ -32,19 +32,19 @@ before_script:
   - python install.py
   - source venv/bin/activate
 
-run_lint:
+lint_tools:
   stage: test
   allow_failure: true
   script:
     - sudo apt install -y pyflakes3
     - python run_tests.py --notest
 
-run_test:
+unit_tests:
   stage: test
   script:
     - python run_tests.py --nolint
 
-tad_tester:
+integration_test:
   stage: test
   script:
     - python -m scripts.tad_tester --no-ebd --no-verbose # TODO: remove --no-ebd once that works

@@ -279,7 +279,7 @@ def compile_filter(paths: list[str], verbose: bool) -> list[str]:
 
 def delint(path: str, mypy_results: dict[str, list[str]], verbose: bool) -> None:
 	global exit_code
-	pyflakes3 = cmd([ 'pyflakes3', path ])
+	pyflakes3 = cmd([ 'python', '-m', 'pyflakes',  path ])
 	pylint = cmd([ PYTHON, '-m', 'pylint', '-sn', path ], env={ 'PYLINTRC' : os.path.join(SCRIPTDIR, 'pylintrc') })
 
 	mypy_errors = len(mypy_results[path])
