@@ -32,7 +32,8 @@ stages:
 install_dependencies:
   stage: build
   script:
-    - python install.py
+    - python install.py || exit $?
+    - source venv/bin/activate
   allow_failure:
     exit_codes:
       - 111
@@ -41,19 +42,16 @@ run_lint:
   stage: lint
   allow_failure: true
   script:
-    - source venv/bin/activate
     - python run_tests.py --notest
 
 run_test:
   stage: test
   script:
-    - source venv/bin/activate
     - python run_tests.py --nolint
 
 tad_tester:
   stage: test
   script:
-    - source venv/bin/activate
     - python -m scripts.tad_tester --no-ebd --no-verbose # TODO: remove --no-ebd once that works
   # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
