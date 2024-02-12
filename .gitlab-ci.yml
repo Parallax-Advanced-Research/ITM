@@ -10,6 +10,7 @@ image: python:3.10
 
 stages:
 - build
+- lint
 - test
 - deploy
 - review
@@ -31,16 +32,22 @@ stages:
 install_dependencies:
   stage: build
   script:
-    - python -m pip install wheel setuptools pip --upgrade
-    - python -m pip install -r requirements.txt
+    - python install.py
+
+run_lint:
+  stage: lint
+  allow_failure: true
+  script:
+    - python run_tests.py --notest
 
 run_test:
   stage: test
   script:
-    - python run_tests.py
+    - python run_tests.py --nolint
 
 tad_tester:
   stage: test
   script:
     - python -m scripts.tad_tester --no-ebd --no-verbose # TODO: remove --no-ebd once that works
+  # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
