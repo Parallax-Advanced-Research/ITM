@@ -35,6 +35,12 @@ class ExhaustiveSelector(DecisionSelector):
         # Check whether the scenario has restarted since last time.
         if len(probe.state.actions_performed) == 0:
             self.action_index = 0
+            with open(STATE_FILE, "w") as outfile:
+                json.dump(write_actions(self.last_actions), outfile)
+                outfile.write("\n")
+                json.dump(self.choice_final, outfile)
+                outfile.write("\n")
+
         elif len(probe.state.actions_performed) != self.action_index:
             raise Error("Expect one new action to be added after each call to select.")
             
@@ -78,12 +84,6 @@ class ExhaustiveSelector(DecisionSelector):
             json.dump(new_case, outfile)
             outfile.write("\n")
         
-        with open(STATE_FILE, "w") as outfile:
-            json.dump(write_actions(self.last_actions), outfile)
-            outfile.write("\n")
-            json.dump(self.choice_final, outfile)
-            outfile.write("\n")
-
         return (cur_decision, 0.0)
 
     def are_rest_of_actions_final(self) -> bool:
