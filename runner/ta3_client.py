@@ -19,9 +19,9 @@ class TA3Client:
         self._actions: dict[ta3.Action] = {}
         self._probe_count: int = 0
         if evalTargetNames is None:
-            self._eval_target_names = []
+            self._eval_target_names = list()
         else:
-            self._eval_target_names = evalTargetNames
+            self._eval_target_names = list(evalTargetNames)
 
     @property
     def align_tgt(self) -> KDMAs:
@@ -57,7 +57,7 @@ class TA3Client:
 
         return scen
         
-    def get_session_alignment(self) -> list[ta3.AlignmentResults]:
+    def get_session_alignments(self) -> list[ta3.AlignmentResults]:
         return [self._api.get_session_alignment(self._session_id, targetName) 
                  for targetName in self._eval_target_names]
 

@@ -1,9 +1,20 @@
+# TODO: Can I make __setitem__ act in such a way that it caches the
+# line it's called from *for a specific call point* and then doesn't
+# need to use inspect after that? Probably not...
+
 import inspect
 from typing import Mapping, TypeVar, Iterable, Union, Any, Optional
 from typing_extensions import Self
 
+TRACK_ORIGIN = False # sets the default for track_origin if not passed to ctor
+
 # NOTE: Any refactoring of the code needs to consider whether _set_origins
 # needs to look at a different level of the stack to get the original caller.
+
+def _set_track_origin(val: bool) -> None:
+    """ Used for testing. In real code, TRACK_ORIGIN should be constant """
+    global TRACK_ORIGIN
+    TRACK_ORIGIN = val
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -15,22 +26,23 @@ class Dict_No_Overwrite(dict[K,V]):
         You can call self.overwrite(key, val) if you want to overwrite a value;
         this is intended to prevent unintentional clobbering of data only.
 
-        If `self.track_origin`, will keep track of who set each variable, which
+        If `TRACK_ORIGIN`, will keep track of who set each variable, which
         gives better error messages at the cost of some extra memory. It's true
         by default.  Setting it to false will free all the existing
         metainformation and prevent it from being stored in the future.
     """
 
-    track_origin = True 
-    origins: dict[K,str] = {}
+    def __init__(self) -> None:
+        self.origins: dict[K,str] = {}
 
     def _set(self, key: K, val: V, call_depth: int) -> None:
         """ call_depth says how far up the stack we need to go before we leave
             dict_tools (not counting _set's frame) """
+
         # I suppose we could explicitly test the filename to find the stack depth, 
         # but if we did that, someone would end up naming a file in a different
         # directory "dict_tools.py" and end up with a really weird bug.
-        if self.track_origin:
+        if TRACK_ORIGIN:
             try: # might fail if it's in a repl or something.
                 frame = inspect.stack()[call_depth + 1]
                 origin = f"{frame.frame.f_code.co_filename}:{frame.frame.f_lineno}"
@@ -91,14 +103,16 @@ class Dict_No_Overwrite(dict[K,V]):
     # the K,V of other match this one's. dict doesn't impose that restriction. (I'm
     # subclassing for the sake of inheriting the functions I don't need to change; I do
     # not care about the Liskov substitution principle.)
+    # TODO: Perhaps a better way to do it would be to *accept* other types, then assert that they're the same.
+    # That way, I don't risk suppressing real warnings.
     def update(self, other: Optional[UpdateOtherType[K,V]]) -> None: # type: ignore[override]
         self._update(other, call_depth=1)
 
     def __or__(self, other: Mapping[K,V]) -> 'Dict_No_Overwrite[K,V]': # type: ignore[override]
         cp = Dict_No_Overwrite[K,V]()
-        dict.update(cp, self)
-        cp.track_origin = self.track_origin
-        if self.track_origin:
+        dict.update(cp, self) # type: ignore[arg-type]
+
+        if TRACK_ORIGIN:
             for k in self:
                 cp.origins[k] = self.origins[k]
         cp._update(other, call_depth=1)
