@@ -133,7 +133,7 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 			dirname = '.'
 	
 		if uses_unittest(path):
-			color('bold', f'\n## UNITTEST: {path}')
+			color('blue', f'\n## UNITTEST: {path}')
 			name = to_module_path(path)
 			__import__(name, globals(), {}, [], 0) # loads each module and sets __package__ so imports actually work
 
@@ -146,9 +146,10 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 			color('bold', f'\n## PYTEST: {path}:')
 			os.chdir(dirname)
 			assert path not in pytest_results
-			pytest_argv = [os.path.basename(path), '--no-header', '--no-summary', '-q']
-			if not verbose:
-				pytest_argv.append('-s')
+
+			pytest_argv = [os.path.basename(path), '--no-header', '-q'] # -rP will also print the output from tests
+			# TODO: Might eventually make these different for verbose mode, but really, this is what I want for both normal and verbose. If I add a *quiet* mode, I might add --no-summary
+
 			pytest_results[path] = pytest.main(pytest_argv, plugins=[])
 			os.chdir(basedir)
 
@@ -171,9 +172,9 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 		]
 
 	longest_path = max(
-		max(len(a) for a in pytest_results), 
-		max(len(a) for a in unittest_results),
-		max(len(a) for a in commands)
+		max(len(a) for a in [""] + list(pytest_results.keys())), 
+		max(len(a) for a in [""] + list(unittest_results.keys())),
+		max(len(a) for a in [""] + commands)
 	) + 1
 
 	color('bold', '\n## Summary')
@@ -351,4 +352,8 @@ def main() -> None:
 if __name__ == '__main__':
 	main()
 	sys.exit(exit_code)
+
+
+# TODO: Add a -vv option for the extra verbose version of pytest
+# TODO: warnings (e.g. deprecation warnings) should make run_tests.py change its return code from SUCCESS to WARNING
 

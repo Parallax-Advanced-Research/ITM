@@ -1,4 +1,3 @@
 # Lines where the *first* non-space character is # are comments.
 # See Testing-README.md for more details
-python -m util.test_dict_tools
 #python scripts/tad_tester_wrapper.py
