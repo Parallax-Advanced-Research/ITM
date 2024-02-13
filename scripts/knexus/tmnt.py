@@ -91,13 +91,19 @@ class TMNTClient:
     THREAT_STATE = {'threats': [{'severity': 0.4, 'type': 'Gunfire'}],
                     'unstructured': 'Gunfire and shouting heard at a distance; Participant appears in scene in crouched position under cover by trees'}
 
-    def __init__(self, alignment_target: KDMAs, max_actions=9):  # 9 is overkill
+    def __init__(self, alignment_target: KDMAs, max_actions=9, evalTargetNames = None):
         self.align_tgt: KDMAs = alignment_target
         self.actions: dict[str, Action] = {}
         casualties: list[Casualty] = get_TMNT_demo_casualties()
         supplies: list[Supply] = get_TMNT_supplies()
         self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
                                                    unstructured="Turtles in a half shell, TURTLE POWER!!!")
+        self._align_tgt: KDMAs = alignment_target
+        if evalTargetNames is None:
+            self._eval_target_names = list()
+        else:
+            self._eval_target_names = list(evalTargetNames)
+
         self.current_state: MedsimState = self.init_state
         self.simulator = MedicalSimulator(init_state=self.init_state)
         self.probe_count: int = 0

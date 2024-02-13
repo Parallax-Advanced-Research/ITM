@@ -60,7 +60,7 @@ class SimpleClient:
     THREAT_STATE = {'threats': [{'severity': 0.1, 'type': 'Cat'}],
                     'unstructured': 'Dmitri is peckish'}
 
-    def __init__(self, alignment_target: KDMAs, max_actions=9):
+    def __init__(self, alignment_target: KDMAs, max_actions=9, evalTargetNames = None):
         self.align_tgt: KDMAs = alignment_target
         self.actions: dict[str, Action] = {}
         casualties: list[Casualty] = get_simple_casualties()

@@ -79,7 +79,7 @@ class VIPClient:
     THREAT_STATE = {'threats': [{'severity': 0.4, 'type': 'Gunfire'}],
                     'unstructured': 'Gunfire and shouting heard at a distance; Participant appears in scene in crouched position under cover by trees'}
 
-    def __init__(self, alignment_target: KDMAs, max_actions=9):  # 9 is overkill
+    def __init__(self, alignment_target: KDMAs, max_actions=9, evalTargetNames=None):  # 9 is overkill
         self.align_tgt: KDMAs = alignment_target
         self.actions: dict[str, Action] = {}
         casualties: list[Casualty] = get_VIP_demo_casualties()
