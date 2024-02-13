@@ -87,13 +87,14 @@ def ltest(args):
     logger.info(f"Results file output to: {outf}")
 
 
-def api_test(args):
+def api_test(args, driver = None):
     if args.verbose:
         logger.setLevel(VERBOSE_LEVEL)
     else:
         logger.setLevel(LogLevel.INFO)
 
-    driver = TA3Driver(args)
+    if driver is None:
+        driver = TA3Driver(args)
     client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets)
     if args.training:
         sid = client.start_session(adm_name=f'TAD', session_type=args.session_type, kdma_training=True)
@@ -117,7 +118,8 @@ def api_test(args):
             if probe is None:
                 logger.info(f"Scenario Complete")
                 if args.training:
-                    print("Alignment found: " + str(client.get_session_alignment()))
+                    for alignment in client.get_session_alignments():
+                        driver.train(alignment)
                 break
 
             logger.info(f"Responding to probe-{probe.id}")

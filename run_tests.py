@@ -313,8 +313,6 @@ def delint(path: str, mypy_results: dict[str, list[str]], verbose: bool) -> None
 				print(line)
 			print()
 
-		print()
-
 
 def main() -> None:
 	parser = argparse.ArgumentParser(

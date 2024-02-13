@@ -32,12 +32,8 @@ class Dict_No_Overwrite(dict[K,V]):
         metainformation and prevent it from being stored in the future.
     """
 
-    track_origin = TRACK_ORIGIN
-
-    def __init__(self, track_origin: bool | None = None) -> None:
+    def __init__(self) -> None:
         self.origins: dict[K,str] = {}
-        if track_origin is not None:
-            self.track_origin = track_origin
 
     def _set(self, key: K, val: V, call_depth: int) -> None:
         """ call_depth says how far up the stack we need to go before we leave
@@ -107,12 +103,15 @@ class Dict_No_Overwrite(dict[K,V]):
     # the K,V of other match this one's. dict doesn't impose that restriction. (I'm
     # subclassing for the sake of inheriting the functions I don't need to change; I do
     # not care about the Liskov substitution principle.)
+    # TODO: Perhaps a better way to do it would be to *accept* other types, then assert that they're the same.
+    # That way, I don't risk suppressing real warnings.
     def update(self, other: Optional[UpdateOtherType[K,V]]) -> None: # type: ignore[override]
         self._update(other, call_depth=1)
 
     def __or__(self, other: Mapping[K,V]) -> 'Dict_No_Overwrite[K,V]': # type: ignore[override]
         cp = Dict_No_Overwrite[K,V]()
-        dict.update(cp, self)
+        dict.update(cp, self) # type: ignore[arg-type]
+
         if TRACK_ORIGIN:
             for k in self:
                 cp.origins[k] = self.origins[k]

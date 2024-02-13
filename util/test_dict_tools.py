@@ -31,11 +31,11 @@ def h(a: Dict_No_Overwrite[str,int]) -> None:
 	a['g0'] = 30 # error if g called already
 	a['h2'] = 32 # won't get written if...
 
-def validate_error_line(exception: str, track_origins: bool, key_name: str, \
+def validate_error_line(exception: str | None, track_origin: bool, key_name: str, \
 		dictionary: dict[str, int], expected_dict: dict[str,int]) -> None:
 
-	""" expected origin is of the fname:lineno format. It won't be checked if !track_origins """
-	if not track_origins:
+	""" expected origin is of the fname:lineno format. It won't be checked if !track_origin """
+	if not track_origin:
 		expected_origin = '???'
 	else:
 		lineno = globals()[f'{key_name}_lineno']

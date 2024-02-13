@@ -16,7 +16,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 3
     def __init__(self, csv_file: str, variant='aligned', print_neighbors=True, use_drexel_format=False, force_uniform_weights=False):
         self._csv_file_path: str = csv_file
-        self.cb = self._read_csv()
+        self.cb = read_case_base(self._csv_file_path)
         self.variant: str = variant
         self.analyzers: list[DecisionAnalyzer] = get_analyzers()
         self.print_neighbors = print_neighbors
@@ -183,22 +183,22 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 print(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
         return lst
 
-    def _read_csv(self):
-        """ Convert the csv into a list of dictionaries """
-        case_base: list[dict] = []
-        with open(self._csv_file_path, "r") as f:
-            reader = csv.reader(f, delimiter=',')
-            headers: list[str] = next(reader)
-            for i in range(len(headers)):
-                headers[i] = headers[i].strip()
+def read_case_base(csv_filename: str):
+    """ Convert the csv into a list of dictionaries """
+    case_base: list[dict] = []
+    with open(csv_filename, "r") as f:
+        reader = csv.reader(f, delimiter=',')
+        headers: list[str] = next(reader)
+        for i in range(len(headers)):
+            headers[i] = headers[i].strip()
 
-            for line in reader:
-                case = {}
-                for i, entry in enumerate(line):
-                    case[headers[i]] = convert(headers[i], entry.strip())
-                case_base.append(case)
+        for line in reader:
+            case = {}
+            for i, entry in enumerate(line):
+                case[headers[i]] = convert(headers[i], entry.strip())
+            case_base.append(case)
 
-        return case_base
+    return case_base
 
 def relevant_fields(case: dict[str, Any], weights: dict[str, Any], kdma: str):
     fields = list(weights.keys()) + [kdma]
