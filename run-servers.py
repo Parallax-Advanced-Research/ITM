@@ -8,16 +8,6 @@ import util
 import sys
 import argparse
 
-def is_port_open(port):
-   s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-   try:
-      s.connect(("localhost", port))
-      s.close()
-      return True
-   except:
-      s.close()
-      return False
-
 def update_server(dir_name) -> bool:
     print("\n **** Checking if " + dir_name + " needs updates. ****")
     dir = os.path.join(os.getcwd(), ".deprepos", dir_name)
@@ -159,13 +149,13 @@ else:
     adept_server_available = False
 
 ready = True
-if ta3_server_available and is_port_open(8080):
+if ta3_server_available and util.is_port_open(8080):
     print("Port 8080 is already in use (default for evaluation server).")
     ready = False
-if args.adept and adept_server_available and is_port_open(8081):
+if args.adept and adept_server_available and util.is_port_open(8081):
     print("Port 8081 is already in use (configured for adept server).")
     ready = False
-if args.soartech and soartech_server_available and is_port_open(8084):
+if args.soartech and soartech_server_available and util.is_port_open(8084):
     print("Port 8084 is already in use (default for Soartech server).")
     ready = False
 if not ready:
