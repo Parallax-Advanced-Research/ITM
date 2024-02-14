@@ -4,9 +4,12 @@ from runner import TA3Driver
 import tad
 import util
 import sys
+import argparse
 
 def main():
-    args = parse_default_arguments()
+    parser = get_default_parser()
+    parser.add_argument('--loop', action=argparse.BooleanOptionalAction, default=True, help="Loops api_test until all trajectories have been tried (default).")
+    parser.parse_args()
     args.training = True
     args.exhaustive = True
     args.keds = False
@@ -27,10 +30,13 @@ def main():
             sys.exit(-1)
         
         
-    
     driver = TA3Driver(args)
-    
     es: ExhaustiveSelector = driver.selector
+
+    if not args.loop:
+        tad.api_test(args, driver)
+        sys.exit(0)
+
     while not es.is_finished():
         tad.api_test(args, driver)
         driver.actions_performed = []
