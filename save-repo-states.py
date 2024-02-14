@@ -12,7 +12,7 @@ def record_state(dir_name):
         raise Exception("Checking git commit head failed.")
     
     patchfile = open(os.path.join("repo-cfgs", dir_name + ".patch"), "w")
-    p = subprocess.run(["git", "diff"], cwd=dir, stdout=patchfile) 
+    p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=patchfile) 
     patchfile.close()
     if p.returncode != 0:
         raise Exception("Constructing git patch failed.")
