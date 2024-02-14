@@ -95,4 +95,7 @@ try:
     print("Installing Soartech server")
     install_server("git@github.com:ITM-Soartech/ta1-server-mvp.git")
 except:
-    print("\x1b[91mFailed to install Soartech server\x1b[0m")
+    print("\x1b[91mFailed to install Soartech server.\x1b[0m")
+    print("Please consult Running-TAD.md for directions on getting access. You can run tad_tester.py "
+          + 'without the Soartech server, and can run ta3_training.py with the argument '
+          + '"--session_type adept" to ensure that the Soartech server is not used.')

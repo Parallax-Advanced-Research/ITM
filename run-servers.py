@@ -5,6 +5,8 @@ import venv
 import threading
 import socket
 import util
+import sys
+import argparse
 
 def is_port_open(port):
    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -16,9 +18,11 @@ def is_port_open(port):
       s.close()
       return False
 
-def update_server(dir_name):
+def update_server(dir_name) -> bool:
     print("\n **** Checking if " + dir_name + " needs updates. ****")
     dir = os.path.join(os.getcwd(), ".deprepos", dir_name)
+    if not os.path.exists(dir):
+        return False
     p = subprocess.run(["git", "fetch", "--all"], cwd=dir) 
     if p.returncode != 0:
         print("Failed to update git repository " + dir_name + ".")
@@ -48,7 +52,7 @@ def update_server(dir_name):
     patch_filename = os.path.join("repo-cfgs", dir_name + ".patch")
     if os.stat(patch_filename).st_size == 0:
         print("No patch for repo " + dir_name + ".")
-        return
+        return True
 
     
     new_patch_hash = util.hash_file(patch_filename)
@@ -67,7 +71,7 @@ def update_server(dir_name):
 
     if new_patch_hash == old_patch_hash:
         print("Patch applied previously.")
-        return
+        return True
     
     
     p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True, check=True) 
@@ -83,6 +87,7 @@ def update_server(dir_name):
         print("Repository " + dir_name + " is modified, and a new patch has been downloaded from "
               + "git. Please revert or combine your changes with the patch manually. Starting server "
               + "anyway.")
+    return True
     
 
 
@@ -115,27 +120,83 @@ def start_server(dir_name, args):
     # f.close()
     # stream.close()
 
+parser = argparse.ArgumentParser(description="Runs an experiment attempting to learn about an " \
+                                             "environment by learning a subset of actions by " \
+                                             "themselves first.")
+parser.add_argument("--ta3_only", action=argparse.BooleanOptionalAction, default=False,
+                    help="Run TA3 server and not ADEPT and Soartech training servers.")
+parser.add_argument("--adept", action=argparse.BooleanOptionalAction, default=True,
+                    help="Choose to run (default) / not run the ADEPT server.")
+parser.add_argument("--soartech", action=argparse.BooleanOptionalAction, default=True,
+                    help="Choose to run (default) / not run the Soartech server.")
+
+args = parser.parse_args()
+
+if args.ta3_only:
+    args.adept = False
+    args.soartech = False
+
 update_server("itm-evaluation-client")
-update_server("itm-evaluation-server")
-update_server("ta1-server-mvp")
-update_server("adept_server")
+ta3_server_available = update_server("itm-evaluation-server")
+
+if not ta3_server_available:
+    print("TA3 server is not installed; neither tad_tester.py nor ta3_training.py will function. "
+          + " No servers started.")
+    sys.exit(-1)
+
+if args.soartech:
+    soartech_server_available = update_server("ta1-server-mvp")
+    if not soartech_server_available:
+        print("Training server from soartech not found.")
+else:
+    soartech_server_available = False
+    
+if args.adept:
+    adept_server_available = update_server("adept_server")
+    if not adept_server_available:
+        print("ADEPT training server not found.")
+else:
+    adept_server_available = False
 
 ready = True
-if is_port_open(8080):
+if ta3_server_available and is_port_open(8080):
     print("Port 8080 is already in use (default for evaluation server).")
     ready = False
-if is_port_open(8081):
+if args.adept and adept_server_available and is_port_open(8081):
     print("Port 8081 is already in use (configured for adept server).")
     ready = False
-if is_port_open(8084):
+if args.soartech and soartech_server_available and is_port_open(8084):
     print("Port 8084 is already in use (default for Soartech server).")
     ready = False
 if not ready:
     print("Please stop the processes that are already using ports before running this script. " + 
           "The ports used are not yet configurable within the script. Remember to run " +
-          "stop-servers.py to remove your own prior servers if necessary.")
-    exit(-1)
+          "stop-servers.py to remove your own prior server processes if necessary.")
+    sys.exit(-1)
     
 start_server("itm-evaluation-server", ["swagger_server"])
-start_server("ta1-server-mvp", ["itm_app"])
-start_server("adept_server", ["openapi_server", "--port", "8081"])
+
+
+if not adept_server_available and not soartech_server_available:
+    print('No training servers run. Using ta3_training.py will not be possible. Testing '
+          + 'using tad_tester.py should be unaffected.')
+    sys.exit(0)
+
+
+if adept_server_available:
+    start_server("adept_server", ["openapi_server", "--port", "8081"])
+else:
+    print('ADEPT server is not running. Training using ta3_training.py will require the argument '
+          + '"--session_type soartech" to use only the Soartech server in training. Testing using '
+          + 'tad_tester.py should be unaffected.')
+
+if soartech_server_available:
+    start_server("ta1-server-mvp", ["itm_app"])
+else:
+    print('Soartech server is not running. Training using ta3_training.py will require the argument '
+          + '"--session_type adept" to use only the ADEPT server in training. Testing using '
+          + 'tad_tester.py should be unaffected.')
+
+if soartech_server_available and adept_server_available:
+    print("All servers running. Both tad_tester.py and ta3_training.py should work properly.")
+    
