@@ -28,6 +28,9 @@ def handle_download_problem(repo_name):
 
 def install_repo(git_ssh_path):
     ldir = os.path.join(".deprepos", re.search(".*/(.*)\.git", git_ssh_path).group(1))
+    if os.path.exists(ldir):
+        print("Dependency repo already installed: " + ldir)
+        return ldir
     lp = subprocess.run(["git", "clone", git_ssh_path, ldir], check=False)
     if lp.returncode != 0:
         handle_download_problem(ldir)
@@ -36,7 +39,12 @@ def install_repo(git_ssh_path):
 def install_server(git_ssh_path):
     ldir = install_repo(git_ssh_path)
     lbuilder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
-    lbuilder.create(os.path.join(ldir, "venv"))
+    try:
+        lbuilder.create(os.path.join(ldir, "venv"))
+    except PermissionError:
+        print(f"Could not create virtual environment in {ldir}. Check to see if a program is "
+              + "already running from this directory, or files are read-only.")
+        sys.exit(-1)
     lctxt = lbuilder.ensure_directories(os.path.join(ldir, "venv"))
     _ = subprocess.run([lctxt.env_exe, "-m", "pip", "install", "-r",
                                       os.path.join(ldir, "requirements.txt")], check=True)
@@ -55,7 +63,12 @@ except:
 
 import venv
 builder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
-builder.create("venv")
+try:
+    builder.create("venv")
+except PermissionError:
+    print(f"Could not create virtual environment in venv. Check to see if a program is "
+          + "already running from this directory, or files are read-only.")
+    sys.exit(-1)
 ctxt = builder.ensure_directories("venv")
 subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-r", "requirements.txt"], check=True)
 
