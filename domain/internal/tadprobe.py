@@ -4,7 +4,8 @@ from .decision import Decision
 
 
 class TADProbe(typing.Generic[StateType]):
-    def __init__(self, id_: str, state: StateType, prompt: str, environment: dict = {}, decisions: list[Decision] = ()):
+    def __init__(self, id_: str, state: StateType, prompt: str, environment: dict = {}, 
+                 decisions: list[Decision] = ()):
         self.id_: str = id_
         self.state: StateType = state
         self.prompt: str = prompt

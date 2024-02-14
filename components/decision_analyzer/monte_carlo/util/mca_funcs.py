@@ -47,6 +47,8 @@ def dict_to_decisionmetrics(basic_stats: MetricResultsT) -> list[DecisionMetrics
         metrics_out.append(metrics)
     return metrics_out
 
+def severity_dict():
+    return {"low":.05, "moderate":.25, "substantial":.5, "severe":.75, "extreme":.95}
 
 def tinymedstate_to_metrics(state: MedsimState) -> dict:
     casualty_severities = {}
@@ -62,7 +64,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
             casualty_dps[cas.id] = 0.
         dps = 0.0
         for injury in cas.injuries:
-            severity += injury.severity
+            severity += severity_dict()[injury.severity]
             dps += injury_to_dps(injury)
             casualty_dps[cas.id] += dps
 
