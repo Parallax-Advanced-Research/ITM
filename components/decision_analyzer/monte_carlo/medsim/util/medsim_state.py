@@ -27,7 +27,7 @@ class MedsimState(MCState):
         self.aid_delay: float = 0.0
 
     def set_aid_delay(self, probe: TADProbe):
-        self.aid_delay = probe.environment['aid_delay'] if probe.environment['aid_delay'] is not None else 0.0
+        self.aid_delay = probe.environment['decision_environment']['aid_delay'] if probe.environment['decision_environment']['aid_delay'] is not None else 0.0
 
     def __eq__(self, other: 'MedsimState'):
         # fastest checks are lengths

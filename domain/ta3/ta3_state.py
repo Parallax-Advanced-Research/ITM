@@ -2,25 +2,37 @@ from dataclasses import dataclass, field
 from domain.internal import State, Action
 
 
-@dataclass
-class Supply:
-    type: str
-    quantity: int
+# Why is this declared twice?
+# @dataclass
+# class Supply:
+#     type: str
+#     quantity: int
 
 
 @dataclass
 class Demographics:
     age: int
     sex: str
+    race: str
+    military_disposition: str
+    military_branch: str
     rank: str
+    rank_title: str
+    skills: str
+    role: str
+    mission_importance: str
 
 
 @dataclass
 class Vitals:
     conscious: bool
+    avpu: str
+    ambulatory: str
     mental_status: str
     breathing: str
-    hrpmin: int
+    # hrpmin: int
+    heart_rate: int  # may be a duplicate of hrpmin that changed in febuary server update
+    spo2: int
 
 
 @dataclass
@@ -29,6 +41,8 @@ class Injury:
     name: str
     severity: float
     treated: bool
+    status: str
+    source_character: str
 
 
 Locations = {"right forearm", "left forearm", "right calf", "left calf", "right thigh", "left thigh", "right stomach",
@@ -51,7 +65,7 @@ class Casualty:
     treatments: list[str]
     assessed: bool = False
     unstructured: str = ''
-    relationship: str = ''
+    # relationship: str = ''
 
     @staticmethod
     def from_ta3(data: dict):
@@ -64,7 +78,7 @@ class Casualty:
             tag=data['tag'],
             assessed=data.get('assessed', data.get('visited', False)),
             unstructured=data['unstructured'],
-            relationship=data['relationship'],
+            # relationship=data['relationship'],
             treatments=data['treatments']
         )
 
@@ -73,6 +87,7 @@ class Casualty:
 class Supply:
     type: str
     quantity: int
+    reusable: bool
 
 
 class TA3State(State):

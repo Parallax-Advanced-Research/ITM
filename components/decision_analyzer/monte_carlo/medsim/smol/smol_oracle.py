@@ -115,6 +115,8 @@ INJURY_UPDATE = {
                                                breath=BodySystemEffect.NONE.value),
         Injuries.SHRAPNEL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
                                               breath=BodySystemEffect.NONE.value),
+        Injuries.BROKEN_BONE.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                                 breath=BodySystemEffect.MINIMAL.value),
         Injuries.EYE_TRAUMA.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
                                                 breath=BodySystemEffect.MODERATE.value)  # Assuming ET -> Brain injury
     }
