@@ -13,7 +13,7 @@ def main():
     args.verbose = False
     args.dump = False
     
-    if args.endpoint is not None:
+    if args.endpoint is None:
         if not util.is_port_open(8080):
             print("TA3 server not listening. Shutting down.")
             sys.exit(-1)
