@@ -72,7 +72,7 @@ def update_server(dir_name):
     
     p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True, check=True) 
     if len(p.stdout) == 0:
-        p = subprocess.run(["git", "apply", os.path.join("..", "..", patch_file)], 
+        p = subprocess.run(["git", "apply", os.path.join("..", "..", patch_filename)], 
                            cwd=dir,  stdout=subprocess.PIPE, text=True, check=True) 
         print("Applied patch to repo " + dir_name + ".")
         patch_hash_file = open(patch_hash_filename, "w")
