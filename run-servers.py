@@ -4,6 +4,7 @@ import os
 import venv
 import threading
 import socket
+import util
 
 def is_port_open(port):
    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -44,18 +45,44 @@ def update_server(dir_name):
     else:
         print("Repository " + dir_name + " is on the right commit.")
     
-    patch_file = os.path.join("repo-cfgs", dir_name + ".patch")
-    if os.stat(patch_file).st_size == 0:
+    patch_filename = os.path.join("repo-cfgs", dir_name + ".patch")
+    if os.stat(patch_filename).st_size == 0:
         print("No patch for repo " + dir_name + ".")
         return
+
     
-    p = subprocess.run(["git", "diff"], cwd=dir, stdout=subprocess.PIPE, text=True, check=True) 
+    new_patch_hash = util.hash_file(patch_filename)
+    patch_hash_filename = os.path.join("repo-cfgs", dir_name + "-patch-hash")
+    old_patch_hash = ""
+    if not os.path.exists(patch_hash_filename):
+        temp_diff_filename = os.path.join("temp", "diff-file")
+        temp_diff_file = open(temp_diff_filename, "w")
+        p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=temp_diff_file, text=True, check=True) 
+        temp_diff_file.close()
+        old_patch_hash = util.hash_file(temp_diff_filename)
+    else:
+        patch_hash_file = open(patch_hash_filename, "r")
+        old_patch_hash = patch_hash_file.readline()
+        patch_hash_file.close()
+
+    if new_patch_hash == old_patch_hash:
+        print("Patch applied previously.")
+        return
+    
+    
+    p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True, check=True) 
     if len(p.stdout) == 0:
         p = subprocess.run(["git", "apply", os.path.join("..", "..", patch_file)], 
                            cwd=dir,  stdout=subprocess.PIPE, text=True, check=True) 
         print("Applied patch to repo " + dir_name + ".")
+        patch_hash_file = open(patch_hash_filename, "w")
+        patch_hash_file.write(new_patch_hash)
+        patch_hash_file.close()
+        
     else:
-        print("Repository " + dir_name + " is modified, and will not be patched.")
+        print("Repository " + dir_name + " is modified, and a new patch has been downloaded from "
+              + "git. Please revert or combine your changes with the patch manually. Starting server "
+              + "anyway.")
     
 
 
