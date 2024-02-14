@@ -20,7 +20,7 @@ def record_state(dir_name):
         raise Exception("Constructing git patch failed.")
         
     patch_hash = util.hash_file(patch_filename)
-    patch_hash_file = open(os.path.join("repo-cfgs", dir_name + "-patch-hash", "w"))
+    patch_hash_file = open(os.path.join("repo-cfgs", dir_name + "-patch-hash"), "w")
     patch_hash_file.write(patch_hash)
     patch_hash_file.close()
 
