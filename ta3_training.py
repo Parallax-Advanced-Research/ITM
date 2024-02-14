@@ -1,4 +1,4 @@
-from scripts.shared import parse_default_arguments
+from scripts.shared import get_default_parser
 from scripts import analyze_data
 from runner import TA3Driver
 import tad
@@ -9,12 +9,16 @@ import argparse
 def main():
     parser = get_default_parser()
     parser.add_argument('--loop', action=argparse.BooleanOptionalAction, default=True, help="Loops api_test until all trajectories have been tried (default).")
-    parser.parse_args()
+    args = parser.parse_args()
     args.training = True
     args.exhaustive = True
     args.keds = False
     args.verbose = False
     args.dump = False
+    
+    if args.session_type == "eval":
+        print('You must specify one of "adept" or "soartech" as session type at command line.')
+        sys.exit(-1)
     
     if args.endpoint is None:
         if not util.is_port_open(8080):
