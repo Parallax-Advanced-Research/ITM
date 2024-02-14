@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import tad
+import util
+import sys
 from scripts.shared import parse_default_arguments
 
 
@@ -7,8 +9,11 @@ def test_endpoint(args):
     # args.model = 'bbn'
     # args.endpoint = '127.0.0.1:8080'
     args.variant = 'aligned'
-    args.ebd = False
     args.decision_verbose = True
+    if args.endpoint is not None:
+        if not util.is_port_open(8080):
+            print("TA3 server not listening. Shutting down.")
+            sys.exit(-1)
     tad.api_test(args)
 
 
