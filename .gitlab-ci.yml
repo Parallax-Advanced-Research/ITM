@@ -39,7 +39,7 @@ before_script:
   - md5sum "$HOME/.ssh/id_rsa"
 #  - echo "git-user:x:1000:1000:git-user:$HOME:/usr/sbin/nologin" >> /etc/passwd # git is confused when we're uid 1000 and uid 1000 doesn't exist
 #  - git clone git@github.com:ITM-Soartech/ta1-server-mvp.git foobar -v
-  - apt install -y python3
+  - sudo apt install -y python3
   - python install.py
   - source venv/bin/activate
 
