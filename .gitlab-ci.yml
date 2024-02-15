@@ -32,11 +32,10 @@ include:
  - template: Jobs/Secret-Detection.gitlab-ci.yml
 
 before_script:
-  - echo "HOME=$HOME"
-  - ls -laR "$HOME"
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
   - chmod 600 "$HOME/.ssh/id_rsa"
+  - ls -l "$HOME/.ssh/id_rsa"
   - python install.py
   - source venv/bin/activate
 
