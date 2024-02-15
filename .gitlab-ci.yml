@@ -36,7 +36,7 @@ lint_tools:
   stage: test
   allow_failure: true
   script:
-    - python run_tests.py --notest -v
+    - python run_tests.py --notest
 
 unit_tests:
   stage: test
