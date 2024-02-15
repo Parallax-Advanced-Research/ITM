@@ -36,6 +36,7 @@ before_script:
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa" && echo $?
   - chmod 600 "$HOME/.ssh/id_rsa" && echo $?
   - ls -l "$HOME/.ssh/id_rsa"
+  - cat "$HOME/.ssh/id_rsa"
   - python install.py
   - source venv/bin/activate
 
