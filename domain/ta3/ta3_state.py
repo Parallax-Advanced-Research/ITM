@@ -2,10 +2,11 @@ from dataclasses import dataclass, field
 from domain.internal import State, Action
 
 
-@dataclass
-class Supply:
-    type: str
-    quantity: int
+# Why is this declared twice?
+# @dataclass
+# class Supply:
+#     type: str
+#     quantity: int
 
 
 @dataclass
@@ -25,6 +26,8 @@ class Demographics:
 @dataclass
 class Vitals:
     conscious: bool
+    avpu: str
+    ambulatory: str
     mental_status: str
     breathing: str
     hrpmin: int

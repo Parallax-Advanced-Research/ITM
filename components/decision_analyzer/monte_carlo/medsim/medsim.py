@@ -31,7 +31,11 @@ class MedicalSimulator(MCSim):
         self.simulator_name = simulator_name
         if simulator_name == SimulatorName.SMOL.value:
             self.action_map = smol_action_map
-        self.aid_delay = init_state.aid_delay
+        # self.aid_delay = init_state.aid_delay if init_state.aid_delay != [] else 0.0
+        self.aid_delay = 0.0
+        if isinstance(init_state.aid_delay, list) and len(init_state.aid_delay) > 0:
+            self.aid_delay = init_state.aid_delay[0]['delay']
+            print('wakka')
         super().__init__()
 
     def get_simulator(self) -> str:
@@ -42,7 +46,9 @@ class MedicalSimulator(MCSim):
         casualties: list[Casualty] = self.current_casualties
         new_state = None
         if action.action == 'END_SCENARIO':
-            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action, self._rand, state.time + state.aid_delay)
+            # * 60.0 because aid delay is given in minutes
+            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies,
+                                                                          state.time, self.aid_delay * 60.0)
         else:
             new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action,
                                                                           self._rand, state.time)

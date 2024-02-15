@@ -22,7 +22,7 @@ def _convert_vitals(ta_vitals: TA_VIT) -> Vitals:
 
 def _reverse_convert_vitals(internal_vitals: Vitals) -> TA_VIT:
     return TA_VIT(conscious=internal_vitals.conscious, mental_status=internal_vitals.mental_status,
-                  breathing=internal_vitals.breathing, hrpmin=internal_vitals.hrpmin)
+                  breathing=internal_vitals.breathing, heart_rate=internal_vitals.hrpmin)
 
 
 def _convert_injury(ta_injury: TA_INJ) -> list[Injury]:
@@ -60,8 +60,8 @@ def _convert_casualty(ta_casualty: TA_CAS) -> Casualty:
     vit = _convert_vitals(ta_casualty.vitals)
 
     return Casualty(id=ta_casualty.id, unstructured=ta_casualty.unstructured, name=ta_casualty.name,
-                    relationship=ta_casualty.relationship, demographics=dem,injuries=injuries,
-                    vitals=vit, complete_vitals=vit, assessed=ta_casualty.assessed, tag=ta_casualty.tag)
+                    demographics=dem,injuries=injuries, vitals=vit, complete_vitals=vit,
+                    assessed=ta_casualty.assessed, tag=ta_casualty.tag)
 
 
 def _reverse_convert_casualty(internal_casualty: Casualty) -> TA_CAS:

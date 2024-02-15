@@ -6,6 +6,8 @@ from scripts.knexus.simple_scene import SimpleClient
 from scripts.knexus.tmnt import TMNTClient
 from scripts.knexus.enemy_dying import EnemyClient
 from scripts.knexus.vip_collapse import VIPClient
+from scripts.shared import parse_default_arguments
+from tad import parse_kdmas
 from util import logger
 from util.logger import LogLevel
 
@@ -19,30 +21,43 @@ def probe_stripper(probe):
     return probe
 
 
-def tad_tester():
-    class TADArgs:
-        def __init__(self):
-            self.human = False
-            self.ebd = False
-            self.hra = True
-            self.kedsd = False
-            self.csv = True
-            self.verbose = False
-            self.bayes = True
-            self.mc = True
-            self.rollouts = 1000
-            self.decision_verbose = False
-            self.endpoint = '127.0.0.1:8080'
-            self.training = False
-            self.variant = 'aligned'
-    tad_args = TADArgs()
+def tad_tester_adept():
+    tad_args = parse_default_arguments()
+    tad_args.decision_verbose = False
 
     driver = TA3Driver(tad_args)
-    client = TA3Client(tad_args.endpoint)
+    client = TA3Client(tad_args.endpoint, parse_kdmas(tad_args.kdmas), tad_args.eval_targets)
     if tad_args.training:
         sid = client.start_session(adm_name=f'TAD', session_type='soartech', kdma_training=True)
     else:
-        sid = client.start_session(f'TAD')
+        sid = client.start_session(f'TAD', session_type='adept')
+    while True:
+        scen = client.start_scenario()
+        if scen is None:
+            break
+        driver.set_scenario(scen)
+        driver.set_alignment_tgt(client.align_tgt)
+        probe = client.get_probe()
+
+        while True:
+            if probe is None:
+                break
+            action = driver.decide(probe)
+            logger.info(f"Chosen Action-{action}")
+            new_probe = client.take_action(action)
+            probe = new_probe
+    return 0
+
+
+def tad_tester_soar():
+    tad_args = parse_default_arguments()
+    tad_args.decision_verbose = False
+    driver = TA3Driver(tad_args)
+    client = TA3Client(tad_args.endpoint, parse_kdmas(tad_args.kdmas), tad_args.eval_targets)
+    if tad_args.training:
+        sid = client.start_session(adm_name=f'TAD', session_type='soartech', kdma_training=True)
+    else:
+        sid = client.start_session(f'TAD', session_type='soartech')
     while True:
         scen = client.start_scenario()
         if scen is None:
@@ -62,26 +77,12 @@ def tad_tester():
 
 
 def simple_scene():
-    kdmas: KDMAs = KDMAs([])
-
-    class SIMPLEARGS:
-        def __init__(self):
-            self.human = False
-            self.ebd = False
-            self.hra = True
-            self.kedsd = False
-            self.verbose = False
-            self.decision_verbose = False
-            self.mc = True
-            self.rollouts = 1234
-            self.csv = True
-            self.bayes = True
-            self.variant = 'aligned'
-    tmnt_args = SIMPLEARGS()
-
-    driver = TA3Driver(tmnt_args)
-    client = SimpleClient(kdmas)
-    driver.set_alignment_tgt(kdmas)
+    ss_args = parse_default_arguments()
+    ss_args.decision_verbose = False
+    ss_args.kdmas = ['J=6', 'T=9']
+    driver = TA3Driver(ss_args)
+    client = SimpleClient(alignment_target=parse_kdmas(ss_args.kdmas), evalTargetNames=ss_args.eval_targets)
+    driver.set_alignment_tgt(client.align_tgt)
 
     initial_state: MedsimState = client.get_init()
     probe = client.get_probe(initial_state)
@@ -99,27 +100,13 @@ def simple_scene():
 
 
 def enemy_dying():
-    kdmas: KDMAs = KDMAs([])
-
-    class SIMPLEARGS:
-        def __init__(self):
-            self.human = False
-            self.ebd = False
-            self.hra = True
-            self.kedsd = False
-            self.verbose = False
-            self.decision_verbose = False
-            self.mc = True
-            self.rollouts = 1234
-            self.csv = True
-            self.bayes = True
-            self.variant = 'aligned'
-    enemy_dying_args = SIMPLEARGS()
-
+    enemy_dying_args = parse_default_arguments()
+    enemy_dying_args.decision_verbose = False
+    enemy_dying_args.kdmas = ['J=6', 'T=9']
     driver = TA3Driver(enemy_dying_args)
-    client = EnemyClient(kdmas)
-    driver.set_alignment_tgt(kdmas)
-
+    client = EnemyClient(alignment_target=parse_kdmas(enemy_dying_args.kdmas),
+                         evalTargetNames=enemy_dying_args.eval_targets)
+    driver.set_alignment_tgt(client.align_tgt)
     initial_state: MedsimState = client.get_init()
     probe = client.get_probe(initial_state)
     scenario = Scenario(name='SIMPLE DEMO', id='simple-demo', state=probe.state, probes=[])
@@ -136,26 +123,15 @@ def enemy_dying():
 
 
 def vip_collapse():
-    kdmas: KDMAs = KDMAs([])
 
-    class SIMPLEARGS:
-        def __init__(self):
-            self.human = False
-            self.ebd = False
-            self.hra = True
-            self.kedsd = False
-            self.verbose = False
-            self.decision_verbose = False
-            self.mc = True
-            self.rollouts = 1234
-            self.csv = True
-            self.bayes = True
-            self.variant = 'aligned'
-    enemy_dying_args = SIMPLEARGS()
+    vip_args = parse_default_arguments()
+    vip_args.decision_verbose = False
+    vip_args.kdmas = ['J=6', 'T=9']
 
-    driver = TA3Driver(enemy_dying_args)
-    client = VIPClient(kdmas)
-    driver.set_alignment_tgt(kdmas)
+    driver = TA3Driver(vip_args)
+    client = VIPClient(alignment_target=parse_kdmas(vip_args.kdmas),
+                       evalTargetNames=vip_args.eval_targets)
+    driver.set_alignment_tgt(client.align_tgt)
 
     initial_state: MedsimState = client.get_init()
     probe = client.get_probe(initial_state)
@@ -173,26 +149,12 @@ def vip_collapse():
 
 
 def turtle_script():
-    kdmas: KDMAs = KDMAs([])
-
-    class TMNTARGS:
-        def __init__(self):
-            self.human = False
-            self.ebd = False
-            self.hra = True
-            self.kedsd = False
-            self.csv = True
-            self.verbose = False
-            self.bayes = True
-            self.mc = True
-            self.rollouts = 1000
-            self.decision_verbose = False
-            self.variant = 'aligned'
-    tmnt_args = TMNTARGS()
-
+    tmnt_args = parse_default_arguments()
+    tmnt_args.decision_verbose = False
+    tmnt_args.kdmas = ['turtle=7', 'power=3']
     driver = TA3Driver(tmnt_args)
-    client = TMNTClient(kdmas)
-    driver.set_alignment_tgt(kdmas)
+    client = TMNTClient(alignment_target=parse_kdmas(tmnt_args.kdmas), evalTargetNames=tmnt_args.eval_targets)
+    driver.set_alignment_tgt(client.align_tgt)
 
     initial_state: MedsimState = client.get_init()
     probe = client.get_probe(initial_state)
@@ -211,9 +173,12 @@ def turtle_script():
 
 logger.setLevel(LogLevel.INFO)
 logger.critical("Beginning Knexus Test Harness...")
-logger.warning("Running TAD Tester")
-tad_tester()
-logger.warning("TAD Tester complete")
+logger.warning("Running TAD Tester - adept")
+tad_tester_adept()
+logger.warning("TAD Tester adept complete")
+logger.warning("Running TAD Tester - soar")
+tad_tester_soar()
+logger.warning("TAD Tester soar complete")
 logger.warning("Running Turtles")
 turtle_script()
 logger.warning("Turtles succeeded")

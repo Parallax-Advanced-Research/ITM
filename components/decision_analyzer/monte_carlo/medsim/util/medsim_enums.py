@@ -21,7 +21,7 @@ class Injury:
                  bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
         self.name = name
         self.location = location
-        self.severity = severity
+        self.severity = 0.0
         self.base_severity = severity
         self.time_elapsed: float = 0.0
         self.treated: bool = treated
@@ -74,12 +74,11 @@ class Casualty:
     HIGH_P_BLEEDOUT = 0.75
     CRITICAL_P_BLEEDOUT = 0.9999
 
-    def __init__(self, id: str, unstructured: str, name: str, relationship: str, demographics: Demographics,
+    def __init__(self, id: str, unstructured: str, name: str, demographics: Demographics,
                  injuries: list[Injury], vitals: Vitals, complete_vitals: Vitals, assessed: bool, tag: str):
         self.id: str = id
         self.unstructured: str = unstructured
         self.name: str = name
-        self.relationship: str = relationship
         self.demographics: Demographics = demographics
         self.injuries: list[Injury] = injuries
         self.vitals: Vitals = vitals
@@ -112,7 +111,7 @@ class Casualty:
     def __eq__(self, other: 'Casualty'):
         same = False
         if (self.id == other.id and self.unstructured == other.unstructured and
-            self.name == other.name and self.relationship == other.relationship and
+            self.name == other.name and
             self.demographics == other.demographics and self.vitals == other.vitals and
             self.complete_vitals == other.complete_vitals and self.assessed == other.assessed and
             self.tag == other.tag and self.time_elapsed == other.time_elapsed):
@@ -240,6 +239,8 @@ class Injuries(Enum):
     BURN = 'Burn'
     BURN_SUFFOCATION = 'Burn Suffocation'
     EYE_TRAUMA = 'Eye_Trauma'
+    BROKEN_BONE = 'Broken Bone'
+    INTERNAL = 'Internal Injury'
 
 
 class Metric(Enum):
@@ -283,6 +284,11 @@ class Metric(Enum):
     CASUALTY_P_DEATH = 'CASUALTY_P_DEATH'
     CASUALTY_DAMAGE_PER_SECOND_CHANGE = 'CASUALTY DPS CHANGE'
     P_DEATH_ONEMINLATER = 'MEDSIM_P_DEATH_ONE_MIN_LATER'
+    PER_CASUALTY_P_DEATH = 'PER_CASUALTY_P_DEATH'
+    CAS_HIGH_P_DEATH = 'CAS_HIGH_P_DEATH'
+    CAS_LOW_P_DEATH = 'CAS_LOW_P_DEATH'
+    CAS_HIGH_P_DEATH_DECISION = 'CAS_HIGH_P_DEATH_DEC'
+    CAS_LOW_P_DEATH_DECISION = 'CAS_LOW_P_DEATH_DEC'
 
     AVERAGE_DECISION_DPS = 'AVERAGE_DECISION_DPS'
     AVERAGE_DECISION_SUPPLIES_REMAINING = 'AVERAGE_DECISION_SUPPLIES_REMAINING'
