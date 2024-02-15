@@ -33,9 +33,8 @@ include:
 
 before_script:
   - mkdir -p "$HOME/.ssh"
-  - echo "$CI_ACCESS_KEY"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
-  - chmod 600 "$HOME/.ssh/id_rsa"
+  - chmod 600 "$HOME/.ssh/id_rsa" && echo $?
   - ls -l "$HOME/.ssh/id_rsa"
   - python install.py
   - source venv/bin/activate
