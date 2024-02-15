@@ -129,8 +129,10 @@ def api_test(args, driver = None):
             new_probe = client.take_action(action)
             if new_probe:
                 difference = dict_difference(probe.state, new_probe.state, {'id', 'type'})
+                difference.pop("actions_performed")
                 logger.debug(f"-State Additions: {difference}")
                 difference = dict_difference(new_probe.state, probe.state, {'id', 'type'})
+                difference.pop("actions_performed")
                 logger.debug(f"-State Removals: {difference}")
             probe = new_probe
     
