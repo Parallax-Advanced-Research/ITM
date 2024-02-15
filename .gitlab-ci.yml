@@ -36,12 +36,12 @@ lint_tools:
   stage: test
   allow_failure: true
   script:
-    - python run_tests.py --notest
+    - python run_tests.py --notest -v
 
 unit_tests:
   stage: test
   script:
-    - python run_tests.py --nolint
+    - python run_tests.py --nolint -v
 
 integration_test:
   stage: test
