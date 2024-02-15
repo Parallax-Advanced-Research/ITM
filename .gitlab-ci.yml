@@ -33,10 +33,10 @@ include:
 
 before_script:
   - mkdir -p "$HOME/.ssh"
-  - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa" && echo $?
-  - chmod 600 "$HOME/.ssh/id_rsa" && echo $?
-  - ls -l "$HOME/.ssh/id_rsa"
-  - cat "$HOME/.ssh/id_rsa"
+  - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
+  - chmod 600 "$HOME/.ssh/id_rsa"
+  - md5sum "$HOME/.ssh/id_rsa"
+  - git clone git@github.com:ITM-Soartech/ta1-server-mvp.git foobar -v
   - python install.py
   - source venv/bin/activate
 
