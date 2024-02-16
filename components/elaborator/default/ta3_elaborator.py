@@ -16,11 +16,12 @@ class TA3Elaborator(Elaborator):
             d.value.params = {k: v for k, v in d.value.params.items() if v is not None}
             if _name == 'APPLY_TREATMENT':
                 to_return += self._treatment(probe.state, d)
-            elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CASUALTY':  # These need no param options
+            elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CASUALTY' or _name == 'SEARCH': 
+                 # These need no param options
                 to_return += [d]
             elif _name == 'TAG_CHARACTER':
                 to_return += self._tag(probe.state.casualties, d)
-            elif _name == 'END_SCENARIO':
+            elif _name == 'END_SCENE':
                 to_return += [d]
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
@@ -44,29 +45,19 @@ class TA3Elaborator(Elaborator):
         cas_possible_treatments : list[Decision[Action]] = []
         
         for decision in cas_grounded:
+            if decision.value.params.get('location', 'unspecified') == 'internal':
+                cas_possible_treatments.append(decision)
+                break
             cas_id = decision.value.params['casualty']
             cas = [c for c in state.casualties if c.id == cas_id][0]
             for injury in cas.injuries:
-                if injury.location == decision.value.params['location'] \
+                if decision.value.params.get('location', 'unspecified') in [injury.location, 'unspecified'] \
                    and self.medsim_allows_action(decision.value, injury.name):
                     cas_possible_treatments.append(decision)
                     break
             
         return cas_possible_treatments
         
-    def medsim_allows_action(self, action: Action, injury: str):
-        if not supply_injury_match(action.params['treatment'], injury):
-            return False
-        medact = MedsimAction(
-                    Actions.APPLY_TREATMENT, 
-                    action.params['casualty'], 
-                    action.params['treatment'], 
-                    action.params['location'], 
-                    None)
-        if not supply_location_match(medact): 
-            return False
-        return True
-     
 
     def _tag(self, casualties: list[Casualty], decision: Decision[Action]) -> list[Decision[Action]]:
         action = decision.value
@@ -77,7 +68,12 @@ class TA3Elaborator(Elaborator):
                     # Copy the casualty into the params dict
                     cas_params = action.params.copy()
                     cas_params['casualty'] = cas.id
-                    cas_grounded.append(Decision(decision.id_, Action(action.name, cas_params), kdmas=decision.kdmas))
+                    cas_grounded.append(Decision(decision.id_, Action(action.name, cas_params), 
+                                                 kdmas=decision.kdmas))
+        else:
+            cas = [c for c in casualties if c.id == action.params['casualty']][0]
+            if not cas.tag:
+                cas_grounded.append(decision)
         tag_grounded: list[Decision[Action]] = []
         for cas_action in cas_grounded:
             # If no category set, enumerate the tag types
@@ -85,7 +81,8 @@ class TA3Elaborator(Elaborator):
                 for tag in TagCategory:
                     tag_params = cas_action.value.params.copy()
                     tag_params['category'] = tag
-                    tag_grounded.append(Decision(cas_action.id_, Action(action.name, tag_params), kdmas=cas_action.kdmas))
+                    tag_grounded.append(Decision(cas_action.id_, Action(action.name, tag_params), 
+                                                 kdmas=cas_action.kdmas))
             else:
                 tag_grounded.append(cas_action)
         return tag_grounded
@@ -121,7 +118,10 @@ class TA3Elaborator(Elaborator):
                     continue
                 for injury in cas.injuries:
                     treat_params = treat_action.value.params.copy()
-                    treat_params['location'] = injury.location
+                    if TA3Elaborator.medsim_allows_action(treat_action.value, injury.name):
+                        treat_params['location'] = treat_params.get('location', 'unspecified')
+                    else:
+                        treat_params['location'] = injury.location
                     grounded.append(Decision(treat_action.id_, Action(decision.value.name, treat_params), kdmas=treat_action.kdmas))
             else:
                 grounded.append(treat_action)
@@ -143,3 +143,24 @@ class TA3Elaborator(Elaborator):
             cas_grounded.append(decision)
 
         return cas_grounded
+
+    @staticmethod
+    def medsim_allows_action(action: Action, injury: str):
+        return True
+        if not supply_injury_match(action.params['treatment'], injury):
+            if action.params['treatment'].lower() == "nasopharyngeal airway" and injury.lower() == "burn":
+                pass
+            else:
+                return False
+        if action.params.get('location', 'unspecified') == 'internal':
+            return True
+        medact = MedsimAction(
+                    Actions.APPLY_TREATMENT, 
+                    action.params['casualty'], 
+                    action.params['treatment'], 
+                    action.params.get('location', 'unspecified'), 
+                    None)
+        if not supply_location_match(medact): 
+            return False
+        return True
+     
