@@ -95,7 +95,7 @@ def api_test(args, driver = None):
 
     if driver is None:
         driver = TA3Driver(args)
-    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets)
+    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario)
     if args.training:
         sid = client.start_session(adm_name=f'TAD', session_type=args.session_type, kdma_training=True)
     else:
@@ -129,8 +129,10 @@ def api_test(args, driver = None):
             new_probe = client.take_action(action)
             if new_probe:
                 difference = dict_difference(probe.state, new_probe.state, {'id', 'type'})
+                difference.pop("actions_performed")
                 logger.debug(f"-State Additions: {difference}")
                 difference = dict_difference(new_probe.state, probe.state, {'id', 'type'})
+                difference.pop("actions_performed")
                 logger.debug(f"-State Removals: {difference}")
             probe = new_probe
     

@@ -55,11 +55,6 @@ class TA3Driver(Driver):
         else:
             dump_config = None
 
-        # JT is doing this so he can skip other analyzer errors and fix MCA. This shouldn't be on dev.
-        args.ebd = False
-        args.br = False
-        args.bayes = False
-
         ebd = EventBasedDiagnosisAnalyzer() if args.ebd else None
         br = HeuristicRuleAnalyzer() if args.br else None  # Crashes in TMNT/differenct scenario
         bnd = BayesNetDiagnosisAnalyzer() if args.bayes else None
