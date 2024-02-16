@@ -21,7 +21,7 @@ class TinyMedicalOracle:
         Actions.CHECK_RESPIRATION.value: [1.0],
         Actions.CHECK_ALL_VITALS.value: [1.5],
         Actions.SITREP.value: [1.0],
-        Actions.TAG_CASUALTY.value: [1.0],
+        Actions.TAG_CHARACTER.value: [1.0],
         Actions.MOVE_TO_EVAC.value: [1.0],
         Actions.DIRECT_MOBILE_CASUALTY.value: [1.0],
         Actions.END_SCENARIO.value: [0.0]

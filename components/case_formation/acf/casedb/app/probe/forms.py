@@ -48,7 +48,7 @@ class ActionForm(FlaskForm):
             ("DIRECT_MOBILE_CASUALTIES", "Direct Mobile Casualties"),
             ("MOVE_TO_EVAC", "Move to Evac"),
             ("SITREP", "SITREP"),
-            ("TAG_CASUALTY", "Tag Casualty"),
+            ("TAG_CHARACTER", "Tag Casualty"),
         ],
     )
     casualty = SelectField("Casualty", choices=[])

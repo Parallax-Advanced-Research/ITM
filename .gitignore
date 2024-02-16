@@ -262,7 +262,7 @@ pyrightconfig.json
 [Ll]ib
 [Ll]ib64
 [Ll]ocal
-[Ss]cripts
+venv/[Ss]cripts
 pyvenv.cfg
 pip-selfcheck.json
 
@@ -324,4 +324,6 @@ adept_server/
 align-system/
 itm-analysis-reporting/
 ta1-server-mvp/
+.deprepos/
+repo-cfgs/*-patch-hash
 components/probe_dumper/tmp/*.pkl

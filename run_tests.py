@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-import os, re, pytest, unittest, subprocess, argparse, sys
+import os, re, pytest, unittest, subprocess, argparse, sys, enum
 from typing import Iterable, Optional, TypeVar, Callable, Any
 
 PYTHON = 'python3'
 SCRIPTDIR = 'scripts'
 COMMAND_LIST = 'tests.commands'
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+ExitCode = enum.IntEnum('ExitCode', { 'SUCCESS': 0, 'ERROR': 1, 'WARNING': 111 })
+exit_code: ExitCode = ExitCode.SUCCESS
 
 SKIPLIST = [ 
 	r'^\..',  # matches `./foo`. `.` and `..` aren't returned by os.scandir() in the first place
@@ -110,6 +113,7 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 	""" If `paths` isn't empty, we only run paths in it. Otherwise, we run all
 		test scripts under the current directory.
 		`verbose` is what it sounds like. """
+	global exit_code
 	file_list = list(find_python_files('.'))
 	if len(paths):
 		file_list = [ a for a in file_list if a in paths ]
@@ -129,7 +133,7 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 			dirname = '.'
 	
 		if uses_unittest(path):
-			color('bold', f'\n## UNITTEST: {path}')
+			color('blue', f'\n## UNITTEST: {path}')
 			name = to_module_path(path)
 			__import__(name, globals(), {}, [], 0) # loads each module and sets __package__ so imports actually work
 
@@ -142,9 +146,10 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 			color('bold', f'\n## PYTEST: {path}:')
 			os.chdir(dirname)
 			assert path not in pytest_results
-			pytest_argv = [os.path.basename(path), '--no-header', '--no-summary', '-q']
-			if not verbose:
-				pytest_argv.append('-s')
+
+			pytest_argv = [os.path.basename(path), '--no-header', '-q'] # -rP will also print the output from tests
+			# TODO: Might eventually make these different for verbose mode, but really, this is what I want for both normal and verbose. If I add a *quiet* mode, I might add --no-summary
+
 			pytest_results[path] = pytest.main(pytest_argv, plugins=[])
 			os.chdir(basedir)
 
@@ -155,10 +160,10 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 
 	if 0 == len(pytest_results) and 0 == len(unittest_results):
 		color('yellow', 'No tests found')
+		exit_code = max(exit_code, ExitCode.WARNING)
 		return
 	if not failures:
 		color('green', 'All tests passed')
-		return
 	
 	with open(COMMAND_LIST, encoding='utf-8') as fin:
 		commands = [
@@ -167,9 +172,9 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 		]
 
 	longest_path = max(
-		max(len(a) for a in pytest_results), 
-		max(len(a) for a in unittest_results),
-		max(len(a) for a in commands)
+		max(len(a) for a in [""] + list(pytest_results.keys())), 
+		max(len(a) for a in [""] + list(unittest_results.keys())),
+		max(len(a) for a in [""] + commands)
 	) + 1
 
 	color('bold', '\n## Summary')
@@ -177,8 +182,10 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 		pathfmt = ("%-" + str(longest_path) + "s") % path
 		if pytest.ExitCode.NO_TESTS_COLLECTED == result:
 			color('yellow', f"{pathfmt}: {str(result)}")
+			exit_code = max(exit_code, ExitCode.WARNING)
 		elif pytest.ExitCode.OK != result:
 			color('red', f"{pathfmt}: {str(result)}")
+			exit_code = ExitCode.ERROR
 		else:
 			color('green', f"{pathfmt}: passed")
 			
@@ -187,6 +194,7 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 		if not unittest_result.wasSuccessful():
 			pathfmt = ("%-" + str(longest_path) + "s") % path
 			color('red', f"{pathfmt}: {unittest_result}")
+			exit_code = ExitCode.ERROR
 
 
 	# Run test commands from COMMAND_LIST
@@ -198,12 +206,11 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 			color('green', f"{fmt}: passed")
 		else:
 			color('red', f"{fmt}: failure")
-
+			exit_code = ExitCode.ERROR
 
 	# NOTE: all tests should be set up to run from the project root. e.g., "from . import hra" instead of "import hra"
 	# permit comments of the form `# pwd=root` `# pwd=file`, `# searchpath=file` etc. to override default settings
 	# tad_tester now lets us specify what order we get the session data in, so we can add a global integration test to the unit tests
-
 
 
 class Result:
@@ -238,7 +245,7 @@ def mypy_all(paths: list[str]) -> dict[str, list[str]]:
 	for line in output.output[:-1]: # skip the summary line at the end
 		a = re.split(r'\.py:[0-9]+: (error|note): ', line)
 		assert 3 == len(a), "Line doesn't match expected pattern" # also catches cases where the path name matches the delimiter regex (which will never happen)
-		path, msg_type, msg = a
+		path, msg_type, _ = a
 		path = os.path.relpath(f"{path}.py", ROOT_DIR)
 
 		assert path in results
@@ -253,12 +260,14 @@ def compile_filter(paths: list[str], verbose: bool) -> list[str]:
 	""" Attempts to compile all files in `paths`. Prints error for ones that fail;
 	    returns list of those that succeed. """
 
+	global exit_code
 	ret: list[str] = []
 	fail = False
 	for path in paths:
 		r = cmd([PYTHON, '-m', 'py_compile', path])
 		if 0 != r.code:
 			error(f"{path} failed to compile")
+			exit_code = ExitCode.ERROR
 			fail = True
 			if verbose:
 				print_output(r.output)
@@ -270,13 +279,17 @@ def compile_filter(paths: list[str], verbose: bool) -> list[str]:
 	return ret
 
 def delint(path: str, mypy_results: dict[str, list[str]], verbose: bool) -> None:
-	pyflakes3 = cmd([ 'pyflakes3', path ])
+	global exit_code
+	pyflakes3 = cmd([ 'python', '-m', 'pyflakes',  path ])
 	pylint = cmd([ PYTHON, '-m', 'pylint', '-sn', path ], env={ 'PYLINTRC' : os.path.join(SCRIPTDIR, 'pylintrc') })
 
 	mypy_errors = len(mypy_results[path])
 	pyflakes_errors = len(pyflakes3.output)
 	pylint_errors = len(pylint.output)
 	def entry(lbl: str, errorcount: int) -> str:
+		global exit_code
+		if errorcount:
+			exit_code = ExitCode.ERROR
 		return f"{lbl}: \x1b[91m{errorcount} errors\x1b[0m" if errorcount \
 			else f"{lbl}: \x1b[92mpassed\x1b[0m"
 	
@@ -299,8 +312,6 @@ def delint(path: str, mypy_results: dict[str, list[str]], verbose: bool) -> None
 			for line in pylint.output:
 				print(line)
 			print()
-
-		print()
 
 
 def main() -> None:
@@ -338,4 +349,9 @@ def main() -> None:
 
 if __name__ == '__main__':
 	main()
+	sys.exit(exit_code)
+
+
+# TODO: Add a -vv option for the extra verbose version of pytest
+# TODO: warnings (e.g. deprecation warnings) should make run_tests.py change its return code from SUCCESS to WARNING
 

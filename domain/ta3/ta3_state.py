@@ -89,7 +89,7 @@ class TA3State(State):
     def from_dict(data: dict) -> 'TA3State':
         unstr = data['unstructured'] if 'unstructured' in data else ''
         stime = data['time'] if 'time' in data else 0
-        cdatas = data['casualties'] if 'casualties' in data else []
+        cdatas = data['characters'] if 'characters' in data else []
         sdatas = data['supplies'] if 'supplies' in data else []
         for c in cdatas:
             for ci in c['injuries']:

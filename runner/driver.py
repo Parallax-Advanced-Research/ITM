@@ -1,17 +1,17 @@
 import typing
 import domain as ext
-from components import Elaborator, DecisionSelector, DecisionAnalyzer
+import swagger_client as ta3
+from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
 from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
-from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs
+from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback
 from util import logger
 import uuid
 
 
 class Driver:
 
-    def __init__(self, elaborator: Elaborator, selector: DecisionSelector,
-                 analyzers: list[DecisionAnalyzer], dumper_config: DumpConfig = DEFAULT_DUMP):
+    def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer], trainer: AlignmentTrainer, dumper_config: DumpConfig = DEFAULT_DUMP):
         self.session: str = ''
         self.scenario: typing.Optional[Scenario] = None
         self.alignment_tgt: KDMAs = KDMAs([])
@@ -19,8 +19,13 @@ class Driver:
         self.elaborator: Elaborator = elaborator
         self.selector: DecisionSelector = selector
         self.analyzers: list[DecisionAnalyzer] = analyzers
-        self.dumper = ProbeDumper(dumper_config)
+        self.trainer: AlignmentTrainer = trainer
+        if dumper_config is None:
+            self.dumper = None
+        else:
+            self.dumper = ProbeDumper(dumper_config)
         self.session_uuid = uuid.uuid4()
+
 
     def new_session(self, session_id: str):
         self.session = session_id
@@ -50,6 +55,12 @@ class Driver:
             decisions.append(Decision(option.id, Action(option.type, params), kdmas=kdmas))
         probe = TADProbe(itm_probe.id, state, itm_probe.prompt, itm_probe.state['environment'], decisions)
         return probe
+        
+    def translate_feedback(self, feedback: ta3.AlignmentResults) -> AlignmentFeedback:
+        return AlignmentFeedback(
+                    feedback.alignment_target_id,
+                    KDMAs([KDMA(ass.kdma, ass.value) for ass in feedback.kdma_values]), 
+                    feedback.score)
 
     def elaborate(self, probe: TADProbe) -> list[Decision[Action]]:
         return self.elaborator.elaborate(self.scenario, probe)
@@ -96,13 +107,16 @@ class Driver:
 
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
-
-        self.dumper.dump(probe, decision, self.session_uuid)
+        if self.dumper is not None:
+            self.dumper.dump(probe, decision, self.session_uuid)
 
         # Extract external decision for response
         # url construction
         url = f'http://localhost:8501/?scen={probe.id_}'
         return self.respond(decision, url)
+        
+    def train(self, feedback: ta3.AlignmentResults):
+        self.trainer.train(self.scenario, self.actions_performed, self.translate_feedback(feedback))
 
     def _extract_state(self, dict_state: dict) -> State:
         raise NotImplementedError
