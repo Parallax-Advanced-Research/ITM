@@ -46,7 +46,7 @@ class SmolMedicalOracle:
         Actions.CHECK_RESPIRATION.value: [CHECK_RESPIRATION_TIME],
         Actions.CHECK_ALL_VITALS.value: [CHECK_PULSE_TIME + CHECK_RESPIRATION_TIME],
         Actions.SITREP.value: [45.0],
-        Actions.TAG_CASUALTY.value: [30.0],
+        Actions.TAG_CHARACTER.value: [30.0],
         Actions.MOVE_TO_EVAC.value: [120.0],
         Actions.DIRECT_MOBILE_CASUALTY.value: [60.0],
         Actions.END_SCENARIO.value: [0.0]
@@ -115,6 +115,10 @@ INJURY_UPDATE = {
                                                breath=BodySystemEffect.NONE.value),
         Injuries.SHRAPNEL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
                                               breath=BodySystemEffect.NONE.value),
+        Injuries.BROKEN_BONE.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                                 breath=BodySystemEffect.MINIMAL.value),
+        Injuries.INTERNAL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                              breath=BodySystemEffect.MINIMAL.value),
         Injuries.EYE_TRAUMA.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
                                                 breath=BodySystemEffect.MODERATE.value)  # Assuming ET -> Brain injury
     }

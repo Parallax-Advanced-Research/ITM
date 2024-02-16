@@ -1,5 +1,5 @@
 from components.decision_analyzer.monte_carlo.mc_sim import MCSim, SimResult
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Actions
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Actions, Supply
 from components.decision_analyzer.monte_carlo.medsim.tiny.tinymed_actions import tiny_action_map
 from components.decision_analyzer.monte_carlo.medsim.smol.smolmed_actions import smol_action_map
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import update_morbidity_calculations
@@ -26,21 +26,32 @@ class MedicalSimulator(MCSim):
         self._init_supplies = deepcopy(init_state.supplies)
         self._init_casualties = deepcopy(init_state.casualties)
         self.current_casualties: list[Casualty] = self._init_state.casualties
-        self.current_supplies: dict[str, int] = self._init_state.supplies
+        self.current_supplies: list[Supply] = self._init_state.supplies
         self.action_map = tiny_action_map
         self.simulator_name = simulator_name
         if simulator_name == SimulatorName.SMOL.value:
             self.action_map = smol_action_map
+        # self.aid_delay = init_state.aid_delay if init_state.aid_delay != [] else 0.0
+        self.aid_delay = 0.0
+        if isinstance(init_state.aid_delay, list) and len(init_state.aid_delay) > 0:
+            self.aid_delay = init_state.aid_delay[0]['delay']
+            print('wakka')
         super().__init__()
 
     def get_simulator(self) -> str:
         return self.simulator_name
 
-
     def exec(self, state: MedsimState, action: MedsimAction) -> list[SimResult]:
-        supplies: dict[str, int] = self.current_supplies
+        supplies: list[Supply] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
-        new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action, self._rand, state.time)
+        new_state = None
+        if action.action == 'END_SCENARIO':
+            # * 60.0 because aid delay is given in minutes
+            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies,
+                                                                          state.time, self.aid_delay * 60.0)
+        else:
+            new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies, action,
+                                                                          self._rand, state.time)
         outcomes = []
         for new_s in new_state:
             new_state_casualties = new_s.casualties
@@ -62,5 +73,5 @@ class MedicalSimulator(MCSim):
 
     def reset(self):
         self.current_casualties: list[Casualty] = deepcopy(self._init_casualties)
-        self.current_supplies: dict[str, int] = deepcopy(self._init_supplies)
+        self.current_supplies: list[Supply] = deepcopy(self._init_supplies)
         pass

@@ -1,7 +1,6 @@
 import unittest
 import numpy as np
-import hra
-import json
+from . import hra
 
 
 class TestHRA(unittest.TestCase):

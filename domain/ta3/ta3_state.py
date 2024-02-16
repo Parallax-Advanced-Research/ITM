@@ -2,25 +2,45 @@ from dataclasses import dataclass, field
 from domain.internal import State, Action
 
 
-@dataclass
-class Supply:
-    type: str
-    quantity: int
+# Why is this declared twice?
+# @dataclass
+# class Supply:
+#     type: str
+#     quantity: int
 
 
 @dataclass
 class Demographics:
     age: int
     sex: str
+    race: str
     rank: str
+    military_disposition: str
+    military_branch: str
+    rank_title: str
+    skills: str
+    role: str
+    mission_importance: str
 
 
 @dataclass
 class Vitals:
     conscious: bool
+    avpu: str
+    ambulatory: str
     mental_status: str
     breathing: str
     hrpmin: int
+    avpu: str
+    ambulatory: bool
+    spo2: int
+    
+    @staticmethod
+    def from_ta3(data: dict):
+        d = dict(data)
+        d["hrpmin"] = data["heart_rate"]
+        d.pop("heart_rate")
+        return Vitals(**d)
 
 
 @dataclass
@@ -29,6 +49,8 @@ class Injury:
     name: str
     severity: float
     treated: bool
+    status: str
+    source_character: str
 
 
 Locations = {"right forearm", "left forearm", "right calf", "left calf", "right thigh", "left thigh", "right stomach",
@@ -51,7 +73,11 @@ class Casualty:
     treatments: list[str]
     assessed: bool = False
     unstructured: str = ''
+    unstructured_postassess: str = ''
     relationship: str = ''
+    rapport: str = ''
+    intent: str = ''
+    directness_of_causality: str = ''
 
     @staticmethod
     def from_ta3(data: dict):
@@ -60,12 +86,16 @@ class Casualty:
             name=data['name'],
             injuries=[Injury(**i) for i in data['injuries']],
             demographics=Demographics(**data['demographics']),
-            vitals=Vitals(**data['vitals']),
+            vitals=Vitals.from_ta3(data['vitals']),
             tag=data['tag'],
             assessed=data.get('assessed', data.get('visited', False)),
             unstructured=data['unstructured'],
-            relationship=data['relationship'],
-            treatments=data['treatments']
+            unstructured_postassess=data['unstructured_postassess'],
+            relationship=data['rapport'],
+            rapport=data['rapport'],
+            treatments=data['treatments'],
+            intent = data['intent'],
+            directness_of_causality = data['directness_of_causality']
         )
 
 
@@ -73,6 +103,7 @@ class Casualty:
 class Supply:
     type: str
     quantity: int
+    reusable: bool
 
 
 class TA3State(State):
@@ -89,7 +120,7 @@ class TA3State(State):
     def from_dict(data: dict) -> 'TA3State':
         unstr = data['unstructured'] if 'unstructured' in data else ''
         stime = data['time'] if 'time' in data else 0
-        cdatas = data['casualties'] if 'casualties' in data else []
+        cdatas = data['characters'] if 'characters' in data else []
         sdatas = data['supplies'] if 'supplies' in data else []
         for c in cdatas:
             for ci in c['injuries']:

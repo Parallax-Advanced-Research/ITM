@@ -1,10 +1,11 @@
 import logging
 import numpy as np
 from components.decision_analyzer.monte_carlo.mc_sim import MCAction, MCState
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Actions, Metric
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Actions, Metric, Supply
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import (calc_prob_bleedout,
                                                                               calc_prob_asphyx,
                                                                               calc_prob_death)
+from domain.internal import TADProbe
 
 
 def get_prob(pvals: list[float]):
@@ -17,12 +18,20 @@ def get_prob(pvals: list[float]):
 
 
 class MedsimState(MCState):
-    def __init__(self, casualties: list[Casualty], supplies: dict[str, int], time: float, unstructured: str = ''):
+    def __init__(self, casualties: list[Casualty], supplies: list[Supply], time: float, unstructured: str = ''):
         super().__init__()
         self.casualties: list[Casualty] = casualties
-        self.supplies: dict[str, int] = supplies
+        self.supplies: list[Supply] = supplies
         self.unstructured = unstructured
         self.time = time
+        self.aid_delay: float = 0.0
+
+    def set_aid_delay(self, probe: TADProbe):
+        if probe.environment['decision_environment']['aid_delay'] == []:
+            self.aid_delay = 0
+        else:
+            self.aid_delay = probe.environment['decision_environment']['aid_delay']
+        self.aid_delay = probe.environment['decision_environment']['aid_delay'] if probe.environment['decision_environment']['aid_delay'] is not None else 0.0
 
     def __eq__(self, other: 'MedsimState'):
         # fastest checks are lengths
@@ -37,15 +46,17 @@ class MedsimState(MCState):
             return False
 
         # check supplies next
-        if self.supplies != other.supplies:
+        self_sup_sorted = sorted(self.supplies, key=lambda x: x.name)
+        other_sup_sorted = sorted(other.supplies, key=lambda x: x.name)
+        if self_sup_sorted != other_sup_sorted:
             return False
 
         return True
 
     def get_num_supplies(self) -> int:
         num_supplies: int = 0
-        for supply in list(self.supplies.keys()):
-            num_supplies += self.supplies[supply]
+        for supply in self.supplies:
+            num_supplies += supply.amount
         return num_supplies
 
     def get_state_severity(self) -> float:

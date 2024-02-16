@@ -13,7 +13,8 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
     fail = rng.random() < SmolMedicalOracle.FAILURE_CHANCE[action.supply]
     time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.supply])
     supply_location_logical = supply_location_match(action)
-    if action.supply not in supplies.keys() or supplies[action.supply] <= 0:
+    supply_dict = {supply.name:supply.amount for supply in supplies}
+    if action.supply not in supply_dict.keys() or supply_dict[action.supply] <= 0:
         fail = True
     for ci in casualty.injuries:
         supply_injury_logical = supply_injury_match(action.supply, ci.name)
@@ -29,8 +30,9 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c = find_casualty(action, casualties)
     time_taken = apply_generic_treatment(c, supplies, action, rng)
-    if action.supply in supplies.keys():
-        supplies[action.supply] -= 1
+    supply_dict = {supply.name:supply.amount for supply in supplies}
+    if action.supply in supply_dict.keys():
+        supply_dict[action.supply] -= 1
     for c2 in casualties:
         if c.id == c2.id:
             continue  # already updated, casualty of action
@@ -72,6 +74,17 @@ def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int
     return [new_state]
 
 
+def end_scenario_action(casualties: list[Casualty], supplies: dict[str, int], start_time: float,
+                        aid_delay: float) -> list[MedsimState]:
+    time_taken = aid_delay
+    for c in casualties:
+        casualty_injuries: list[Injury] = c.injuries
+        for ci in casualty_injuries:
+            update_smol_injury(ci, time_taken)
+    new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
+    return [new_state]
+
+
 def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, int],
                                action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.action])
@@ -108,8 +121,8 @@ smol_action_map: typing.Mapping[str, resolve_action] = {
     Actions.CHECK_RESPIRATION.value: apply_singlecaualty_action,
     Actions.DIRECT_MOBILE_CASUALTY.value: apply_zeroornone_action,
     Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
-    Actions.TAG_CASUALTY.value: apply_casualtytag_action,
+    Actions.TAG_CHARACTER.value: apply_casualtytag_action,
     Actions.SITREP.value: apply_zeroornone_action,
     Actions.UNKNOWN.value: apply_default_action,
-    Actions.END_SCENARIO.value: apply_zeroornone_action
+    Actions.END_SCENARIO.value: end_scenario_action
 }

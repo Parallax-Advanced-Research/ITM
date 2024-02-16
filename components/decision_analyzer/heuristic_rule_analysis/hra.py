@@ -287,7 +287,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # create table of casualty fields to worth
         casualty_val_table = dict()
-        casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2}
+        casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2, 'neutral': 0}
         casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3}
 
         # hold sums for each casualty
@@ -445,7 +445,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # create table of casualty fields to worth
         casualty_val_table = dict()
-        casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 1}
+        casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 1, 'neutral': 0}
         casualty_val_table['rank'] = {'civilian': 1, 'marine': 1, 'intel officer': 1, 'vip': 1}
 
         # variables for checking each casualty
@@ -900,13 +900,15 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             "CHECK_RESPIRATION": {
                 "CHECK_RESPIRATION": {"risk_reward_ratio": "low", "resources": "some", "time": "seconds",
                                       "system": "respiratory"}},
-            "DIRECT_MOBILE_CASUALTY": {
-                "DIRECT_MOBILE_CASUALTY": {"risk_reward_ratio": "medium", "resources": "few", "time": "minutes",
-                                           "system": "none", "life_impact": "medium"}},
+            "DIRECT_MOBILE_CHARACTERS": {
+                "DIRECT_MOBILE_CHARACTERS": {"risk_reward_ratio": "medium", "resources": "few", "time": "minutes",
+                                           "system": "none"}},
             "MOVE_TO_EVAC": {
-                "MOVE_TO_EVAC": {"risk_reward_ratio": "high", "resources": "few", "time": "minutes", "system": "none", "life_impact": "high"}},
-            "TAG_CASUALTY": {
-                "TAG_CASUALTY": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "none", "life_impact": "high"}},
+                "MOVE_TO_EVAC": {"risk_reward_ratio": "high", "resources": "few", "time": "minutes", "system": "none"}},
+            "TAG_CHARACTER": {
+                "TAG_CHARACTER": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "none"}},
+            "SEARCH": {
+                "SEARCH": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all"}},
             "SITREP": {
                 "SITREP": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all", "life_impact": "low"}},
             #"END_SCENARIO": {

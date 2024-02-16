@@ -1,0 +1,35 @@
+[MESSAGES CONTROL]
+confidence=
+enable=all
+
+# Warn about real errors, not failure to follow the pylint author's preferred style conventions
+disable=bad-indentation, line-too-long, invalid-name, missing-docstring, multiple-imports, 
+	global-statement, trailing-newlines, 
+	unidiomatic-typecheck, multiple-statements,
+	too-few-public-methods, too-many-instance-attributes, fixme, broad-except,
+	bare-except,
+	wrong-import-order, # I do tend to prefer putting imports in the order pep8 likes, but it shouldn't be a warning
+	wrong-import-position, # Did they rename wrong-import-order?
+	import-error, # Other tools will catch genuine import errors. pylint has false positives
+	trailing-whitespace, # Gets lines with a extra space at the end, but also gets empty lines that are indented to the same level as the surrounding ones
+	superfluous-parens, # parens around conditional clause. *usually* I want to make the change, but not enough to put up with false positives
+	no-else-return, # same deal. It's usually worth changing, but too many false positives for a style issue
+	no-member, # real error, but false positives. Other tools will catch this error.
+	redefined-outer-name, # I'm borderline on excluding this, since it's a style issue that could lead to *real* errors. But there are just too many false positives.
+	len-as-condition, # potentially inefficient to do 0 == len(foo) if that means traversing a list, but also more clear in many cases where it's just as efficient
+	locally-disabled, suppressed-message, # "The programmer disabled pylint on this line. Clearly, that means they want TWO messages"
+	too-many-branches, # 13 non-nested branches in one function! The horror!
+	too-many-locals, # But at least it's better than *15* locals! Who can even count that high?
+	too-many-return-statements, too-many-arguments, too-many-statements, too-many-lines, too-many-nested-blocks, # 7, 5, 50, 1000, 5 respectively
+	exec-used, # If I use exec, it's obviously intentional
+	#no-self-use, # Too often, a function is *required* to take self for API reasons, even if it doesn't use it.
+	consider-using-f-string, # This one actually agrees with my style for once. Still none of lint's business.
+	global-variable-not-assigned, # I like making scope explicit even when not strictly necessary
+	import-outside-toplevel, # Not always possible, since python's circular import resolution sucks
+	broad-exception-raised, # Exceptions shouldn't be used for flow control in the first place.
+	use-list-literal, # personal preference. Truly does not matter
+
+extension-pkg-allow-list=mpi4py
+# Not disabling these:
+# cell-var-from-loop. Lots of false positives, but catching the rare true positive is worth it for this one; this can lead to horribly subtle bugs.
+

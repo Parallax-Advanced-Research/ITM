@@ -1,6 +1,6 @@
 from components.decision_analyzer.monte_carlo.mc_sim import SimResult
 from components.decision_analyzer.monte_carlo.medsim import MedsimState, MedicalSimulator, MedsimAction
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates_KNX, BreathingDescriptions_KNX, Demographics, Supplies
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Injuries, Locations, Injury, Vitals, MentalStates_KNX, BreathingDescriptions_KNX, Demographics, Supplies, Supply
 from components.decision_analyzer.monte_carlo.util.ta3_converter import reverse_convert_state, _convert_action, _reverse_convert_action
 from domain.external import ITMProbe, ProbeType, Scenario
 
@@ -11,7 +11,6 @@ from domain.external import Action
 
 
 def get_TMNT_demo_casualties() -> list[Casualty]:
-    # wrist_bump = Injury(name=Injuries.LACERATION.value, location=Locations.LEFT_WRIST.value, severity=1.0)
     treat_first_or_die = Injury(Injuries.AMPUTATION.value, location=Locations.RIGHT_CALF.value, severity= .9)
     treat_secondish = Injury(Injuries.LACERATION.value, location=Locations.RIGHT_SIDE.value, severity=.7)
     also_treat_secondish = Injury(Injuries.CHEST_COLLAPSE.value, location=Locations.LEFT_CHEST.value, severity=.7)
@@ -19,18 +18,18 @@ def get_TMNT_demo_casualties() -> list[Casualty]:
     treat_last = Injury(Injuries.FOREHEAD_SCRAPE.value, location=Locations.RIGHT_FACE.value, severity=.1)
     burned_crispy = Injury(Injuries.BURN.value, location=Locations.UNSPECIFIED.value, severity=.8)
 
-    raphael_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.DANDY.value,
+    raphael_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.CALM.value,
                             breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=49)
-    michelangelo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.FINE.value,
+    michelangelo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.CONFUSED.value,
                                  breathing=BreathingDescriptions_KNX.NORMAL.value, hrpmin=68)
-    donatello_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.FINE.value,
-                              breathing=BreathingDescriptions_KNX.HEAVY.value, hrpmin=81)
-    leonardo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.PANICKED.value,
-                             breathing=BreathingDescriptions_KNX.COLLAPSED.value, hrpmin=50)
+    donatello_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.CONFUSED.value,
+                              breathing=BreathingDescriptions_KNX.FAST.value, hrpmin=81)
+    leonardo_vitals = Vitals(conscious=True, mental_status=MentalStates_KNX.UPSET.value,
+                             breathing=BreathingDescriptions_KNX.RESTRICTED.value, hrpmin=50)
     casualties = [
         Casualty('raphael', 'raphael scraped his head and is fine. Hes also really burned and not okay', name='raphael',
-                       relationship='same unit',
-                       demographics=Demographics(age=15, sex='M', rank='muscle'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=15, sex='M', rank='marine'),
                        injuries=[treat_last, burned_crispy],
                        vitals=raphael_vitals,
                        complete_vitals=raphael_vitals,
@@ -38,8 +37,8 @@ def get_TMNT_demo_casualties() -> list[Casualty]:
                        tag="tag"),
         Casualty('michelangelo', 'michelangelo got some non fatal shrapnel to the face, and a severe laceration on his right side that needs to be treated.',
                        name='michelangelo',
-                       relationship='same unit',
-                       demographics=Demographics(age=15, sex='M', rank='the wild one'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=15, sex='M', rank='marine'),
                        injuries=[treat_secondish, treat_third],
                        vitals=michelangelo_vitals,
                        complete_vitals=michelangelo_vitals,
@@ -47,8 +46,8 @@ def get_TMNT_demo_casualties() -> list[Casualty]:
                        tag="tag"),
         Casualty('donatello', 'donatello has a chest collapse that needs to be treated.',
                        name='donatello',
-                       relationship='same unit',
-                       demographics=Demographics(age=15, sex='M', rank='the brains'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=15, sex='M', rank='intel officer'),
                        injuries=[also_treat_secondish],
                        vitals=donatello_vitals,
                        complete_vitals=donatello_vitals,
@@ -56,8 +55,8 @@ def get_TMNT_demo_casualties() -> list[Casualty]:
                        tag="tag"),
         Casualty('leonardo', 'leonardo has had his calf blown off and is bleeding profusely. If he his not treated first, he will die.',
                        name='leonardo',
-                       relationship='same unit',
-                       demographics=Demographics(age=15, sex='M', rank='the leader'),
+                       relationship='same-unit',
+                       demographics=Demographics(age=15, sex='M', rank='vip'),
                        injuries=[treat_first_or_die],
                        vitals=leonardo_vitals,
                        complete_vitals=leonardo_vitals,
@@ -67,15 +66,22 @@ def get_TMNT_demo_casualties() -> list[Casualty]:
     return casualties
 
 
-def get_TMNT_supplies() -> dict[str, int]:
-    supplies = {
-        Supplies.TOURNIQUET.value: 3,
-        Supplies.PRESSURE_BANDAGE.value: 2,
-        Supplies.HEMOSTATIC_GAUZE.value: 2,
-        Supplies.DECOMPRESSION_NEEDLE.value: 2,
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: 3
-    }
+def get_TMNT_supplies() -> list[Supply]:
+    supplies = [Supply(Supplies.TOURNIQUET.value, False, 3),
+                Supply(Supplies.PRESSURE_BANDAGE.value, False, 2),
+                Supply(Supplies.HEMOSTATIC_GAUZE.value, False, 2),
+                Supply(Supplies.DECOMPRESSION_NEEDLE.value, False, 2),
+                Supply(Supplies.NASOPHARYNGEAL_AIRWAY.value, False, 3),
+                # Supply(Supplies.PULSE_OXIMETER.value, False, 1),
+                # Supply(Supplies.BLANKET.value, False, 3),
+                # Supply(Supplies.EPI_PEN.value, False, 2),
+                # Supply(Supplies.VENTED_CHEST_SEAL.value, False, 2),
+                # Supply(Supplies.PAIN_MEDICATIONS.value, False, 3),
+                # Supply(Supplies.BLOOD.value, False, 3)
+                ]
     return supplies
+
+
 class TMNTClient:
     UNSTRUCTURED = 'Turtles are in trouble!'
     ENVIRONMENT = {'unstructured': 'Sewers under New York', 'weather': None, 'location': None, 'terrain': None,
@@ -85,14 +91,19 @@ class TMNTClient:
     THREAT_STATE = {'threats': [{'severity': 0.4, 'type': 'Gunfire'}],
                     'unstructured': 'Gunfire and shouting heard at a distance; Participant appears in scene in crouched position under cover by trees'}
 
-    def __init__(self, alignment_target: KDMAs, max_actions=9):  # 9 is overkill
+    def __init__(self, alignment_target: KDMAs, max_actions=9, evalTargetNames = None):
         self.align_tgt: KDMAs = alignment_target
         self.actions: dict[str, Action] = {}
-        self.probe_count = 1
         casualties: list[Casualty] = get_TMNT_demo_casualties()
-        supplies: dict[str, int] = get_TMNT_supplies()
+        supplies: list[Supply] = get_TMNT_supplies()
         self.init_state: MedsimState = MedsimState(casualties, supplies, time=0.0,
                                                    unstructured="Turtles in a half shell, TURTLE POWER!!!")
+        self._align_tgt: KDMAs = alignment_target
+        if evalTargetNames is None:
+            self._eval_target_names = list()
+        else:
+            self._eval_target_names = list(evalTargetNames)
+
         self.current_state: MedsimState = self.init_state
         self.simulator = MedicalSimulator(init_state=self.init_state)
         self.probe_count: int = 0
@@ -104,7 +115,6 @@ class TMNTClient:
     def get_probe(self, state: MedsimState | None) -> ITMProbe | None:
         if self.probe_count > self.max_actions:
             return None
-        self.probe_count += 1
         state = state if state is not None else self.init_state
 
         ta3_state = reverse_convert_state(state)
@@ -132,9 +142,10 @@ class TMNTClient:
         swagger_state = {'unstructured': self.UNSTRUCTURED, 'elapsed_time': ta3_state.time_, 'scenario_complete': False,
                          'mission': {'unstructured': self.UNSTRUCTURED, 'mission_type': 'Extraction'},
                          'environment': self.ENVIRONMENT, 'threat_state': self.THREAT_STATE,
-                         'supplies': supplies_as_dict, 'casualties': casualties_as_dict}
-        probe: ITMProbe = ITMProbe(id='tmnt-probe', type=ProbeType.MC, prompt="what do?",
+                         'supplies': supplies_as_dict, 'characters': casualties_as_dict}
+        probe: ITMProbe = ITMProbe(id=f'tmnt-{self.probe_count}', type=ProbeType.MC, prompt="what do?",
                                    state=swagger_state, options=ta3_actions)
+        self.probe_count += 1  # increment for next
         return probe  # Probe actions only has one dmc
 
     def take_action(self, action: Action) -> ITMProbe:
@@ -146,6 +157,15 @@ class TMNTClient:
         return new_probe
 
 
+def probe_stripper(probe):
+    '''
+    remove probes that aren't supported in hra
+    '''
+    new_options = [x for x in probe.options if x.type != 'SITREP' and x.type != 'DIRECT_MOBILE_CASUALTY']
+    probe.options = new_options
+    return probe
+
+
 if __name__ == '__main__':
     kdmas: KDMAs = KDMAs([])
 
@@ -153,11 +173,11 @@ if __name__ == '__main__':
         def __init__(self):
             self.human = False
             self.ebd = False
-            self.hra = False
+            self.hra = True
             self.kedsd = False
             self.csv = True
             self.verbose = False
-            self.bayes = False
+            self.bayes = True
             self.mc = True
             self.rollouts = 1000
             self.decision_verbose = False
@@ -177,6 +197,8 @@ if __name__ == '__main__':
     while probe is not None:
 
         logger.info(f"Responding to probe-{probe.id}")
+        # take out the direct_mobile and sitrep
+        probe = probe_stripper(probe)
         action = driver.decide(probe)  # Probe is good here
         logger.info(f"Chosen Action-{action}")
         new_probe = client.take_action(action)

@@ -27,11 +27,12 @@ def get_numeric(val_idx):
 
 
 def get_ranked_title(ranking_list: list[float], val: DecisionMetric, reverse=False) -> tuple:
-    relevant_list = ranking_list['all']
+    orig_list = ranking_list['all']
+    relevant_list = sorted(list(set(ranking_list['all'])))
     if reverse:
         relevant_list = sorted(relevant_list, reverse=True)
     val_idx = relevant_list.index(val.value) + 1
-    is_tie = True if relevant_list.count(val.value) > 1 else False
+    is_tie = True if orig_list.count(val.value) > 1 else False
     return "%s%d%s" % ('T-' if is_tie else '', val_idx, get_numeric(val_idx)), len(relevant_list)
 
 
@@ -65,7 +66,7 @@ class DecisionJustifier:
         reverseables = [Metric.SUPPLIES_REMAINING.value]
         reverse = True if metric_name in reverseables else False
         ranked_title, total = get_ranked_title(self.analyzed_values[metric_name], metric_val, reverse)
-        retstr = "%s Metrics for Decision %s is %s/%d in ranking. Val = %.1f, (Range %.1f - %.1f, avg %.1f)." % (metric_name, decision_name,
+        retstr = "%s Metrics for Decision %s is %s/%d in ranking. Val = %.3f, (Range %.3f - %.3f, avg %.3f)." % (metric_name, decision_name,
                                                                                                       ranked_title, total,
                                                                                                       metric_val.value,
                                                                                                       self.analyzed_values[metric_name][Metric.MINIMUM.value],

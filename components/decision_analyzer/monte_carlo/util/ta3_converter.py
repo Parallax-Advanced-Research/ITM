@@ -1,6 +1,6 @@
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, Casualty, Locations
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, Casualty, Locations, Supply
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, INITIAL_SEVERITIES, BodySystemEffect
 from domain.external import Action
@@ -22,7 +22,7 @@ def _convert_vitals(ta_vitals: TA_VIT) -> Vitals:
 
 def _reverse_convert_vitals(internal_vitals: Vitals) -> TA_VIT:
     return TA_VIT(conscious=internal_vitals.conscious, mental_status=internal_vitals.mental_status,
-                  breathing=internal_vitals.breathing, hrpmin=internal_vitals.hrpmin)
+                  breathing=internal_vitals.breathing, heart_rate=internal_vitals.hrpmin)
 
 
 def _convert_injury(ta_injury: TA_INJ) -> list[Injury]:
@@ -60,8 +60,8 @@ def _convert_casualty(ta_casualty: TA_CAS) -> Casualty:
     vit = _convert_vitals(ta_casualty.vitals)
 
     return Casualty(id=ta_casualty.id, unstructured=ta_casualty.unstructured, name=ta_casualty.name,
-                    relationship=ta_casualty.relationship, demographics=dem,injuries=injuries,
-                    vitals=vit, complete_vitals=vit, assessed=ta_casualty.assessed, tag=ta_casualty.tag)
+                    demographics=dem,injuries=injuries, vitals=vit, complete_vitals=vit,
+                    assessed=ta_casualty.assessed, tag=ta_casualty.tag)
 
 
 def _reverse_convert_casualty(internal_casualty: Casualty) -> TA_CAS:
@@ -90,18 +90,18 @@ def reverse_convert_casualties(internal_casualties: list[Casualty]) -> list[TA_C
     return casualties
 
 
-def convert_supplies(ta_supplies: list[TA_SUPPLY]) -> dict[str, int]:
-    supplies: dict[str, int] = {}
+def convert_supplies(ta_supplies: list[TA_SUPPLY]) -> list[Supply]:
+    supplies: list[Supply] = []
     for ta_sup in ta_supplies:
-        supplies[ta_sup.type] = ta_sup.quantity
+        # TODO: not seeing reusable at this point, not sure how it will come across
+        supplies.append(Supply(ta_sup.type, False, ta_sup.quantity))
     return supplies
 
 
-def reverse_convert_supplies(internal_supplies: dict[str, int]) -> list[TA_SUPPLY]:
+def reverse_convert_supplies(internal_supplies: list[Supply]) -> list[TA_SUPPLY]:
     supplies: list[TA_SUPPLY] = []
-    for supply in list(internal_supplies.keys()):
-        num_supply = internal_supplies[supply]
-        ta_supply: TA_SUPPLY = TA_SUPPLY(type=supply, quantity=num_supply)
+    for supply in list(internal_supplies):
+        ta_supply: TA_SUPPLY = TA_SUPPLY(type=supply.name, quantity=supply.amount)  # TODO do something with reusable
         supplies.append(ta_supply)
     return supplies
 

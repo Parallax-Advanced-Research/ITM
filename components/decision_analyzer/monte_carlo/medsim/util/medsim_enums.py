@@ -21,7 +21,7 @@ class Injury:
                  bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
         self.name = name
         self.location = location
-        self.severity = severity
+        self.severity = 0.0
         self.base_severity = severity
         self.time_elapsed: float = 0.0
         self.treated: bool = treated
@@ -72,14 +72,13 @@ class Casualty:
     LOW_P_BLEEDOUT = 0.1
     MED_P_BLEEDOUT = 0.5
     HIGH_P_BLEEDOUT = 0.75
-    CRITICAL_P_BLEEDOUT = 0.999
+    CRITICAL_P_BLEEDOUT = 0.9999
 
-    def __init__(self, id: str, unstructured: str, name: str, relationship: str, demographics: Demographics,
+    def __init__(self, id: str, unstructured: str, name: str, demographics: Demographics,
                  injuries: list[Injury], vitals: Vitals, complete_vitals: Vitals, assessed: bool, tag: str):
         self.id: str = id
         self.unstructured: str = unstructured
         self.name: str = name
-        self.relationship: str = relationship
         self.demographics: Demographics = demographics
         self.injuries: list[Injury] = injuries
         self.vitals: Vitals = vitals
@@ -112,7 +111,7 @@ class Casualty:
     def __eq__(self, other: 'Casualty'):
         same = False
         if (self.id == other.id and self.unstructured == other.unstructured and
-            self.name == other.name and self.relationship == other.relationship and
+            self.name == other.name and
             self.demographics == other.demographics and self.vitals == other.vitals and
             self.complete_vitals == other.complete_vitals and self.assessed == other.assessed and
             self.tag == other.tag and self.time_elapsed == other.time_elapsed):
@@ -151,24 +150,35 @@ class Actions(Enum):
     CHECK_RESPIRATION = "CHECK_RESPIRATION"
     DIRECT_MOBILE_CASUALTY = "DIRECT_MOBILE_CASUALTY"
     MOVE_TO_EVAC = "MOVE_TO_EVAC"
-    TAG_CASUALTY = "TAG_CASUALTY"
+    TAG_CHARACTER = "TAG_CHARACTER"
     SITREP = "SITREP"
     UNKNOWN = "UNKNOWN"
     END_SCENARIO = 'END_SCENARIO'
 
 
 class MentalStates_KNX(Enum):
-    DANDY = "dandy"
-    FINE = "fine"
-    PANICKED = "panicked"
+    CALM = "CALM"
+    CONFUSED = 'CONFUSED'
+    UPSET = 'UPSET'
+    AGONY = 'AGONY'
+    UNRESPONSIVE = 'UNRESPONSIVE'
 
 
 class BreathingDescriptions_KNX(Enum):
-    NONE = "none"
-    NORMAL = "normal"
-    HEAVY = "heavy"
-    COLLAPSED = "collapsed"
+    NONE = "NONE"
+    NORMAL = "NORMAL"
+    FAST = "FAST"
+    RESTRICTED = "RESTRICTED"
 
+
+class Supply:
+    def __init__(self, name, reusable, amount):
+        self.name = name
+        self.reusable = reusable
+        self.amount = amount
+
+    def __eq__(self, other: 'Supply'):
+        return self.amount == other.amount and self.name == other.name and self.reusable == other.reusable
 
 class Supplies(Enum):
     TOURNIQUET = "Tourniquet"
@@ -229,6 +239,8 @@ class Injuries(Enum):
     BURN = 'Burn'
     BURN_SUFFOCATION = 'Burn Suffocation'
     EYE_TRAUMA = 'Eye_Trauma'
+    BROKEN_BONE = 'Broken Bone'
+    INTERNAL = 'Internal Injury'
 
 
 class Metric(Enum):
@@ -271,6 +283,12 @@ class Metric(Enum):
     CASUALTY_DAMAGE_PER_SECOND = 'CASUALTY_DAMAGE_PER_SECOND'
     CASUALTY_P_DEATH = 'CASUALTY_P_DEATH'
     CASUALTY_DAMAGE_PER_SECOND_CHANGE = 'CASUALTY DPS CHANGE'
+    P_DEATH_ONEMINLATER = 'MEDSIM_P_DEATH_ONE_MIN_LATER'
+    PER_CASUALTY_P_DEATH = 'PER_CASUALTY_P_DEATH'
+    CAS_HIGH_P_DEATH = 'CAS_HIGH_P_DEATH'
+    CAS_LOW_P_DEATH = 'CAS_LOW_P_DEATH'
+    CAS_HIGH_P_DEATH_DECISION = 'CAS_HIGH_P_DEATH_DEC'
+    CAS_LOW_P_DEATH_DECISION = 'CAS_LOW_P_DEATH_DEC'
 
     AVERAGE_DECISION_DPS = 'AVERAGE_DECISION_DPS'
     AVERAGE_DECISION_SUPPLIES_REMAINING = 'AVERAGE_DECISION_SUPPLIES_REMAINING'
@@ -319,7 +337,7 @@ metric_description_hash: dict[str, str] = {
     Metric.PROBABILITY.value: 'probability of this outcome being selected',
     Metric.JUSTIFICATION.value: 'Justified reason for why this state is chosen versus siblings if applicable',
     Metric.UNTREATED_CASUALTIES.value: 'Casualties with zero treated injuries, and at least one not treated injury',
-    Metric.P_DEATH.value: 'Medical simulator probability at least one patient bleeds out or asphyxiates from action',
+    Metric.P_DEATH.value: 'Medical simulator probability at least one patient bleeds out, dies of burn shock or asphyxiates from action',
     Metric.P_BLEEDOUT.value: 'Medical simulator probability at least one patient bleeds out from action',
     Metric.P_ASPHYXIA.value: 'Medical simulator probability at least one patient asphyxiates from action',
     Metric.TOT_BLOOD_LOSS.value: 'Total blood loss from all casualties resulting from action',
@@ -332,14 +350,15 @@ metric_description_hash: dict[str, str] = {
     Metric.HIGHEST_BLOOD_LOSS.value: 'casualty with the most blood loss',
     Metric.HIGHEST_LUNG_LOSS.value: 'casualty with the most lung function loss',
     Metric.MORBIDITY.value: 'Morbidity dictionary',
-    Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec',
+    Metric.DAMAGE_PER_SECOND.value: 'Blood loss ml/sec + lung hp loss/sec + burn shock/second for ALL casualties',
     Metric.CASUALTY_DAMAGE_PER_SECOND.value: 'dictionary of dps for all casualties ',
     Metric.CASUALTY_P_DEATH.value: 'dictionary of probability of death for all casualties',
     Metric.CASUALTY_DAMAGE_PER_SECOND_CHANGE.value: 'dictionary for the change in dps per casualty',
     Metric.AVERAGE_DECISION_DPS.value: 'how this compares to other deciosions in damage per second',
     Metric.AVERAGE_DECISION_SUPPLIES_REMAINING.value: 'how this metric compares to others in supplies remaining',
     Metric.AVERAGE_PDEATH.value: 'how this metric compares to others in probability of death',
-    Metric.AVERAGE_URGENCY.value: 'how this metric compares to others in terms of average time used'
+    Metric.AVERAGE_URGENCY.value: 'how this metric compares to others in terms of average time used',
+    Metric.P_DEATH_ONEMINLATER.value: 'Probability of death after one minute of inactivity after action performed'
 }
 
 
@@ -357,7 +376,8 @@ class MetricSet:
             return [Metric.SEVERITY.value, Metric.SUPPLIES_REMAINING.value, Metric.SUPPLIES_USED.value,
                     Metric.AVERAGE_TIME_USED.value, Metric.TARGET_SEVERITY.value, Metric.TARGET_SEVERITY_CHANGE.value,
                     Metric.SEVEREST_SEVERITY.value, Metric.SEVEREST_SEVERITY_CHANGE.value, Metric.SEVERITY_CHANGE.value,
-                    Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value]
+                    Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value,
+                    Metric.P_DEATH_ONEMINLATER.value]
         elif self.set_name == 'full':
             return []
 
