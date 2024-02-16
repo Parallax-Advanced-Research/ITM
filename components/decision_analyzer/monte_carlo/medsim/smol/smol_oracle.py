@@ -21,11 +21,11 @@ class SmolMedicalOracle:
         Supplies.DECOMPRESSION_NEEDLE.value: .03,
         Supplies.NASOPHARYNGEAL_AIRWAY.value: .05,
         Supplies.PULSE_OXIMETER.value: 1.0,
-        Supplies.BLANKET.value: 1.0,
-        Supplies.EPI_PEN.value: 1.0,
-        Supplies.VENTED_CHEST_SEAL.value: 1.0,
-        Supplies.PAIN_MEDICATIONS.value: 1.0,
-        Supplies.BLOOD.value: 1.0
+        Supplies.BLANKET.value: .001,
+        Supplies.EPI_PEN.value: .01,
+        Supplies.VENTED_CHEST_SEAL.value: .01,
+        Supplies.PAIN_MEDICATIONS.value: .1,
+        Supplies.BLOOD.value: .05
     }
 
     CHECK_PULSE_TIME = 20.0
@@ -40,7 +40,7 @@ class SmolMedicalOracle:
         Supplies.BLANKET.value: [30.0],
         Supplies.EPI_PEN.value: [30.0],
         Supplies.VENTED_CHEST_SEAL.value: [30.0],
-        Supplies.PAIN_MEDICATIONS.value: [30.0],
+        Supplies.PAIN_MEDICATIONS.value: [20.0],
         Supplies.BLOOD.value: [30.0],
         Actions.CHECK_PULSE.value: [CHECK_PULSE_TIME],
         Actions.CHECK_RESPIRATION.value: [CHECK_RESPIRATION_TIME],
@@ -49,6 +49,8 @@ class SmolMedicalOracle:
         Actions.TAG_CHARACTER.value: [30.0],
         Actions.MOVE_TO_EVAC.value: [120.0],
         Actions.DIRECT_MOBILE_CASUALTY.value: [60.0],
+        Actions.SEARCH.value: [18.0],
+        Actions.END_SCENE.value: [0.0],
         Actions.END_SCENARIO.value: [0.0]
     }
 

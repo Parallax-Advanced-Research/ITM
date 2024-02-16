@@ -43,6 +43,8 @@ def supply_injury_match(supply: str, injury: str) -> bool:
         if injury in [Injuries.ASTHMATIC.value, Injuries.BURN_SUFFOCATION.value]:
             return True
         return False
+    if supply == Supplies.PAIN_MEDICATIONS.value:
+        return True
     return True
 
 
@@ -82,7 +84,8 @@ def get_action_all(casualties: list[Casualty], action_str: str) -> list[tuple]:
 
 def get_dmc_actions() -> list[tuple]:
     one_tuple = (Actions.DIRECT_MOBILE_CASUALTY.value,)
-    return [one_tuple]
+    search = (Actions.SEARCH.value,)
+    return [one_tuple, search]
 
 
 def get_tag_options(casualties: list[Casualty]) -> list[tuple]:
@@ -106,6 +109,7 @@ def get_possible_actions(casualties: list[Casualty], supplies: list[str]) -> lis
     move_to_evac_actions = get_action_all(casualties, Actions.MOVE_TO_EVAC.value)
     sitrep_actions = get_action_all(casualties, Actions.SITREP.value)
     tag_actions = get_tag_options(casualties)
+    # search_options = get_search_options()  Done in get dmc_actions
 
     possible_action_tuples.extend(treatment_actions)
     possible_action_tuples.extend(check_all_actions)
@@ -135,7 +139,7 @@ def create_medsim_actions(actions: list[tuple]) -> list[MedsimAction]:
                         Actions.MOVE_TO_EVAC.value]:
             casualty = act_tuple[1]
             tm_action = MedsimAction(action, casualty_id=casualty)
-        elif action == Actions.DIRECT_MOBILE_CASUALTY.value:
+        elif action == Actions.DIRECT_MOBILE_CASUALTY.value or action == Actions.SEARCH.value:
             tm_action = MedsimAction(action=action)
         elif action == Actions.TAG_CHARACTER.value:
             casualty, tag = act_tuple[1:]
@@ -172,6 +176,9 @@ def trim_medsim_actions(actions: list[MedsimAction]) -> list[MedsimAction]:
             if act.supply == Supplies.NASOPHARYNGEAL_AIRWAY.value:
                 if act.location in [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value, Locations.UNSPECIFIED.value]:
                     trimmed.append(act)
+            if act.supply == Supplies.PAIN_MEDICATIONS.value:
+                if act.location == Locations.INTERNAL.value:
+                    trimmed.append(act)
         elif act.action != Actions.UNKNOWN.value:
             trimmed.append(act)
     return trimmed
@@ -181,9 +188,13 @@ def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) 
     acceptable_actions: list[MedsimAction] = []
     casualties: list[Casualty] = state.casualties
     for casualty in casualties:
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, casualty.id,
+                                               Supplies.PAIN_MEDICATIONS.value, Locations.INTERNAL.value))
         casualty_injuries: list[Injury] = casualty.injuries
         for injury in casualty_injuries:
             for supply in [s for s in Supplies]:
+                if supply == Supplies.PAIN_MEDICATIONS.value:
+                    continue
                 acceptable_action = MedsimAction(Actions.APPLY_TREATMENT.value, casualty.id,
                                                  supply.value, injury.location)
                 acceptable_actions.append(acceptable_action)

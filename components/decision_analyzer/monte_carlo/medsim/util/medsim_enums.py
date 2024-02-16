@@ -154,6 +154,8 @@ class Actions(Enum):
     SITREP = "SITREP"
     UNKNOWN = "UNKNOWN"
     END_SCENARIO = 'END_SCENARIO'
+    END_SCENE = 'END_SCENE'
+    SEARCH = 'SEARCH'
 
 
 class MentalStates_KNX(Enum):
@@ -218,6 +220,7 @@ class Locations(Enum):
     LEFT_NECK = "left neck"
     RIGHT_NECK = "right neck"
     UNSPECIFIED = "unspecified"
+    INTERNAL = "internal"
 
 
 class Tags(Enum):
