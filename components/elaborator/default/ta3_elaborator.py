@@ -16,18 +16,18 @@ class TA3Elaborator(Elaborator):
             d.value.params = {k: v for k, v in d.value.params.items() if v is not None}
             if _name == 'APPLY_TREATMENT':
                 to_return += self._treatment(probe.state, d)
-            elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CASUALTY':  # These need no param options
+            elif _name == 'SITREP' or _name == 'DIRECT_MOBILE_CHARACTERS':  # These need no param options
                 to_return += [d]
             elif _name == 'TAG_CHARACTER':
                 to_return += self._tag(probe.state.casualties, d)
-            elif _name == 'END_SCENARIO':
+            elif _name == 'END_SCENARIO' or _name == 'END_SCENE':
                 to_return += [d]
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
 
         final_list = []
         for tr in to_return:
-            if tr.value.name == 'DIRECT_MOBILE_CASUALTY' and 'casualty' in tr.value.params:
+            if tr.value.name == 'DIRECT_MOBILE_CHARACTERS' and 'casualty' in tr.value.params:
                 pass
             else:
                 final_list.append(tr)
