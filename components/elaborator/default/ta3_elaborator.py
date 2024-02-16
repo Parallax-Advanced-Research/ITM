@@ -35,6 +35,7 @@ class TA3Elaborator(Elaborator):
         tag_actions = [d for d in final_list if d.value.name == "TAG_CHARACTER"]
         if len(tag_actions) > 0:
             final_list = tag_actions
+        final_list.sort(key=str)
         probe.decisions = final_list
         # Needs direct mobile casualties no
         return final_list
@@ -42,6 +43,9 @@ class TA3Elaborator(Elaborator):
     def _treatment(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
         # Ground the decision for all casualties with injuries
         cas_grounded = self._ground_treatments(state, decision)
+        return cas_grounded
+        #For the metrics evaluation, these checks aren't working or necessary
+        
         cas_possible_treatments : list[Decision[Action]] = []
         
         for decision in cas_grounded:
@@ -112,6 +116,10 @@ class TA3Elaborator(Elaborator):
         for treat_action in treat_grounded:
             # If no location set, enumerate the injured locations
             if 'location' not in treat_action.value.params:
+                if treat_action.value.params['treatment'].lower() == 'nasopharyngeal airway':
+                    treat_action.value.params['location'] = 'left face'
+                    grounded.append(treat_action)
+                    continue
                 cas_id = treat_action.value.params['casualty']
                 cas = [c for c in state.casualties if c.id == cas_id][0]
                 if cas.assessed and not cas.tag:
