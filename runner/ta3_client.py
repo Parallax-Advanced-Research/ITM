@@ -5,7 +5,7 @@ from domain.internal import KDMA, KDMAs
 
 
 class TA3Client:
-    def __init__(self, endpoint: str = None, target = None, evalTargetNames = None):
+    def __init__(self, endpoint: str = None, target = None, evalTargetNames = None, inputScenarioId = None):
         if endpoint is None:
             endpoint = "http://127.0.0.1:8080"
         _config = ta3.Configuration()
@@ -15,9 +15,11 @@ class TA3Client:
         self._api: ta3.ItmTa2EvalApi = ta3.ItmTa2EvalApi(self._client)
         self._session_id: str = "NO_SESSION"
         self._scenario: Scenario = None
+        self._requested_scenario_id: str = inputScenarioId
         self._align_tgt: KDMAs = target
         self._actions: dict[ta3.Action] = {}
         self._probe_count: int = 0
+        self._session_type: str = None
         if evalTargetNames is None:
             self._eval_target_names = list()
         else:
@@ -31,10 +33,19 @@ class TA3Client:
     # max_scenarios
     # kdma_training
     def start_session(self, adm_name: str = 'TAD', session_type='test', **kwargs):
+        self._session_type = session_type
         self._session_id = self._api.start_session(adm_name, session_type, **kwargs)
 
     def start_scenario(self) -> Scenario:
-        ta3scen: models.Scenario = self._api.start_scenario(self._session_id)
+        ta3scen: models.Scenario
+        if self._requested_scenario_id is None:
+            ta3scen = self._api.start_scenario(self._session_id)
+        else:
+            if self._session_type == 'eval':
+                raise Exception("Can't specify a scenario for evaluation mode.")
+            ta3scen = self._api.start_scenario(self._session_id, 
+                                               scenario_id=self._requested_scenario_id)
+        
         if ta3scen.session_complete:
             return None
 
@@ -45,12 +56,13 @@ class TA3Client:
             probes=[]
         )
 
-        at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
-        self._eval_target_names += [at.id]
+        if self._session_type == 'eval':
+            at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
+            self._eval_target_names += [at.id]
 
-        if self._align_tgt is None:
-            kdmas: KDMAs = KDMAs([KDMA(kdma.kdma, kdma.value) for kdma in at.kdma_values])
-            self._align_tgt = kdmas
+            if self._align_tgt is None:
+                kdmas: KDMAs = KDMAs([KDMA(kdma.kdma, kdma.value) for kdma in at.kdma_values])
+                self._align_tgt = kdmas
 
         self._scenario = scen
         self._probe_count = 0
