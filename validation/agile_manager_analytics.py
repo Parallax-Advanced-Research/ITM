@@ -14,8 +14,9 @@ import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, auc
 from sklearn.metrics import classification_report
+import json
 
 ROOT_DIR = os.path.dirname(os.path.abspath(Path(__file__).parent))
 
@@ -173,7 +174,6 @@ print(am_path)
 
 df = pd.read_excel(am_path).drop(['ID', 'Session ID', 'User ID'], axis=1)
 train, test = train_test_split(df, test_size=0.985)
-
 test = test.head(1000)
 num = 0
 for idx, row in train.iterrows():
@@ -187,13 +187,13 @@ for idx, row in train.iterrows():
 hems.push_from_files("./Programs/HEMS_Agile_Manager/prog*.hems")
 gt_kdmas = []
 pred_kdmas = []
+model_probs_on_gt = dict()
 metric = "Worker Agent Reputation"
 var_name = metric.upper().replace(" ", "_").replace("(", "_").replace(")", "_").replace(".", "")
 for idx, row in test.iterrows():
     gt_bn = row_to_hems_program(row, hems)
     bn = row_to_hems_program(row, hems, mask=metric)
     (rec, eme) = hems.remember(hems.get_eltm(), lst(bn), Symbol("+"), 1, Symbol("NIL"))
-    print(hems.episode_count(eme))
     i = 0
     for ele in rec:
         if hems.rule_based_cpd_singleton_p(ele):
@@ -205,16 +205,20 @@ for idx, row in test.iterrows():
                 ret, foundp = hems.get_hash(0, hems.rule_based_cpd_var_value_block_map(gt_bn[0][i]))
                 gt_kdma = ret[1][0][0]
                 gt_kdmas.append(gt_kdma)
+                idx = len(gt_kdmas) - 1
+                model_probs_on_gt[idx] = dict()
                 max_prob = -1
                 max_pred = []
                 r_pred = []
                 for rule in hems.rule_based_cpd_rules(ele):
-                    r_prob = hems.rule_probability(rule)
+                    r_prob = float(hems.rule_probability(rule))
                     if r_prob >= max_prob:
                         index, _ = hems.get_hash(dep_id, hems.rule_conditions(rule))
                         vvbm, _ = hems.get_hash(0, hems.rule_based_cpd_var_value_block_map(ele))
                         #print(vvbm)
-                        for vvb in vvbm:   
+                        for vvb in vvbm:
+                            model_probs_on_gt[idx][hems._car(hems._car(vvb))] = r_prob
+                        for vvb in vvbm:
                             if hems._cdr(hems._car(vvb)) == index:
                                 r_pred = hems._car(hems._car(vvb))
                                 break
@@ -245,6 +249,12 @@ print("predicted kdmas:")
 print(pred_kdmas)
 print("Labels:")
 labels = list(set(gt_kdmas).union(set(pred_kdmas)))
+if "NA" in labels:
+    labels.remove("NA")
+    labels = sorted(labels)
+    labels.append("NA")
+else:
+    labels = sorted(labels)
 print(labels)
 print()
 
@@ -259,14 +269,44 @@ print(len(train))
 print(len(test))
 
 
+fpr = dict()
+tpr = dict()
+roc_auc = dict()
+
+print(json.dumps(model_probs_on_gt, indent=4))
+colors = ['red', 'black', 'green', 'purple', 'blue', 'yellow', 'orange', 'cyan', 'gray', 'pink', 'tan']
+plt.figure()
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver operating characteristic')
+for i, label in zip(range(len(labels)), labels):
+    ovr_gt_kdmas = []
+    ovr_model_probs_on_gt = []
+    for l in range(len(gt_kdmas)):
+        if gt_kdmas[l] == label:
+            ovr_gt_kdmas.append(1)
+        else:
+            ovr_gt_kdmas.append(0)
+        ovr_model_probs_on_gt.append(model_probs_on_gt[l][label])
+    fpr[i], tpr[i], _= roc_curve(ovr_gt_kdmas, ovr_model_probs_on_gt)
+    roc_auc[i] = auc(fpr[i], tpr[i])
+       
+    plt.plot(fpr[i], tpr[i], label='{0} ROC curve (area = {1})'.format(label, round(roc_auc[i], 2)), color=colors[i])
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.legend(loc="lower right")
+
+plt.show()
 df_cm = pd.DataFrame(cm, labels, labels)
-ax = sn.heatmap(df_cm, annot=True, annot_kws={"size": 16}, square=True, cbar=False, fmt='g')
+ax = sn.heatmap(df_cm, annot=True, cmap='crest',annot_kws={"size": 16}, square=True, cbar=False, fmt='g')
 ax.set_title("{0} Prediction Confusion Matrix".format(metric))
 #ax.set_ylim(0, 3) #this manually corrects the cutoff issue in sns.heatmap found in matplotlib ver 3.1.1
 plt.xlabel("Predicted") 
 plt.ylabel("Actual") 
 #ax.invert_yaxis() #optional
 plt.show()
+
 
 '''
 for idx, row in train.iterrows():
