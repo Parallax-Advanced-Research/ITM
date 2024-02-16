@@ -8,7 +8,7 @@
 
 #image: python:3.10
 #image: ubuntu:latest
-image: ci_env
+image: registry.basic-research.parallaxgc.org/itm/ci_env
 
 stages:
 - build
