@@ -946,7 +946,19 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 "nasopharyngeal airway": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
                                           "system": "respiratory", "life_impact": "medium"},
                 "blanket": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
-                                          "system": "integumentary", "life_impact": "low"}
+                                          "system": "integumentary", "life_impact": "low"},
+                "epi pen": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                            "system": "integumentary", "life_impact": "low"},
+                "pain medications": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                        "system": "integumentary", "life_impact": "low"},
+                "pulse oximeter": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                                     "system": "integumentary", "life_impact": "low"},
+                "splint": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                                   "system": "integumentary", "life_impact": "low"},
+                "vented chest seal": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                           "system": "integumentary", "life_impact": "low"},
+                "blood": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                            "system": "integumentary", "life_impact": "low"}
             },
             "CHECK_ALL_VITALS": {
                 "CHECK_ALL_VITALS": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
@@ -1220,6 +1232,14 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 if not (ele_key in str(decision_complete.value)): continue
 
                 ele_key = str(decision_complete.value)
+                ##if decision_complete.value.name == "APPLY_TREATMENT":
+                ##    ele_key = decision_complete.value.params['treatment']
+                ##else:
+                #ele_key = str(decision_complete.value.name) # indent if above else is used
+
+                if decision == "APPLY_TREATMENT": # testing, later remove
+                    False
+
                 hra_strategy[ele_key] = {vp: {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
                                               'one-bounce': 0} for vp in ele_val}
                 for val_predictor in ele_val:
