@@ -125,5 +125,6 @@ smol_action_map: typing.Mapping[str, resolve_action] = {
     Actions.TAG_CHARACTER.value: apply_casualtytag_action,
     Actions.SITREP.value: apply_zeroornone_action,
     Actions.UNKNOWN.value: apply_default_action,
-    Actions.END_SCENARIO.value: end_scenario_action
+    Actions.END_SCENARIO.value: end_scenario_action,
+    Actions.END_SCENE.value: end_scenario_action
 }
