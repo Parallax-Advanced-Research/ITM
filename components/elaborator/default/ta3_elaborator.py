@@ -21,7 +21,7 @@ class TA3Elaborator(Elaborator):
                 to_return += [d]
             elif _name == 'TAG_CHARACTER':
                 to_return += self._tag(probe.state.casualties, d)
-            elif _name == 'END_SCENE':
+            elif _name == 'END_SCENARIO' or _name == 'END_SCENE':
                 to_return += [d]
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
