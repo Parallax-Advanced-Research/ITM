@@ -194,6 +194,9 @@ class Supplies(Enum):
     VENTED_CHEST_SEAL = 'Vented Chest Seal'
     PAIN_MEDICATIONS = 'Pain Medications'
     BLOOD = 'Blood'
+    SPLINT = 'Splint'
+    IV_BAG = 'IV Bag'
+    BURN_DRESSING = 'Burn Dressing'
 
 
 class Locations(Enum):

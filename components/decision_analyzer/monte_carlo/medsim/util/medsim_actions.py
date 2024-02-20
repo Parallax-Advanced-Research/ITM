@@ -184,12 +184,41 @@ def trim_medsim_actions(actions: list[MedsimAction]) -> list[MedsimAction]:
     return trimmed
 
 
-def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) -> list[MedsimAction]:
+def always_acceptable_treatments(casualties: list[Casualty]) -> list[MedsimAction]:
     acceptable_actions: list[MedsimAction] = []
-    casualties: list[Casualty] = state.casualties
-    for casualty in casualties:
-        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, casualty.id,
+    for cas in casualties:
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
                                                Supplies.PAIN_MEDICATIONS.value, Locations.INTERNAL.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.PAIN_MEDICATIONS.value, Locations.UNSPECIFIED.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.NASOPHARYNGEAL_AIRWAY.value, Locations.LEFT_FACE.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.NASOPHARYNGEAL_AIRWAY.value, Locations.RIGHT_FACE.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.BLOOD.value, Locations.INTERNAL.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.SPLINT.value, Locations.LEFT_CALF.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.SPLINT.value, Locations.RIGHT_CALF.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.SPLINT.value, Locations.LEFT_THIGH.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.SPLINT.value, Locations.RIGHT_THIGH.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.NASOPHARYNGEAL_AIRWAY.value, Locations.INTERNAL.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.IV_BAG.value, Locations.INTERNAL.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.BURN_DRESSING.value, Locations.UNSPECIFIED.value))
+
+    return acceptable_actions
+
+
+def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) -> list[MedsimAction]:
+    casualties: list[Casualty] = state.casualties
+    acceptable_actions: list[MedsimAction] = always_acceptable_treatments(casualties)
+    for casualty in casualties:
         casualty_injuries: list[Injury] = casualty.injuries
         for injury in casualty_injuries:
             for supply in [s for s in Supplies]:
