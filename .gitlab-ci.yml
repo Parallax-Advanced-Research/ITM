@@ -37,6 +37,7 @@ include:
 before_script:
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
+  - CI/install_libs.sh
   - python install.py
   - source venv/bin/activate
 
