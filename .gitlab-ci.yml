@@ -57,7 +57,7 @@ integration_test:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type soartech
     - python stop-servers.py
-	# TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
-	# Ideally, only do that if the single everything job fails.
+  # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
+  # Ideally, only do that if the single everything job fails.
   # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
