@@ -49,6 +49,10 @@ def supply_injury_match(supply: str, injury: str) -> bool:
         if injury in [Injuries.BURN.value]:
             return True
         return False
+    if supply == Supplies.SPLINT.value:
+        if injury in [Injuries.BROKEN_BONE.value]:
+            return True
+        return False
     return False
 
 
