@@ -12,7 +12,6 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--br', action=argparse.BooleanOptionalAction, default=True, help="Turns Bounded Rationalizer on/off (default on)")
     parser.add_argument('--keds', action=argparse.BooleanOptionalAction, default=True, help="Uses KDMA Estimation Decision Selector for decision selection (default)")
     parser.add_argument('--kedsd', action=argparse.BooleanOptionalAction, default=False, help="Uses KDMA with Drexel cases")
-    parser.add_argument('--exhaustive', action=argparse.BooleanOptionalAction, default=False, help="Uses Exhaustive Selector")
     parser.add_argument('--csv', action=argparse.BooleanOptionalAction, default=False, help="Uses CSV Decision Selector")
     parser.add_argument('--bayes', action=argparse.BooleanOptionalAction, default=True, help='Perform bayes net calculations')
     parser.add_argument('--dump', action=argparse.BooleanOptionalAction, default=True, help="Dumps probes out for UI exploration.")
@@ -24,5 +23,6 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--scenario', type=str, default=None, help="ID of a scenario that TA3 can play back.")
     parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to alignment target for selection purposes. Format is <kdma_name>-<kdma_value>")
     parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, requires --training.")
+    parser.add_argument('--selector', default=None, help=argparse.SUPPRESS)
     return parser
 
