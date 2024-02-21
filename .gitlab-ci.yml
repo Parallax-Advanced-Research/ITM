@@ -37,6 +37,7 @@ include:
 before_script:
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
+  - cat /etc/sudoers
   - whoami
   - which apt-get
   - sudo apt-get install -y libgomp1 wget sbcl # TODO: remove
