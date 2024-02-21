@@ -44,9 +44,18 @@ def _get_params_from_decision(decision):
     return retdict
 
 
-def make_html_table_header(demo_mode):
-    if not demo_mode:
-        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
+def make_html_table_header(mc_only):
+    if mc_only:
+        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s |
+|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|\n''' % (
+            """<div title=\"%s\">MCA<br>Time</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
+            """<div title=\"%s\">MCA<br>Deterioration<br>per second</div>""" % metric_description_hash[
+                Metric.DAMAGE_PER_SECOND.value],
+            """<div title=\"%s\">MCA<br>P(Death)</div>""" % metric_description_hash[Metric.P_DEATH.value],
+            """<div title=\"%s\">MCA<br>P(Death)<br> + 60s</div>""" % metric_description_hash[
+                Metric.P_DEATH_ONEMINLATER.value]
+        )
+    return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
 |------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|--|--|--|--|--|--|--|\n''' % (
             """<div title=\"%s\">MCA<br>Time</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
             """<div title=\"%s\">MCA<br>Deterioration<br>per second</div>""" % metric_description_hash[
@@ -62,8 +71,6 @@ def make_html_table_header(demo_mode):
             """<div title=\"%s\">BNDA<br>P(Internal<br>Bleeding)</div>""" % """Posterior probability of internal bleeding""",
             """<div title=\"%s\">BNDA<br>P(External<br>Bleeding)</div>""" % """Posterior probability of external bleeding"""
         )
-    return '''| Decision         | Character     | Location | Treatment  | Tag | Probability Death | P(Death) Justification |
-|------------------|--------------|----------|------------|-------|-------------------|-----|\n'''
 
 
 def select_proper_justification(justification_list, metric):
@@ -88,8 +95,8 @@ def get_hra_strategy(decision):
     return selected_strategy, selected_justification
 
 
-def get_html_line(decision, demo_mode):
-    casualty = _get_casualty_from_decision(decision,)
+def get_html_line(decision, mc_only):
+    casualty = _get_casualty_from_decision(decision)
     additional = _get_params_from_decision(decision)
     justifications = get_html_justification(decision.justifications)
     time_english = justifications[Metric.AVERAGE_TIME_USED.value].split('is')[-1]
@@ -99,10 +106,27 @@ def get_html_line(decision, demo_mode):
     dps_english = justifications[Metric.DAMAGE_PER_SECOND.value].split('is')[-1]
     death_60s_english = justifications[Metric.P_DEATH_ONEMINLATER.value].split('is')[-1]
     decision_html_string = get_html_decision(decision)
-    hra_strategy_selector = get_hra_strategy(decision)
     is_pink = decision.selected
     no_just = "No justification given"
-    if not demo_mode:
+    if mc_only:
+        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
+        if is_pink:
+            base_string = base_string.replace("""%""", """<font color="#FF69B4">%""")
+            base_string = base_string.replace("""s""", """s</font>""")
+
+        return base_string % (decision_html_string, casualty, additional['Location'],
+                              additional['Treatment'], additional['Tag'],
+                              '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
+                                  Metric.AVERAGE_TIME_USED.value].value) if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[
+                                  Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%.2f %%</div>''' % (medsim_pdeath_english, 100 * decision.metrics[
+                                  Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%.2f %%</div>''' % (death_60s_english, 100 * decision.metrics[
+                                  Metric.P_DEATH_ONEMINLATER.value].value) if Metric.P_DEATH_ONEMINLATER.value in decision.metrics.keys() else UNKNOWN_NUMBER
+                              )
+    else:
+        hra_strategy_selector = get_hra_strategy(decision)
         base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
         if is_pink:
             base_string = base_string.replace("""%""", """<font color="#FF69B4">%""")
@@ -124,12 +148,6 @@ def get_html_line(decision, demo_mode):
                               '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics['pInternalBleeding'].value if 'pInternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER),
                               '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics['pExternalBleeding'].value if 'pExternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER)
                               )
-    else:
-        base_string = '|%s|%s|%s|%s|%s|%s|%s|\n'
-        return base_string % (decision_html_string, casualty, additional['Location'], additional['Treatment'],
-                              additional['Tag'], '''<div title=\"%s\">%.2f</div>''' % (medsim_pdeath_english,
-                            decision.metrics[Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else -1.0,
-                            select_proper_justification(decision.justifications, Metric.P_DEATH.value))
 
 
 def get_html_decision(decision):
@@ -142,8 +160,8 @@ def get_html_decision(decision):
     return retstr
 
 
-def construct_decision_table(analysis_df, demo_mode=False, sort_metric='Time'):
-    table_header = make_html_table_header(demo_mode)
+def construct_decision_table(analysis_df, sort_metric='Time', mc_only=False):
+    table_header = make_html_table_header(mc_only)
     lines = ""
     sort_funcs = {
         'Time': lambda x: x.metrics[Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in x.metrics.keys() else x.id_,
@@ -157,8 +175,17 @@ def construct_decision_table(analysis_df, demo_mode=False, sort_metric='Time'):
         'P(Internal Bleeding) (Bayes)': lambda x: x.metrics['pInternalBleeding'].value if 'pInternalBleeding' in x.metrics.keys() else 0.0,
         'P(External Bleeding) (Bayes)': lambda x: x.metrics['pExternalBleeding'].value if 'pExternalBleeding' in x.metrics.keys() else 0.0,
         'Character': lambda x: x.value.params['casualty'] if 'casualty' in x.value.params else x.id_
-
     }
+    if mc_only:
+        sort_funcs = {
+            'Time': lambda x: x.metrics[
+                Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in x.metrics.keys() else x.id_,
+            'Probability Death': lambda x: x.metrics[
+                Metric.P_DEATH.value].value if Metric.P_DEATH.value in x.metrics.keys() else x.id_,
+            'Deterioration': lambda x: x.metrics[
+                Metric.DAMAGE_PER_SECOND.value].value if Metric.DAMAGE_PER_SECOND.value in x.metrics.keys() else x.id_,
+            'Character': lambda x: x.value.params['casualty'] if 'casualty' in x.value.params else x.id_
+        }
     sorted_df = sorted(analysis_df, key=sort_funcs[sort_metric])
     supply_used = None
     for decision in sorted_df:
@@ -168,7 +195,7 @@ def construct_decision_table(analysis_df, demo_mode=False, sort_metric='Time'):
                 supply_used = decision.value.params['treatment']
             except:
                 supply_used = None
-        raw = get_html_line(decision, demo_mode)
+        raw = get_html_line(decision, mc_only)
         fixed = raw.replace(str(UNKNOWN_NUMBER), UNKOWN_STRING)
         lines += fixed
     full_html = table_header + lines + '<hr>'
@@ -265,12 +292,15 @@ def construct_environment_table(environment: dict):
 if __name__ == '__main__':
     params = st.query_params
 
+    mc_only = True  # while HRA/BN/EBD are finished
+
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
     sort_options = ['Time', 'Probability Death', 'Deterioration', 'Character', 'HRA Strategy', 'P(Death) (Bayes)',
                     'P(Pain) (Bayes)', 'P(BI) (Bayes)', 'P(Airway Blocked) (Bayes)', 'P(Internal Bleeding) (Bayes)',
                     'P(External Bleeding) (Bayes)']
-    # with st.sidebar:  # Legal term
+    if mc_only:
+        sort_options = ['Time', 'Probability Death', 'Deterioration', 'Character']
 
     if params.get('scen', None) is not None:
         scen = params['scen'].split('-')[:-1]
@@ -294,9 +324,7 @@ if __name__ == '__main__':
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
     environment = scenario_pkls[chosen_scenario].environments[chosen_decision - 1]
 
-    demo_mode = False  # Only used once probably to show justifications in table. Leave false.
-
-    decision_table_html, supply_used = construct_decision_table(analysis_df, demo_mode, sort_metric=sort_by)
+    decision_table_html, supply_used = construct_decision_table(analysis_df, sort_metric=sort_by, mc_only=mc_only)
     casualty_html = get_casualty_table(state)
     supply_html = get_supplies_table(state, supply_used)
     previous_action_table = get_previous_actions(state)
