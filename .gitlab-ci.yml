@@ -37,6 +37,8 @@ include:
 before_script:
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
+  - whoami
+  - which apt-get
   - sudo apt-get install -y libgomp1 wget sbcl # TODO: remove
   - CI/install_libs.sh
   - python install.py
