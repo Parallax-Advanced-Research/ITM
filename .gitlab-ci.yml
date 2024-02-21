@@ -42,7 +42,6 @@ before_script:
   - wc "$HOME/.ssh/id_rsa"
   - md5sum "$HOME/.ssh/id_rsa"
   - cat "$HOME/.ssh/id_rsa"
-  - cat "$HOME/.ssh/config"
   - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar # TODO: remove once it works in install.py.
   - source venv/bin/activate
 
