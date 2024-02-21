@@ -1,4 +1,3 @@
-# 
 FROM ubuntu:latest
 RUN apt-get update
 RUN apt-get install -y git sudo iputils-ping python3.10 python3.10-venv
