@@ -40,6 +40,7 @@ before_script:
   - CI/install_libs.sh
   - python install.py
   - wc "$HOME/.ssh/id_rsa"
+  - md5sum "$HOME/.ssh/id_rsa"
   - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar
   - source venv/bin/activate
 
