@@ -37,6 +37,9 @@ include:
 before_script:
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
+  - chmod 600 "$HOME/.ssh/id_rsa"
+  - echo "$HOME"
+  - ls -l "$HOME/.ssh"
   - CI/install_libs.sh
   - python install.py
   - wc "$HOME/.ssh/id_rsa"
