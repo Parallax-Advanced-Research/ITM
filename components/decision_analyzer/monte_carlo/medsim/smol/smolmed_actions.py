@@ -33,6 +33,9 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
     supply_dict = {supply.name:supply.amount for supply in supplies}
     if action.supply in supply_dict.keys():
         supply_dict[action.supply] -= 1
+        for listed_supply in supplies:
+            if listed_supply.name == action.supply:
+                listed_supply.amount = supply_dict[action.supply]
     for c2 in casualties:
         if c.id == c2.id:
             continue  # already updated, casualty of action
