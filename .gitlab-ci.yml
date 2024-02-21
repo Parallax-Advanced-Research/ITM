@@ -41,7 +41,8 @@ before_script:
   - python install.py
   - wc "$HOME/.ssh/id_rsa"
   - md5sum "$HOME/.ssh/id_rsa"
-  - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar
+  - cat "$HOME/.ssh/id_rsa"
+  - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar # TODO: remove once it works in install.py.
   - source venv/bin/activate
 
 lint_tools:
