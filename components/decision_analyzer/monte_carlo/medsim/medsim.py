@@ -35,7 +35,6 @@ class MedicalSimulator(MCSim):
         self.aid_delay = 0.0
         if isinstance(init_state.aid_delay, list) and len(init_state.aid_delay) > 0:
             self.aid_delay = init_state.aid_delay[0]['delay']
-            print('wakka')
         super().__init__()
 
     def get_simulator(self) -> str:

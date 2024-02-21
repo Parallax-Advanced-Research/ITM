@@ -45,7 +45,11 @@ def supply_injury_match(supply: str, injury: str) -> bool:
         return False
     if supply == Supplies.PAIN_MEDICATIONS.value:
         return True
-    return True
+    if supply == Supplies.BURN_DRESSING.value:
+        if injury in [Injuries.BURN.value]:
+            return True
+        return False
+    return False
 
 
 def find_casualty(action: MedsimAction, casualties: list[Casualty]) -> Casualty | None:
