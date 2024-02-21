@@ -6,29 +6,37 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 
-image: python:3.10
+#image: python:3.10
+#image: ubuntu:latest
+image: registry.basic-research.parallaxgc.org/github-mirrors/itm/ci:latest
 
 stages:
-- build
+#- build
 - test
-- deploy
-- review
-- dast
-- staging
-- canary
-- production
-- incremental rollout 10%
-- incremental rollout 25%
-- incremental rollout 50%
-- incremental rollout 100%
-- performance
-- cleanup
+- individual_tests
+#- deploy
+#- review
+#- dast
+#- staging
+#- canary
+#- production
+#- incremental rollout 10%
+#- incremental rollout 25%
+#- incremental rollout 50%
+#- incremental rollout 100%
+#- performance
+#- cleanup
 #sast:
 #  stage: test
-#include:
+
+include:
 #- template: Auto-DevOps.gitlab-ci.yml
+ - template: Jobs/SAST.gitlab-ci.yml
+ - template: Jobs/Secret-Detection.gitlab-ci.yml
 
 before_script:
+  - mkdir -p "$HOME/.ssh"
+  - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
   - python install.py
   - source venv/bin/activate
 
@@ -41,11 +49,15 @@ lint_tools:
 unit_tests:
   stage: test
   script:
-    - python run_tests.py --nolint
+    - python run_tests.py --nolint -v
 
 integration_test:
   stage: test
   script:
-    - python -m scripts.tad_tester --no-verbose # TODO: remove --no-ebd once that works
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech
+    - python stop-servers.py
+	# TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
+	# Ideally, only do that if the single everything job fails.
   # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 

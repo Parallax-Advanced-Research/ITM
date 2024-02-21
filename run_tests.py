@@ -3,7 +3,7 @@ import os, re, pytest, unittest, subprocess, argparse, sys, enum
 from typing import Iterable, Optional, TypeVar, Callable, Any
 
 PYTHON = 'python3'
-SCRIPTDIR = 'scripts'
+CI_DIR = 'CI'
 COMMAND_LIST = 'tests.commands'
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -281,7 +281,7 @@ def compile_filter(paths: list[str], verbose: bool) -> list[str]:
 def delint(path: str, mypy_results: dict[str, list[str]], verbose: bool) -> None:
 	global exit_code
 	pyflakes3 = cmd([ 'python', '-m', 'pyflakes',  path ])
-	pylint = cmd([ PYTHON, '-m', 'pylint', '-sn', path ], env={ 'PYLINTRC' : os.path.join(SCRIPTDIR, 'pylintrc') })
+	pylint = cmd([ PYTHON, '-m', 'pylint', '-sn', path ], env={ 'PYLINTRC' : os.path.join(CI_DIR, 'pylintrc') })
 
 	mypy_errors = len(mypy_results[path])
 	pyflakes_errors = len(pyflakes3.output)

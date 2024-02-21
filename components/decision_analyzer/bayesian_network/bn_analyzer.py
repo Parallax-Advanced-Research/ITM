@@ -70,7 +70,9 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
     def get_burns(self, c : Casualty) -> Optional[Node_Val]:
         for i in c.injuries:
             if i.name == 'Burn':
-                return "true" if i.severity > 0.5 else "false"
+                print("\x1b[93mTODO: make bayesian net use the new burn severity values internally. Right now, just thresholding at 'moderate'\x1b[0m")
+                return "true" if i.severity in [ "moderate", "substantial", "severe", "extreme" ] else "false"
+                #return "true" if i.severity > 0.5 else "false"
         return None
 
     def get_trauma(self, c : Casualty) -> Node_Val:
