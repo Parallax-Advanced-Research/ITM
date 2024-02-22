@@ -8,3 +8,8 @@ def hash_file(filePath):
             h.update(data)
             data = f.read(2048)
     return h.hexdigest()
+    
+    
+def empty_hash():
+    h = hashlib.sha256()
+    return h.hexdigest()
