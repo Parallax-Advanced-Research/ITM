@@ -37,6 +37,11 @@ def update_server(dir_name) -> bool:
     if hash != desired_hash:
         print("Updating repo " + dir_name + " to recorded commit hash.")
         p = subprocess.run(["git", "checkout", desired_hash], cwd=dir)
+        # The following checks for updated dependencies, hopefully quickly.
+        lbuilder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
+        lctxt = lbuilder.ensure_directories(os.path.join(dir, "venv"))
+        _ = subprocess.run([lctxt.env_exe, "-m", "pip", "install", "-r",
+                                          os.path.join(ldir, "requirements.txt")], check=True)
     else:
         print("Repository " + dir_name + " is on the right commit.")
     
