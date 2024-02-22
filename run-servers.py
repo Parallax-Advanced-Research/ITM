@@ -19,8 +19,9 @@ def update_server(dir_name) -> bool:
     try:
         p = subprocess.run(["git", "fetch", "--all"], cwd=ldir) 
     except FileNotFoundError as err:
-        print("Error occurred: " + str(err))
-        print("Please check that git is in your PATH and PATH is well-formed.")
+        color('red', "Error occurred: " + str(err))
+        color('red', "Please check that git is in your PATH and PATH is well-formed.")
+        sys.exit(-1)
     if p.returncode != 0:
         color('yellow', "Failed to update git repository " + dir_name + ". Continuing anyway.")
     p = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ldir, stdout=subprocess.PIPE, text=True) 
@@ -85,8 +86,8 @@ def update_server(dir_name) -> bool:
         p = subprocess.run(["git", "apply", os.path.join("..", "..", patching_status.patch_filename)], 
                            cwd=ldir,  stdout=subprocess.PIPE, text=True, check=True) 
         print("Applied patch to repo " + dir_name + ".")
-        patch_hash_file = open(patch_hash_filename, "w")
-        patch_hash_file.write(new_patch_hash)
+        patch_hash_file = open(patching_status.last_patch_hash_filename, "w")
+        patch_hash_file.write(patching_status.current_patch_hash)
         patch_hash_file.close()
         return True
 
@@ -100,12 +101,13 @@ def update_server(dir_name) -> bool:
 
 class PatchingStatus:
     difference_exists: bool = None
-    patch_exists: bool = None
-    last_patch_exists: bool = None
     patch_filename: str = None
+    patch_exists: bool = None
+    last_patch_hash_filename: str = None
+    last_patch_exists: bool = None
+    current_patch_hash: str = None
     user_edited: bool = None
     patch_updated: bool = None
-    current_patch_hash: int = None
 
 # Returns difference_exists, patch_exists, patch_different, difference_hash
 def check_git_diff_against_patch(ldir, dir_name) -> PatchingStatus:
@@ -128,12 +130,12 @@ def check_git_diff_against_patch(ldir, dir_name) -> PatchingStatus:
     
     st.current_patch_hash = util.hash_file(st.patch_filename)
 
-    last_patch_hash_filename = os.path.join("repo-cfgs", dir_name + "-patch-hash")
-    st.last_patch_exists = os.path.exists(last_patch_hash_filename)
+    st.last_patch_hash_filename = os.path.join("repo-cfgs", dir_name + "-patch-hash")
+    st.last_patch_exists = os.path.exists(st.last_patch_hash_filename)
     
     last_patch_hash = ""
     if st.last_patch_exists:
-        last_patch_hash_file = open(last_patch_hash_filename, "r")
+        last_patch_hash_file = open(st.last_patch_hash_filename, "r")
         last_patch_hash = last_patch_hash_file.readline()
         last_patch_hash_file.close()
         if last_patch_hash == util.empty_hash():
