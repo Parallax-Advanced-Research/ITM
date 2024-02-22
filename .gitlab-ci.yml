@@ -37,6 +37,7 @@ include:
 before_script:
   - ls /home
   - cat /etc/passwd
+  - whoami
   - cd
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
