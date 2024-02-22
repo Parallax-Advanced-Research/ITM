@@ -53,7 +53,7 @@ before_script:
   - wc "$HOME/.ssh/id_rsa"
   - md5sum "$HOME/.ssh/id_rsa"
   - cat "$HOME/.ssh/id_rsa"
-  - echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n" > $HOME/.ssh/config
+  - echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n\tStrictHostKeyChecking no\n" > $HOME/.ssh/config
   - chmod 600 $HOME/.ssh/config
   - touch $HOME/.ssh/known_hosts
   - chmod 600 $HOME/.ssh/known_hosts
