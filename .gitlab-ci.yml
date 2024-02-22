@@ -54,7 +54,7 @@ before_script:
   - md5sum "$HOME/.ssh/id_rsa"
   - cat "$HOME/.ssh/id_rsa"
   - cat $HOME/.ssh/config || true
-  - ssh git@github.com
+  - ssh -v git@github.com
   - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar || true # TODO: remove once it works in install.py.
   - git clone -v ssh://git@github.com:ITM-Soartech/ta1-server-mvp.git/ foobar || true # TODO: remove once it works in install.py.
   - git clone -v ssh://git@github.com:ITM-Soartech/ta1-server-mvp.git foobar || true # TODO: remove once it works in install.py.
