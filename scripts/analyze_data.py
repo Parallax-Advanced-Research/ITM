@@ -91,8 +91,14 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
                                 find_feedback(case["actions"][:-1], training_data, scenario, target))
             after_feedback.pop("score")
             new_case = new_case | flatten("feedback", after_feedback)
-            dfeedback = {key:subtract_dict(value, before_feedback[key]) for (key, value) in after_feedback.items() if type(value) == dict}
-            new_case = new_case | flatten("feedback_delta", dfeedback)
+            if before_feedback["count"] > after_feedback["count"]:
+                dfeedback = {key:subtract_dict(value, before_feedback[key]) 
+                              for (key, value) in after_feedback.items() 
+                              if type(value) == dict} 
+                dfeedback = dfeedback | {"count":before_feedback["count"] - after_feedback["count"]}
+                if dfeedback["count"] == 0:
+                    breakpoint()
+                new_case = new_case | flatten("feedback_delta", dfeedback)
         if "hint" in new_case:
             new_case.pop("hint")
             new_case = new_case | flatten("hint", case["hint"])
