@@ -35,6 +35,8 @@ include:
  - template: Jobs/Secret-Detection.gitlab-ci.yml
 
 before_script:
+  - ls /home
+  - cat /etc/passwd
   - cd
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
