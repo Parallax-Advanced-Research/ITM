@@ -32,7 +32,8 @@ class DiverseSelector(DecisionSelector):
         new_case = make_case(probe.state, cur_decision)
         chash = hash_case(new_case)
         new_case["index"] = self.case_index
-        new_case["hint"] = cur_decision.kdmas.kdma_map
+        if cur_decision.kdmas is not None and cur_decision.kdmas.kdma_map is not None:
+            new_case["hint"] = cur_decision.kdmas.kdma_map
         new_case["hash"] = chash
         new_case["actions"] = ([act.to_json() for act in probe.state.actions_performed] 
                                 + [cur_decision.value.to_json()])
