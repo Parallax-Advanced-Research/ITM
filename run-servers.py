@@ -7,6 +7,7 @@ import socket
 import util
 import sys
 import argparse
+import time
 
 def update_server(dir_name) -> bool:
     print("\n **** Checking if " + dir_name + " needs updates. ****")
@@ -168,25 +169,64 @@ start_server("itm-evaluation-server", ["swagger_server"])
 
 
 if not adept_server_available and not soartech_server_available:
-    print('No training servers run. Using ta3_training.py will not be possible. Testing '
+    print('No training servers in use. Using ta3_training.py will not be possible. Testing '
           + 'using tad_tester.py should be unaffected.')
-    sys.exit(0)
 
 
 if adept_server_available:
     start_server("adept_server", ["openapi_server", "--port", "8081"])
-else:
-    print('ADEPT server is not running. Training using ta3_training.py will require the argument '
+elif soartech_server_available:
+    print('ADEPT server is not in use. Training using ta3_training.py will require the argument '
           + '"--session_type soartech" to use only the Soartech server in training. Testing using '
           + 'tad_tester.py should be unaffected.')
 
 if soartech_server_available:
     start_server("ta1-server-mvp", ["itm_app"])
-else:
-    print('Soartech server is not running. Training using ta3_training.py will require the argument '
+elif adept_server_available:
+    print('Soartech server is not in use. Training using ta3_training.py will require the argument '
           + '"--session_type adept" to use only the ADEPT server in training. Testing using '
           + 'tad_tester.py should be unaffected.')
 
+
 if soartech_server_available and adept_server_available:
-    print("All servers running. Both tad_tester.py and ta3_training.py should work properly.")
-    
+    print("All servers in use. Both tad_tester.py and ta3_training.py should work properly.")
+
+
+servers_up = False
+ta3_verified = False
+adept_verified = False
+soartech_verified = False
+
+wait_started = time.time()
+
+while not servers_up and wait_started - time.time() < 30:
+    time.sleep(1)
+    servers_up = True
+    if ta3_server_available and not ta3_verified:
+        if util.is_port_open(8080):
+            print("TA3 server is now listening.")
+            ta3_verified = True
+        else:
+            servers_up = False
+    if adept_server_available and not adept_verified:
+        if util.is_port_open(8081):
+            print("ADEPT server is now listening.")
+            adept_verified = True
+        else:
+            servers_up = False
+    if soartech_server_available and not soartech_verified:
+        if util.is_port_open(8084):
+            print("Soartech server is now listening.")
+            soartech_verified = True
+        else:
+            servers_up = False
+
+if not servers_up:
+    if ta3_server_available and not ta3_verified:
+        print("TA3 server did not start successfully. Check .deprepos/itm-evaluation-server/log.err")
+    if adept_server_available and not adept_verified:
+        print("ADEPT server did not start successfully. Check .deprepos/adept_server/log.err")
+    if soartech_server_available and not soartech_verified:
+        print("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp/log.err")
+else:
+    print("Servers started successfully.")
