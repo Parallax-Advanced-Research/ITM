@@ -41,6 +41,7 @@ before_script:
   - echo "$HOME"
   - cat /etc/passwd
   - whoami
+  - ls -lR /tmp
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
   - chmod 600 "$HOME/.ssh/id_rsa"
