@@ -44,7 +44,8 @@ def static_vars(**kwargs: Any) -> Callable[[T], T]:
 
 def color(color: str, s: str) -> None:
 	""" Like print, but with ANSI color codes on either end of the string """
-
+    
+	os.system('') # This voodoo call makes color work on Windows.
 	ansi = { 'bold': 1, 'red': 91, 'green': 92, 'yellow': 93, 'blue': 94 }
 	assert color in ansi
 	print(f"\x1b[{ansi[color]}m{s}\x1b[0m")
