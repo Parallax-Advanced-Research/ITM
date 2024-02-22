@@ -34,9 +34,22 @@ def update_server(dir_name) -> bool:
     # print("Current hash: " + hash + ".")
     # print("Desired hash: " + desired_hash + ".")
     
-    if hash != desired_hash:
+    p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True, check=True) 
+    difference_exists = (len(p.stdout) != 0)
+
+    if hash != desired_hash and difference_exists:
+        print("Cannot update repository due to local changes. Starting anyway, please consider "
+              + "calling save-repo-states.py")
+    elif hash != desired_hash and not difference_exists:
         print("Updating repo " + dir_name + " to recorded commit hash.")
         p = subprocess.run(["git", "checkout", desired_hash], cwd=dir)
+        if p.returncode != 0:
+            print("Error running git checkout:")
+            print(p.stdout)
+            print(p.stderr)
+            sys.exit(-1)
+        print("Update successful.")
+            
         # The following checks for updated dependencies, hopefully quickly.
         lbuilder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
         lctxt = lbuilder.ensure_directories(os.path.join(dir, "venv"))
@@ -70,8 +83,7 @@ def update_server(dir_name) -> bool:
         return True
     
     
-    p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True, check=True) 
-    if len(p.stdout) == 0:
+    if not difference_exists:
         p = subprocess.run(["git", "apply", os.path.join("..", "..", patch_filename)], 
                            cwd=dir,  stdout=subprocess.PIPE, text=True, check=True) 
         print("Applied patch to repo " + dir_name + ".")
@@ -82,7 +94,7 @@ def update_server(dir_name) -> bool:
     else:
         print("Repository " + dir_name + " is modified, and a new patch has been downloaded from "
               + "git. Please revert or combine your changes with the patch manually. Starting server "
-              + "anyway.")
+              + "anyway. Please consider calling save-repo-states.py")
     return True
     
 
