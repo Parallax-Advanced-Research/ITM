@@ -146,7 +146,7 @@ def check_git_diff_against_patch(ldir, dir_name) -> PatchingStatus:
         st.patch_updated = True
         return st
         
-    st.user_edited = (last_patch_hash != difference_hash)
+    st.user_edited = st.difference_exists and (last_patch_hash != difference_hash)
     st.patch_updated = (st.current_patch_hash != last_patch_hash)
 
     return st
