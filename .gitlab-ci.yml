@@ -55,8 +55,8 @@ before_script:
   - cat "$HOME/.ssh/id_rsa"
   - echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n" > $HOME/.ssh/config
   - chmod 600 $HOME/.ssh/config
-  - touch $HOME/.ssh/ssh_known_hosts
-  - chmod 600 $HOME/.ssh/ssh_known_hosts
+  - touch $HOME/.ssh/known_hosts
+  - chmod 600 $HOME/.ssh/known_hosts
   - cat $HOME/.ssh/config || true
   - ssh-keygen -R github.com
   - ssh -v git@github.com
