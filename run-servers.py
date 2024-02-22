@@ -12,14 +12,18 @@ from run_tests import color
 
 def update_server(dir_name) -> bool:
     print("\n **** Checking if " + dir_name + " needs updates. ****")
-    dir = os.path.join(os.getcwd(), ".deprepos", dir_name)
-    if not os.path.exists(dir):
+    ldir = os.path.join(os.getcwd(), ".deprepos", dir_name)
+    if not os.path.exists(ldir):
         print("Server " + dir_name + " not installed. Continuing without.")
         return False
-    p = subprocess.run(["git", "fetch", "--all"], cwd=dir) 
+    try:
+        p = subprocess.run(["git", "fetch", "--all"], cwd=ldir) 
+    except FileNotFoundError as err:
+        print("Error occurred: " + str(err))
+        print("Please check that git is in your PATH and PATH is well-formed.")
     if p.returncode != 0:
         color('yellow', "Failed to update git repository " + dir_name + ". Continuing anyway.")
-    p = subprocess.run(["git", "rev-parse", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True) 
+    p = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ldir, stdout=subprocess.PIPE, text=True) 
     hash = p.stdout.strip()
     if p.returncode != 0:
         color('red', "Failed to find current repository hash. Repository may be broken.")
@@ -33,7 +37,7 @@ def update_server(dir_name) -> bool:
         print(ex)
         raise Exception("Could not find expected commit hash.")
     
-    patching_status = check_git_diff_against_patch(dir, dir_name)
+    patching_status = check_git_diff_against_patch(ldir, dir_name)
 
     if hash != desired_hash and patching_status.user_edited:
         color('yellow', 
@@ -44,9 +48,9 @@ def update_server(dir_name) -> bool:
         print("Updating repo " + dir_name + " to recorded commit hash.")
         if patching_status.difference_exists:
             print("Resetting prior patch.")
-            p = subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=dir)
+            p = subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir)
             
-        p = subprocess.run(["git", "checkout", desired_hash], cwd=dir)
+        p = subprocess.run(["git", "checkout", desired_hash], cwd=ldir)
         if p.returncode != 0:
             color('red', "Error running git checkout:")
             print(p.stdout)
@@ -55,14 +59,14 @@ def update_server(dir_name) -> bool:
             sys.exit(-1)
         print("Update successful.")
         
-        venv_dir = os.path.join(dir, "venv")
+        venv_dir = os.path.join(ldir, "venv")
         if os.path.exists(venv_dir):
             print("Updating " + dir_name + " dependencies.")
             # The following checks for updated dependencies, hopefully quickly.
             lbuilder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
             lctxt = lbuilder.ensure_directories(venv_dir)
             p = subprocess.run([lctxt.env_exe, "-m", "pip", "install", "-r",
-                                               os.path.join(dir, "requirements.txt")], 
+                                               os.path.join(ldir, "requirements.txt")], 
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if p.returncode != 0:
                 color("red", "Failed to update " + dir_name + " dependencies.")
@@ -78,8 +82,8 @@ def update_server(dir_name) -> bool:
         return True
 
     if not patching_status.user_edited and patching_status.patch_updated:
-        p = subprocess.run(["git", "apply", os.path.join("..", "..", patch_filename)], 
-                           cwd=dir,  stdout=subprocess.PIPE, text=True, check=True) 
+        p = subprocess.run(["git", "apply", os.path.join("..", "..", patching_status.patch_filename)], 
+                           cwd=ldir,  stdout=subprocess.PIPE, text=True, check=True) 
         print("Applied patch to repo " + dir_name + ".")
         patch_hash_file = open(patch_hash_filename, "w")
         patch_hash_file.write(new_patch_hash)
@@ -98,30 +102,31 @@ class PatchingStatus:
     difference_exists: bool = None
     patch_exists: bool = None
     last_patch_exists: bool = None
+    patch_filename: str = None
     user_edited: bool = None
     patch_updated: bool = None
     current_patch_hash: int = None
 
 # Returns difference_exists, patch_exists, patch_different, difference_hash
-def check_git_diff_against_patch(dir, dir_name) -> PatchingStatus:
+def check_git_diff_against_patch(ldir, dir_name) -> PatchingStatus:
     st = PatchingStatus()
     temp_diff_filename = os.path.join("temp", "diff-file")
     temp_diff_file = open(temp_diff_filename, "w")
-    p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=temp_diff_file, text=True, check=True) 
+    p = subprocess.run(["git", "diff", "HEAD"], cwd=ldir, stdout=temp_diff_file, text=True, check=True) 
     temp_diff_file.close()
 
     difference_hash = util.hash_file(temp_diff_filename)
     st.difference_exists = (os.stat(temp_diff_filename).st_size > 0)
 
-    patch_filename = os.path.join("repo-cfgs", dir_name + ".patch")
-    st.patch_exists = (os.stat(patch_filename).st_size > 0)
+    st.patch_filename = os.path.join("repo-cfgs", dir_name + ".patch")
+    st.patch_exists = (os.stat(st.patch_filename).st_size > 0)
 
     
     if not st.patch_exists:
         st.user_edited = st.difference_exists
         return st
     
-    st.current_patch_hash = util.hash_file(patch_filename)
+    st.current_patch_hash = util.hash_file(st.patch_filename)
 
     last_patch_hash_filename = os.path.join("repo-cfgs", dir_name + "-patch-hash")
     st.last_patch_exists = os.path.exists(last_patch_hash_filename)
@@ -147,21 +152,21 @@ def check_git_diff_against_patch(dir, dir_name) -> PatchingStatus:
 
 
 def start_server(dir_name, args):
-    dir = os.path.join(os.getcwd(), ".deprepos", dir_name)
+    ldir = os.path.join(os.getcwd(), ".deprepos", dir_name)
     builder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
-    ctxt = builder.ensure_directories(os.path.join(dir, "venv"))
+    ctxt = builder.ensure_directories(os.path.join(ldir, "venv"))
     env = os.environ.copy()
     env["PATH"] = ctxt.bin_path + os.pathsep + env["PATH"]
-    env["PYTHONPATH"] = dir
-    with open(os.path.join(dir, 'log.out'), "w") as out, open(os.path.join(dir, 'log.err'), "w") as err:
-        p = subprocess.Popen([ctxt.env_exe, "-m"] + args, env=env, stdout=out, stderr=err, cwd=dir) 
-    f = open(os.path.join(dir, "process.pid"), "w")
+    env["PYTHONPATH"] = ldir
+    with open(os.path.join(ldir, 'log.out'), "w") as out, open(os.path.join(ldir, 'log.err'), "w") as err:
+        p = subprocess.Popen([ctxt.env_exe, "-m"] + args, env=env, stdout=out, stderr=err, cwd=ldir) 
+    f = open(os.path.join(ldir, "process.pid"), "w")
     f.write(str(p.pid))
     f.close()
     
     # t1 = threading.Thread(target=redirect_output, args=(p.stdout, ))
     # t1.start()
-    # t2 = threading.Thread(target=redirect_output, args=(p.stderr, os.path.join(dir, 'log.err')))
+    # t2 = threading.Thread(target=redirect_output, args=(p.stderr, os.path.join(ldir, 'log.err')))
     # t2.start()
     
 # def redirect_output(stream, path):
