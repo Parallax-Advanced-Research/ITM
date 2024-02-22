@@ -277,7 +277,10 @@ def read_saved_scenarios():
     scenarios_run = [osp.join(DUMP_PATH, x) for x in scenarios_run if 'pkl' in x]
     scenario_hash = {}
     for sr in scenarios_run:
-        scenario_hash[sr.split('.')[0].split(os.sep)[-1]] = pkl.load(file=open(sr, mode='rb'))
+        if 'MD' in sr:
+            scenario_hash[''.join(sr.split('.')[:-1]).split(os.sep)[-1]] = pkl.load(file=open(sr, mode='rb'))
+        else:
+            scenario_hash[sr.split('.')[0].split(os.sep)[-1]] = pkl.load(file=open(sr, mode='rb'))
     return scenario_hash
 
 
