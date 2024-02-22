@@ -7,6 +7,7 @@ import socket
 import util
 import sys
 import argparse
+import time
 
 def update_server(dir_name) -> bool:
     print("\n **** Checking if " + dir_name + " needs updates. ****")
@@ -33,9 +34,27 @@ def update_server(dir_name) -> bool:
     # print("Current hash: " + hash + ".")
     # print("Desired hash: " + desired_hash + ".")
     
-    if hash != desired_hash:
+    p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True, check=True) 
+    difference_exists = (len(p.stdout) != 0)
+
+    if hash != desired_hash and difference_exists:
+        print("Cannot update repository due to local changes. Starting anyway, please consider "
+              + "calling save-repo-states.py")
+    elif hash != desired_hash and not difference_exists:
         print("Updating repo " + dir_name + " to recorded commit hash.")
         p = subprocess.run(["git", "checkout", desired_hash], cwd=dir)
+        if p.returncode != 0:
+            print("Error running git checkout:")
+            print(p.stdout)
+            print(p.stderr)
+            sys.exit(-1)
+        print("Update successful.")
+            
+        # The following checks for updated dependencies, hopefully quickly.
+        lbuilder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
+        lctxt = lbuilder.ensure_directories(os.path.join(dir, "venv"))
+        _ = subprocess.run([lctxt.env_exe, "-m", "pip", "install", "-r",
+                                          os.path.join(dir, "requirements.txt")], check=True)
     else:
         print("Repository " + dir_name + " is on the right commit.")
     
@@ -64,8 +83,7 @@ def update_server(dir_name) -> bool:
         return True
     
     
-    p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True, check=True) 
-    if len(p.stdout) == 0:
+    if not difference_exists:
         p = subprocess.run(["git", "apply", os.path.join("..", "..", patch_filename)], 
                            cwd=dir,  stdout=subprocess.PIPE, text=True, check=True) 
         print("Applied patch to repo " + dir_name + ".")
@@ -76,7 +94,7 @@ def update_server(dir_name) -> bool:
     else:
         print("Repository " + dir_name + " is modified, and a new patch has been downloaded from "
               + "git. Please revert or combine your changes with the patch manually. Starting server "
-              + "anyway.")
+              + "anyway. Please consider calling save-repo-states.py")
     return True
     
 
@@ -168,25 +186,64 @@ start_server("itm-evaluation-server", ["swagger_server"])
 
 
 if not adept_server_available and not soartech_server_available:
-    print('No training servers run. Using ta3_training.py will not be possible. Testing '
+    print('No training servers in use. Using ta3_training.py will not be possible. Testing '
           + 'using tad_tester.py should be unaffected.')
-    sys.exit(0)
 
 
 if adept_server_available:
     start_server("adept_server", ["openapi_server", "--port", "8081"])
-else:
-    print('ADEPT server is not running. Training using ta3_training.py will require the argument '
+elif soartech_server_available:
+    print('ADEPT server is not in use. Training using ta3_training.py will require the argument '
           + '"--session_type soartech" to use only the Soartech server in training. Testing using '
           + 'tad_tester.py should be unaffected.')
 
 if soartech_server_available:
     start_server("ta1-server-mvp", ["itm_app"])
-else:
-    print('Soartech server is not running. Training using ta3_training.py will require the argument '
+elif adept_server_available:
+    print('Soartech server is not in use. Training using ta3_training.py will require the argument '
           + '"--session_type adept" to use only the ADEPT server in training. Testing using '
           + 'tad_tester.py should be unaffected.')
 
+
 if soartech_server_available and adept_server_available:
-    print("All servers running. Both tad_tester.py and ta3_training.py should work properly.")
-    
+    print("All servers in use. Both tad_tester.py and ta3_training.py should work properly.")
+
+
+servers_up = False
+ta3_verified = False
+adept_verified = False
+soartech_verified = False
+
+wait_started = time.time()
+
+while not servers_up and time.time() - wait_started < 30: # At least 30 seconds have passed.
+    time.sleep(1)
+    servers_up = True
+    if ta3_server_available and not ta3_verified:
+        if util.is_port_open(8080):
+            print("TA3 server is now listening.")
+            ta3_verified = True
+        else:
+            servers_up = False
+    if adept_server_available and not adept_verified:
+        if util.is_port_open(8081):
+            print("ADEPT server is now listening.")
+            adept_verified = True
+        else:
+            servers_up = False
+    if soartech_server_available and not soartech_verified:
+        if util.is_port_open(8084):
+            print("Soartech server is now listening.")
+            soartech_verified = True
+        else:
+            servers_up = False
+
+if not servers_up:
+    if ta3_server_available and not ta3_verified:
+        print("TA3 server did not start successfully. Check .deprepos/itm-evaluation-server/log.err")
+    if adept_server_available and not adept_verified:
+        print("ADEPT server did not start successfully. Check .deprepos/adept_server/log.err")
+    if soartech_server_available and not soartech_verified:
+        print("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp/log.err")
+else:
+    print("Servers started successfully.")

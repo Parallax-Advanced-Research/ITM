@@ -1,6 +1,7 @@
 from scripts.shared import get_default_parser
 from scripts import analyze_data
 from runner import TA3Driver
+from components.decision_selector import DiverseSelector, ExhaustiveSelector
 import tad
 import util
 import sys
@@ -8,13 +9,24 @@ import argparse
 
 def main():
     parser = get_default_parser()
-    parser.add_argument('--loop', action=argparse.BooleanOptionalAction, default=True, help="Loops api_test until all trajectories have been tried (default).")
+    parser.add_argument('--exhaustive', action=argparse.BooleanOptionalAction, default=True, help="Use exhaustive selector (default).")
+    parser.add_argument('--diverse', action=argparse.BooleanOptionalAction, default=False, help="Use diverse selector (overrides exhaustive).")
+    parser.add_argument('--reset', action=argparse.BooleanOptionalAction, default=False, help="Run from scratch (delete old cases).")
+    parser.add_argument('--runs', action=argparse.BooleanOptionalAction, default=None, help="How many training runs to perform (maximum).")
     args = parser.parse_args()
     args.training = True
-    args.exhaustive = True
     args.keds = False
     args.verbose = False
     args.dump = False
+
+    if args.diverse:
+        args.selector = DiverseSelector(not args.reset)
+        if args.runs is None:
+            args.runs = 1000
+    elif args.exhaustive:
+        args.selector = ExhaustiveSelector(not args.reset)
+        if args.runs is None:
+            args.runs = -1
     
     if args.session_type == "eval":
         print('You must specify one of "adept" or "soartech" as session type at command line.')
@@ -35,16 +47,12 @@ def main():
         
         
     driver = TA3Driver(args)
-    es: ExhaustiveSelector = driver.selector
 
-    if not args.loop:
-        tad.api_test(args, driver)
-        sys.exit(0)
-
-    while not es.is_finished():
+    while not args.selector.is_finished() and args.runs != 0:
         tad.api_test(args, driver)
         driver.actions_performed = []
         driver.treatments = {}
+        args.runs -= 1
     output_training_cases()
     
 def output_training_cases():
