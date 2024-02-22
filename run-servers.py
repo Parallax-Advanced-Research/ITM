@@ -33,18 +33,19 @@ def update_server(dir_name) -> bool:
         print(ex)
         raise Exception("Could not find expected commit hash.")
     
-    # print("Current hash: " + hash + ".")
-    # print("Desired hash: " + desired_hash + ".")
-    
-    p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True, check=True) 
-    difference_exists = (len(p.stdout) != 0)
+    patching_status = check_git_diff_against_patch(dir, dir_name)
 
-    if hash != desired_hash and difference_exists:
+    if hash != desired_hash and patching_status.user_edited:
         color('yellow', 
               "Cannot update repository due to local changes. Starting anyway, please consider "
               + "calling save-repo-states.py")
-    elif hash != desired_hash and not difference_exists:
+        return True
+    elif hash != desired_hash and not patching_status.user_edited:
         print("Updating repo " + dir_name + " to recorded commit hash.")
+        if patching_status.difference_exists:
+            print("Resetting prior patch.")
+            p = subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=dir)
+            
         p = subprocess.run(["git", "checkout", desired_hash], cwd=dir)
         if p.returncode != 0:
             color('red', "Error running git checkout:")
@@ -68,46 +69,77 @@ def update_server(dir_name) -> bool:
     else:
         print("Repository " + dir_name + " is on the right commit.")
     
-    patch_filename = os.path.join("repo-cfgs", dir_name + ".patch")
-    if os.stat(patch_filename).st_size == 0:
+    if not patching_status.patch_exists: 
         print("No patch for repo " + dir_name + ".")
         return True
-
     
-    new_patch_hash = util.hash_file(patch_filename)
-    patch_hash_filename = os.path.join("repo-cfgs", dir_name + "-patch-hash")
-    old_patch_hash = ""
-    if not os.path.exists(patch_hash_filename):
-        temp_diff_filename = os.path.join("temp", "diff-file")
-        temp_diff_file = open(temp_diff_filename, "w")
-        p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=temp_diff_file, text=True, check=True) 
-        temp_diff_file.close()
-        old_patch_hash = util.hash_file(temp_diff_filename)
-    else:
-        patch_hash_file = open(patch_hash_filename, "r")
-        old_patch_hash = patch_hash_file.readline()
-        patch_hash_file.close()
-
-    if new_patch_hash == old_patch_hash:
+    if not patching_status.patch_updated:
         print("Patch applied previously.")
         return True
-    
-    
-    if not difference_exists:
+
+    if not patching_status.user_edited and patching_status.patch_updated:
         p = subprocess.run(["git", "apply", os.path.join("..", "..", patch_filename)], 
                            cwd=dir,  stdout=subprocess.PIPE, text=True, check=True) 
         print("Applied patch to repo " + dir_name + ".")
         patch_hash_file = open(patch_hash_filename, "w")
         patch_hash_file.write(new_patch_hash)
         patch_hash_file.close()
-        
-    else:
+        return True
+
+    if patching_status.user_edited and patching_status.patch_updated:
         color('yellow', 
               "Repository " + dir_name + " is modified, and a new patch has been downloaded from "
               + "git. Please revert or combine your changes with the patch manually. Starting server "
               + "anyway. Please consider calling save-repo-states.py")
-    return True
+        return True
+    raise Exception("Should not be possible to reach this point.")
+
+class PatchingStatus:
+    difference_exists: bool = None
+    patch_exists: bool = None
+    last_patch_exists: bool = None
+    user_edited: bool = None
+    patch_updated: bool = None
+    current_patch_hash: int = None
+
+# Returns difference_exists, patch_exists, patch_different, difference_hash
+def check_git_diff_against_patch(dir, dir_name) -> PatchingStatus:
+    st = PatchingStatus()
+    temp_diff_filename = os.path.join("temp", "diff-file")
+    temp_diff_file = open(temp_diff_filename, "w")
+    p = subprocess.run(["git", "diff", "HEAD"], cwd=dir, stdout=temp_diff_file, text=True, check=True) 
+    temp_diff_file.close()
+
+    difference_hash = util.hash_file(temp_diff_filename)
+    st.difference_exists = (os.stat(temp_diff_filename).st_size == 0)
+
+    patch_filename = os.path.join("repo-cfgs", dir_name + ".patch")
+    st.patch_exists = (os.stat(patch_filename).st_size == 0)
+
+    last_patch_hash_filename = os.path.join("repo-cfgs", dir_name + "-patch-hash")
+    st.last_patch_exists = os.path.exists(last_patch_hash_filename)
+
     
+    if not st.patch_exists:
+        st.user_edited = st.difference_exists
+        return st
+    
+    st.current_patch_hash = util.hash_file(patch_filename)
+
+    if not st.last_patch_exists:
+        st.user_edited = st.difference_exists
+        st.patch_updated = True
+        return st
+        
+    last_patch_hash_file = open(last_patch_hash_filename, "r")
+    last_patch_hash = last_patch_hash_file.readline()
+    last_patch_hash_file.close()
+
+    st.user_edited = (last_patch_hash != difference_hash)
+    st.patch_updated = (st.current_patch_hash != last_patch_hash)
+
+    return st
+        
 
 
 def start_server(dir_name, args):
