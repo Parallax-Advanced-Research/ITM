@@ -199,7 +199,7 @@ soartech_verified = False
 
 wait_started = time.time()
 
-while not servers_up and wait_started - time.time() < 30:
+while not servers_up and time.time() - wait_started < 30:
     time.sleep(1)
     servers_up = True
     if ta3_server_available and not ta3_verified:
