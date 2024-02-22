@@ -111,13 +111,10 @@ def check_git_diff_against_patch(dir, dir_name) -> PatchingStatus:
     temp_diff_file.close()
 
     difference_hash = util.hash_file(temp_diff_filename)
-    st.difference_exists = (os.stat(temp_diff_filename).st_size == 0)
+    st.difference_exists = (os.stat(temp_diff_filename).st_size > 0)
 
     patch_filename = os.path.join("repo-cfgs", dir_name + ".patch")
-    st.patch_exists = (os.stat(patch_filename).st_size == 0)
-
-    last_patch_hash_filename = os.path.join("repo-cfgs", dir_name + "-patch-hash")
-    st.last_patch_exists = os.path.exists(last_patch_hash_filename)
+    st.patch_exists = (os.stat(patch_filename).st_size > 0)
 
     
     if not st.patch_exists:
@@ -126,15 +123,22 @@ def check_git_diff_against_patch(dir, dir_name) -> PatchingStatus:
     
     st.current_patch_hash = util.hash_file(patch_filename)
 
+    last_patch_hash_filename = os.path.join("repo-cfgs", dir_name + "-patch-hash")
+    st.last_patch_exists = os.path.exists(last_patch_hash_filename)
+    
+    last_patch_hash = ""
+    if st.last_patch_exists:
+        last_patch_hash_file = open(last_patch_hash_filename, "r")
+        last_patch_hash = last_patch_hash_file.readline()
+        last_patch_hash_file.close()
+        if last_patch_hash == util.empty_hash():
+            st.last_patch_exists = False
+
     if not st.last_patch_exists:
         st.user_edited = st.difference_exists
         st.patch_updated = True
         return st
         
-    last_patch_hash_file = open(last_patch_hash_filename, "r")
-    last_patch_hash = last_patch_hash_file.readline()
-    last_patch_hash_file.close()
-
     st.user_edited = (last_patch_hash != difference_hash)
     st.patch_updated = (st.current_patch_hash != last_patch_hash)
 
