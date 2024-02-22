@@ -8,19 +8,21 @@ import util
 import sys
 import argparse
 import time
+from run_tests import color
 
 def update_server(dir_name) -> bool:
     print("\n **** Checking if " + dir_name + " needs updates. ****")
     dir = os.path.join(os.getcwd(), ".deprepos", dir_name)
     if not os.path.exists(dir):
+        print("Server " + dir_name + " not installed. Continuing without.")
         return False
     p = subprocess.run(["git", "fetch", "--all"], cwd=dir) 
     if p.returncode != 0:
-        print("Failed to update git repository " + dir_name + ".")
+        color('yellow', "Failed to update git repository " + dir_name + ". Continuing anyway.")
     p = subprocess.run(["git", "rev-parse", "HEAD"], cwd=dir, stdout=subprocess.PIPE, text=True) 
     hash = p.stdout.strip()
     if p.returncode != 0:
-        print("Failed to find current repository hash. Repository may be broken.")
+        color('red', "Failed to find current repository hash. Repository may be broken.")
         raise Exception("Could not manage git repositories.")
     hashfile = None
     desired_hash = None
@@ -38,23 +40,31 @@ def update_server(dir_name) -> bool:
     difference_exists = (len(p.stdout) != 0)
 
     if hash != desired_hash and difference_exists:
-        print("Cannot update repository due to local changes. Starting anyway, please consider "
+        color('yellow', 
+              "Cannot update repository due to local changes. Starting anyway, please consider "
               + "calling save-repo-states.py")
     elif hash != desired_hash and not difference_exists:
         print("Updating repo " + dir_name + " to recorded commit hash.")
         p = subprocess.run(["git", "checkout", desired_hash], cwd=dir)
         if p.returncode != 0:
-            print("Error running git checkout:")
+            color('red', "Error running git checkout:")
             print(p.stdout)
             print(p.stderr)
+            color('red', "No servers started.")
             sys.exit(-1)
         print("Update successful.")
-            
-        # The following checks for updated dependencies, hopefully quickly.
-        lbuilder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
-        lctxt = lbuilder.ensure_directories(os.path.join(dir, "venv"))
-        _ = subprocess.run([lctxt.env_exe, "-m", "pip", "install", "-r",
-                                          os.path.join(dir, "requirements.txt")], check=True)
+        
+        venv_dir = os.path.join(dir, "venv")
+        if os.path.exists(venv_dir):
+            print("Updating " + dir_name + " dependencies.")
+            # The following checks for updated dependencies, hopefully quickly.
+            lbuilder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
+            lctxt = lbuilder.ensure_directories(venv_dir)
+            p = subprocess.run([lctxt.env_exe, "-m", "pip", "install", "-r",
+                                               os.path.join(dir, "requirements.txt")], 
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if p.returncode != 0:
+                color("red", "Failed to update " + dir_name + " dependencies.")
     else:
         print("Repository " + dir_name + " is on the right commit.")
     
@@ -92,7 +102,8 @@ def update_server(dir_name) -> bool:
         patch_hash_file.close()
         
     else:
-        print("Repository " + dir_name + " is modified, and a new patch has been downloaded from "
+        color('yellow', 
+              "Repository " + dir_name + " is modified, and a new patch has been downloaded from "
               + "git. Please revert or combine your changes with the patch manually. Starting server "
               + "anyway. Please consider calling save-repo-states.py")
     return True
@@ -128,6 +139,7 @@ def start_server(dir_name, args):
     # f.close()
     # stream.close()
 
+
 parser = argparse.ArgumentParser(description="Runs an experiment attempting to learn about an " \
                                              "environment by learning a subset of actions by " \
                                              "themselves first.")
@@ -148,36 +160,41 @@ update_server("itm-evaluation-client")
 ta3_server_available = update_server("itm-evaluation-server")
 
 if not ta3_server_available:
-    print("TA3 server is not installed; neither tad_tester.py nor ta3_training.py will function. "
+    color('red', 
+          "TA3 server is not installed; neither tad_tester.py nor ta3_training.py will function. "
           + " No servers started.")
     sys.exit(-1)
 
 if args.soartech:
     soartech_server_available = update_server("ta1-server-mvp")
     if not soartech_server_available:
-        print("Training server from soartech not found.")
+        color('yellow', "Training server from soartech not found. Proceeding without it.")
 else:
     soartech_server_available = False
-    
+ 
 if args.adept:
     adept_server_available = update_server("adept_server")
     if not adept_server_available:
-        print("ADEPT training server not found.")
+            color('yellow', "ADEPT training server not found. Proceeding without it.")
 else:
     adept_server_available = False
 
 ready = True
 if ta3_server_available and util.is_port_open(8080):
-    print("Port 8080 is already in use (default for evaluation server).")
+    color('red', 
+          "Port 8080 is already in use (default for evaluation server).")
     ready = False
 if args.adept and adept_server_available and util.is_port_open(8081):
-    print("Port 8081 is already in use (configured for adept server).")
+    color('red', 
+          "Port 8081 is already in use (configured for adept server).")
     ready = False
 if args.soartech and soartech_server_available and util.is_port_open(8084):
-    print("Port 8084 is already in use (default for Soartech server).")
+    color('red', 
+          "Port 8084 is already in use (default for Soartech server).")
     ready = False
 if not ready:
-    print("Please stop the processes that are already using ports before running this script. " + 
+    color('red', 
+          "Please stop the processes that are already using ports before running this script. " + 
           "The ports used are not yet configurable within the script. Remember to run " +
           "stop-servers.py to remove your own prior server processes if necessary.")
     sys.exit(-1)
@@ -186,27 +203,30 @@ start_server("itm-evaluation-server", ["swagger_server"])
 
 
 if not adept_server_available and not soartech_server_available:
-    print('No training servers in use. Using ta3_training.py will not be possible. Testing '
+    color('yellow', 
+          'No training servers in use. Using ta3_training.py will not be possible. Testing '
           + 'using tad_tester.py should be unaffected.')
 
 
 if adept_server_available:
     start_server("adept_server", ["openapi_server", "--port", "8081"])
 elif soartech_server_available:
-    print('ADEPT server is not in use. Training using ta3_training.py will require the argument '
+    color('yellow', 
+          'ADEPT server is not in use. Training using ta3_training.py will require the argument '
           + '"--session_type soartech" to use only the Soartech server in training. Testing using '
           + 'tad_tester.py should be unaffected.')
 
 if soartech_server_available:
     start_server("ta1-server-mvp", ["itm_app"])
 elif adept_server_available:
-    print('Soartech server is not in use. Training using ta3_training.py will require the argument '
+    color('yellow', 
+          'Soartech server is not in use. Training using ta3_training.py will require the argument '
           + '"--session_type adept" to use only the ADEPT server in training. Testing using '
           + 'tad_tester.py should be unaffected.')
 
 
 if soartech_server_available and adept_server_available:
-    print("All servers in use. Both tad_tester.py and ta3_training.py should work properly.")
+    color('green', "All servers in use. Both tad_tester.py and ta3_training.py should work properly.")
 
 
 servers_up = False
@@ -221,29 +241,29 @@ while not servers_up and time.time() - wait_started < 30: # At least 30 seconds 
     servers_up = True
     if ta3_server_available and not ta3_verified:
         if util.is_port_open(8080):
-            print("TA3 server is now listening.")
+            color('green', "TA3 server is now listening.")
             ta3_verified = True
         else:
             servers_up = False
     if adept_server_available and not adept_verified:
         if util.is_port_open(8081):
-            print("ADEPT server is now listening.")
+            color('green', "ADEPT server is now listening.")
             adept_verified = True
         else:
             servers_up = False
     if soartech_server_available and not soartech_verified:
         if util.is_port_open(8084):
-            print("Soartech server is now listening.")
+            color('green', "Soartech server is now listening.")
             soartech_verified = True
         else:
             servers_up = False
 
 if not servers_up:
     if ta3_server_available and not ta3_verified:
-        print("TA3 server did not start successfully. Check .deprepos/itm-evaluation-server/log.err")
+        color('red', "TA3 server did not start successfully. Check .deprepos/itm-evaluation-server/log.err")
     if adept_server_available and not adept_verified:
-        print("ADEPT server did not start successfully. Check .deprepos/adept_server/log.err")
+        color('red', "ADEPT server did not start successfully. Check .deprepos/adept_server/log.err")
     if soartech_server_available and not soartech_verified:
-        print("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp/log.err")
+        color('red', "Soartech server did not start successfully. Check .deprepos/ta1-server-mvp/log.err")
 else:
-    print("Servers started successfully.")
+    color('green', "Servers started successfully.")
