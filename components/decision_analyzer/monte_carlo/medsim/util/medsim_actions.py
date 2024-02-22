@@ -11,12 +11,16 @@ def supply_location_match(action: MedsimAction):
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.TOURNIQUET.value]:
             return False
         return True
-    if action.supply == Supplies.DECOMPRESSION_NEEDLE:
+    if action.supply == Supplies.DECOMPRESSION_NEEDLE.value:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.DECOMPRESSION_NEEDLE.value]:
             return True
         return False
-    if action.supply == Supplies.NASOPHARYNGEAL_AIRWAY:
+    if action.supply == Supplies.NASOPHARYNGEAL_AIRWAY.value:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.NASOPHARYNGEAL_AIRWAY.value]:
+            return True
+        return False
+    if action.supply == Supplies.VENTED_CHEST_SEAL.value:
+        if action.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.UNSPECIFIED.value]:
             return True
         return False
     return True
@@ -24,15 +28,33 @@ def supply_location_match(action: MedsimAction):
 
 def supply_injury_match(supply: str, injury: str) -> bool:
     if supply == Supplies.PRESSURE_BANDAGE.value:
-        if injury in [Injuries.BURN.value, Injuries.CHEST_COLLAPSE.value, Injuries.ASTHMATIC.value, Injuries.AMPUTATION.value]:
+        if injury in [Injuries.BURN.value, Injuries.CHEST_COLLAPSE.value, Injuries.ASTHMATIC.value,
+                      Injuries.AMPUTATION.value, Injuries.BURN_SUFFOCATION.value, Injuries.FOREHEAD_SCRAPE.value,
+                      Injuries.EAR_BLEED.value, Injuries.EYE_TRAUMA.value, Injuries.BROKEN_BONE.value,
+                      Injuries.INTERNAL.value]:
             return False
         return True
     if supply == Supplies.HEMOSTATIC_GAUZE.value:
-        if injury in [Injuries.LACERATION.value, Injuries.EAR_BLEED.value, Injuries.SHRAPNEL.value, Injuries.PUNCTURE.value, Injuries.FOREHEAD_SCRAPE.value]:
+        if injury in [Injuries.LACERATION.value, Injuries.EAR_BLEED.value, Injuries.SHRAPNEL.value,
+                      Injuries.PUNCTURE.value, Injuries.FOREHEAD_SCRAPE.value]:
             return True
         return False
     if supply == Supplies.TOURNIQUET.value:
-        if injury in [Injuries.AMPUTATION.value, Injuries.LACERATION.value, Injuries.PUNCTURE.value, Injuries.SHRAPNEL.value]:
+        if injury in [Injuries.AMPUTATION.value, Injuries.LACERATION.value, Injuries.PUNCTURE.value,
+                      Injuries.SHRAPNEL.value]:
+            return True
+        return False
+    if supply == Supplies.EPI_PEN.value:
+        if injury in [Injuries.ASTHMATIC.value]:
+            return True
+        return False
+    if supply == Supplies.BLOOD.value:
+        return True
+    if supply == Supplies.IV_BAG.value:
+        return True
+    if supply == Supplies.VENTED_CHEST_SEAL.value:
+        if injury in [Injuries.LACERATION.value, Injuries.SHRAPNEL.value,
+                      Injuries.BROKEN_BONE.value, Injuries.PUNCTURE.value]:
             return True
         return False
     if supply == Supplies.DECOMPRESSION_NEEDLE.value:
