@@ -35,11 +35,12 @@ include:
  - template: Jobs/Secret-Detection.gitlab-ci.yml
 
 before_script:
+  - pwd
+  - echo "$HOME"
   - export HOME=/home/itm
-  - ls /home
+  - echo "$HOME"
   - cat /etc/passwd
   - whoami
-  - cd
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
   - chmod 600 "$HOME/.ssh/id_rsa"
