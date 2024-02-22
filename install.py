@@ -73,8 +73,9 @@ except PermissionError:
 except shutil.SameFileError as err:
     print("Error occurred: ")
     print(str(err))
-    print("If you are in an activated environment in this directory, deactivate. Otherwise, if there "
-          + "is a sim link to Python in the directory referenced by the above error, delete and rerun.")
+    print("If you are in an activated environment in this directory, deactivate. Otherwise, if "
+          + "there is a sim link to Python at the venv location referenced by the above error, "
+          + "delete and rerun.")
     sys.exit(-1)
     
 ctxt = builder.ensure_directories("venv")
