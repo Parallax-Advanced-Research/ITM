@@ -97,3 +97,53 @@ integration_test_mc:
     - python tad_tester.py --no-verbose --session_type soartech --no-ebd --mc --no-br --no-keds --no-kedsd --no-csv --no-bayes
     - python stop-servers.py
 
+integration_test_br:
+  stage: individual_tests
+  needs: [ integration_test ]
+  when: on_failure
+  script:
+    - python run-servers.py
+    - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
+    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_keds:
+  stage: individual_tests
+  needs: [ integration_test ]
+  when: on_failure
+  script:
+    - python run-servers.py
+    - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
+    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --no-br --keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_kedsd:
+  stage: individual_tests
+  needs: [ integration_test ]
+  when: on_failure
+  script:
+    - python run-servers.py
+    - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
+    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --no-br --no-keds --kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_csv:
+  stage: individual_tests
+  needs: [ integration_test ]
+  when: on_failure
+  script:
+    - python run-servers.py
+    - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
+    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --no-br --no-keds --no-kedsd --csv --no-bayes
+    - python stop-servers.py
+
+integration_test_bayes:
+  stage: individual_tests
+  needs: [ integration_test ]
+  when: on_failure
+  script:
+    - python run-servers.py
+    - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
+    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --no-br --no-keds --no-kedsd --no-csv --bayes
+    - python stop-servers.py
+
