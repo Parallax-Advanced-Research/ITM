@@ -6,8 +6,6 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 
-#image: python:3.10
-#image: ubuntu:latest
 image: registry.basic-research.parallaxgc.org/github-mirrors/itm/ci:latest
 
 stages:
@@ -35,35 +33,14 @@ include:
  - template: Jobs/Secret-Detection.gitlab-ci.yml
 
 before_script:
-#  - pwd
-#  - echo "$HOME"
-#  - export HOME=/home/itm
-#  - echo "$HOME"
-#  - cat /etc/passwd
-#  - whoami
-#  - ls -lR /tmp
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
   - chmod 600 "$HOME/.ssh/id_rsa"
-#  - echo "$HOME"
-#  - ls -l "$HOME/.ssh"
-#  - ls -lR $HOME/.ssh
-#  - cd
-#  - pwd
-#  - wc "$HOME/.ssh/id_rsa"
-#  - md5sum "$HOME/.ssh/id_rsa"
-#  - cat "$HOME/.ssh/id_rsa"
-  - echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n\tStrictHostKeyChecking no\n" > $HOME/.ssh/config
-  # TODO: instead of StrictHostKeyChecking no, put github's key in .ssh/known_hosts
+  #- echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n\tStrictHostKeyChecking no\n" > $HOME/.ssh/config
+  - echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n" > $HOME/.ssh/config
+  # github.com keys
+  - echo -e '|1|OHw9rY0DDYyp5+HeM5jWt0XiZhQ=|aH0N3qZCrtB08tssZYzMri/3uJc= ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl\n|1|buENn9Vhuzd9Qv8O2C/JMiHntdE=|OLaKZvmqGVnPCO2w5D7xvbKZuLY= ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=\n|1|rSpjqSIU5JTUZHCPIAd/hAKMcPs=|rrVdO0LDSawmFWaaCBUKcN3I5E8= ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=' >> ~/.ssh/known_hosts
   - chmod 600 $HOME/.ssh/config
-#  - touch $HOME/.ssh/known_hosts
-#  - chmod 600 $HOME/.ssh/known_hosts
-#  - cat $HOME/.ssh/config || true
-#  - ssh-keygen -R github.com
-#  - ssh -v git@github.com || true
-#  - ssh -v git@github.com <<< '' || true
-#  - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar || true # TODO: remove once it works in install.py.
-#  - ls foobar
   - CI/install_libs.sh
   - python install.py
   - source venv/bin/activate
