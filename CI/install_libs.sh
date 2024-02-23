@@ -1,8 +1,10 @@
 #!/bin/bash
 # Installs non-python dependencies. Assumes apt exists.
 
-ITM_DIR="$(dirname ${BASH_SOURCE[0]})/.."
-cd "$ITM_DIR"
+cd "$(dirname ${BASH_SOURCE[0]})/.."
+ITM_DIR=$(pwd)
+
+echo "$ITM_DIR"
 
 # Setup sbcl, quicklisp
 sudo apt-get install -y libgomp1 wget sbcl
@@ -24,6 +26,7 @@ if [ -f "package.json" ]; then
 	checkout "package.json" # replace patched version with non-patched so we can pull
 fi
 git pull
+ls -l
 rm -- "package.json"
 cd "$ITM_DIR"
 ln -s "$ITM_DIR/components/decision_analyzer/event_based_diagnosis/hems-package-replacement.lisp" "$HEMS_DIR/package.lisp"
