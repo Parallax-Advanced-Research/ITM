@@ -154,6 +154,8 @@ class Actions(Enum):
     SITREP = "SITREP"
     UNKNOWN = "UNKNOWN"
     END_SCENARIO = 'END_SCENARIO'
+    END_SCENE = 'END_SCENE'
+    SEARCH = 'SEARCH'
 
 
 class MentalStates_KNX(Enum):
@@ -192,6 +194,9 @@ class Supplies(Enum):
     VENTED_CHEST_SEAL = 'Vented Chest Seal'
     PAIN_MEDICATIONS = 'Pain Medications'
     BLOOD = 'Blood'
+    SPLINT = 'Splint'
+    IV_BAG = 'IV Bag'
+    BURN_DRESSING = 'Burn Dressing'
 
 
 class Locations(Enum):
@@ -218,6 +223,7 @@ class Locations(Enum):
     LEFT_NECK = "left neck"
     RIGHT_NECK = "right neck"
     UNSPECIFIED = "unspecified"
+    INTERNAL = "internal"
 
 
 class Tags(Enum):

@@ -11,12 +11,16 @@ def supply_location_match(action: MedsimAction):
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.TOURNIQUET.value]:
             return False
         return True
-    if action.supply == Supplies.DECOMPRESSION_NEEDLE:
+    if action.supply == Supplies.DECOMPRESSION_NEEDLE.value:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.DECOMPRESSION_NEEDLE.value]:
             return True
         return False
-    if action.supply == Supplies.NASOPHARYNGEAL_AIRWAY:
+    if action.supply == Supplies.NASOPHARYNGEAL_AIRWAY.value:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.NASOPHARYNGEAL_AIRWAY.value]:
+            return True
+        return False
+    if action.supply == Supplies.VENTED_CHEST_SEAL.value:
+        if action.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.UNSPECIFIED.value]:
             return True
         return False
     return True
@@ -24,15 +28,33 @@ def supply_location_match(action: MedsimAction):
 
 def supply_injury_match(supply: str, injury: str) -> bool:
     if supply == Supplies.PRESSURE_BANDAGE.value:
-        if injury in [Injuries.BURN.value, Injuries.CHEST_COLLAPSE.value, Injuries.ASTHMATIC.value, Injuries.AMPUTATION.value]:
+        if injury in [Injuries.BURN.value, Injuries.CHEST_COLLAPSE.value, Injuries.ASTHMATIC.value,
+                      Injuries.AMPUTATION.value, Injuries.BURN_SUFFOCATION.value, Injuries.FOREHEAD_SCRAPE.value,
+                      Injuries.EAR_BLEED.value, Injuries.EYE_TRAUMA.value, Injuries.BROKEN_BONE.value,
+                      Injuries.INTERNAL.value]:
             return False
         return True
     if supply == Supplies.HEMOSTATIC_GAUZE.value:
-        if injury in [Injuries.LACERATION.value, Injuries.EAR_BLEED.value, Injuries.SHRAPNEL.value, Injuries.PUNCTURE.value, Injuries.FOREHEAD_SCRAPE.value]:
+        if injury in [Injuries.LACERATION.value, Injuries.EAR_BLEED.value, Injuries.SHRAPNEL.value,
+                      Injuries.PUNCTURE.value, Injuries.FOREHEAD_SCRAPE.value]:
             return True
         return False
     if supply == Supplies.TOURNIQUET.value:
-        if injury in [Injuries.AMPUTATION.value, Injuries.LACERATION.value, Injuries.PUNCTURE.value, Injuries.SHRAPNEL.value]:
+        if injury in [Injuries.AMPUTATION.value, Injuries.LACERATION.value, Injuries.PUNCTURE.value,
+                      Injuries.SHRAPNEL.value]:
+            return True
+        return False
+    if supply == Supplies.EPI_PEN.value:
+        if injury in [Injuries.ASTHMATIC.value]:
+            return True
+        return False
+    if supply == Supplies.BLOOD.value:
+        return True
+    if supply == Supplies.IV_BAG.value:
+        return True
+    if supply == Supplies.VENTED_CHEST_SEAL.value:
+        if injury in [Injuries.LACERATION.value, Injuries.SHRAPNEL.value,
+                      Injuries.BROKEN_BONE.value, Injuries.PUNCTURE.value]:
             return True
         return False
     if supply == Supplies.DECOMPRESSION_NEEDLE.value:
@@ -43,7 +65,17 @@ def supply_injury_match(supply: str, injury: str) -> bool:
         if injury in [Injuries.ASTHMATIC.value, Injuries.BURN_SUFFOCATION.value]:
             return True
         return False
-    return True
+    if supply == Supplies.PAIN_MEDICATIONS.value:
+        return True
+    if supply == Supplies.BURN_DRESSING.value:
+        if injury in [Injuries.BURN.value]:
+            return True
+        return False
+    if supply == Supplies.SPLINT.value:
+        if injury in [Injuries.BROKEN_BONE.value]:
+            return True
+        return False
+    return False
 
 
 def find_casualty(action: MedsimAction, casualties: list[Casualty]) -> Casualty | None:
@@ -82,7 +114,8 @@ def get_action_all(casualties: list[Casualty], action_str: str) -> list[tuple]:
 
 def get_dmc_actions() -> list[tuple]:
     one_tuple = (Actions.DIRECT_MOBILE_CASUALTY.value,)
-    return [one_tuple]
+    search = (Actions.SEARCH.value,)
+    return [one_tuple, search]
 
 
 def get_tag_options(casualties: list[Casualty]) -> list[tuple]:
@@ -106,6 +139,7 @@ def get_possible_actions(casualties: list[Casualty], supplies: list[str]) -> lis
     move_to_evac_actions = get_action_all(casualties, Actions.MOVE_TO_EVAC.value)
     sitrep_actions = get_action_all(casualties, Actions.SITREP.value)
     tag_actions = get_tag_options(casualties)
+    # search_options = get_search_options()  Done in get dmc_actions
 
     possible_action_tuples.extend(treatment_actions)
     possible_action_tuples.extend(check_all_actions)
@@ -135,7 +169,7 @@ def create_medsim_actions(actions: list[tuple]) -> list[MedsimAction]:
                         Actions.MOVE_TO_EVAC.value]:
             casualty = act_tuple[1]
             tm_action = MedsimAction(action, casualty_id=casualty)
-        elif action == Actions.DIRECT_MOBILE_CASUALTY.value:
+        elif action == Actions.DIRECT_MOBILE_CASUALTY.value or action == Actions.SEARCH.value:
             tm_action = MedsimAction(action=action)
         elif action == Actions.TAG_CHARACTER.value:
             casualty, tag = act_tuple[1:]
@@ -172,18 +206,54 @@ def trim_medsim_actions(actions: list[MedsimAction]) -> list[MedsimAction]:
             if act.supply == Supplies.NASOPHARYNGEAL_AIRWAY.value:
                 if act.location in [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value, Locations.UNSPECIFIED.value]:
                     trimmed.append(act)
+            if act.supply == Supplies.PAIN_MEDICATIONS.value:
+                if act.location == Locations.INTERNAL.value:
+                    trimmed.append(act)
         elif act.action != Actions.UNKNOWN.value:
             trimmed.append(act)
     return trimmed
 
 
-def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) -> list[MedsimAction]:
+def always_acceptable_treatments(casualties: list[Casualty]) -> list[MedsimAction]:
     acceptable_actions: list[MedsimAction] = []
+    for cas in casualties:
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.PAIN_MEDICATIONS.value, Locations.INTERNAL.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.PAIN_MEDICATIONS.value, Locations.UNSPECIFIED.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.NASOPHARYNGEAL_AIRWAY.value, Locations.LEFT_FACE.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.NASOPHARYNGEAL_AIRWAY.value, Locations.RIGHT_FACE.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.BLOOD.value, Locations.INTERNAL.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.SPLINT.value, Locations.LEFT_CALF.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.SPLINT.value, Locations.RIGHT_CALF.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.SPLINT.value, Locations.LEFT_THIGH.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.SPLINT.value, Locations.RIGHT_THIGH.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.NASOPHARYNGEAL_AIRWAY.value, Locations.INTERNAL.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.IV_BAG.value, Locations.INTERNAL.value))
+        acceptable_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, cas.id,
+                                               Supplies.BURN_DRESSING.value, Locations.UNSPECIFIED.value))
+
+    return acceptable_actions
+
+
+def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) -> list[MedsimAction]:
     casualties: list[Casualty] = state.casualties
+    acceptable_actions: list[MedsimAction] = always_acceptable_treatments(casualties)
     for casualty in casualties:
         casualty_injuries: list[Injury] = casualty.injuries
         for injury in casualty_injuries:
             for supply in [s for s in Supplies]:
+                if supply == Supplies.PAIN_MEDICATIONS.value:
+                    continue
                 acceptable_action = MedsimAction(Actions.APPLY_TREATMENT.value, casualty.id,
                                                  supply.value, injury.location)
                 acceptable_actions.append(acceptable_action)

@@ -12,6 +12,8 @@ class TA3Elaborator(Elaborator):
         d: Decision[Action]
         to_return: list[Decision[Action]] = []
         for d in probe.decisions:
+            if d.id_ == "search":
+                continue
             _name = d.value.name
             d.value.params = {k: v for k, v in d.value.params.items() if v is not None}
             if _name == 'APPLY_TREATMENT':
@@ -21,14 +23,16 @@ class TA3Elaborator(Elaborator):
                 to_return += [d]
             elif _name == 'TAG_CHARACTER':
                 to_return += self._tag(probe.state.casualties, d)
-            elif _name == 'END_SCENE':
+            elif _name == 'END_SCENARIO' or _name == 'END_SCENE':
                 to_return += [d]
+            elif _name == 'MOVE_TO_EVAC':
+                to_return += self._add_evac_options(probe, d)
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
 
         final_list = []
         for tr in to_return:
-            if tr.value.name == 'DIRECT_MOBILE_CASUALTY' and 'casualty' in tr.value.params:
+            if tr.value.name == 'DIRECT_MOBILE_CHARACTERS' and 'casualty' in tr.value.params:
                 pass
             else:
                 final_list.append(tr)
@@ -39,6 +43,12 @@ class TA3Elaborator(Elaborator):
         probe.decisions = final_list
         # Needs direct mobile casualties no
         return final_list
+
+    def _add_evac_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
+        if probe.environment['decision_environment']['aid_delay'] == None:
+            return []
+        actions = self._ground_casualty(probe.state.casualties, decision, injured_only = False)
+        breakpoint()
 
     def _treatment(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
         # Ground the decision for all casualties with injuries

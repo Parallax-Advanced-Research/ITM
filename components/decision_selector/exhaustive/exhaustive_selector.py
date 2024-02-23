@@ -27,6 +27,12 @@ class ExhaustiveSelector(DecisionSelector):
                         self.case_index += 1
             except json.JSONDecodeError:
                 print(f"Error in {STATE_FILE} format; starting from beginning.")
+        else:
+            with open(CASE_FILE, "w") as outfile:
+                outfile.write("")
+                
+                
+            
         
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         print(f"Last actions: {[str(act) for act in self.last_actions]}")

@@ -4,6 +4,7 @@ import importlib
 import subprocess
 import os
 import re
+import shutil
 
 def install_python():
     print("Please install Python 3.10 or Python 3.11 before continuing.")
@@ -69,6 +70,14 @@ except PermissionError:
     print(f"Could not create virtual environment in venv. Check to see if a program is "
           + "already running from this directory, or files are read-only.")
     sys.exit(-1)
+except shutil.SameFileError as err:
+    print("Error occurred: ")
+    print(str(err))
+    print("If you are in an activated environment in this directory, deactivate. Otherwise, if "
+          + "there is a sim link to Python at the venv location referenced by the above error, "
+          + "delete and rerun.")
+    sys.exit(-1)
+    
 ctxt = builder.ensure_directories("venv")
 subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-r", "requirements.txt"], check=True)
 

@@ -29,7 +29,9 @@ class TA3Driver(Driver):
             super().__init__(elaborator, SeverityDecisionSelector(), [mda])  # ?This is not declared will error
             return
 
-        if args.human:
+        if args.selector is not None:
+            selector = args.selector
+        elif args.human:
             selector = HumanDecisionSelector()
         elif args.kedsd:
             selector = KDMAEstimationDecisionSelector("data/sept/extended_case_base.csv", 
@@ -40,8 +42,6 @@ class TA3Driver(Driver):
             selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
                                            variant = args.variant,
                                            verbose = args.verbose)
-        elif args.exhaustive:
-            selector = ExhaustiveSelector()
         elif args.training:
             selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
         else:

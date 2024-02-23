@@ -50,13 +50,13 @@ def group_cases(cases: list[dict[str, Any]], example_case: dict[str, Any]) -> li
     return ret_cases
     
 def input_match(example_case: dict[str, Any], case: dict[str, Any]) -> bool:
+    val_list = []
     for key in ['age', 'tagged', 'visited', 'relationship', 'rank', 'conscious', 'mental_status',
                 'breathing', 'hrpmin', 'unvisited_count', 'injured_count', 
                 'others_tagged_or_uninjured', 'assessing', 'treating', 'tagging', 'leaving', 
                 'category']:
-        if example_case.get(key, None) != case.get(key, None):
-            return False
-    return True
+        val_list.append(case[key])
+    return hash(tuple(val_list))
 
 def flatten(name, valueDict: dict[str, Any]):
     ret = {}
@@ -81,18 +81,29 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
         new_case["index"] = index
         new_case["action"] = case["actions"][-1]
         new_case.pop("actions")
-        feedbacks = find_feedback(case["actions"], training_data, scenario, target)
-        if len(feedbacks) == 0:
-            print(f"No feedback for action sequence: {case['actions']}")
-            continue
-        after_feedback = get_kdma_score_distributions(feedbacks)
-        before_feedback = get_kdma_score_distributions(
-                            find_feedback(case["actions"][:-1], training_data, scenario, target))
-        after_feedback.pop("score")
-        new_case = new_case | flatten("feedback", after_feedback)
-        dfeedback = {key:subtract_dict(value, before_feedback[key]) for (key, value) in after_feedback.items() if type(value) == dict}
-        new_case = new_case | flatten("feedback_delta", dfeedback)
+        if training_data is not None:
+            feedbacks = find_feedback(case["actions"], training_data, scenario, target)
+            if len(feedbacks) == 0:
+                print(f"No feedback for action sequence: {case['actions']}")
+                continue
+            after_feedback = get_kdma_score_distributions(feedbacks)
+            before_feedback = get_kdma_score_distributions(
+                                find_feedback(case["actions"][:-1], training_data, scenario, target))
+            after_feedback.pop("score")
+            new_case = new_case | flatten("feedback", after_feedback)
+            if before_feedback["count"] > after_feedback["count"]:
+                dfeedback = {key:subtract_dict(value, before_feedback[key]) 
+                              for (key, value) in after_feedback.items() 
+                              if type(value) == dict} 
+                dfeedback = dfeedback | {"count":before_feedback["count"] - after_feedback["count"]}
+                if dfeedback["count"] == 0:
+                    breakpoint()
+                new_case = new_case | flatten("feedback_delta", dfeedback)
+        if "hint" in new_case:
+            new_case.pop("hint")
+            new_case = new_case | flatten("hint", case["hint"])
         ret_cases.append(new_case)
+            
     write_case_base(fname, ret_cases)
     
 def write_alignment_target_cases_to_csv(fname: str, training_data: list[dict[str, Any]]):

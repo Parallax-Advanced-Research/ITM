@@ -33,6 +33,9 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
     supply_dict = {supply.name:supply.amount for supply in supplies}
     if action.supply in supply_dict.keys():
         supply_dict[action.supply] -= 1
+        for listed_supply in supplies:
+            if listed_supply.name == action.supply:
+                listed_supply.amount = supply_dict[action.supply]
     for c2 in casualties:
         if c.id == c2.id:
             continue  # already updated, casualty of action
@@ -120,9 +123,11 @@ smol_action_map: typing.Mapping[str, resolve_action] = {
     Actions.CHECK_PULSE.value: apply_singlecaualty_action,
     Actions.CHECK_RESPIRATION.value: apply_singlecaualty_action,
     Actions.DIRECT_MOBILE_CASUALTY.value: apply_zeroornone_action,
+    Actions.SEARCH.value: apply_zeroornone_action,
     Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
     Actions.TAG_CHARACTER.value: apply_casualtytag_action,
     Actions.SITREP.value: apply_zeroornone_action,
     Actions.UNKNOWN.value: apply_default_action,
-    Actions.END_SCENARIO.value: end_scenario_action
+    Actions.END_SCENARIO.value: end_scenario_action,
+    Actions.END_SCENE.value: end_scenario_action
 }

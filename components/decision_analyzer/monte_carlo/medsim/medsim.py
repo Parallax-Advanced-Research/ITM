@@ -35,7 +35,6 @@ class MedicalSimulator(MCSim):
         self.aid_delay = 0.0
         if isinstance(init_state.aid_delay, list) and len(init_state.aid_delay) > 0:
             self.aid_delay = init_state.aid_delay[0]['delay']
-            print('wakka')
         super().__init__()
 
     def get_simulator(self) -> str:
@@ -45,7 +44,7 @@ class MedicalSimulator(MCSim):
         supplies: list[Supply] = self.current_supplies
         casualties: list[Casualty] = self.current_casualties
         new_state = None
-        if action.action == 'END_SCENARIO':
+        if action.action == 'END_SCENARIO' or action.action == 'END_SCENE':
             # * 60.0 because aid delay is given in minutes
             new_state: list[MedsimState] = self.action_map[action.action](casualties, supplies,
                                                                           state.time, self.aid_delay * 60.0)
@@ -69,6 +68,7 @@ class MedicalSimulator(MCSim):
         tinymed_actions_trimmed: list[MedsimAction] = trim_medsim_actions(tinymed_actions)
         tinymed_actions_trimmed = remove_non_injuries(state, tinymed_actions_trimmed)
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENARIO.value))
+        tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENE.value))
         return tinymed_actions_trimmed
 
     def reset(self):

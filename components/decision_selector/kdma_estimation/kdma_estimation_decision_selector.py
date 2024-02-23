@@ -359,10 +359,11 @@ def make_case(s: State, d: Decision) -> dict[str, Any]:
                                                        for co in s.casualties if not co.id == c.id])
 
     a: Action = d.value
-    case['assessing'] = a.name in ["CHECK_ALL_VITALS", "SITREP"]
+    case['questioning'] = a.name in ["SITREP"]
+    case['assessing'] = a.name in ["CHECK_ALL_VITALS"]
     case['treating'] = a.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]
     case['tagging'] = a.name == "TAG_CHARACTER"
-    case['leaving'] = a.name == "END_SCENARIO"
+    case['leaving'] = a.name == "END_SCENE"
     if a.name == "APPLY_TREATMENT":
         case['treatment'] = a.params.get("treatment", None)
     if a.name == "TAG_CHARACTER":
@@ -478,7 +479,7 @@ def make_decision_list(s: State, available_treatments: list[str] = TREATMENTS, i
                                    {"casualty": c.id, "treatment": t, "location": "unspecified"})))
                     index += 1
         if include_end:
-            dlist.append(Decision(str(index), Action("END_SCENARIO", {})))
+            dlist.append(Decision(str(index), Action("END_SCENE", {})))
             index += 1
     if include_tags:
         dlist = dlist | make_tag_decision_list(s)
@@ -721,7 +722,7 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-A"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(st, get_decision(p, action_name="END_SCENARIO")) 
+    cb.append(make_case(st, get_decision(p, action_name="END_SCENE")) 
               | analyze_fn({"mission": [8,8,6,8], 
                             "denial":  [8,7,8,3], 
                             "risktol": [2,2,4,2],
@@ -744,7 +745,7 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-B"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(st, get_decision(p, action_name="END_SCENARIO")) 
+    cb.append(make_case(st, get_decision(p, action_name="END_SCENE")) 
               | analyze_fn({"mission": [3,7,2,3], 
                             "denial":  [4,8,8,3], 
                             "risktol": [4,2,8,2],
@@ -767,7 +768,7 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-C"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(st, get_decision(p, action_name="END_SCENARIO")) 
+    cb.append(make_case(st, get_decision(p, action_name="END_SCENE")) 
               | analyze_fn({"mission": [2,2,2,2], 
                             "denial":  [8,7,8,3], 
                             "risktol": [7,8,8,2],
@@ -790,7 +791,7 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-D"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(st, get_decision(p, action_name="END_SCENARIO")) 
+    cb.append(make_case(st, get_decision(p, action_name="END_SCENE")) 
               | analyze_fn({"mission": [7,8,2,2], 
                             "denial":  [8,8,8,2], 
                             "risktol": [8,2,8,2],
@@ -813,7 +814,7 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-E"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(st, get_decision(p, action_name="END_SCENARIO")) 
+    cb.append(make_case(st, get_decision(p, action_name="END_SCENE")) 
               | analyze_fn({"mission": [7,8,7,2], 
                             "denial":  [8,2,8,2], 
                             "risktol": [8,2,3,2],
