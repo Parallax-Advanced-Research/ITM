@@ -20,7 +20,7 @@ def supply_location_match(action: MedsimAction):
             return True
         return False
     if action.supply == Supplies.VENTED_CHEST_SEAL.value:
-        if action.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.UNSPECIFIED.value]:
+        if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.VENTED_CHEST_SEAL.value]:
             return True
         return False
     return True
@@ -28,24 +28,19 @@ def supply_location_match(action: MedsimAction):
 
 def supply_injury_match(supply: str, injury: str) -> bool:
     if supply == Supplies.PRESSURE_BANDAGE.value:
-        if injury in [Injuries.BURN.value, Injuries.CHEST_COLLAPSE.value, Injuries.ASTHMATIC.value,
-                      Injuries.AMPUTATION.value, Injuries.BURN_SUFFOCATION.value, Injuries.FOREHEAD_SCRAPE.value,
-                      Injuries.EAR_BLEED.value, Injuries.EYE_TRAUMA.value, Injuries.BROKEN_BONE.value,
-                      Injuries.INTERNAL.value]:
+        if injury in SmolMedicalOracle.SUPPLY_INJURY_MATCH[Supplies.PRESSURE_BANDAGE.value]:
             return False
         return True
     if supply == Supplies.HEMOSTATIC_GAUZE.value:
-        if injury in [Injuries.LACERATION.value, Injuries.EAR_BLEED.value, Injuries.SHRAPNEL.value,
-                      Injuries.PUNCTURE.value, Injuries.FOREHEAD_SCRAPE.value]:
+        if injury in SmolMedicalOracle.SUPPLY_INJURY_MATCH[Supplies.HEMOSTATIC_GAUZE.value]:
             return True
         return False
     if supply == Supplies.TOURNIQUET.value:
-        if injury in [Injuries.AMPUTATION.value, Injuries.LACERATION.value, Injuries.PUNCTURE.value,
-                      Injuries.SHRAPNEL.value]:
+        if injury in SmolMedicalOracle.SUPPLY_INJURY_MATCH[Supplies.TOURNIQUET.value]:
             return True
         return False
     if supply == Supplies.EPI_PEN.value:
-        if injury in [Injuries.ASTHMATIC.value]:
+        if injury in SmolMedicalOracle.SUPPLY_INJURY_MATCH[Supplies.EPI_PEN.value]:
             return True
         return False
     if supply == Supplies.BLOOD.value:
@@ -53,26 +48,25 @@ def supply_injury_match(supply: str, injury: str) -> bool:
     if supply == Supplies.IV_BAG.value:
         return True
     if supply == Supplies.VENTED_CHEST_SEAL.value:
-        if injury in [Injuries.LACERATION.value, Injuries.SHRAPNEL.value,
-                      Injuries.BROKEN_BONE.value, Injuries.PUNCTURE.value]:
+        if injury in SmolMedicalOracle.SUPPLY_INJURY_MATCH[Supplies.VENTED_CHEST_SEAL.value]:
             return True
         return False
     if supply == Supplies.DECOMPRESSION_NEEDLE.value:
-        if injury in [Injuries.CHEST_COLLAPSE.value]:
+        if injury in SmolMedicalOracle.SUPPLY_INJURY_MATCH[Supplies.DECOMPRESSION_NEEDLE.value]:
             return True
         return False
     if supply == Supplies.NASOPHARYNGEAL_AIRWAY.value:
-        if injury in [Injuries.ASTHMATIC.value, Injuries.BURN_SUFFOCATION.value]:
+        if injury in SmolMedicalOracle.SUPPLY_INJURY_MATCH[Supplies.NASOPHARYNGEAL_AIRWAY.value]:
             return True
         return False
     if supply == Supplies.PAIN_MEDICATIONS.value:
         return True
     if supply == Supplies.BURN_DRESSING.value:
-        if injury in [Injuries.BURN.value]:
+        if injury in SmolMedicalOracle.SUPPLY_INJURY_MATCH[Supplies.BURN_DRESSING.value]:
             return True
         return False
     if supply == Supplies.SPLINT.value:
-        if injury in [Injuries.BROKEN_BONE.value]:
+        if injury in SmolMedicalOracle.SUPPLY_INJURY_MATCH[Supplies.SPLINT.value]:
             return True
         return False
     return False
