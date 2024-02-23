@@ -40,8 +40,6 @@ before_script:
    - echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n\tStrictHostKeyChecking no\n" > $HOME/.ssh/config
    - chmod 600 $HOME/.ssh/config
    - touch $HOME/.ssh/known_hosts
-   - chmod 600 $HOME/.ssh/known_hosts
-   - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar || true # TODO: remove once it works in install.py.
    - CI/install_libs.sh
    - python install.py
    - source venv/bin/activate
