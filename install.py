@@ -8,24 +8,24 @@ import shutil
 
 def install_python():
     print("Please install Python 3.10 or Python 3.11 before continuing.")
-    sys.exit(-1)
+    sys.exit(1)
 
 def install_venv():
     print("Please install venv. On Ubuntu/Debian, try 'sudo apt install python3-venv'.")
-    sys.exit(-1)
+    sys.exit(1)
 
 def handle_creation_error(path):
     print("Could not create ~s. Check permissions." % str(path))
-    sys.exit(-1)
+    sys.exit(1)
 
 def handle_git_missing():
     print("Please install git and ensure it's in your PATH.")
-    sys.exit(-1)
+    sys.exit(1)
 
 def handle_download_problem(repo_name):
     print("Failure attempting to clone %s project. Check connectivity and access permissions."
           % repo_name)
-    sys.exit(-1)
+    sys.exit(1)
 
 def install_repo(git_ssh_path):
     ldir = os.path.join(".deprepos", re.search(".*/(.*)\.git", git_ssh_path).group(1))
@@ -45,7 +45,7 @@ def install_server(git_ssh_path):
     except PermissionError:
         print(f"Could not create virtual environment in {ldir}. Check to see if a program is "
               + "already running from this directory, or files are read-only.")
-        sys.exit(-1)
+        sys.exit(1)
     lctxt = lbuilder.ensure_directories(os.path.join(ldir, "venv"))
     _ = subprocess.run([lctxt.env_exe, "-m", "pip", "install", "-r",
                                       os.path.join(ldir, "requirements.txt")], check=True)
@@ -69,14 +69,14 @@ try:
 except PermissionError:
     print(f"Could not create virtual environment in venv. Check to see if a program is "
           + "already running from this directory, or files are read-only.")
-    sys.exit(-1)
+    sys.exit(1)
 except shutil.SameFileError as err:
     print("Error occurred: ")
     print(str(err))
     print("If you are in an activated environment in this directory, deactivate. Otherwise, if "
           + "there is a sim link to Python at the venv location referenced by the above error, "
           + "delete and rerun.")
-    sys.exit(-1)
+    sys.exit(1)
     
 ctxt = builder.ensure_directories("venv")
 subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-r", "requirements.txt"], check=True)
@@ -121,3 +121,4 @@ except:
     print("Please consult Running-TAD.md for directions on getting access. You can run tad_tester.py "
           + 'without the Soartech server, and can run ta3_training.py with the argument '
           + '"--session_type adept" to ensure that the Soartech server is not used.')
+    sys.exit(1)
