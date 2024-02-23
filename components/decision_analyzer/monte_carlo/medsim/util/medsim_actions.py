@@ -260,3 +260,30 @@ def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) 
     retlist = [x for x in tinymedactions if x.action != Actions.APPLY_TREATMENT.value]
     retlist.extend(acceptable_actions)
     return list(set(retlist))
+
+
+def create_moraldesert_options(casualties):
+    md_actions: list[MedsimAction] = []
+    for c in casualties:
+        if len(c.injuries):
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.BLANKET.value,
+                                           Locations.UNSPECIFIED.value))
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.BLOOD.value,
+                                           Locations.UNSPECIFIED.value))
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.DECOMPRESSION_NEEDLE.value,
+                                           Locations.UNSPECIFIED.value))
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.EPI_PEN.value,
+                                           Locations.UNSPECIFIED.value))
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.HEMOSTATIC_GAUZE.value,
+                                           Locations.UNSPECIFIED.value))
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.PRESSURE_BANDAGE.value,
+                                           Locations.UNSPECIFIED.value))
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.PULSE_OXIMETER.value,
+                                           Locations.UNSPECIFIED.value))
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.SPLINT.value,
+                                           Locations.UNSPECIFIED.value))
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.TOURNIQUET.value,
+                                           Locations.UNSPECIFIED.value))
+            md_actions.append(MedsimAction(Actions.APPLY_TREATMENT.value, c.id, Supplies.VENTED_CHEST_SEAL.value,
+                                           Locations.UNSPECIFIED.value))
+    return md_actions
