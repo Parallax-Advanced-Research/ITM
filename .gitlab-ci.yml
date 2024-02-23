@@ -72,7 +72,7 @@ integration_test_soartech:
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
-    - python tad_tester.py --no-verbose --session_type soartech
+    - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --keds --kedsd --csv --bayes
     - python stop-servers.py
   # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
   # Ideally, only do that if the single everything job fails.
@@ -84,7 +84,7 @@ integration_test_adept:
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
-    - python tad_tester.py --no-verbose --session_type adept
+    - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --keds --kedsd --csv --bayes
     - python stop-servers.py
   # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
   # Ideally, only do that if the single everything job fails.
@@ -96,7 +96,7 @@ integration_test_eval:
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
-    - python tad_tester.py --no-verbose --session_type eval
+    - python tad_tester.py --no-verbose --session_type eval --ebd --mc --br --keds --kedsd --csv --bayes
     - python stop-servers.py
   # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
   # Ideally, only do that if the single everything job fails.

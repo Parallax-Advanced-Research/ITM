@@ -4,6 +4,7 @@ def parse_default_arguments() -> argparse.Namespace:
     return get_default_parser().parse_args()
     
 def get_default_parser() -> argparse.ArgumentParser:
+    # TODO: All the --foo and --no-foo module arguments should have the same default.
     parser = argparse.ArgumentParser()
     parser.add_argument('--human', default=False, help="Allows human to give selections at command line", action='store_true')
     parser.add_argument('--verbose', action=argparse.BooleanOptionalAction, default=True, help="Turns logging on/off (default on)")
