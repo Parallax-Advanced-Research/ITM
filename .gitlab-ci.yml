@@ -60,12 +60,9 @@ before_script:
    - ssh -v git@github.com || true
    - ssh -v git@github.com <<< '' || true
    - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar || true # TODO: remove once it works in install.py.
--  - git clone -v ssh://git@github.com:ITM-Soartech/ta1-server-mvp.git/ foobar || true # TODO: remove once it works in install.py.
--  - git clone -v ssh://git@github.com:ITM-Soartech/ta1-server-mvp.git foobar || true # TODO: remove once it works in install.py.
-+  - ls foobar
-   #- CI/install_libs.sh
-   #- python install.py
-   #- source venv/bin/activate
+   - CI/install_libs.sh
+   - python install.py
+   - source venv/bin/activate
 
 
 lint_tools:
