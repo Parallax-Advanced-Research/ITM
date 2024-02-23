@@ -35,37 +35,38 @@ include:
  - template: Jobs/Secret-Detection.gitlab-ci.yml
 
 before_script:
-  - pwd
-  - echo "$HOME"
-  - export HOME=/home/itm
-  - echo "$HOME"
-  - cat /etc/passwd
-  - whoami
-  - ls -lR /tmp
+#  - pwd
+#  - echo "$HOME"
+#  - export HOME=/home/itm
+#  - echo "$HOME"
+#  - cat /etc/passwd
+#  - whoami
+#  - ls -lR /tmp
   - mkdir -p "$HOME/.ssh"
   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
   - chmod 600 "$HOME/.ssh/id_rsa"
-  - echo "$HOME"
-  - ls -l "$HOME/.ssh"
-  - ls -lR $HOME/.ssh
-  - cd
-  - pwd
-  - wc "$HOME/.ssh/id_rsa"
-  - md5sum "$HOME/.ssh/id_rsa"
-  - cat "$HOME/.ssh/id_rsa"
+#  - echo "$HOME"
+#  - ls -l "$HOME/.ssh"
+#  - ls -lR $HOME/.ssh
+#  - cd
+#  - pwd
+#  - wc "$HOME/.ssh/id_rsa"
+#  - md5sum "$HOME/.ssh/id_rsa"
+#  - cat "$HOME/.ssh/id_rsa"
   - echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n\tStrictHostKeyChecking no\n" > $HOME/.ssh/config
+  # TODO: instead of StrictHostKeyChecking no, put github's key in .ssh/known_hosts
   - chmod 600 $HOME/.ssh/config
-  - touch $HOME/.ssh/known_hosts
-  - chmod 600 $HOME/.ssh/known_hosts
-  - cat $HOME/.ssh/config || true
-  - ssh-keygen -R github.com
-  - ssh -v git@github.com || true
-  - ssh -v git@github.com <<< '' || true
-  - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar || true # TODO: remove once it works in install.py.
-  - ls foobar
-  #- CI/install_libs.sh
-  #- python install.py
-  #- source venv/bin/activate
+#  - touch $HOME/.ssh/known_hosts
+#  - chmod 600 $HOME/.ssh/known_hosts
+#  - cat $HOME/.ssh/config || true
+#  - ssh-keygen -R github.com
+#  - ssh -v git@github.com || true
+#  - ssh -v git@github.com <<< '' || true
+#  - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar || true # TODO: remove once it works in install.py.
+#  - ls foobar
+  - CI/install_libs.sh
+  - python install.py
+  - source venv/bin/activate
 
 lint_tools:
   stage: test
