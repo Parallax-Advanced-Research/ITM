@@ -79,7 +79,7 @@ integration_test:
 
 integration_test_ebd:
   stage: individual_tests
-  needs: integration_test
+  needs: [ integration_test ]
   when: on_failure
   script:
     - python run-servers.py
@@ -89,7 +89,7 @@ integration_test_ebd:
 
 integration_test_mc:
   stage: individual_tests
-  needs: integration_test
+  needs: [ integration_test ]
   when: on_failure
   script:
     - python run-servers.py
