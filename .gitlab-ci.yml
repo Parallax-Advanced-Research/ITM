@@ -11,7 +11,9 @@ image: registry.basic-research.parallaxgc.org/github-mirrors/itm/ci:latest
 stages:
 #- build
 - test
-- integration_test
+- integration_test_soartech
+- integration_test_adept
+- integration_test_eval
 - individual_tests
 #- deploy
 #- review
@@ -64,9 +66,9 @@ unit_tests:
 #  script:
 #    - true
 
-integration_test:
+integration_test_soartech:
   needs: []
-  stage: integration_test
+  stage: integration_test_soartech
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
@@ -76,9 +78,34 @@ integration_test:
   # Ideally, only do that if the single everything job fails.
   # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
+integration_test_adept:
+  needs: []
+  stage: integration_test_adept
+  script:
+    - python run-servers.py
+    - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
+    - python tad_tester.py --no-verbose --session_type adept
+    - python stop-servers.py
+  # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
+  # Ideally, only do that if the single everything job fails.
+  # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
+
+integration_test_eval:
+  needs: []
+  stage: integration_test_eval
+  script:
+    - python run-servers.py
+    - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
+    - python tad_tester.py --no-verbose --session_type eval
+    - python stop-servers.py
+  # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
+  # Ideally, only do that if the single everything job fails.
+  # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
+
+# TODO: Also have individual tests with --session_type adept and eval?
 integration_test_install:
   stage: individual_tests
-  needs: [ integration_test ]
+  needs: [ integration_test_soartech ]
   when: on_failure
   script:
     - python run-servers.py
