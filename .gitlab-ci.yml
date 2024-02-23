@@ -11,6 +11,7 @@ image: registry.basic-research.parallaxgc.org/github-mirrors/itm/ci:latest
 stages:
 #- build
 - test
+- integration_test
 - individual_tests
 #- deploy
 #- review
@@ -56,8 +57,16 @@ unit_tests:
   script:
     - python run_tests.py --nolint -v
 
+#psuedo_test:
+#  # Used to make the individual tests run iff integration_test fails
+#  needs: integration_test
+#  stage: test
+#  script:
+#    - true
+
 integration_test:
-  stage: test
+  needs: []
+  stage: integration_test
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
@@ -66,4 +75,25 @@ integration_test:
   # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
   # Ideally, only do that if the single everything job fails.
   # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
+
+
+integration_test_ebd:
+  stage: individual_tests
+  needs: integration_test
+  when: on_failure
+  script:
+    - python run-servers.py
+    - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
+    - python tad_tester.py --no-verbose --session_type soartech --ebd --no-mc --no-br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_mc:
+  stage: individual_tests
+  needs: integration_test
+  when: on_failure
+  script:
+    - python run-servers.py
+    - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
+    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --mc --no-br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
 
