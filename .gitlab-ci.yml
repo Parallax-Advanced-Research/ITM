@@ -39,6 +39,7 @@ before_script:
   # TODO: put actual keys in known_hosts, then enable StrictHostKeyChecking. not working currently for some reason
   - echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n\tStrictHostKeyChecking no\n" > $HOME/.ssh/config
   - chmod 600 $HOME/.ssh/config
+  - git clone -v git@github.com:ITM-Soartech/ta1-server-mvp.git foobar
   - CI/install_libs.sh
   - python install.py
   - source venv/bin/activate
