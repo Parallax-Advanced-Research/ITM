@@ -76,11 +76,16 @@ integration_test:
   # Ideally, only do that if the single everything job fails.
   # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
-
-integration_test_ebd:
+integration_test_install:
   stage: individual_tests
   needs: [ integration_test ]
   when: on_failure
+  script:
+    - python run-servers.py
+
+integration_test_ebd:
+  stage: individual_tests
+  needs: [ integration_test_install ]
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
@@ -89,8 +94,7 @@ integration_test_ebd:
 
 integration_test_mc:
   stage: individual_tests
-  needs: [ integration_test ]
-  when: on_failure
+  needs: [ integration_test_install ]
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
@@ -99,8 +103,7 @@ integration_test_mc:
 
 integration_test_br:
   stage: individual_tests
-  needs: [ integration_test ]
-  when: on_failure
+  needs: [ integration_test_install ]
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
@@ -109,8 +112,7 @@ integration_test_br:
 
 integration_test_keds:
   stage: individual_tests
-  needs: [ integration_test ]
-  when: on_failure
+  needs: [ integration_test_install ]
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
@@ -119,8 +121,7 @@ integration_test_keds:
 
 integration_test_kedsd:
   stage: individual_tests
-  needs: [ integration_test ]
-  when: on_failure
+  needs: [ integration_test_install ]
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
@@ -129,8 +130,7 @@ integration_test_kedsd:
 
 integration_test_csv:
   stage: individual_tests
-  needs: [ integration_test ]
-  when: on_failure
+  needs: [ integration_test_install ]
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
@@ -139,8 +139,7 @@ integration_test_csv:
 
 integration_test_bayes:
   stage: individual_tests
-  needs: [ integration_test ]
-  when: on_failure
+  needs: [ integration_test_install ]
   script:
     - python run-servers.py
     - sleep 2 # TODO: race condition. run-servers should not exit until servers are listening to their ports
