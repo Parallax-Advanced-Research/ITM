@@ -19,15 +19,15 @@ if [ ! -d "$HEMS_DIR" ]; then
 	git clone https://github.com/dmenager/HEMS.git "$HEMS_DIR"
 fi
 
-# Get most recent version of HEMS, and replace package.json with the patched version
+# Get most recent version of HEMS, and replace package.lisp with the patched version
 olddir=$(pwd)
 cd "$HEMS_DIR"
-if [ -f "package.json" ]; then
-	checkout "package.json" # replace patched version with non-patched so we can pull
+if [ -f "package.lisp" ]; then
+	checkout "package.lisp" # replace patched version with non-patched so we can pull
 fi
 git pull
 ls -l
-rm -- "package.json"
+rm -- "package.lisp"
 cd "$ITM_DIR"
 ln -s "$ITM_DIR/components/decision_analyzer/event_based_diagnosis/hems-package-replacement.lisp" "$HEMS_DIR/package.lisp"
 
