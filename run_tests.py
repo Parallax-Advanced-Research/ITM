@@ -249,7 +249,10 @@ def mypy_all(paths: list[str]) -> dict[str, list[str]]:
 		path, msg_type, _ = a
 		path = os.path.relpath(f"{path}.py", ROOT_DIR)
 
-		assert path in results
+		#assert path in results, f"Path {path} not in mypy results"
+		if path not in results:
+			results[path] = [] # included file. Might as well report the results
+
 		if 'error' == msg_type:
 			results[path].append(line)
 		else:

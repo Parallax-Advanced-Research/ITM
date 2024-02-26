@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Any
+from typing import Dict
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric
 from domain.internal.decision import Action
 from domain.ta3.ta3_state import Casualty, State, Injury
@@ -26,7 +26,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         super().__init__()
         self.bn = Bayesian_Net("components/decision_analyzer/bayesian_network/bayes_net.json")
         
-    def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
+    def analyze(self, _: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         analysis = {}
         for decision in probe.decisions:
             ob = self.make_observation(probe.state, decision.value)
@@ -35,25 +35,25 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
             predictions = self.bn.predict(ob)
 
             metrics: list[DecisionMetric[float]] = []
-            metrics.append(DecisionMetric[float]("pDeath", "Posterior probability of death with no action",
-                                          predictions['death']['true']))
-            metrics.append(DecisionMetric[float]("pPain", "Posterior probability of severe pain",
-                                          predictions['pain']['high']))
-            metrics.append(DecisionMetric[float]("pBrainInjury", "Posterior probability of a brain injury",
-                                          predictions['brain_injury']['true']))
-            metrics.append(DecisionMetric[float]("pAirwayBlocked", "Posterior probability of airway blockage",
-                                          predictions['airway_blocked']['true']))
-            metrics.append(DecisionMetric[float]("pInternalBleeding", "Posterior probability of internal bleeding",
-                                          predictions['internal_hemorrhage']['true']))
-            metrics.append(DecisionMetric[float]("pExternalBleeding", "Posterior probability of external bleeding",
-                                          predictions['external_hemorrhage']['true']))
+            metrics.append(DecisionMetric[float]("pDeath",
+                "Posterior probability of death with no action", predictions['death']['true']))
+            metrics.append(DecisionMetric[float]("pPain",
+                "Posterior probability of severe pain", predictions['pain']['high']))
+            metrics.append(DecisionMetric[float]("pBrainInjury",
+                "Posterior probability of a brain injury", predictions['brain_injury']['true']))
+            metrics.append(DecisionMetric[float]("pAirwayBlocked",
+                "Posterior probability of airway blockage", predictions['airway_blocked']['true']))
+            metrics.append(DecisionMetric[float]("pInternalBleeding",
+                "Posterior probability of internal bleeding", predictions['internal_hemorrhage']['true']))
+            metrics.append(DecisionMetric[float]("pExternalBleeding",
+                "Posterior probability of external bleeding", predictions['external_hemorrhage']['true']))
             mdict = {m.name: m for m in metrics}
             decision.metrics.update(mdict)
             analysis[decision.id_] = mdict
 
         return analysis
     
-    def make_observation(self, state: State, a: Action) -> Optional[Dict[Node_Name, Optional[Node_Val]]]:
+    def make_observation(self, state: State, a: Action) -> Dict[Node_Name, Node_Val | None] | None:
         patient = a.params.get('casualty',None)
         if patient is None:
             return None
@@ -116,7 +116,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
             if i.name in [ 'Laceration', 'Shrapnel', 'Puncture' ] and i.severity in [ 'substantial', 'major', 'extreme' ]:
                 # unspecified counts as internal because if we don't know where it's coming from, that's the better bet,
                 # and I'd rather give the wrong location than say "no hemmorhage" when there is one
-                if internal == i.location in [ 'unspecified', 'internal' ]: return "true"
+                if internal == (i.location in [ 'unspecified', 'internal' ]): return "true"
         return "false"
 
     def get_limb_fracture(self, c: Casualty) -> Node_Val | None:
@@ -124,7 +124,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
             if 'Broken Bone' == i.name and on_extremity(i): return True
         return False
         
-    def get_hrpmin(self, c: Casualty) -> Optional[Node_Val]:
+    def get_hrpmin(self, c: Casualty) -> Node_Val | None:
         val = c.vitals.hrpmin
 
         if val is None:
@@ -136,7 +136,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         if 'NORMAL' == val: return "normal"
         assert False, f"Invalid hrpmin: {val}"
 
-    def get_burns(self, c : Casualty) -> Optional[Node_Val]:
+    def get_burns(self, c : Casualty) -> Node_Val | None:
         for i in c.injuries:
             if i.name == 'Burn':
                 # TODO: Use same bins as the new vocabulary
@@ -172,7 +172,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
                 return "true"
         return "false"
         
-    def get_pain(self, c : Casualty) -> Optional[Node_Val]:
+    def get_pain(self, c : Casualty) -> Node_Val | None:
         # TODO: We're assuming that they can't be in pain if they aren't conscious
         if c.vitals.mental_status == "AGONY": return "high"
         if c.vitals.avpu == "ALERT": return "low_or_none" # could report pain if it existed
@@ -183,7 +183,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         d = { "ALERT": "A", "VOICE": "V", "PAIN": "P", "UNRESPONSIVE": "U", None: None }
         return d[c.vitals.avpu]
 
-    def find_casualty(self, name: str, s: State) -> Optional[Casualty]:
+    def find_casualty(self, name: str, s: State) -> Casualty | None:
         for cas in s.casualties:
             if cas.id == name:
                 return cas

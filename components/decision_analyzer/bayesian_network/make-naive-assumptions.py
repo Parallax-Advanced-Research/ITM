@@ -4,7 +4,7 @@
 import yaml, sys, json
 from typing import Dict, List, Any, Union
 from typedefs import Node_Name, Node_Val, Probability, Assignment
-from utilities import hash_to_assignment, assignment_to_hash, include
+from utilities import hash_to_assignment, assignment_to_hash
 
 nodes: Dict[str, 'Node'] = {}
 VERBOSE_MODE = False

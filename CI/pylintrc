@@ -28,6 +28,8 @@ disable=bad-indentation, line-too-long, invalid-name, missing-docstring, multipl
 	import-outside-toplevel, # Not always possible, since python's circular import resolution sucks
 	broad-exception-raised, # Exceptions shouldn't be used for flow control in the first place.
 	use-list-literal, # personal preference. Truly does not matter
+	use-implicit-booleaness-not-comparison-to-string, # Their version is less clear.
+	use-implicit-booleaness-not-comparison-to-zero, # Their version is less clear.
 
 extension-pkg-allow-list=mpi4py
 # Not disabling these:
