@@ -6,7 +6,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Su
 
 def supply_location_match(action: MedsimAction):
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
-        return True
+        return action.location != Locations.UNSPECIFIED.value
     if action.supply == Supplies.TOURNIQUET.value:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.TOURNIQUET.value]:
             return False
@@ -20,7 +20,7 @@ def supply_location_match(action: MedsimAction):
             return True
         return False
     if action.supply == Supplies.VENTED_CHEST_SEAL.value:
-        if action.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.UNSPECIFIED.value]:
+        if action.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value]:
             return True
         return False
     return True
