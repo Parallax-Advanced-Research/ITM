@@ -7,6 +7,7 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 
 image: python:3.10
+#image: ubuntu:latest
 
 stages:
 - build
@@ -25,10 +26,19 @@ stages:
 - cleanup
 #sast:
 #  stage: test
-#include:
+
+include:
 #- template: Auto-DevOps.gitlab-ci.yml
+ - template: Jobs/SAST.gitlab-ci.yml
+ - template: Jobs/Secret-Detection.gitlab-ci.yml
 
 before_script:
+  - mkdir -p "$HOME/.ssh"
+  - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
+  - chmod 600 "$HOME/.ssh/id_rsa"
+  - md5sum "$HOME/.ssh/id_rsa"
+#  - echo "git-user:x:1000:1000:git-user:$HOME:/usr/sbin/nologin" >> /etc/passwd # git is confused when we're uid 1000 and uid 1000 doesn't exist
+#  - git clone git@github.com:ITM-Soartech/ta1-server-mvp.git foobar -v
   - python install.py
   - source venv/bin/activate
 
@@ -41,7 +51,7 @@ lint_tools:
 unit_tests:
   stage: test
   script:
-    - python run_tests.py --nolint
+    - python run_tests.py --nolint -v
 
 integration_test:
   stage: test
