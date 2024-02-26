@@ -1,5 +1,7 @@
 # Additional/Manually ignored files
 *.p
+*.swp
+.python_check/
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/windows,python,virtualenv,visualstudiocode,pycharm,jetbrains,powershell

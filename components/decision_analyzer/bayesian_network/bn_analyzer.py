@@ -70,7 +70,9 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
     def get_burns(self, c : Casualty) -> Optional[Node_Val]:
         for i in c.injuries:
             if i.name == 'Burn':
-                return "true" if i.severity > 0.5 else "false"
+                # TODO: Use same bins as the new vocabulary
+                return "true" if i.severity in [ "moderate", "substantial", "severe", "extreme" ] else "false"
+                #return "true" if i.severity > 0.5 else "false"
         return None
 
     def get_trauma(self, c : Casualty) -> Node_Val:

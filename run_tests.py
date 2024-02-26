@@ -3,7 +3,7 @@ import os, re, pytest, unittest, subprocess, argparse, sys, enum
 from typing import Iterable, Optional, TypeVar, Callable, Any
 
 PYTHON = 'python3'
-SCRIPTDIR = 'scripts'
+CI_DIR = 'CI'
 COMMAND_LIST = 'tests.commands'
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -44,7 +44,8 @@ def static_vars(**kwargs: Any) -> Callable[[T], T]:
 
 def color(color: str, s: str) -> None:
 	""" Like print, but with ANSI color codes on either end of the string """
-
+    
+	os.system('') # This voodoo call makes color work on Windows.
 	ansi = { 'bold': 1, 'red': 91, 'green': 92, 'yellow': 93, 'blue': 94 }
 	assert color in ansi
 	print(f"\x1b[{ansi[color]}m{s}\x1b[0m")
@@ -281,7 +282,7 @@ def compile_filter(paths: list[str], verbose: bool) -> list[str]:
 def delint(path: str, mypy_results: dict[str, list[str]], verbose: bool) -> None:
 	global exit_code
 	pyflakes3 = cmd([ 'python', '-m', 'pyflakes',  path ])
-	pylint = cmd([ PYTHON, '-m', 'pylint', '-sn', path ], env={ 'PYLINTRC' : os.path.join(SCRIPTDIR, 'pylintrc') })
+	pylint = cmd([ PYTHON, '-m', 'pylint', '-sn', path ], env={ 'PYLINTRC' : os.path.join(CI_DIR, 'pylintrc') })
 
 	mypy_errors = len(mypy_results[path])
 	pyflakes_errors = len(pyflakes3.output)

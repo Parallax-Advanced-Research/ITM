@@ -1,4 +1,3 @@
-* Central test script that calls all tests
 * --seed argument at toplevel. Other modules don't set their own seed.
 * local copy of HEMS with everything exported
-* install script for HEMS dependencies
+* bayes and hems modules should use the same bins for burns (and others?) as the new vocabulary does.
