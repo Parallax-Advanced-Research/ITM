@@ -1,0 +1,107 @@
+{
+  "kdma": {
+    "mission": 8,
+    "denial": 3
+  },
+  "treatment": {
+    "hemostatic gauze": {
+      "resources": "few",
+      "time": "seconds"
+    },
+    "tourniquet": {
+      "resources": "few",
+      "time": "minutes"
+    },
+    "pressure bandage": {
+      "resources": "few",
+      "time": "minutes"
+    },
+    "decompression needle": {
+      "resources": "few",
+      "time": "minutes"
+    },
+    "nasopharyngeal airway": {
+      "resources": "few",
+      "time": "seconds"
+    },
+    "CHECK_ALL_VITALS": {
+      "resources": "some",
+      "time": "minutes"
+    }
+  },
+  "injury_list": [
+    "Forehead Scrape",
+    "Ear Bleed",
+    "Asthmatic",
+    "Laceration",
+    "Puncture",
+    "Shrapnel",
+    "Chest Collapse",
+    "Amputation",
+    "Burn"
+  ],
+  "casualty": {
+    "MarineA": {
+      "id": "MarineA",
+      "name": "Unknown",
+      "injuries": [
+        {
+          "location": "left neck",
+          "name": "Puncture",
+          "severity": null
+        }
+      ],
+      "demographics": {
+        "age": 22,
+        "sex": "M",
+        "rank": "Marine"
+      },
+      "vitals": {
+        "breathing": null,
+        "hrpmin": null,
+        "conscious": null,
+        "mental_status": null
+      },
+      "tag": null,
+      "assessed": false,
+      "relationship": "friend",
+      "injury": {
+        "system": "integumentary"
+      }
+    },
+    "Intelligence-Officer": {
+      "id": "Intelligence-Officer",
+      "name": "Unknown",
+      "injuries": [
+        {
+          "location": "right leg",
+          "name": "Laceration",
+          "severity": null
+        }
+      ],
+      "demographics": {
+        "age": 67,
+        "sex": "F",
+        "rank": "intel officer"
+      },
+      "vitals": {
+        "breathing": null,
+        "hrpmin": null,
+        "conscious": null,
+        "mental_status": null
+      },
+      "tag": null,
+      "assessed": false,
+      "relationship": "NONE",
+      "injury": {
+        "system": "integumentary"
+      }
+    }
+  },
+  "predictors": {
+    "relevance": {
+      "time": "seconds",
+      "resources": "few"
+    }
+  }
+}

@@ -3,18 +3,18 @@ import json
 import random
 import copy
 import numbers
-from pathlib import Path
 from domain.internal import TADProbe, Scenario, Decision, DecisionMetrics, DecisionMetric
 from components import DecisionAnalyzer
 from typing import List, Tuple, Union, Dict, Any, Optional
 
-
-# TODO: instead of having the option of two different lengths, maybe have a NULL value
-# of some kind for parse_tree when it isn't used.
 SelectedTreatment = Union[
-    Tuple[str, str],
-    Tuple[str, str, str]
+    Tuple[str, dict, str]
 ]
+
+TreatmentComparison = Union[
+    Tuple[bool, bool]
+]
+
 
 # currently runs for set of possible decisions, future may change to be called for each decision
 class HeuristicRuleAnalyzer(DecisionAnalyzer):
@@ -24,7 +24,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         super().__init__()
 
     # make all permutations of decision pairs based on their list index 
-    def make_dspace_permutation_pairs(self, obj_cnt:int):
+    def make_dspace_permutation_pairs(self, obj_cnt: int):
         if not isinstance(obj_cnt, numbers.Number): raise AttributeError("Incorrect arg types or size")
         dsize = int((obj_cnt) * (obj_cnt - 1) / 2)
         d = list()
@@ -51,7 +51,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     def gen_predictor_combo(self, predictor_set_arg: dict, set_sz: int):
 
-        if type(predictor_set_arg) != dict or type(set_sz) != int or set_sz < 0: raise AttributeError("Incorrect arg types or size")
+        if type(predictor_set_arg) != dict or type(set_sz) != int or set_sz < 0 or set_sz > len(
+            predictor_set_arg): raise AttributeError("Incorrect arg types or size")
         results = itertools.combinations(predictor_set_arg, set_sz)
         all_predictors_sets = []
         for predictor_set in results:
@@ -59,6 +60,39 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             all_predictors_sets.append(pred_dict)
 
         return all_predictors_sets
+
+    ''' Given a treatment pair compare them according to kma predictor values
+
+        inputs:
+        - predictor_key, the key in the predictor dict
+        - predictor_val, the value in the predictor dict
+        - system, the casualty injury impacted system
+        - treatment0, the value from treatment dict for first treatment
+        - treatment1, the value from treatment dict for second treatment
+
+        outputs:
+        - tuple (True/False, True/False), with True if the treatment predictor val matched the kdm predictor val
+    '''
+
+    def compare_treatment_pair(self, predictor_key: str, predictor_val, system: str, treatment0: dict,
+                               treatment1: dict) -> TreatmentComparison:
+        if type(predictor_key) != str or type(system) != str or type(treatment0) != dict or type(treatment1) != dict: \
+                raise AttributeError("argument type mismatch")
+        if not (predictor_key in treatment0 and predictor_key in treatment1): raise KeyError(
+            "Predictor doesn't exist for treatment")
+
+        result0 = False
+        result1 = False
+
+        if predictor_key == "system":
+            result0 = treatment0[predictor_key] == predictor_val or treatment0[predictor_key] == "all"
+            result1 = treatment1[predictor_key] == predictor_val or treatment1[predictor_key] == "all"
+
+        else:
+            result0 = treatment0[predictor_key] == predictor_val
+            result1 = treatment1[predictor_key] == predictor_val
+
+        return result0, result1
 
     '''
     Take-the-best: Given a set of predictors ranked by validity, and n treatments in the decision space, return the treatment that performs 
@@ -74,10 +108,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - decision
     '''
 
-    # TODO: refactor and test
-    def take_the_best(self, file_name: str, search_path=False, data: dict = None) -> tuple:
+    def take_the_best(self, file_name: str, search_path=False, data: dict = None) -> SelectedTreatment:
 
-        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+        if (type(file_name) != str or len(file_name) == 0) and (
+                type(data) != dict or data is None): raise AttributeError(
             "No info to process")
 
         # prep the input
@@ -88,96 +122,55 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return ("no preference", "")
+            return "no preference", {}, ""
 
         # if search_path then return as part of output the order of pairs and their scores
-        if search_path:
-            search_tree = str()
+        search_tree = str()
 
-        # generate permutations of "battles" between treatments
+        # generate permutations of comparisons between treatments
         treatment_pairs = self.make_dspace_permutation_pairs(len(treatment_idx))
 
-        # create container to hold number of "battles" won for each treatment
+        # create container to hold number of comparisons won for each treatment
         treatment_sums = [0] * len(treatment_idx)
 
         # iterate through treatment pairs
-        for battle in treatment_pairs:
-            treatment0 = data['treatment'][treatment_idx[battle[0]]]
-            treatment1 = data['treatment'][treatment_idx[battle[1]]]
+        for tpair in treatment_pairs:
+            treatment0 = data['treatment'][treatment_idx[tpair[0]]]
+            treatment1 = data['treatment'][treatment_idx[tpair[1]]]
 
             # - for each predictor, compare treatment and predictor values
             for predictor in data['predictors']['relevance']:
                 predictor_val = data['predictors']['relevance'][predictor]
 
-                # - - if a treatment wins the round add 1 to its score and end the comparison
-                # - - - special case for system predictor
-                if predictor == "system":
-                    #if (treatment0[predictor] == "all") and \
-                    #        not (treatment1[predictor] == "all"):
-                    if (
-                            treatment0[predictor] == data['casualty']['injury']['system'] or
-                            treatment0[predictor] == "all") and \
-                            not (
-                                        treatment1[predictor] == data['casualty']['injury']['system'] or
-                                        treatment1[predictor] == "all"):
-                        treatment_sums[battle[0]] += 1
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(
-                            treatment_sums[battle[0]]) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            treatment_sums[battle[1]]) + ","
-                        break
-
-                    elif (
-                            treatment1[predictor] == data['casualty']['injury']['system'] or
-                            treatment1[predictor] == "all") and \
-                            not (
-                                    treatment0[predictor] == data['casualty']['injury']['system'] or
-                                    treatment0[predictor] == "all"):
-                        treatment_sums[battle[1]] += 1
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(
-                            treatment_sums[battle[0]]) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            treatment_sums[battle[1]]) + ","
-                        break
-
-                        # - - - normal case for predictor
-                else:
-                    if treatment0[predictor] == predictor_val and not (treatment1[predictor] == predictor_val):
-                        treatment_sums[battle[0]] += 1
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(
-                            treatment_sums[battle[0]]) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            treatment_sums[battle[1]]) + ","
-                        break
-                    elif treatment1[predictor] == predictor_val and not (treatment0[predictor] == predictor_val):
-                        treatment_sums[battle[1]] += 1
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(
-                            treatment_sums[battle[0]]) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            treatment_sums[battle[1]]) + ","
-                        break
+                compare_result = self.compare_treatment_pair(predictor, predictor_val,
+                                                             data['casualty']['injury']['system'], treatment0,
+                                                             treatment1)
+                if compare_result[0] and not compare_result[1]:
+                    treatment_sums[tpair[0]] += 1
+                    search_tree += ",".join(
+                        [treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]],
+                         str(treatment_sums[tpair[1]])])
+                    break
+                elif compare_result[1] and not compare_result[0]:
+                    treatment_sums[tpair[1]] += 1
+                    search_tree += ",".join(
+                        [treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]],
+                         str(treatment_sums[tpair[1]])])
+                    break
 
         # if there is an overall winner, return it
-        # - get the max value
         max_val = max(treatment_sums)
         sequence = range(len(treatment_sums))
         list_indices = [index for index in sequence if treatment_sums[index] == max_val]
 
-        # - if there is not tie, the treatment with the max value wins
+        # - if there is no tie, the treatment with the max value wins, else return "no preference"
         if len(list_indices) == 1:
-
-            # - - return treatment, info pair corresponding to max index or "no preference"
-            if search_path:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree)
-            else:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]])
+            return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            if search_path:
-                return ("no preference", "", search_tree)
-            else:
-                return ("no preference", "")
+            # return "no preference", {}, search_tree
+            return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by take-the-best
 
@@ -234,10 +227,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - decision
     '''
 
-    # TODO: refactor and test
-    def exhaustive(self, file_name: str, search_path=False, data: dict = None) -> tuple:
+    def exhaustive(self, file_name: str, search_path=False, data: dict = None) -> SelectedTreatment:
 
-        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+        if (type(file_name) != str or len(file_name) == 0) and (
+                type(data) != dict or data is None): raise AttributeError(
             "No info to process")
 
         if data is None:
@@ -247,9 +240,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return ("no preference", "")
+            return "no preference", {}, ""
 
         # create corresponding array to hold treatment scores
         all_treatment_sum = list()
@@ -264,9 +257,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 # - - if the value matches, add 1 to the treatment sum
                 # - - - special case for system predictor
                 if predictor == "system":
-                    if (
-                            data['treatment'][treatment][predictor] == data['casualty']['injury']['system'] or \
-                            data['treatment'][treatment][predictor] == "all"):
+                    if data['treatment'][treatment][predictor] == data['casualty']['injury']['system'] or \
+                            data['treatment'][treatment][predictor] == "all":
                         treatment_sum += 1
 
                 # - - - normal case for predictor
@@ -277,32 +269,20 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             all_treatment_sum.append(treatment_sum)
             treatment_sum = 0
 
-        # if search_path true store search order
-        if search_path:
-            search_tree = ""
-            for i in range(len(treatment_idx)):
-                search_tree += str(treatment_idx[i]) + "," + str(all_treatment_sum[i]) + ","
+        # store search order
+        search_tree = ','.join(treatment_idx[i] + ',' + str(all_treatment_sum[i]) for i in range(len(treatment_idx)))
 
         # return treatment with max sum
         max_val = max(all_treatment_sum)
         sequence = range(len(all_treatment_sum))
         list_indices = [index for index in sequence if all_treatment_sum[index] == max_val]
 
-        # - if the max isn't tied
+        # - if the max isn't tied, else return "no preference"
         if len(list_indices) == 1:
-
-            # - - return treatment, info pair corresponding to max index
-            if search_path:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree)
-            else:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]])
-
-        # - if the max is tied return "no preference"
+            return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            if search_path:
-                return ("no preference", "", search_tree)
-            else:
-                return ("no preference", "")
+            # return "no preference", {}, search_tree
+            return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by exhaustive
 
@@ -361,15 +341,15 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     output: decision
     '''
 
-    # TODO: refactor and test
-    def tallying(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> tuple:
+    def tallying(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> SelectedTreatment:
 
-        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+        if (type(file_name) != str or len(file_name) == 0) and (
+                type(data) != dict or data is None): raise AttributeError(
             "No info to process")
         if not (isinstance(m, numbers.Number) and m > 0): raise AttributeError("Bad value for m")
 
         # set random seed
-        if not seed is None:
+        if seed is not None:
             random.seed(seed)
 
         # prep inputs
@@ -380,37 +360,31 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return ("no preference", "")
+            return "no preference", {}, ""
 
-        # if search_path then return as part of output the order of pairs and their scores
-        if search_path:
-            search_tree = str()
+        # return as part of output the order of pairs and their scores
+        search_tree = str()
 
         # select random set of m predictors
-        # - convert dict predictor names to list
         predictor_idx = list(data['predictors']['relevance'])
 
         # - get m random indices for predictors
-        # rand_predictor_idx = random.sample(range(0, len(predictor_idx)), m)
         rand_predictor_idx = random.sample(range(0, len(predictor_idx)), len(predictor_idx))
 
-        # prepare variables for battles
-        # - generate permutations of "battles" between treatments
+        # prepare variables for comparisons
         treatment_pairs = self.make_dspace_permutation_pairs(len(treatment_idx))
 
-        # - create container to hold number of "battles" won for each treatment
+        # - create container to hold number of comparisons won for each treatment
         treatment_sums = [0] * len(treatment_idx)
 
         # - create container to hold number of predictors matched for each treatment
         treatment_predictor_sums = [0] * 2
 
-        # do battles between treatments
-        # - iterate through treatment pairs
-        for battle in treatment_pairs:
-            treatment0 = data['treatment'][treatment_idx[battle[0]]]
-            treatment1 = data['treatment'][treatment_idx[battle[1]]]
+        for tpair in treatment_pairs:
+            treatment0 = data['treatment'][treatment_idx[tpair[0]]]
+            treatment1 = data['treatment'][treatment_idx[tpair[1]]]
             treatment_predictor_sums[0] = treatment_predictor_sums[1] = 0
 
             # - - for each predictor, compare treatment and predictor values
@@ -418,41 +392,22 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 predictor = predictor_idx[h]
                 predictor_val = data['predictors']['relevance'][predictor]
 
-                # - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
-                # - - - - special case for system predictor
-                if predictor == "system":
-                    if (
-                            treatment0[predictor] == data['casualty']['injury']['system'] or
-                            treatment0[predictor] == "all"):
-                        treatment_predictor_sums[0] += 1
-
-                    if (
-                            treatment1[predictor] == data['casualty']['injury']['system'] or
-                            treatment1[predictor] == "all"):
-                        treatment_predictor_sums[1] += 1
-
-                        # - - - - normal case for predictor
-                else:
-                    if treatment0[predictor] == predictor_val:
-                        treatment_predictor_sums[0] += 1
-
-                    if treatment1[predictor] == predictor_val:
-                        treatment_predictor_sums[1] += 1
+                compare_result = self.compare_treatment_pair(predictor, predictor_val,
+                                                             data['casualty']['injury']['system'], treatment0,
+                                                             treatment1)
+                treatment_predictor_sums[0] += 1 if compare_result[0] else 0
+                treatment_predictor_sums[1] += 1 if compare_result[1] else 0
 
             # get the round winner
-            # - - if the two treament scores are not equal
             if treatment_predictor_sums[0] != treatment_predictor_sums[1]:
 
-                # - - - add one to treament score of treatment with highest sum
-                treatment_sums[
-                    battle[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else battle[1]] += 1
+                # - - - add one to treatment score of treatment with max sum
+                treatment_sums[tpair[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else tpair[1]] += 1
+                if len(search_tree) > 0: search_tree += ","
+                search_tree += ",".join(
+                    [treatment_idx[tpair[0]], str(treatment_predictor_sums[0]), treatment_idx[tpair[1]],
+                     str(treatment_predictor_sums[1])])
 
-                if search_path:  search_tree += str(treatment_idx[battle[0]]) + "," + str(
-                    treatment_predictor_sums[0]) + "," \
-                                                + str(treatment_idx[battle[1]]) + "," + str(
-                    treatment_predictor_sums[1]) + ","
-
-            # - - else if the two treatment scores are equal
             else:
                 # - - - get M\m set of random predictors
                 rrand_predictor_idx = rand_predictor_idx[m:]
@@ -462,61 +417,36 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     rpredictor = predictor_idx[i]
                     rpredictor_val = data['predictors']['relevance'][rpredictor]
 
-                    # - - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
-                    # - - - - - special case for system predictor
-                    if rpredictor == "system":
-                        if (
-                                treatment0[rpredictor] == data['casualty']['injury']['system'] or
-                                treatment0[rpredictor] == "all"):
-                            treatment_predictor_sums[0] += 1
-
-                        if (
-                                treatment1[rpredictor] == data['casualty']['injury']['system'] or
-                                treatment1[rpredictor] == "all"):
-                            treatment_predictor_sums[1] += 1
-
-                            # - - - - - normal case for predictor
-                    else:
-                        if treatment0[rpredictor] == rpredictor_val:
-                            treatment_predictor_sums[0] += 1
-
-                        if treatment1[rpredictor] == rpredictor_val:
-                            treatment_predictor_sums[1] += 1
+                    rcompare_result = self.compare_treatment_pair(rpredictor, rpredictor_val,
+                                                                  data['casualty']['injury']['system'], treatment0,
+                                                                  treatment1)
+                    treatment_predictor_sums[0] += 1 if rcompare_result[0] else 0
+                    treatment_predictor_sums[1] += 1 if rcompare_result[1] else 0
 
                     # - - - - get the round winner
-                    # - - - - - if the two treament scores are not equal
                     if treatment_predictor_sums[0] != treatment_predictor_sums[1]:
 
-                        # - - - - - - add one to treament score of treatment with highest sum and continue to next treatment pair
+                        # - - - - - - add one to treament score of treatment with max sum and continue to next treatment pair
                         treatment_sums[
-                            battle[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else battle[1]] += 1
+                            tpair[0] if treatment_predictor_sums[0] > treatment_predictor_sums[1] else tpair[1]] += 1
 
-                        if search_path:  search_tree += str(treatment_idx[battle[0]]) + "," + str(
-                            treatment_predictor_sums[0]) + "," \
-                                                        + str(treatment_idx[battle[1]]) + "," + str(
-                            treatment_predictor_sums[1]) + ","
-
+                        if len(search_tree) > 0: search_tree += ","
+                        search_tree += ",".join(
+                            [treatment_idx[tpair[0]], str(treatment_predictor_sums[0]), treatment_idx[tpair[1]],
+                             str(treatment_predictor_sums[1])])
                         break
 
         # return a decision
-        # - get the max value
         max_val = max(treatment_sums)
         sequence = range(len(treatment_sums))
         list_indices = [index for index in sequence if treatment_sums[index] == max_val]
 
-        # - if there is not tie, the treatment with the max value wins
+        # - if there is no tie, the treatment with the max value wins, else return "no preference"
         if len(list_indices) == 1:
-
-            # - - return treatment, info pair corresponding to max index or "no preference"
-            if search_path:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree)
-            else:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]])
+            return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            if search_path:
-                return ("no preference", "", search_tree)
-            else:
-                return ("no preference", "")
+            # return "no preference", {}, search_tree
+            return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by tallying
 
@@ -576,24 +506,25 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     remaining predictors from M comparing the treatment pair against this new predictor; if the size of m equals that of M,
     continue to the next treatment pair. Return the treatment that performed best relative to the other treatments, or
     "no preference" if there no clear winner.
-    
+
     input: 
     - file_name: json file that describes scenario, predictor, casualty, and decision space
     - data: a dictionary with the same info as file_name that may used instead of file_name
     - m, where 0 < m <= M, is the size of the set of predictors to consider when comparing 2 treatments
 
-    output: decision
+    output: 
+    - decision
     '''
 
-    # TODO: refactor and test
-    def satisfactory(self, file_name: str, m: int, seed=None, search_path=False, data: dict = None) -> tuple:
+    def satisfactory(self, file_name: str, m: int, seed=None, data: dict = None) -> SelectedTreatment:
 
-        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+        if (type(file_name) is not str or len(file_name) == 0) and (
+                type(data) is not dict or data is None): raise AttributeError(
             "No info to process")
         if not (isinstance(m, numbers.Number) and m > 0): raise AttributeError("Bad value for m")
 
         # set random seed
-        if not seed is None:
+        if seed is not None:
             random.seed(seed)
 
         # prep inputs
@@ -604,36 +535,27 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (treatment_idx[0], data['treatment'][treatment_idx[0]])
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return ("no preference", "")
+            return "no preference", {}, ""
 
-        # if search_path then return as part of output the order of pairs and their scores
-        if search_path:
-            search_tree = str()
-
-        # track if a round had a winner over m predictors
-        winner = False
+        # return as part of output the order of pairs and their scores
+        search_tree = str()
 
         # select random set of m predictors
-        # - convert dict predictor names to list
         predictor_idx = list(data['predictors']['relevance'])
-
-        # - get m random indices for predictors
         rand_predictor_idx = random.sample(range(0, len(predictor_idx)), len(predictor_idx))
 
-        # prepare variables for battles
-        # - generate permutations of "battles" between treatments
+        # prepare variables for comparisons
         treatment_pairs = self.make_dspace_permutation_pairs(len(treatment_idx))
 
-        # - create container to hold number of "battles" won for each treatment
+        # - create container to hold number of comparisons won for each treatment
         treatment_sums = [0] * len(treatment_idx)
 
-        # do battles between treatments
-        # - iterate through treatment pairs
-        for battle in treatment_pairs:
-            treatment0 = data['treatment'][treatment_idx[battle[0]]]
-            treatment1 = data['treatment'][treatment_idx[battle[1]]]
+        # do comparisons between treatments
+        for tpair in treatment_pairs:
+            treatment0 = data['treatment'][treatment_idx[tpair[0]]]
+            treatment1 = data['treatment'][treatment_idx[tpair[1]]]
             winner = False
 
             # - - for each predictor, compare treatment and predictor values
@@ -641,57 +563,28 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 predictor = predictor_idx[h]
                 predictor_val = data['predictors']['relevance'][predictor]
 
-                # - - - if a treatment wins the round add 1 to its score and end the comparison
-                # - - - - special case for system predictor
-                if predictor == "system":
-                    if (
-                            treatment0[predictor] == data['casualty']['injury']['system'] or
-                            treatment0[predictor] == "all") and \
-                            not (
-                                    treatment1[predictor] == data['casualty']['injury']['system'] or
-                                    treatment1[predictor] == "all"):
-                        treatment_sums[battle[0]] += 1
-                        winner = True
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(1) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            0) + ","  # NOTE: double check this in debug mode, only counts when there is a difference, not total sum, tallying has original code
-                        break
+                compare_result = self.compare_treatment_pair(predictor, predictor_val,
+                                                             data['casualty']['injury']['system'], treatment0,
+                                                             treatment1)
+                if compare_result[0] and not compare_result[1]:
+                    treatment_sums[tpair[0]] += 1
+                    search_tree += ",".join(
+                        [treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]],
+                         str(treatment_sums[tpair[1]])])
+                    winner = True
+                    break
+                elif compare_result[1] and not compare_result[0]:
+                    treatment_sums[tpair[1]] += 1
+                    search_tree += ",".join(
+                        [treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]],
+                         str(treatment_sums[tpair[1]])])
+                    winner = True
+                    break
 
-                    elif (
-                            treatment1[predictor] == data['casualty']['injury']['system'] or
-                            treatment1[predictor] == "all") and \
-                            not (
-                                    treatment0[predictor] == data['casualty']['injury']['system'] or
-                                    treatment0[predictor] == "all"):
-                        treatment_sums[battle[1]] += 1
-                        winner = True
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(0) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            1) + ","  # NOTE: double check this in debug mode, only counts when there is a difference, not total sum, tallying has original code
-                        break
-
-                        # - - - - normal case for predictor
-                else:
-                    if treatment0[predictor] == predictor_val and not (treatment1[predictor] == predictor_val):
-                        treatment_sums[battle[0]] += 1
-                        winner = True
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(1) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            0) + ","  # NOTE: check special case comment
-                        break
-                    elif treatment1[predictor] == predictor_val and not (treatment0[predictor] == predictor_val):
-                        treatment_sums[battle[1]] += 1
-                        winner = True
-                        if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(0) + "," \
-                                                       + str(treatment_idx[battle[1]]) + "," + str(
-                            1) + ","  # NOTE: check special case comment
-                        break
             # get the round winner
-            # - - if the two treament scores are not equal
+            # - - if the two treatment scores are not equal or else they are
             if winner:
                 continue
-
-            # - - else if the two treatment scores are equal
             else:
                 # - - - get M\m set of random predictors
                 rrand_predictor_idx = rand_predictor_idx[m:]
@@ -701,74 +594,33 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     rpredictor = predictor_idx[i]
                     rpredictor_val = data['predictors']['relevance'][rpredictor]
 
-                    # - - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
-                    # - - - - - special case for system predictor
-                    if rpredictor == "system":
-
-                        if (
-                                treatment0[rpredictor] == data['casualty']['injury']['system'] or
-                                treatment0[rpredictor] == "all") and \
-                                not (
-                                        treatment1[rpredictor] == data['casualty']['injury']['system'] or
-                                        treatment1[rpredictor] == "all"):
-                            treatment_sums[battle[0]] += 1
-                            # winner = True
-                            if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(1) + "," \
-                                                           + str(treatment_idx[battle[1]]) + "," + str(
-                                0) + ","  # NOTE: double check this in debug mode, only counts when there is a difference, not total sum, tallying has original code
-                            break
-
-                        elif (
-                                treatment1[rpredictor] == data['casualty']['injury']['system'] or
-                                treatment1[rpredictor] == "all") and \
-                                not (
-                                        treatment0[rpredictor] == data['casualty']['injury']['system'] or
-                                        treatment0[rpredictor] == "all"):
-                            treatment_sums[battle[1]] += 1
-                            # winner = True
-                            if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(0) + "," \
-                                                           + str(treatment_idx[battle[1]]) + "," + str(
-                                1) + ","  # NOTE: double check this in debug mode, only counts when there is a difference, not total sum, tallying has original code
-                            break
-
-                            # - - - - - normal case for rpredictor
-                    else:
-
-                        if treatment0[rpredictor] == rpredictor_val and not (treatment1[rpredictor] == rpredictor_val):
-                            treatment_sums[battle[0]] += 1
-                            # winner = True
-                            if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(1) + "," \
-                                                           + str(treatment_idx[battle[1]]) + "," + str(
-                                0) + ","  # NOTE: check special case comment
-                            break
-                        elif treatment1[rpredictor] == rpredictor_val and not (
-                                treatment0[rpredictor] == rpredictor_val):
-                            treatment_sums[battle[1]] += 1
-                            # winner = True
-                            if search_path: search_tree += str(treatment_idx[battle[0]]) + "," + str(0) + "," \
-                                                           + str(treatment_idx[battle[1]]) + "," + str(
-                                1) + ","  # NOTE: check special case comment
-                            break
+                    rcompare_result = self.compare_treatment_pair(rpredictor, rpredictor_val,
+                                                                  data['casualty']['injury']['system'], treatment0,
+                                                                  treatment1)
+                    if rcompare_result[0] and not rcompare_result[1]:
+                        treatment_sums[tpair[0]] += 1
+                        search_tree += ",".join(
+                            [treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]],
+                             str(treatment_sums[tpair[1]])])
+                        break
+                    elif rcompare_result[1] and not rcompare_result[0]:
+                        treatment_sums[tpair[1]] += 1
+                        search_tree += ",".join(
+                            [treatment_idx[tpair[0]], str(treatment_sums[tpair[0]]), treatment_idx[tpair[1]],
+                             str(treatment_sums[tpair[1]])])
+                        break
 
         # return a decision
-        # - get the max value
         max_val = max(treatment_sums)
         sequence = range(len(treatment_sums))
         list_indices = [index for index in sequence if treatment_sums[index] == max_val]
 
-        # - if there is not tie, the treatment with the max value wins
+        # - if there is no tie, the treatment with the max value wins, else return "no preference"
         if len(list_indices) == 1:
-
-            # - - return treatment, info pair corresponding to max index or "no preference"
-            if search_path:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree)
-            else:
-                return (treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]])
+            return treatment_idx[list_indices[0]], data['treatment'][treatment_idx[list_indices[0]]], search_tree
         else:
-            if search_path:
-                return ("no preference", "", search_tree)
-            else:
-                return ("no preference", "")
+            # return "no preference", {}, search_tree
+            return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by satisfactory
 
@@ -779,20 +631,21 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - casualty id as string
     '''
 
-    def satisfactory_priority(self, casualty_dict: dict) -> dict:# LEFT OFF
+    def satisfactory_priority(self, casualty_dict: dict) -> dict:
 
         if type(casualty_dict) != dict: raise AttributeError("Incorrect arg types or size")
         if len(casualty_dict) == 0: raise Exception("no casualties exist")
 
         # current highest priority characteristics, TODO: will change with kdmas
         for person, info in casualty_dict.items():
-            if info['demographics']['rank'].lower() == 'vip':
-                for injury in info['injuries']:
-                    if isinstance(injury['severity'], float):
-                        if 0 <= injury['severity'] <= 1: return {person: info}
+            if info['demographics']['rank'] is not None:
+                if info['demographics']['rank'].lower() == 'vip':
+                    for injury in info['injuries']:
+                        if isinstance(injury['severity'], float):
+                            if 0 <= injury['severity'] <= 1: return {person: info}
 
         # if no casualty that satisfies requirements return first in list
-        return {list(casualty_dict.keys())[0]:list(casualty_dict.values())[0]}
+        return {list(casualty_dict.keys())[0]: list(casualty_dict.values())[0]}
 
     '''
     One-Bounce: If there is a randomly ordered sequence of decisions, when two decisions are compared against all predictors,
@@ -812,12 +665,13 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     output: decision
     '''
 
-    # TODO: refactor and test
-    def one_bounce(self, file_name: str, m: int, k: int, search_path=False, data: dict = None) -> tuple:
+    def one_bounce(self, file_name: str, m: int, k: int, search_path=False, data: dict = None) -> SelectedTreatment:
 
-        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError(
+        if (type(file_name) != str or len(file_name) == 0) and (
+                type(data) != dict or data is None): raise AttributeError(
             "No info to process")
-        if not ((isinstance(m, numbers.Number) and m > 0) or isinstance((k, numbers.Number) and k > 0)): raise AttributeError(
+        if not ((isinstance(m, numbers.Number) and m > 0) or isinstance(
+            (k, numbers.Number) and k > 0)): raise AttributeError(
             "Bad value for k or m")
 
         # prep the input
@@ -828,56 +682,46 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # if there is only a single treatment in the decision space
         if len(treatment_idx) == 1:
-            return (treatment_idx[0], data['treatment'][treatment_idx[0]])  # NOTE: update to reflect more complex return type
+            return treatment_idx[0], data['treatment'][treatment_idx[0]], ""
         elif len(treatment_idx) == 0:
-            return ("no preference", "")
+            return "no preference", {}, ""
 
-        # if search_path then return as part of output the order of pairs and their scores
-        if search_path:
-            search_tree = str()
+        # return as part of output the order of pairs and their scores
+        search_tree = str()
 
-        # generate permutations of "battles" between treatments
+        # generate permutations of comparisons between treatments and containers to hold the result
         treatment_pairs = self.make_dspace_permutation_pairs(
             len(treatment_idx))
-
-        # create container to hold number of "battles" won for each treatment
         treatment_sums = [0] * len(treatment_idx)  # NOTE: do we need this? think not
-
-        # create container to hold number of predictors matched for each treatment
         treatment_predictor_sums = [0] * 2
 
-        # store "battles" in list e.g. list[list] -> battle[0] = [(1,0), (2,0), (3,0), (4,0)], battle[1] = [(2,1), (3,1), (4,1)] ... battle[4] = []
-        battle = [None] * len(treatment_idx)
-        # for l in range(len(treatment_pairs) - 1, -1, -1):
+        # store comparison pairs in list e.g. list[list] -> tpair[0] = [(1,0), (2,0), (3,0), (4,0)], tpair[1] = [(2,1), (3,1), (4,1)] ... tpair[4] = []
+        tpair = [None] * len(treatment_idx)
         for ele in treatment_pairs:
-            #    ele = treatment_pairs[l]
             first = ele[1]
-            # second = ele[1]
-            if battle[first] == None:  # len(battle) - 1 < first:#len(battle[first]) == 0:
-                # battle.append(list())
-                battle[first] = list()
-                battle[first].append((ele[1], ele[0]))  # [second]
+            if tpair[first] is None:
+                tpair[first] = list()
+                tpair[first].append((ele[1], ele[0]))
             else:
-                battle[first].append((ele[1], ele[0]))  # (second)
-        battle[-1] = list()
+                tpair[first].append((ele[1], ele[0]))
+        tpair[-1] = list()
 
-        # loop through battle pairs
+        # loop through tpair
         cnt = len(treatment_pairs)
         winner_idx = None
-        battle_idx = None
-        if len(battle) >= 1:
-            if len(battle[0]) >= 1:
+        tpair_idx = None
+        if len(tpair) >= 1:
+            if len(tpair[0]) >= 1:
                 winner_idx = 0
-                battle_idx = 0
+                tpair_idx = 0
         else:
             raise Exception("No treatments to compare")
 
-        # continue checking battles, while number of battle < num of battle pairs
+        # continue checking tpairs, while number of tpair < num of comparison pairs
         while (cnt > 0):
             cnt -= 1
-            # - do main battle
-            # - - get treatment pairs
-            pair = battle[winner_idx][battle_idx]
+            # - do main tpair
+            pair = tpair[winner_idx][tpair_idx]
             treatment0 = data['treatment'][treatment_idx[pair[0]]]
             treatment1 = data['treatment'][treatment_idx[pair[1]]]
             treatment_predictor_sums[0] = treatment_predictor_sums[1] = 0
@@ -886,129 +730,89 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             for predictor in data['predictors']['relevance']:
                 predictor_val = data['predictors']['relevance'][predictor]
 
-                # - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
-                # - - - - special case for system predictor
-                if predictor == "system":
-                    if (
-                            treatment0[predictor] == data['casualty']['injury']['system'] or
-                            treatment0[predictor] == "all"):
-                        treatment_predictor_sums[0] += 1
-
-                    if (
-                            treatment1[predictor] == data['casualty']['injury']['system'] or
-                            treatment1[predictor] == "all"):
-                        treatment_predictor_sums[1] += 1
-
-                        # - - - - normal case for predictor
-                else:
-                    if treatment0[predictor] == predictor_val:
-                        treatment_predictor_sums[0] += 1
-
-                    if treatment1[predictor] == predictor_val:
-                        treatment_predictor_sums[1] += 1
+                compare_result = self.compare_treatment_pair(predictor, predictor_val,
+                                                             data['casualty']['injury']['system'], treatment0,
+                                                             treatment1)
+                treatment_predictor_sums[0] += 1 if compare_result[0] else 0
+                treatment_predictor_sums[1] += 1 if compare_result[1] else 0
 
             # get the round winner
             # - if winner wins
             if treatment_predictor_sums[0] > treatment_predictor_sums[1]:
-                # - - if winner has no more battle pairs
-                if battle_idx >= len(battle[winner_idx]) - 1:
-                    if search_path:
-                        search_tree += str(treatment_idx[pair[0]]) + "," + str(treatment_predictor_sums[0]) + "," \
-                                       + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
-                        return (treatment_idx[pair[0]], treatment0, search_tree)
-                    else:
-                        return (treatment_idx[pair[0]], treatment0)
-                # - - if winner has more battle pairs
-                elif battle_idx < len(battle[winner_idx]) - 1:  # got some stuff to do
-                    battle_idx += 1
+                # - - if winner has no more tpair elements
+                if tpair_idx >= len(tpair[winner_idx]) - 1:
+
+                    search_tree += ",".join(
+                        [treatment_idx[pair[0]], str(treatment_predictor_sums[0]), treatment_idx[pair[1]],
+                         str(treatment_predictor_sums[1])])
+                    return treatment_idx[pair[0]], treatment0, search_tree
+
+                # - - if winner has more tpair pairs
+                elif tpair_idx < len(tpair[winner_idx]) - 1:  # got some stuff to do
+                    tpair_idx += 1
 
             # - if winner and fighter are equal continue to next set of pairs
             elif treatment_predictor_sums[0] == treatment_predictor_sums[1]:
                 if winner_idx < len(
-                        battle) - 1:  # NOTE: find better future solution, although they tie, they could have the highest predictors sums of all pairs
+                        tpair) - 1:  # NOTE: find better future solution, although they tie, they could have the highest predictors sums of all pairs
                     winner_idx += 1
-                    if len(battle[winner_idx]) >= 1:
-                        battle_idx = 0
+                    if len(tpair[winner_idx]) >= 1:
+                        tpair_idx = 0
                         continue
                     else:
-                        return ("no preference", "")
+                        return "no preference", {}, ""
                 else:
-                    return ("no preference", "")  # NOTE: should sequence tree be returned?
+                    return "no preference", {}, ""
 
-            # - else if fighter wins
+            # - else if non-winner wins
             else:
                 winner_idx = pair[1]
-                if len(battle[winner_idx]) >= 1:
-                    battle_idx = 0
-                    treatment0 = copy.deepcopy(treatment1)
+                if len(tpair[winner_idx]) >= 1:
+                    tpair_idx = 0
                     continue
                 else:  # return it
-                    if search_path:
-                        search_tree += str(treatment_idx[pair[0]]) + "," + str(treatment_predictor_sums[0]) + "," \
-                                       + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
-                        return (treatment_idx[pair[1]], treatment1, search_tree)
-                    else:
-                        return (treatment_idx[pair[1]], treatment1) # change to data['treatments'][winner_idx]
+                    search_tree += ",".join(
+                        [treatment_idx[pair[0]], str(treatment_predictor_sums[0]), treatment_idx[pair[1]],
+                         str(treatment_predictor_sums[1])])
+                    return treatment_idx[pair[1]], treatment1, search_tree
 
-            # do mini battle
-            # get last battle index
-            last_idx = min(battle_idx + k - 1, len(battle[winner_idx]) - 1)
+            # do mini comparison
+            # get last tpair index
+            last_idx = min(tpair_idx + k, len(tpair[winner_idx]) - 1)
+
             # convert dict predictor names to list predictor_idx
             predictor_idx = list(data['predictors']['relevance'])
-            # set a new winner bool and next treatment
-            # new_winner = False
 
-            # do a tallying over a fixed set of m predictor for the next 0 to k treatments
-            for i in range(battle_idx, last_idx, 1):
-                treatment1 = data['treatment'][treatment_idx[i]]
+            # do a tallying over a fixed set of m predictors for the next 0 to k treatments
+            for i in range(tpair_idx, last_idx, 1):
+                tallying_pair = tpair[winner_idx][i]
+                treatment1 = data['treatment'][treatment_idx[tallying_pair[1]]]
                 treatment_predictor_sums[0] = treatment_predictor_sums[1] = 0
 
                 for predictor in predictor_idx[:m]:
-                    # for j in predictor_idx[:m]:
-                    # predictor = predictor_idx[j]
                     predictor_val = data['predictors']['relevance'][predictor]
 
-                    # - - - if there is a match between treatment and predictor values, add 1 to treatment predictor sum
-                    # - - - - special case for system predictor
-                    if predictor == "system":
-                        if (
-                                treatment0[predictor] == data['casualty']['injury']['system'] or
-                                treatment0[predictor] == "all"):
-                            treatment_predictor_sums[0] += 1
-
-                        if (
-                                treatment1[predictor] == data['casualty']['injury']['system'] or
-                                treatment1[predictor] == "all"):
-                            treatment_predictor_sums[1] += 1
-
-                            # - - - - normal case for predictor
-                    else:
-                        if treatment0[predictor] == predictor_val:
-                            treatment_predictor_sums[0] += 1
-
-                        if treatment1[predictor] == predictor_val:
-                            treatment_predictor_sums[1] += 1
+                    compare_result = self.compare_treatment_pair(predictor, predictor_val,
+                                                                 data['casualty']['injury']['system'], treatment0,
+                                                                 treatment1)
+                    treatment_predictor_sums[0] += 1 if compare_result[0] else 0
+                    treatment_predictor_sums[1] += 1 if compare_result[1] else 0
 
                 # - if winner wins and all up to k comparisons have been made, return it
-                if treatment_predictor_sums[0] > treatment_predictor_sums[1] and i == last_idx:
-                    if search_path:
-                        search_tree += str(treatment_idx[pair[0]]) + "," + str(treatment_predictor_sums[0]) + "," \
-                                       + str(treatment_idx[pair[1]]) + "," + str(treatment_predictor_sums[1]) + ","
-                        return (treatment_idx[pair[0]], treatment0, search_tree)
-                    else:
-                        return (treatment_idx[pair[0]], treatment0)
-                # - else if fighter wins
+                if treatment_predictor_sums[0] > treatment_predictor_sums[1] and i == (last_idx - 1):
+                    search_tree += ",".join(
+                        [treatment_idx[pair[0]], str(treatment_predictor_sums[0]), treatment_idx[pair[1]],
+                         str(treatment_predictor_sums[1])])
+                    return treatment_idx[pair[0]], treatment0, search_tree
+
+                # - else if comparison element wins
                 if treatment_predictor_sums[0] <= treatment_predictor_sums[1]:
-                    # new_winner = True
-                    battle_idx = i
+                    tpair_idx = i
                     break
 
-        # if there is a new winner return to main battle
-        # if new_winner:
-        # - - break
-
-        # if outside of while loop no definitive winner was reahed
-        return ("no preference", "")
+        # if outside of while loop no definitive winner was reached
+        # return "no preference", {}, ""
+        return "END_SCENARIO", {}, search_tree
 
     '''Returns the highest priority casualty according to cues used by one-bounce
 
@@ -1026,7 +830,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # create table of casualty fields to worth
         casualty_val_table = dict()
-        casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2}
+        casualty_val_table['relationship'] = {'neutral': 0, 'same-unit': 1, 'friend': 2}
         casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3}
 
         # get random ordering of casualties
@@ -1050,9 +854,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     info0['demographics']['rank'].lower()]
                 casualty1_sum += 0 if info1['demographics']['rank'] is None else casualty_val_table['rank'][
                     info1['demographics']['rank'].lower()]
-                casualty0_sum += 0 if info0['relationship'] == 'NONE' else casualty_val_table['relationship'][
+                #casualty0_sum += 0 if info0['relationship'] == 'NONE' else casualty_val_table['relationship'][
+                casualty0_sum += 0 if info0['relationship'] is None else casualty_val_table['relationship'][
                     info0['relationship'].lower()]
-                casualty1_sum += 0 if info1['relationship'] == 'NONE' else casualty_val_table['relationship'][
+                casualty1_sum += 0 if info1['relationship'] is None else casualty_val_table['relationship'][
                     info1['relationship'].lower()]
                 casualty0_sum += 0 if info0['demographics']['age'] is None else (
                     1 if (0 <= info0['demographics']['age'] <= 10 or 65 <= info0['demographics']['age'] <= 100) else 0)
@@ -1079,15 +884,22 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     # TODO: for now convert functions are stubs, they will be flushed out later
     def convert_kdma_predictor(self, mission, denial, predictor):
-        if not isinstance(mission, numbers.Number) and (0 <= mission <= 10): raise AttributeError("Incorrect arg types or size")
-        if not isinstance(denial, numbers.Number) and (0 <= denial <= 10): raise AttributeError("Incorrect arg types or size")
+        if not isinstance(mission, numbers.Number) and (0 <= mission <= 10): raise AttributeError(
+            "Incorrect arg types or size")
+        if not isinstance(denial, numbers.Number) and (0 <= denial <= 10): raise AttributeError(
+            "Incorrect arg types or size")
         if type(predictor) != str: raise AttributeError("Incorrect arg types or size")
 
-        if predictor == 'risk_reward_ratio': return 'low'
-        elif predictor == 'resources': return 'few'
-        elif predictor == 'time': return 'minutes'
-        elif predictor == 'system': return 'equal'
-        else: raise Exception("not a valid predictor")
+        if predictor == 'risk_reward_ratio':
+            return 'low'
+        elif predictor == 'resources':
+            return 'few'
+        elif predictor == 'time':
+            return 'minutes'
+        elif predictor == 'system':
+            return 'equal'
+        else:
+            raise Exception("not a valid predictor")
 
     def convert_between_kdma_risk_reward_ratio(self, mission, denial, predictor):
         return "low"
@@ -1101,11 +913,14 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     def convert_between_kdma_system(self, mission, denial, predictor):
         return "equal"
 
+    def convert_between_kdma_life_impact(self, mission, denial, predictor):
+        return "medium"
+
     ''' placeholder data needed by hra strategies until functionality is implemented. Currently creates a scenario file
         with kdma associated predictor values (should be learned), predictor values for possible decisions (will be educated guess), kdma values (should be learned)
     '''
 
-    def preprocess(self, decision_list:list) -> str:
+    def preprocess(self, decision_list: list) -> str:
 
         if type(decision_list) != list: raise AttributeError("Incorrect arg types or size")
 
@@ -1121,26 +936,42 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         temp_file["treatment"] = {
             "APPLY_TREATMENT": {
                 "hemostatic gauze": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
-                                     "system": "cardiovascular"},
+                                     "system": "cardiovascular", "life_impact": "low"},
                 "tourniquet": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
-                               "system": "cardiovascular"},
-                "pressure bandage": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes", "system": "integumentary"},
-                "decompression needle": {"risk_reward_ratio": "med", "resources": "few", "time": "minutes",
-                                         "system": "respiratory"},
+                               "system": "cardiovascular", "life_impact": "medium"},
+                "pressure bandage": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
+                                     "system": "integumentary", "life_impact": "low"},
+                "decompression needle": {"risk_reward_ratio": "medium", "resources": "few", "time": "minutes",
+                                         "system": "respiratory", "life_impact": "low"},
                 "nasopharyngeal airway": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
-                                          "system": "respiratory"}},
+                                          "system": "respiratory", "life_impact": "medium"},
+                "blanket": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                                          "system": "integumentary", "life_impact": "low"},
+                "epi pen": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                            "system": "integumentary", "life_impact": "low"},
+                "pain medications": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                        "system": "integumentary", "life_impact": "low"},
+                "pulse oximeter": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                                     "system": "integumentary", "life_impact": "low"},
+                "splint": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                                   "system": "integumentary", "life_impact": "low"},
+                "vented chest seal": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                           "system": "integumentary", "life_impact": "low"},
+                "blood": {"risk_reward_ratio": "low", "resources": "few", "time": "seconds",
+                            "system": "integumentary", "life_impact": "low"}
+            },
             "CHECK_ALL_VITALS": {
                 "CHECK_ALL_VITALS": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
-                                     "system": "all"}},
+                                     "system": "all", "life_impact": "low"}},
             "CHECK_PULSE": {
                 "CHECK_PULSE": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
-                                "system": "cardiovascular"}},
+                                "system": "cardiovascular", "life_impact": "low"}},
             "CHECK_RESPIRATION": {
                 "CHECK_RESPIRATION": {"risk_reward_ratio": "low", "resources": "some", "time": "seconds",
                                       "system": "respiratory"}},
             "DIRECT_MOBILE_CHARACTERS": {
                 "DIRECT_MOBILE_CHARACTERS": {"risk_reward_ratio": "medium", "resources": "few", "time": "minutes",
-                                           "system": "none"}},
+                                             "system": "none"}},
             "MOVE_TO_EVAC": {
                 "MOVE_TO_EVAC": {"risk_reward_ratio": "high", "resources": "few", "time": "minutes", "system": "none"}},
             "TAG_CHARACTER": {
@@ -1148,16 +979,23 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             "SEARCH": {
                 "SEARCH": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all"}},
             "SITREP": {
-                "SITREP": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all"}},
+                "SITREP": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all",
+                           "life_impact": "low"}},
+            # "END_SCENARIO": {
+            #    "END_SCENARIO": {"risk_reward_ratio": "null", "resources": "null", "time": "null", "system": "null",
+            #               "life_impact": "null"}}
         }
         file['treatment'] = {}
         file['treatment']["APPLY_TREATMENT"] = dict()
         for decision_complete in decision_list:
             decision = decision_complete.value.name
-            if decision == 'END_SCENARIO': continue
+            if decision == 'END_SCENARIO':
+                continue
+            # if decision == "APPLY_TREATMENT":
             elif decision == "APPLY_TREATMENT":
                 for ele in temp_file['treatment']['APPLY_TREATMENT']:
-                    if ele in file['treatment']["APPLY_TREATMENT"]: continue
+                    if ele in file['treatment']["APPLY_TREATMENT"]:
+                        continue
                     elif ele in str(decision_complete.value).lower():
                         file['treatment']["APPLY_TREATMENT"][ele] = temp_file['treatment']['APPLY_TREATMENT'][ele]
                         break
@@ -1184,16 +1022,19 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         if location.lower() == "unspecified" or any(ele in injury for ele in ['amputation']):
             return 'cardiovascular'
-        elif any(ele in location.lower() for ele in ['calf', 'thigh', 'bicep', 'shoulder', 'forearm', 'wrist']) or\
+        elif any(ele in location.lower() for ele in ['calf', 'thigh', 'bicep', 'shoulder', 'forearm', 'wrist']) or \
                 any(ele in injury.lower() for ele in ['forehead scrape', 'laceration', 'puncture', 'shrapnel', 'burn']):
             return 'integumentary'
-        elif any(ele in location.lower() for ele in ['head', 'face', 'neck']) or any(ele in injury.lower() for ele in ['ear bleed']):
+        elif any(ele in location.lower() for ele in ['head', 'face', 'neck']) or any(
+                ele in injury.lower() for ele in ['ear bleed']):
             return 'neural'
-        elif any(ele in location.lower() for ele in ['chest']) or any(ele in injury.lower() for ele in ['asthmatic', 'chest collapse']):
+        elif any(ele in location.lower() for ele in ['chest']) or any(
+                ele in injury.lower() for ele in ['asthmatic', 'chest collapse']):
             return 'respiratory'
         elif any(ele in location.lower() for ele in ['stomach']):
             return 'gastrointestinal'
-        else: return 'unknown'
+        else:
+            return 'unknown'
 
     '''
     Call each HRA strategy with scenario info and return a dict of dictionaries, each dictionary 
@@ -1211,50 +1052,37 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     - tree of search path (not implemented)
     '''
 
-    # TODO: refactor and test
-    def hra_decision_analytics(self, file_name: str, m: int = 2, k: int = 2, search_path = False, rand_seed=0, data: dict = None) -> dict:
+    def hra_decision_analytics(self, file_name: str, m: int = 2, k: int = 2, search_path=False, rand_seed=0,
+                               data: dict = None) -> dict:
 
-        if (type(file_name) != str or len(file_name) == 0) and (type(data) != dict or data is None): raise AttributeError("No info to process")
-        if not(isinstance(m, numbers.Number) or isinstance(k, numbers.Number)): raise AttributeError("Bad value for k or m")
+        if (type(file_name) != str or len(file_name) == 0) and (
+                type(data) != dict or data is None): raise AttributeError("No info to process")
+        if not (isinstance(m, numbers.Number) or isinstance(k, numbers.Number)): raise AttributeError(
+            "Bad value for k or m")
 
         # extract possible treatments from scenario input file
         if data is None:
             with open(file_name, 'r+') as f:
                 data = json.load(f)
+
+                # extract kdma values from scenario input file
+                mission = data['kdma']['mission']
+                denial = data['kdma']['denial']
+
+                for predictor in data['predictors']['relevance']:
+                    data['predictors']['relevance'][predictor] = self.convert_kdma_predictor(mission, denial, predictor)
+
+                # add predictors to scenario file
+                json_object = json.dumps(data, indent=2)
+                new_file = "temp/scene.json"
+                with open(new_file, "w") as outfile:
+                    outfile.write(json_object)
+
+        new_file = ''
         treatment_idx = list(data['treatment'])
 
-        # extract kdma values from scenario input file
-        mission = data['kdma']['mission']
-        denial = data['kdma']['denial']
-
-        '''
-        # get predictor values from kdma values and to scenario file
-        risk_reward_ratio = 'risk_reward_ratio'
-        resources = 'resources'
-        time = 'time'
-        system = 'system'
-        
-        predictors = {risk_reward_ratio: self.convert_between_kdma_risk_reward_ratio(mission, denial, None), \
-                      resources: self.convert_between_kdma_resources(mission, denial, None), \
-                      time: self.convert_between_kdma_time(mission, denial, None), \
-                      system: self.convert_between_kdma_system(mission, denial, None)}
-
-        data['predictors'] = {'relevance': predictors}
-        
-        for predictor in data['predictors']['relevance']:
-            data['predictors']['relevance'][predictor] = self.convert_kdma_predictor(mission, denial, predictor)
-
-        # add predictors to scenario file
-        json_object = json.dumps(data, indent=2)
-        new_file = "temp/scene.json"
-        with open(new_file, "w") as outfile:
-            outfile.write(json_object)
-        '''
-        new_file = "temp/scene.json" # remove after uncommenting above code
-
         # update input arg to hold the search path of each strategy
-        if search_path:
-            search_tree = {'take-the-best': '', 'exhaustive': '', 'tallying': '', 'satisfactory': '', 'one-bounce': ''}
+        search_tree = {'take-the-best': '', 'exhaustive': '', 'tallying': '', 'satisfactory': '', 'one-bounce': ''}
 
         # create a dict for each treatment to hold corresponding HRA strategies
         decision_hra = dict()
@@ -1264,6 +1092,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         decision_hra["no preference"] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
                                          'one-bounce': 0}
 
+        decision_hra["END_SCENARIO"] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
+                                        'one-bounce': 0}
+
         # call each HRA strategy and store the result with the matching decision list
         take_the_best_result = self.take_the_best(new_file, search_path=search_path, data=data)
         decision_hra[take_the_best_result[0]]['take-the-best'] += 1
@@ -1272,37 +1103,28 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         decision_hra[exhaustive_result[0]]['exhaustive'] += 1
 
         tallying_result = self.tallying(new_file, m, search_path=search_path, data=data,
-                                            seed=rand_seed)
+                                        seed=rand_seed)
         decision_hra[tallying_result[0]]['tallying'] += 1
 
-        satisfactory_result = self.satisfactory(new_file, m, seed=rand_seed,
-                                                search_path=search_path, data=data)
+        satisfactory_result = self.satisfactory(new_file, m, seed=rand_seed, data=data)
         decision_hra[satisfactory_result[0]]['satisfactory'] += 1
 
         one_bounce_result = self.one_bounce(new_file, m, k, search_path=search_path, data=data)
         decision_hra[one_bounce_result[0]]['one-bounce'] += 1
 
-        if search_path:
-            search_tree['take-the-best'] = take_the_best_result[2]
-            search_tree['exhaustive'] = exhaustive_result[2]
-            search_tree['tallying'] = tallying_result[2]
-            search_tree['satisfactory'] = satisfactory_result[2]
-            search_tree['one-bounce'] = one_bounce_result[2]
+        search_tree['take-the-best'] = take_the_best_result[2]
+        search_tree['exhaustive'] = exhaustive_result[2]
+        search_tree['tallying'] = tallying_result[2]
+        search_tree['satisfactory'] = satisfactory_result[2]
+        search_tree['one-bounce'] = one_bounce_result[2]
 
         # return all hra decision analysis elements
-        if search_path:
-            return {
-                "decision_hra_dict": decision_hra,
-                #"learned_kdma_set": {'mission': mission, 'denial': denial},
-                #"learned_predictors": predictors,
-                #"decision_comparison_order": search_tree
-            }
-        else:
-            return {
-                "decision_hra_dict": decision_hra,
-                #"learned_kdma_set": {'mission': mission, 'denial': denial},
-                #"learned_predictors": predictors,
-            }
+        return {
+            "decision_hra_dict": decision_hra,
+            # "learned_kdma_set": {'mission': mission, 'denial': denial},
+            # "learned_predictors": predictors,
+            # "decision_comparison_order": search_tree
+        }
 
     '''Parent class function that calls hra_decision_analytics
     '''
@@ -1320,14 +1142,13 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             casualty_data[ele.id] = {
                 "id": ele.id,
                 "name": ele.name,
-                "injuries":[{"location":l.location,"name":l.name,"severity":l.severity} for l in ele.injuries],
+                "injuries": [{"location": l.location, "name": l.name, "severity": l.severity} for l in ele.injuries],
                 "demographics": {"age": ele.demographics.age, "sex": ele.demographics.sex,
                                  "rank": ele.demographics.rank},
                 "vitals": {"breathing": ele.vitals.breathing, "hrpmin": ele.vitals.hrpmin,
                            "conscious": ele.vitals.conscious, "mental_status": ele.vitals.mental_status},
                 "tag": ele.tag, "assessed": ele.assessed, "relationship": ele.relationship
             }
-
         # get priority for each hra strategy
         priority_take_the_best = self.take_the_best_priority(casualty_data, data['kdma'])
         priority_exhaustive = self.exhaustive_priority(casualty_data)
@@ -1337,36 +1158,63 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         #  for each casualty and each predictor set combination get the hra analytics
         temp_data = copy.deepcopy(data)
-        set_sz = 2
-        all_predictors = {'time': 'seconds', 'resources': 'few', 'risk_reward_ratio': 'low', 'system': 'equal'}
-        predictor_combos = self.gen_predictor_combo(all_predictors, set_sz)  # run hra for each of the possible combinations of predictors
+        ensemble_set = {}
+        all_predictors = {'time': 'seconds', 'resources': 'few', 'risk_reward_ratio': 'low',
+                          'system': 'equal'}  # TODO calculate predictors based on kdmas
+        for n in range(2, len(all_predictors) + 1):
+            set_sz = n
+
+            predictor_combos = self.gen_predictor_combo(all_predictors,
+                                                        set_sz)  # run hra for each of the possible combinations of predictors
+            casualty_analytics = []
+
+            for casualty in casualty_data:
+                injury_cnt = min(1, len(casualty_data[casualty]['injuries']))
+                injury_cnt = range(injury_cnt)
+                casualty_data[casualty]['injury'] = {'system': "None"}
+                for i in injury_cnt:
+                    casualty_data[casualty]['injury']['system'] = self.guess_injury_body_system(
+                        casualty_data[casualty]['injuries'][i]['location'],
+                        casualty_data[casualty]['injuries'][i]['name'])
+                temp_data['casualty'] = casualty_data[casualty]
+                temp_data['treatment'] = {}
+
+                result = {}
+                for pred in predictor_combos:
+                    temp_data['predictors'] = {'relevance': pred}
+                    for treatment in data['treatment']:
+                        # if "2" in Animals:
+                        # rel_treatment_found = [x for x in probe.decisions if
+                        #                           x.value.name == treatment and 'casualty' in x.value.params and x.value.params['casualty'] == casualty]
+                        if treatment == "SEARCH" or treatment == "SITREP": continue # if there is no casualty how can a decision be applied TODO: ask about this
+                        rel_treatment_found = [x for x in probe.decisions if
+                                               x.value.name == treatment and x.value.params['casualty'] == casualty]
+                        if len(rel_treatment_found):
+                            for name, val in data['treatment'][treatment].items():
+                                temp_data['treatment'][name] = {}
+                                for vpred in val:
+                                    if vpred in pred:
+                                        temp_data['treatment'][name][vpred] = val[vpred]
+                    hash_ele = '-'.join(x for x in pred)
+                    m_arg = int(
+                        set_sz * 0.8)  # number of predictors to start with before increasing for tallying, one-bounce, and satisfactory
+                    result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data, m=m_arg)
+                casualty_analytics.append({casualty: result})
+
+            ensemble_set[n] = copy.deepcopy(casualty_analytics)
+
+        # extract casualty analytics of all predictor combinations from ensemble_set
         casualty_analytics = []
-
-        for casualty in casualty_data:
-            injury_cnt = min(1, len(casualty_data[casualty]['injuries']))
-            injury_cnt = range(injury_cnt)
-            casualty_data[casualty]['injury'] = {'system':"None"}
-            for i in injury_cnt:
-                casualty_data[casualty]['injury']['system'] = self.guess_injury_body_system(casualty_data[casualty]['injuries'][i]['location'], casualty_data[casualty]['injuries'][i]['name'])
-            temp_data['casualty'] = casualty_data[casualty]
-            temp_data['treatment'] = {}
-
-            result = {}
-            for pred in predictor_combos:
-
-                temp_data['predictors'] = {'relevance': pred}
-                for treatment in data['treatment']:
-                    rel_treatment_found = [x for x in probe.decisions if x.value.name == treatment and x.value.params['casualty'] == casualty]
-                    if len(rel_treatment_found):
-                        for name, val in data['treatment'][treatment].items():
-                            temp_data['treatment'][name] = {}
-                            for vpred in val:
-                                if vpred in pred:
-                                    temp_data['treatment'][name][vpred] = val[vpred]
-                hash_ele = '-'.join(x for x in pred)
-                m_arg = int(set_sz * 0.8) # number of predictors to start with before increasing for tallying, one-bounce, and sastisfactory
-                result[hash_ele] = self.hra_decision_analytics(new_file, data=temp_data, m=m_arg)
-            casualty_analytics.append({casualty: result})
+        for key in casualty_data.keys():
+            casualty_val = {}
+            for ensemble_key, ensemble_val in ensemble_set.items():
+                for s in range(len(ensemble_val)):
+                    if list(ensemble_val[s].keys())[0] == key:
+                        for combo_key, combo_val in ensemble_val[s].items():
+                            for ele_key, ele_val in combo_val.items():
+                                casualty_val[ele_key] = ele_val
+            combo_result = {copy.deepcopy(key): copy.deepcopy(casualty_val)}
+            casualty_analytics.append(copy.deepcopy(combo_result))
 
         # package decision metrics by decision
         analysis = {}
@@ -1381,55 +1229,71 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             for ele in casualty_analytics:
                 ele_key = list(ele.keys())[0]
                 ele_val = list(ele.values())[0]
-                if not(ele_key in str(decision_complete.value)): continue
+                if not (ele_key in str(decision_complete.value)): continue
 
                 ele_key = str(decision_complete.value)
-                hra_strategy[ele_key] = {vp: {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
-                                    'one-bounce': 0} for vp in ele_val}
-                for val_predictor in ele_val:
+                ##if decision_complete.value.name == "APPLY_TREATMENT":
+                ##    ele_key = decision_complete.value.params['treatment']
+                ##else:
+                #ele_key = str(decision_complete.value.name) # indent if above else is used
 
-                    hra_strategy[ele_key][val_predictor]['take-the-best'] = ele_val[val_predictor]['decision_hra_dict'][decision]['take-the-best']
-                    hra_strategy[ele_key][val_predictor]['exhaustive'] = ele_val[val_predictor]['decision_hra_dict'][decision]['exhaustive']
-                    hra_strategy[ele_key][val_predictor]['tallying'] = ele_val[val_predictor]['decision_hra_dict'][decision]['tallying']
-                    hra_strategy[ele_key][val_predictor]['satisfactory'] = ele_val[val_predictor]['decision_hra_dict'][decision]['satisfactory']
-                    hra_strategy[ele_key][val_predictor]['one-bounce'] = ele_val[val_predictor]['decision_hra_dict'][decision]['one-bounce']
+                if decision == "APPLY_TREATMENT": # testing, later remove
+                    False
+
+                hra_strategy[ele_key] = {vp: {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
+                                              'one-bounce': 0} for vp in ele_val}
+                for val_predictor in ele_val:
+                    hra_strategy[ele_key][val_predictor]['take-the-best'] = \
+                    ele_val[val_predictor]['decision_hra_dict'][decision]['take-the-best']
+                    hra_strategy[ele_key][val_predictor]['exhaustive'] = \
+                    ele_val[val_predictor]['decision_hra_dict'][decision]['exhaustive']
+                    hra_strategy[ele_key][val_predictor]['tallying'] = \
+                    ele_val[val_predictor]['decision_hra_dict'][decision]['tallying']
+                    hra_strategy[ele_key][val_predictor]['satisfactory'] = \
+                    ele_val[val_predictor]['decision_hra_dict'][decision]['satisfactory']
+                    hra_strategy[ele_key][val_predictor]['one-bounce'] = \
+                    ele_val[val_predictor]['decision_hra_dict'][decision]['one-bounce']
 
             match len(hra_strategy.values()):
                 case 0:
-                    #No result
+                    # No result
                     ret = {}
                 case 1:
-                    #standard?
+                    # standard?
                     ret = list(hra_strategy.values())[0]
                 case _:
                     # How?
                     breakpoint()
                     raise Exception()
-            
-            
+
             metrics: DecisionMetrics = {
-                "All Predictors": DecisionMetric(name="All Predictors", description="Full set of predictors with kdma associated values", value={'-'.join(key + '(' + str(val) + ')' for key, val in data['kdma'].items()):all_predictors}),\
-                "HRA Strategy": DecisionMetric(name="HRA Strategy", description="Applicable hra strategies", value=ret),\
+                "All Predictors": DecisionMetric(name="All Predictors",
+                                                 description="Full set of predictors with kdma associated values",
+                                                 value={'-'.join(key + '(' + str(val) + ')' for key, val in
+                                                                 data['kdma'].items()): all_predictors}), \
+                "HRA Strategy": DecisionMetric(name="HRA Strategy", description="Applicable hra strategies", value=ret), \
                 "Take-The-Best Priority": DecisionMetric(name="Take-The-Best Priority",
                                                          description="Priority for take-the-best strategy",
-                                                         value=str(list(priority_take_the_best.keys())[0]) in str(decision_complete.value)), \
+                                                         value=str(list(priority_take_the_best.keys())[0]) in str(
+                                                             decision_complete.value)), \
                 "Exhaustive Priority": DecisionMetric(name="Exhaustive Priority",
                                                       description="Priority for exhaustive strategy",
-                                                      value=str(list(priority_exhaustive.keys())[0]) in str(decision_complete.value)), \
+                                                      value=str(list(priority_exhaustive.keys())[0]) in str(
+                                                          decision_complete.value)), \
                 "Tallying Priority": DecisionMetric(name="Tallying Priority",
                                                     description="Priority for tallying strategy",
-                                                    value=str(list(priority_tallying.keys())[0]) in str(decision_complete.value)), \
+                                                    value=str(list(priority_tallying.keys())[0]) in str(
+                                                        decision_complete.value)), \
                 "Satisfactory Priority": DecisionMetric(name="Satisfactory Priority",
                                                         description="Priority for satisfactory strategy",
-                                                        value=str(list(priority_satisfactory.keys())[0]) in str(decision_complete.value)), \
+                                                        value=str(list(priority_satisfactory.keys())[0]) in str(
+                                                            decision_complete.value)), \
                 "One-Bounce Priority": DecisionMetric(name="One-Bounce Priority",
                                                       description="Priority for one-bounce strategy",
-                                                      value=str(list(priority_one_bounce.keys())[0]) in str(decision_complete.value))
-                }
+                                                      value=str(list(priority_one_bounce.keys())[0]) in str(
+                                                          decision_complete.value))
+            }
             # Update the metrics in the decision with our currently calculated metrics
             decision_complete.metrics.update(metrics)
             analysis[decision_complete.id_] = metrics
         return analysis
-
-
-
