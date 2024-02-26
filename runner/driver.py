@@ -115,7 +115,7 @@ class Driver:
         url = f'http://localhost:8501/?scen={probe.id_}'
         return self.respond(decision, url)
         
-    def train(self, feedback: ta3.AlignmentResults):
+    def train(self, feedback: ta3.AlignmentResults, final: bool):
         self.trainer.train(self.scenario, self.actions_performed, self.translate_feedback(feedback))
 
     def _extract_state(self, dict_state: dict) -> State:
