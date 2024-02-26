@@ -136,11 +136,9 @@ class TA3Elaborator(Elaborator):
                     continue
                 for injury in cas.injuries:
                     treat_params = treat_action.value.params.copy()
-                    if TA3Elaborator.medsim_allows_action(treat_action.value, injury.name):
-                        treat_params['location'] = treat_params.get('location', 'unspecified')
-                    else:
-                        treat_params['location'] = injury.location
-                    grounded.append(Decision(treat_action.id_, Action(decision.value.name, treat_params), kdmas=treat_action.kdmas))
+                    treat_params['location'] = injury.location
+                    grounded.append(Decision(treat_action.id_, Action(decision.value.name, treat_params),
+                                             kdmas=treat_action.kdmas))
             else:
                 grounded.append(treat_action)
 
