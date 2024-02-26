@@ -14,7 +14,10 @@ stages:
 - integration_test_soartech
 - integration_test_adept
 - integration_test_eval
-- individual_tests
+- install_servers
+- individual_tests_soartech
+- individual_tests_adept
+- individual_tests_eval
 #- deploy
 #- review
 #- dast
@@ -101,14 +104,16 @@ integration_test_eval:
 
 # TODO: Also have individual tests with --session_type adept and eval?
 integration_test_install:
-  stage: individual_tests
+  stage: install_servers
   needs: [ integration_test_soartech ]
   when: on_failure
   script:
     - python run-servers.py
 
+# Soartech individual tests
+
 integration_test_ebd:
-  stage: individual_tests
+  stage: individual_tests_soartech
   needs: [ integration_test_install ]
   script:
     - python run-servers.py
@@ -116,7 +121,7 @@ integration_test_ebd:
     - python stop-servers.py
 
 integration_test_mc:
-  stage: individual_tests
+  stage: individual_tests_soartech
   needs: [ integration_test_install ]
   script:
     - python run-servers.py
@@ -124,7 +129,7 @@ integration_test_mc:
     - python stop-servers.py
 
 integration_test_br:
-  stage: individual_tests
+  stage: individual_tests_soartech
   needs: [ integration_test_install ]
   script:
     - python run-servers.py
@@ -132,7 +137,7 @@ integration_test_br:
     - python stop-servers.py
 
 integration_test_keds:
-  stage: individual_tests
+  stage: individual_tests_soartech
   needs: [ integration_test_install ]
   script:
     - python run-servers.py
@@ -140,7 +145,7 @@ integration_test_keds:
     - python stop-servers.py
 
 integration_test_kedsd:
-  stage: individual_tests
+  stage: individual_tests_soartech
   needs: [ integration_test_install ]
   script:
     - python run-servers.py
@@ -148,7 +153,7 @@ integration_test_kedsd:
     - python stop-servers.py
 
 integration_test_csv:
-  stage: individual_tests
+  stage: individual_tests_soartech
   needs: [ integration_test_install ]
   script:
     - python run-servers.py
@@ -156,10 +161,129 @@ integration_test_csv:
     - python stop-servers.py
 
 integration_test_bayes:
-  stage: individual_tests
+  stage: individual_tests_soartech
   needs: [ integration_test_install ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --no-br --no-keds --no-kedsd --no-csv --bayes
     - python stop-servers.py
+
+# Adept individual tests
+
+integration_test_ebd:
+  stage: individual_tests_adept
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --ebd --no-mc --no-br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_mc:
+  stage: individual_tests_adept
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --no-ebd --mc --no-br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_br:
+  stage: individual_tests_adept
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_keds:
+  stage: individual_tests_adept
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_kedsd:
+  stage: individual_tests_adept
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --no-keds --kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_csv:
+  stage: individual_tests_adept
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --no-keds --no-kedsd --csv --no-bayes
+    - python stop-servers.py
+
+integration_test_bayes:
+  stage: individual_tests_adept
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --no-keds --no-kedsd --no-csv --bayes
+    - python stop-servers.py
+
+
+# Eval individual tests
+
+integration_test_ebd:
+  stage: individual_tests_eval
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --ebd --no-mc --no-br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_mc:
+  stage: individual_tests_eval
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --mc --no-br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_br:
+  stage: individual_tests_eval
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_keds:
+  stage: individual_tests_eval
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_kedsd:
+  stage: individual_tests_eval
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --no-keds --kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_csv:
+  stage: individual_tests_eval
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --no-keds --no-kedsd --csv --no-bayes
+    - python stop-servers.py
+
+integration_test_bayes:
+  stage: individual_tests_eval
+  needs: [ integration_test_install ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --no-keds --no-kedsd --no-csv --bayes
+    - python stop-servers.py
+
+
 
