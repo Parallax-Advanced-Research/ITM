@@ -246,7 +246,7 @@ class Injuries(Enum):
     BURN_SUFFOCATION = 'Burn Suffocation'
     EYE_TRAUMA = 'Eye_Trauma'
     BROKEN_BONE = 'Broken Bone'
-    INTERNAL = 'Internal Injury'
+    INTERNAL = 'Internal'
 
 
 class Metric(Enum):
