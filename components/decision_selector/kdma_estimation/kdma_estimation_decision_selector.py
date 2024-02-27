@@ -353,6 +353,8 @@ def make_case(s: State, d: Decision) -> dict[str, Any]:
         case['mental_status'] = c.vitals.mental_status
         case['breathing'] = c.vitals.breathing
         case['hrpmin'] = c.vitals.hrpmin
+        case['intent'] = c.intent
+        case['directness_of_causality'] = c.directness_of_causality
         case['unvisited_count'] = len([co for co in s.casualties if not co.assessed and not co.id == c.id])
         case['injured_count'] = len([co for co in s.casualties if len(co.injuries) > 0 and not co.id == c.id])
         case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
