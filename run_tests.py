@@ -224,6 +224,9 @@ class Result:
 		while len(self.output) and 0 == len(self.output[-1]):
 			self.output = self.output[:-1]
 
+	def __repr__(self) -> str:
+		return f"Result(code={self.code}, output={self.output})"
+
 def cmd(argv: list[str], env: Optional[dict[str,str]] = None) -> Result:
 	""" Runs the command, returns the corresponding Result """
 	environ = { 'PATH': os.environ['PATH'] }
@@ -350,6 +353,12 @@ def main() -> None:
 		mypy_results = mypy_all(paths)
 		for path in paths:
 			delint(path, mypy_results, args.verbose)
+
+		extra_paths = [ p for p in mypy_results if p not in paths ]
+		if len(extra_paths):
+			color('blue', "\n## mypy errors in included files:")
+			for path in extra_paths:
+				delint(path, mypy_results, args.verbose)
 
 if __name__ == '__main__':
 	main()
