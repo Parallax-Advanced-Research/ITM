@@ -116,7 +116,7 @@ class Driver:
         return self.respond(decision, url)
         
     def train(self, feedback: ta3.AlignmentResults, final: bool):
-        self.trainer.train(self.scenario, self.actions_performed, self.translate_feedback(feedback))
+        self.trainer.train(self.scenario, self.actions_performed, self.translate_feedback(feedback), final)
 
     def _extract_state(self, dict_state: dict) -> State:
         raise NotImplementedError

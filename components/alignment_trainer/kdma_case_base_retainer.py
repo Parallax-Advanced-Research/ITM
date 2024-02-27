@@ -11,7 +11,7 @@ class KDMACaseBaseRetainer(AlignmentTrainer):
         pass
         
     def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback,
-              final: bool = False):
+              final: bool):
         print(f"scenario_id: {scenario.id_}\n")
         print(f"feedback: {feedback}\n")
         with open(FEEDBACK_FILE, "a") as outfile:
