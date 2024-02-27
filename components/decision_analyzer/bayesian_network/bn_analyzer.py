@@ -1,10 +1,15 @@
 from typing import Dict
 from domain.internal import TADProbe, Scenario, DecisionMetrics, DecisionMetric
 from domain.internal.decision import Action
-from domain.ta3.ta3_state import Casualty, State, Injury
+from domain.ta3.ta3_state import Casualty, TA3State, Injury
 from components import DecisionAnalyzer
 from .inference import Bayesian_Net
 from .typedefs import Node_Name, Node_Val
+
+
+# TODO: Which version of State is used for Scenario and Probe we use should be
+# decided globally, not in each module
+State = TA3State
 
 # TODO: When comparing values, we should compare against enums in such a way that there's a compilation error if we
 # use an invalid one, and probably if we don't explicitly cover a case.
@@ -26,34 +31,38 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         super().__init__()
         self.bn = Bayesian_Net("components/decision_analyzer/bayesian_network/bayes_net.json")
         
-    def analyze(self, _: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
-        analysis = {}
+    def analyze(self, _: Scenario[State], probe: TADProbe[State]) -> dict[str, DecisionMetrics]:
+        analysis: dict[str, DecisionMetrics] = {}
         for decision in probe.decisions:
             ob = self.make_observation(probe.state, decision.value)
             if ob is None:
                 continue
+
             predictions = self.bn.predict(ob)
 
+            mdict = DecisionMetrics()
+            def append(name: str, desc: str, prob: float) -> None:
+                mdict[name] = DecisionMetric[float](name, desc, prob)
+
             metrics: list[DecisionMetric[float]] = []
-            metrics.append(DecisionMetric[float]("pDeath",
-                "Posterior probability of death with no action", predictions['death']['true']))
-            metrics.append(DecisionMetric[float]("pPain",
-                "Posterior probability of severe pain", predictions['pain']['high']))
-            metrics.append(DecisionMetric[float]("pBrainInjury",
-                "Posterior probability of a brain injury", predictions['brain_injury']['true']))
-            metrics.append(DecisionMetric[float]("pAirwayBlocked",
-                "Posterior probability of airway blockage", predictions['airway_blocked']['true']))
-            metrics.append(DecisionMetric[float]("pInternalBleeding",
-                "Posterior probability of internal bleeding", predictions['internal_hemorrhage']['true']))
-            metrics.append(DecisionMetric[float]("pExternalBleeding",
-                "Posterior probability of external bleeding", predictions['external_hemorrhage']['true']))
-            mdict = {m.name: m for m in metrics}
+            append("pDeath",
+				 "Posterior probability of death with no action", predictions['death']['true'])
+            append("pPain",
+				 "Posterior probability of severe pain", predictions['pain']['high'])
+            append("pBrainInjury",
+				 "Posterior probability of a brain injury", predictions['brain_injury']['true'])
+            append("pAirwayBlocked",
+				 "Posterior probability of airway blockage", predictions['airway_blocked']['true'])
+            append("pInternalBleeding",
+				 "Posterior probability of internal bleeding", predictions['internal_hemorrhage']['true'])
+            append("pExternalBleeding",
+				 "Posterior probability of external bleeding", predictions['external_hemorrhage']['true'])
             decision.metrics.update(mdict)
             analysis[decision.id_] = mdict
 
         return analysis
     
-    def make_observation(self, state: State, a: Action) -> Dict[Node_Name, Node_Val | None] | None:
+    def make_observation(self, state: State, a: Action) -> Dict[Node_Name, Node_Val] | None:
         patient = a.params.get('casualty',None)
         if patient is None:
             return None
@@ -85,7 +94,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
             # * brain_injury
             # * mmHg -- which is strange, but I don't see blood pressure mentioned
         }
-        
+
         return {name: value for (name, value) in data.items() if value is not None}
    
 
@@ -113,7 +122,9 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
     def get_hemorrhage(self, c: Casualty, internal: bool) -> Node_Val | None:
         for i in c.injuries:
             # TODO: should we also count a moderate bleed as hemorrhage?
-            if i.name in [ 'Laceration', 'Shrapnel', 'Puncture' ] and i.severity in [ 'substantial', 'major', 'extreme' ]:
+            valid_injury = [ 'Laceration', 'Shrapnel', 'Puncture' ]
+            valid_severity = [ 'substantial', 'major', 'extreme' ]
+            if (i.name in valid_injury) and (i.severity in valid_severity):
                 # unspecified counts as internal because if we don't know where it's coming from, that's the better bet,
                 # and I'd rather give the wrong location than say "no hemmorhage" when there is one
                 if internal == (i.location in [ 'unspecified', 'internal' ]): return "true"
@@ -121,8 +132,8 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
 
     def get_limb_fracture(self, c: Casualty) -> Node_Val | None:
         for i in c.injuries:
-            if 'Broken Bone' == i.name and on_extremity(i): return True
-        return False
+            if 'Broken Bone' == i.name and on_extremity(i): return "true"
+        return "false"
         
     def get_hrpmin(self, c: Casualty) -> Node_Val | None:
         val = c.vitals.hrpmin
