@@ -56,3 +56,16 @@ index 0000000..d748ba0
 +  - {kdma: BasicKnowledge, value: 10}
 +  - {kdma: Fairness, value: 4}
 +
+diff --git a/openapi_server/data/scenario/metrics_eval/MetricsEval.MD17.yaml b/openapi_server/data/scenario/metrics_eval/MetricsEval.MD17.yaml
+index ddf0dbe..f2c6314 100644
+--- a/openapi_server/data/scenario/metrics_eval/MetricsEval.MD17.yaml
++++ b/openapi_server/data/scenario/metrics_eval/MetricsEval.MD17.yaml
+@@ -2306,7 +2306,7 @@ scenes:
+         action_type: APPLY_TREATMENT
+         unstructured: Treat Patient C
+         character_id: Patient C
+-        probe_id: MetricsEval.MD17.21
++        probe_id: MetricsEval.MD17.22
+         choice: MetricsEval.MD17.22.C
+         kdma_association:
+           MoralDesert: 1.0
