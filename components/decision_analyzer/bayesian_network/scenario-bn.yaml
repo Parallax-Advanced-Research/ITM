@@ -44,7 +44,9 @@
 # with "values" of e.g., "parent0=A,parent1=B"
 # These nodes won't be in final graph; they just exist while propagating assumptions.
 
-
+# NOTE: No prior should have a probability of 0, because it isn't just the
+# *actual* prior, but also the chance that some cause we haven't modeled
+# might affect it. Fine if it's like 0.001, though.
 
 # Symptoms
 AVPU:
@@ -52,7 +54,7 @@ AVPU:
     values: [ A, V, P, U ]
     baseline: A
     parents: [ hypothermia, shock, brain_injury, airway_blocked ]
-    prior: 1.0 A, 0.0 V, 0.0 P, 0.0 U
+    prior: 0.997 A, 0.001 V, 0.001 P, 0.001 U
     # hemorrhage can lead to confusion, but probably not lower (at least not pre-shock). A V means you don't even open your eyes spontaneously. (It'd show up on the ACDU scale, though)
 
     hypothermia: 0.7 A, 0.2 V, 0.05 P, 0.05 U # Used revised swiss system out of its area of applicability; guessed at percentages
@@ -63,7 +65,7 @@ AVPU:
 hrpmin: 
     values: [ low, normal, high ]
     baseline: normal
-    prior: 0.0 low, 1.0 normal, 0.0 high
+    prior: 0.02 low, 0.78 normal, 0.20 high # in a combat situation? high heart rate isn't that unlikely.
     parents: [ internal_hemorrhage, external_hemorrhage, hypothermia, tension_pneumothorax ]
 
     # https://www.osmosis.org/learn/Cardiovascular_changes_during_hemorrhage. Also, physics.
@@ -83,17 +85,17 @@ hrpmin:
 mmHg:
     values: [ low, normal, high ]
     baseline: normal
-    prior: 0.0 low, 1.0 normal, 0.0 high
+    prior: 0.05 low, 0.90 normal, 0.05 high
     parents: [ internal_hemorrhage, external_hemorrhage, hypothermia ]
     
     internal_hemorrhage: 0.7 low, 0.3 normal, 0.0 high
     external_hemorrhage: 0.7 low, 0.3 normal, 0.0 high
     hypothermia: 0.4 low, 0.3 normal, 0.3 high # Same deal as with heart rate
 
-SpO2: # low blood oxygen = "hypoxemia". high = "hyperxemia"
+SpO2: # low blood oxygen = "hypoxemia". high = "hyperxemia". Although normal is apparently 95% through 100%, so what's high?
     values: [ low, normal ] # removed high. Nothing trauma-related seems to cause that.
     baseline: normal
-    prior: 0.0 low, 1.0 normal
+    prior: 0.01 low, 0.99 normal
     parents: [ airway_blocked, tension_pneumothorax ]
 
     airway_blocked: 0.9 low, 0.1 normal # fairly arbitrary; the probability is basically "has the airway been blocked long enough to drop blood oxygen yet?"
@@ -102,7 +104,7 @@ SpO2: # low blood oxygen = "hypoxemia". high = "hyperxemia"
 RR:
     values: [ low, normal, high ]
     baseline: normal
-    prior: 0.0 low, 1.0 normal, 0.0 high
+    prior: 0.02 low, 0.78 normal, 0.20 high # as with heart rate, combat situation gets breathing up
     parents: [ hypothermia, airway_blocked, tension_pneumothorax, severe_burns, internal_hemorrhage, external_hemorrhage ]
     
 
@@ -117,7 +119,7 @@ RR:
 pain:
     values: [ low_or_none, medium, high ]
     baseline: low_or_none
-    prior: 1.0 low_or_none, 0.0 medium, 0.0 high
+    prior: 0.93 low_or_none, 0.05 medium, 0.02 high # most of the medium and high is due to unmodeled injuries
     parents: [ internal_hemorrhage, external_hemorrhage, brain_injury, limb_fracture, amputation, tension_pneumothorax, severe_burns ]
 
     internal_hemorrhage: 0.3 high, 0.4 medium, 0.3 low_or_none # https://www.medicalnewstoday.com/articles/320322. mostly a guess.
@@ -131,7 +133,7 @@ pain:
 eye_or_vision_problems:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.99 false, 0.01 true
     parents: [ brain_injury ]
     
     brain_injury: 0.1 true, 0.9 false # total guess, but there are a lot of types of brain injury that wouldn't affect vision
@@ -145,7 +147,7 @@ eye_or_vision_problems:
 visible_trauma_to_head:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true # All these 1/10000 ones are just "always false, but I don't want actual 0s anywhere"
     parents: [ brain_injury, airway_blocked ]
 
     brain_injury: 0.3 true, 0.7 false # blunt force might not be visible
@@ -154,7 +156,7 @@ visible_trauma_to_head:
 visible_trauma_to_torso:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ internal_hemorrhage, external_hemorrhage ]
 
     internal_hemorrhage: 0.7 true, 0.3 false # guess. assuming internal more likely for torso, external for limbs
@@ -163,7 +165,7 @@ visible_trauma_to_torso:
 visible_trauma_to_extremities:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ internal_hemorrhage, external_hemorrhage, limb_fracture ]
     
     internal_hemorrhage: 0.1 true, 0.9 false
@@ -178,7 +180,7 @@ visible_trauma_to_extremities:
 airway_blocked:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ severe_burns, explosion ]
 
     severe_burns: 0.1 true, 0.9 false
@@ -187,7 +189,7 @@ airway_blocked:
 tension_pneumothorax:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ explosion ]
 
     # TODO: should this have an edge coming from internal_hemorrhage?
@@ -196,7 +198,7 @@ tension_pneumothorax:
 severe_burns:
     values: [ false, true  ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ explosion ]
     # TODO: eventually, I want to be able to specify body surface area bins, e.g. % BSA > 0, 25, 50, 75
 
@@ -205,7 +207,7 @@ severe_burns:
 amputation:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.99999 false, 0.00001 true
     parents: [ explosion ]
 
     explosion: 0.2 true, 0.8 false
@@ -213,7 +215,7 @@ amputation:
 external_hemorrhage:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ amputation, limb_fracture, explosion ]
 
     amputation: 0.9 true, 0.1 false # could in theory crush or cauterize
@@ -224,7 +226,7 @@ external_hemorrhage:
 internal_hemorrhage:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ limb_fracture, explosion ]
 
     limb_fracture: 0.1 true, 0.9 false
@@ -234,7 +236,7 @@ internal_hemorrhage:
 shock:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ internal_hemorrhage, external_hemorrhage, tension_pneumothorax, severe_burns ]
 
     internal_hemorrhage: 0.9 true, 0.1 false # guess, but shock seems to be inevitable if hemorrhage is left untreated. But it remains after the TQ, so it's separate.
@@ -247,7 +249,7 @@ shock:
 brain_injury:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ explosion ]
 
     explosion: 0.2 true, 0.8 false
@@ -255,7 +257,7 @@ brain_injury:
 hypothermia:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ shock ]
 
     shock: 0.2 true, 0.8 false # trama triad of death. "One of those complications is hypothermia, occurring in about 10% of patients." But that includes *all* trauma patients, not requiring shock, so increasing by a bit.  https://www.ems1.com/ems-products/bleeding-control/articles/hypothermia-and-trauma-a-deadly-combination-GSR7YIuhEq3MoNFB/
@@ -265,7 +267,7 @@ hypothermia:
 limb_fracture:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ explosion ]
 
     explosion: 0.2 true, 0.8 false
@@ -275,7 +277,7 @@ limb_fracture:
 death:
     values: [ false, true ]
     baseline: false
-    prior: 1.0 false, 0.0 true
+    prior: 0.9999 false, 0.0001 true
     parents: [ tension_pneumothorax, severe_burns, airway_blocked, external_hemorrhage, shock, internal_hemorrhage, brain_injury, hypothermia ]
     # NOTE: amputation and limb_fracture don't cause death directly. They cause hemorrhage and shock and maybe hypothermia (TODO: add that edge?) and...
     # NOTE: Death here means death in less time than it takes to hand them off to the next stage.

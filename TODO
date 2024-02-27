@@ -1,6 +1,7 @@
 * --seed argument at toplevel. Other modules don't set their own seed.
 * local copy of HEMS with everything exported
 * bayes and hems modules should use the same bins for burns (and others?) as the new vocabulary does.
+* What should we do if user gives set of inconsistent observations (e.g. {blocked airway, hyperventilation})
 
 
 # Vocabulary

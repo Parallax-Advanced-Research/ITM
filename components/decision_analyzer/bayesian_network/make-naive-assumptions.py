@@ -156,20 +156,6 @@ class Node:
 			h = assignment_to_hash(assignment)
 			self.probability_table[h] = self.apply_multiple_influences(relevant_lines)
 
-			if 1 == len(relevant_lines):
-				included = [ parent for parent, value in assignment.items()
-				             if nodes[parent].baseline != value ]
-				assert 1 == len(included)
-
-				estimate = self.probability_table[h]
-				truth = self.basis_rows[included[0]]
-				err = sum(abs(estimate[k] - truth[k]) for k in self.val2offset)
-
-				# It should be *exactly* 0, but some floating point error might conceivably happen
-				assert err < 0.0000001, f"Floating point rounding error is unusually high: err={err:.12f}" 
-				
-				self.probability_table[h] = self.basis_rows[included[0]]
-
 		# This row is the prior. If we have parents, we don't need that any more. But if it's a root node,
 		# that *is* the probability, so we keep it.
 		if len(self.parents):
