@@ -1,5 +1,6 @@
 import swagger_client.models as models
 import swagger_client as ta3
+import util
 from domain.external import Scenario, ITMProbe, Action
 from domain.internal import KDMA, KDMAs
 
@@ -7,7 +8,8 @@ from domain.internal import KDMA, KDMAs
 class TA3Client:
     def __init__(self, endpoint: str = None, target = None, evalTargetNames = None, inputScenarioId = None):
         if endpoint is None:
-            endpoint = "http://127.0.0.1:8080"
+            port = util.find_environment("TA3_PORT", 8080)
+            endpoint = "http://127.0.0.1:" + str(port)
         _config = ta3.Configuration()
         _config.host = endpoint
 

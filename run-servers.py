@@ -182,6 +182,9 @@ def start_server(dir_name, args):
     # f.close()
     # stream.close()
 
+ta3_port = util.find_environment("TA3_PORT", 8080)
+adept_port = util.find_environment("ADEPT_PORT", 8081)
+soartech_port = util.find_environment("SOARTECH_PORT", 8084)
 
 parser = argparse.ArgumentParser(description="Runs an experiment attempting to learn about an " \
                                              "environment by learning a subset of actions by " \
@@ -223,17 +226,17 @@ else:
     adept_server_available = False
 
 ready = True
-if ta3_server_available and util.is_port_open(8080):
+if ta3_server_available and util.is_port_open(ta3_port):
     color('red', 
-          "Port 8080 is already in use (default for evaluation server).")
+          f"Port {ta3_port} is already in use (needed by evaluation server).")
     ready = False
-if args.adept and adept_server_available and util.is_port_open(8081):
+if args.adept and adept_server_available and util.is_port_open(adept_port):
     color('red', 
-          "Port 8081 is already in use (configured for adept server).")
+          f"Port {adept_port} is already in use (needed by ADEPT server).")
     ready = False
-if args.soartech and soartech_server_available and util.is_port_open(8084):
+if args.soartech and soartech_server_available and util.is_port_open(soartech_port):
     color('red', 
-          "Port 8084 is already in use (default for Soartech server).")
+          f"Port {soartech_port} is already in use (needed by Soartech server).")
     ready = False
 if not ready:
     color('red', 
@@ -252,7 +255,7 @@ if not adept_server_available and not soartech_server_available:
 
 
 if adept_server_available:
-    start_server("adept_server", ["openapi_server", "--port", "8081"])
+    start_server("adept_server", ["openapi_server", "--port", str(adept_port)])
 elif soartech_server_available:
     color('yellow', 
           'ADEPT server is not in use. Training using ta3_training.py will require the argument '
@@ -260,7 +263,7 @@ elif soartech_server_available:
           + 'tad_tester.py should be unaffected.')
 
 if soartech_server_available:
-    start_server("ta1-server-mvp", ["itm_app"])
+    start_server("ta1-server-mvp", ["itm_app", "--port", str(soartech_port)])
 elif adept_server_available:
     color('yellow', 
           'Soartech server is not in use. Training using ta3_training.py will require the argument '
@@ -283,19 +286,19 @@ while not servers_up and time.time() - wait_started < 30: # At least 30 seconds 
     time.sleep(1)
     servers_up = True
     if ta3_server_available and not ta3_verified:
-        if util.is_port_open(8080):
+        if util.is_port_open(ta3_port):
             color('green', "TA3 server is now listening.")
             ta3_verified = True
         else:
             servers_up = False
     if adept_server_available and not adept_verified:
-        if util.is_port_open(8081):
+        if util.is_port_open(adept_port):
             color('green', "ADEPT server is now listening.")
             adept_verified = True
         else:
             servers_up = False
     if soartech_server_available and not soartech_verified:
-        if util.is_port_open(8084):
+        if util.is_port_open(soartech_port):
             color('green', "Soartech server is now listening.")
             soartech_verified = True
         else:
