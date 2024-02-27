@@ -51,7 +51,7 @@ def update_server(dir_name) -> bool:
             print("Resetting prior patch.")
             p = subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir)
             
-        p = subprocess.run(["git", "checkout", desired_hash], cwd=ldir)
+        p = subprocess.run(["git", "-c", "advice.detachedHead=false", "checkout", desired_hash], cwd=ldir)
         if p.returncode != 0:
             color('red', "Error running git checkout:")
             print(p.stdout)

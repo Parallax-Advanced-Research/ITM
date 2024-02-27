@@ -114,16 +114,8 @@ def api_test(args, driver = None):
         logger.debug(f"-Initial State: {scen.state}")
 
         probe = client.get_probe()
-        while True:
-            if probe is None:
-                logger.info(f"Scenario Complete")
-                if args.training:
-                    for alignment in client.get_session_alignments():
-                        driver.train(alignment)
-                break
-
+        while probe is not None:
             logger.info(f"Responding to probe-{probe.id}")
-            
             action = driver.decide(probe)
             logger.info(f"Chosen Action-{action}")
             new_probe = client.take_action(action)
@@ -135,6 +127,10 @@ def api_test(args, driver = None):
                 difference.pop("actions_performed")
                 logger.debug(f"-State Removals: {difference}")
             probe = new_probe
+            if args.training:
+                for alignment in client.get_session_alignments():
+                    driver.train(alignment, probe is None)
+        logger.info(f"Scenario Complete")
     
     
 def generate(args):
