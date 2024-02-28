@@ -11,7 +11,7 @@ def soartech_jungle():
     args.bayes = False
     args.br = False
     args.ebd = False
-    args.session_type = 'soartech'
+    args.session_type = 'standalone'
     args.scenario = 'jungle-1'
     args.variant = 'aligned'
     args.decision_verbose = False
@@ -27,7 +27,7 @@ def soartech_urban():
     args.bayes = False
     args.br = False
     args.ebd = False
-    args.session_type = 'soartech'
+    args.session_type = 'standalone'
     args.scenario = 'urban-1'
     args.variant = 'aligned'
     args.decision_verbose = False
@@ -43,7 +43,7 @@ def soartech_submarine():
     args.bayes = False
     args.br = False
     args.ebd = False
-    args.session_type = 'soartech'
+    args.session_type = 'standalone'
     args.scenario = 'submarine-1'
     args.variant = 'aligned'
     args.decision_verbose = False
@@ -59,8 +59,24 @@ def soartech_desert():
     args.bayes = False
     args.br = False
     args.ebd = False
-    args.session_type = 'soartech'
+    args.session_type = 'standalone'
     args.scenario = 'desert-1'
+    args.variant = 'aligned'
+    args.decision_verbose = False
+    if args.endpoint is None:
+        if not util.is_port_open(8080):
+            print("TA3 server not listening. Shutting down.")
+            sys.exit(-1)
+    tad.api_test(args)
+
+
+def launch_moral_dessert(scene):
+    args = parse_default_arguments()
+    args.bayes = False
+    args.br = False
+    args.ebd = False
+    args.session_type = 'standalone'
+    args.scenario = 'MetricsEval.MD%d' % scene
     args.variant = 'aligned'
     args.decision_verbose = False
     if args.endpoint is None:
@@ -72,6 +88,10 @@ def soartech_desert():
 
 logger.setLevel(LogLevel.INFO)
 logger.critical("Beginning Knexus Test Harness...")
+logger.warning("Running MORAL DESSERT SCENES 3, 17, 18")
+launch_moral_dessert(scene=3)
+launch_moral_dessert(scene=17)
+launch_moral_dessert(scene=18)
 logger.warning("Running SOARTECH JUNGLE")
 soartech_jungle()
 logger.warning("SOARTECH JUNGLE succeeded")
