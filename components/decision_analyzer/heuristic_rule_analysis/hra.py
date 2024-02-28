@@ -194,7 +194,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # create table of casualty fields to worth
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2}
-        casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3}
+        casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
 
         # hold sums for each casualty
         casualty_sum = dict()
@@ -301,7 +301,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # create table of casualty fields to worth
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2, 'neutral': 0}
-        casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3}
+        casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
 
         # hold sums for each casualty
         casualty_sum = dict()
@@ -467,7 +467,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # create table of casualty fields to worth
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 1, 'neutral': 0}
-        casualty_val_table['rank'] = {'civilian': 1, 'marine': 1, 'intel officer': 1, 'vip': 1}
+        casualty_val_table['rank'] = {'civilian': 1, 'marine': 1, 'intel officer': 1, 'vip': 1, 'e-4': 1}
 
         # variables for checking each casualty
         casualty_sum = dict()
@@ -831,7 +831,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # create table of casualty fields to worth
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'neutral': 0, 'same-unit': 1, 'friend': 2}
-        casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3}
+        casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
 
         # get random ordering of casualties
         casualty_list = list(casualty_dict)
@@ -989,7 +989,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         file['treatment']["APPLY_TREATMENT"] = dict()
         for decision_complete in decision_list:
             decision = decision_complete.value.name
-            if decision == 'END_SCENARIO':
+            if decision == 'END_SCENARIO' or decision == "END_SCENE":
                 continue
             # if decision == "APPLY_TREATMENT":
             elif decision == "APPLY_TREATMENT":
@@ -1238,7 +1238,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 #ele_key = str(decision_complete.value.name) # indent if above else is used
 
                 if decision == "APPLY_TREATMENT": # testing, later remove
-                    False
+                    continue
 
                 hra_strategy[ele_key] = {vp: {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
                                               'one-bounce': 0} for vp in ele_val}

@@ -359,6 +359,7 @@ def calc_TRISS_deathP(cas: Casualty):
 
     RTS = calculate_rts_score(cas)
     ISS = calculate_ISS(cas)
+    print(cas.demographics)
     AgeIndex = 0 if cas.demographics.age < 55 else 1
 
     b_blunt = -0.4499 + 0.8085 * RTS - 0.0835 * ISS - 1.7430 * AgeIndex
