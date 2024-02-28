@@ -22,6 +22,7 @@ class RandomProbeBasedAttributeExplorer(KDMAEstimationDecisionSelector):
         self.local_random = random.Random(time.time())
 
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+        print(f"RandomProbeBasedAttributeExplorer(\n\t{scenario=},\n\t{probe=},\n\t{target=}\n)")
         for cur_decision in probe.decisions:
             if cur_decision.kdmas is not None:
                 cur_case = make_case(probe.state, cur_decision) | cur_decision.kdmas.kdma_map

@@ -55,7 +55,6 @@ integration_test_adept_bayes2:
   stage: test
   script:
     - python run-servers.py
-    - head temp/exploratory_case_base.csv
     - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --no-keds --no-kedsd --no-csv --bayes
     - python stop-servers.py
 
