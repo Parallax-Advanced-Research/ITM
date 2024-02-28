@@ -13,6 +13,7 @@ class HumanDecisionSelector(DecisionSelector):
                 choice: int = int(text)
                 if choice < 0 or choice >= len(probe.decisions):
                     print(text + " is not a valid selection.")
+                    continue
                 decision: Decision = probe.decisions[choice]
             elif text.startswith("b"):
                 breakpoint()
