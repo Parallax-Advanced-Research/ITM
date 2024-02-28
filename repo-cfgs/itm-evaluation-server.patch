@@ -1,3 +1,35 @@
+diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
+index f224de3..a3505a4 100644
+--- a/swagger_server/itm/itm_session.py
++++ b/swagger_server/itm/itm_session.py
+@@ -278,11 +278,14 @@ class ITMSession:
+         Returns:
+             A new session Id to use in subsequent calls
+         """
+-        if session_type not in ['adept', 'soartech', 'eval']:
++        if session_type not in ['adept', 'soartech', 'eval', 'standalone']:
+             return (
+                 f'Invalid session type `{session_type}`. Must be "adept, soartech, or eval"',
+                 400
+             )
++            
++        if session_type == 'standalone':
++            self.ta1_integration = False
+ 
+         # Re-use current session for same ADM after a client crash
+         if self.session_id is None:
+@@ -315,9 +318,9 @@ class ITMSession:
+ 
+         yaml_paths = []
+         yaml_path = "swagger_server/itm/itm_" + ("training_scenarios/" if self.kdma_training else "eval_scenarios/")
+-        if session_type == 'soartech' or session_type == 'eval':
++        if session_type == 'soartech' or session_type == 'eval' or session_type == 'standalone':
+             yaml_paths.append(yaml_path + 'soartech/')
+-        if session_type == 'adept' or session_type == 'eval':
++        if session_type == 'adept' or session_type == 'eval' or session_type == 'standalone':
+             yaml_paths.append(yaml_path + 'adept/')
+ 
+         selected_yaml_directories = [
 diff --git a/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml b/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml
 index ddf0dbe..f2c6314 100644
 --- a/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml
