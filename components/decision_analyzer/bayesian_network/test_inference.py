@@ -9,7 +9,6 @@ try:
 	from IPython import get_ipython
 	ipy = get_ipython() # type: ignore[no-untyped-call]
 	if ipy is not None and 'IPKernelApp' in ipy.config:
-		import pyAgrum.lib.notebook as gnb # pylint: disable=ungrouped-imports
 		notebook = True
 except:
 	pass

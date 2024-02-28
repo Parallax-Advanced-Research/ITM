@@ -10,7 +10,8 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
                                                                                  get_possible_actions,
                                                                                  create_medsim_actions,
                                                                                  trim_medsim_actions,
-                                                                                 remove_non_injuries)
+                                                                                 remove_non_injuries,
+                                                                                 create_moraldesert_options)
 import util.logger
 from typing import Optional
 import random
@@ -69,6 +70,8 @@ class MedicalSimulator(MCSim):
         tinymed_actions_trimmed = remove_non_injuries(state, tinymed_actions_trimmed)
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENARIO.value))
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENE.value))
+        md_actiomns = create_moraldesert_options(state.casualties)
+        tinymed_actions_trimmed.extend(md_actiomns)
         return tinymed_actions_trimmed
 
     def reset(self):

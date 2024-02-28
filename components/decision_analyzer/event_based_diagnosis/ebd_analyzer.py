@@ -36,9 +36,10 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             
             avg_spread = mean(spreads)
             std_spread = pstdev(spreads)
-            avgspread = DecisionMetric("AvgSpread", "", float, avg_spread)
 
-            stdspread = DecisionMetric("StdSpread", "", float, std_spread)
+            # TODO: These need descriptions
+            avgspread = DecisionMetric[float]("AvgSpread", "", avg_spread)
+            stdspread = DecisionMetric[float]("StdSpread", "", std_spread)
 
             metrics = {avgspread.name: avgspread, stdspread.name: stdspread}
             decision.metrics.update(metrics)
@@ -85,7 +86,8 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
     def get_burns(self, c : Casualty):
         for i in c.injuries:
             if i.name == 'Burn':
-                "high" if i.severity > 0.7 else "medium" if i.severity > 0.3 else "low"
+                #"high" if i.severity > 0.7 else "medium" if i.severity > 0.3 else "low"
+                return "high" if i.severity in [ "substantial", "severe", "extreme" ]  else "medium" if i.severity == "medium" else "low"
         return None
 
     def get_trauma(self, c : Casualty):

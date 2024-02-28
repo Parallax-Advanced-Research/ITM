@@ -10,10 +10,12 @@ def test_endpoint(args):
     # args.endpoint = '127.0.0.1:8080'
     args.variant = 'aligned'
     args.decision_verbose = True
+    ta3_port = util.find_environment("TA3_PORT", 8080)
     if args.endpoint is None:
-        if not util.is_port_open(8080):
+        if not util.is_port_open(ta3_port):
             print("TA3 server not listening. Shutting down.")
             sys.exit(-1)
+    args.session_type = 'standalone'
     tad.api_test(args)
 
 

@@ -4,7 +4,7 @@
 import yaml, sys, json
 from typing import Dict, List, Any, Union
 from typedefs import Node_Name, Node_Val, Probability, Assignment
-from utilities import hash_to_assignment, assignment_to_hash, include
+from utilities import hash_to_assignment, assignment_to_hash
 
 nodes: Dict[str, 'Node'] = {}
 VERBOSE_MODE = False
@@ -60,10 +60,11 @@ class Node:
 		data = data.copy()
 		assert 'values' in data and type(data['values']) is list
 		assert 'baseline' in data and type(data['baseline']) is str
+		assert 'prior' in data and type(data['prior']) is str
 
 		self.name = name
 		self.baseline = data['baseline']
-		self.probability_table: Dict[str, Dict[str, float]] = {}
+		self.probability_table: Dict[Node_Name, Dict[Node_Val, Probability]] = {}
 		values_lst = data['values']
 		assert list == type(values_lst)
 
@@ -96,19 +97,17 @@ class Node:
 			return prob
 			
 		self.basis_rows: Dict[Node_Name, Dict[Node_Val, Probability]] = {} # n.b. Node_Name is the *parent*, but Node_Val is the value of *self*.
+		self.probability_table[''] = parse_row('prior', True) # This is the only row for root nodes. prior probabililty (and will be deleted) for the rest
 
-		if 'parents' not in data: # root node
-			assert type(data['probability']) is str
-			self.probability_table[''] = parse_row('probability', True)
-			return
+		self.parents = data['parents'] if 'parents' in data else []
 
-		
-		self.parents = data['parents']
 		assert list == type(self.parents)
 
-		del data['parents']
+		if 'parents' in data:
+			del data['parents']
 		del data['values']
 		del data['baseline']
+		del data['prior']
 
 		verbose(f"# {name}")
 		verbose(f"Values: {self.val2offset}\nParents: {self.parents}\n")
@@ -121,8 +120,6 @@ class Node:
 				
 		verbose(f"Rows: {self.basis_rows}\n\n")
 		
-		self.probability_table = {}
-		
 		assert 0 == len(data), f"Unexpected keys in {name}: {data.keys()}"
 
 	def naive_estimation(self) -> None:
@@ -132,6 +129,7 @@ class Node:
 			  certain amount (e.g. 20% chance it doesn't move it, 60% it moves it up 1,
 			  20% it moves it up 2). These should be assigned by a SME.
 			* The movement caused by each parent is applied independently of the others.
+			* "prior" is a pseudo-parent that is always true, and thus always has a chance to move us away from the baseline.
 			* If the total movement moves it out of the set of values, it's capped at
 			  the highest or lowest valid value.
 		"""
@@ -146,7 +144,9 @@ class Node:
 			# severe_burns and RR, I think. I'll just handle those manually.
 			# The same basic logic works; it's just that there'll be a row for every value other than the
 			# "normal" one.
-
+			
+			# relevant_lines are all lines where one of the parents isn't at its baseline value,
+			# and can therefore affect this node's distribution
 			relevant_lines = []
 			for parent, value in assignment.items():
 				if nodes[parent].baseline != value:
@@ -156,20 +156,10 @@ class Node:
 			h = assignment_to_hash(assignment)
 			self.probability_table[h] = self.apply_multiple_influences(relevant_lines)
 
-			if 1 == len(relevant_lines):
-				included = [ parent for parent, value in assignment.items()
-				             if nodes[parent].baseline != value ]
-				assert 1 == len(included)
-
-				estimate = self.probability_table[h]
-				truth = self.basis_rows[included[0]]
-				err = sum(abs(estimate[k] - truth[k]) for k in self.val2offset)
-
-				# It should be *exactly* 0, but some floating point error might conceivably happen
-				assert err < 0.0000001, f"Floating point rounding error is unusually high: err={err:.12f}" 
-
-				self.probability_table[h] = self.basis_rows[included[0]]
-
+		# This row is the prior. If we have parents, we don't need that any more. But if it's a root node,
+		# that *is* the probability, so we keep it.
+		if len(self.parents):
+			del self.probability_table['']
 
 	# TODO: this function will replace simulate by computing the exact numbers.
 	def apply_multiple_influences(self, rows_to_apply: List[Dict[Node_Val,Probability]]) -> Dict[Node_Val, Probability]:
@@ -185,7 +175,10 @@ class Node:
 			""" As we recurse, each parent selects a specific offset for each branch with nonzero probability.
 			    Once we reach the base case, a specific `total_offset` has been accumulated (which has not yet been bounded).
 			    `probability` is the probability that we end up in this leaf.
-			    `remaining_rows` are the rows we still need to process before we reach the base case. """
+			    `remaining_rows` are the rows we still need to process before we reach the base case.
+				Once we reach the leaf, we add `probability` to that particular `total_offset`.
+				The sum of `probability` over all leaves is 1.0
+			"""
 			if 0 == len(remaining_rows):
 				#print(f"Base case: {total_offset} += {probability}")
 				total_offset = max(min_offset, min(max_offset, total_offset)) # restrict to valid bounds
@@ -195,8 +188,12 @@ class Node:
 			for val, prob in remaining_rows[0].items():
 				aux(total_offset + self.val2offset[val], probability * prob, remaining_rows[1:])
 			
-	
-		aux(0, 1.0, rows_to_apply)
+		# We start a separate tree for each possible value, with each tree getting the
+		# prior probability of that value as its starting probability mass. We then
+		# recurse down into possible parent assignments. (q.v. aux)
+		for val, prior_prob in self.probability_table[''].items():
+			aux(self.val2offset[val], prior_prob, rows_to_apply)
+
 		result = { self.offset2val[offset]: prob 
 			for offset, prob in offset_counts.items() }
 		assert abs(1.0 - sum(offset_counts.values())) < 0.00001, f"Not normalized: {offset_counts}"

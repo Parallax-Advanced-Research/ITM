@@ -1,12 +1,14 @@
 from dataclasses import dataclass, field
 from domain.internal import State, Action
 
-
-# Why is this declared twice?
-# @dataclass
-# class Supply:
-#     type: str
-#     quantity: int
+# TODO: Needed to comment this out *twice*, because `type` is a built-in, and
+# specifically, `type: str` as a comment is the old way of declaring a type.
+# Was confusing mypy. Need to rename that.
+## Why is this declared twice?
+## @dataclass
+## class Supply:
+##    type: str
+##    quantity: int
 
 
 @dataclass

@@ -31,17 +31,21 @@ def main():
     if args.session_type == "eval":
         print('You must specify one of "adept" or "soartech" as session type at command line.')
         sys.exit(-1)
+        
+    ta3_port = util.find_environment("TA3_PORT", 8080)
+    adept_port = util.find_environment("ADEPT_PORT", 8081)
+    soartech_port = util.find_environment("SOARTECH_PORT", 8084) 
     
     if args.endpoint is None:
-        if not util.is_port_open(8080):
+        if not util.is_port_open(ta3_port):
             print("TA3 server not listening. Shutting down.")
             sys.exit(-1)
             
-        if args.session_type in ["adept", "eval"] and not util.is_port_open(8081):
+        if args.session_type in ["adept", "eval"] and not util.is_port_open(adept_port):
             print("ADEPT server not listening. Shutting down.")
             sys.exit(-1)
             
-        if args.session_type in ["soartech", "eval"] and not util.is_port_open(8084):
+        if args.session_type in ["soartech", "eval"] and not util.is_port_open(soartech_port):
             print("Soartech server not listening. Shutting down.")
             sys.exit(-1)
         

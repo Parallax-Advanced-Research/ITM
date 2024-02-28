@@ -1,5 +1,6 @@
 import swagger_client.models as models
 import swagger_client as ta3
+import util
 from domain.external import Scenario, ITMProbe, Action
 from domain.internal import KDMA, KDMAs
 
@@ -7,7 +8,8 @@ from domain.internal import KDMA, KDMAs
 class TA3Client:
     def __init__(self, endpoint: str = None, target = None, evalTargetNames = None, inputScenarioId = None):
         if endpoint is None:
-            endpoint = "http://127.0.0.1:8080"
+            port = util.find_environment("TA3_PORT", 8080)
+            endpoint = "http://127.0.0.1:" + str(port)
         _config = ta3.Configuration()
         _config.host = endpoint
 
@@ -20,6 +22,7 @@ class TA3Client:
         self._actions: dict[ta3.Action] = {}
         self._probe_count: int = 0
         self._session_type: str = None
+        self._scenario_ended: bool = False
         if evalTargetNames is None:
             self._eval_target_names = list()
         else:
@@ -37,6 +40,7 @@ class TA3Client:
         self._session_id = self._api.start_session(adm_name, session_type, **kwargs)
 
     def start_scenario(self) -> Scenario:
+        self._scenario_ended = False
         ta3scen: models.Scenario
         if self._requested_scenario_id is None:
             ta3scen = self._api.start_scenario(self._session_id)
@@ -70,13 +74,20 @@ class TA3Client:
         return scen
         
     def get_session_alignments(self) -> list[ta3.AlignmentResults]:
-        return [self._api.get_session_alignment(self._session_id, targetName) 
-                 for targetName in self._eval_target_names]
+        try:
+            return [self._api.get_session_alignment(self._session_id, targetName) 
+                     for targetName in self._eval_target_names]
+        except ValueError as err:
+            if "alignment_source" in str(err) and not self._scenario_ended:
+                return []
+            else:
+                raise err
 
     def get_probe(self, state: ta3.State = None) -> ITMProbe:
         if state is None:
             state = self._api.get_scenario_state(self._session_id, self._scenario.id)
         if state.scenario_complete:
+            self._scenario_ended = True
             return None
 
         _actions: list[ta3.Action] = self._api.get_available_actions(self._session_id, self._scenario.id)
@@ -104,6 +115,5 @@ class TA3Client:
             character_id=action.casualty,
             parameters=action.params
         )
-
         next_state = self._api.take_action(self._session_id, body=response)
         return self.get_probe(next_state)

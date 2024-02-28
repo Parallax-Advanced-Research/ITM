@@ -62,12 +62,35 @@ class SmolMedicalOracle:
 
     TREATABLE_AREAS = {
         Supplies.TOURNIQUET.value: [Locations.UNSPECIFIED.value, Locations.LEFT_SIDE.value, Locations.LEFT_NECK.value,
-                               Locations.LEFT_CHEST.value, Locations.LEFT_SHOULDER.value, Locations.LEFT_FACE.value,
-                               Locations.LEFT_STOMACH.value, Locations.RIGHT_SIDE.value, Locations.RIGHT_NECK.value,
-                               Locations.RIGHT_CHEST.value, Locations.RIGHT_SHOULDER.value, Locations.RIGHT_FACE.value,
-                               Locations.RIGHT_STOMACH.value],
+                                    Locations.LEFT_CHEST.value, Locations.LEFT_SHOULDER.value,
+                                    Locations.LEFT_FACE.value, Locations.LEFT_STOMACH.value, Locations.RIGHT_SIDE.value,
+                                    Locations.RIGHT_NECK.value, Locations.RIGHT_CHEST.value,
+                                    Locations.RIGHT_SHOULDER.value, Locations.RIGHT_FACE.value,
+                                    Locations.RIGHT_STOMACH.value],
         Supplies.DECOMPRESSION_NEEDLE.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value],
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]}
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value],
+        Supplies.VENTED_CHEST_SEAL.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
+                                           Locations.UNSPECIFIED.value]
+    }
+
+    SUPPLY_INJURY_MATCH = {
+        Supplies.PRESSURE_BANDAGE.value: [Injuries.BURN.value, Injuries.CHEST_COLLAPSE.value, Injuries.ASTHMATIC.value,
+                                          Injuries.AMPUTATION.value, Injuries.BURN_SUFFOCATION.value,
+                                          Injuries.FOREHEAD_SCRAPE.value, Injuries.EAR_BLEED.value,
+                                          Injuries.EYE_TRAUMA.value, Injuries.BROKEN_BONE.value,
+                                          Injuries.INTERNAL.value],
+        Supplies.HEMOSTATIC_GAUZE.value: [Injuries.LACERATION.value, Injuries.EAR_BLEED.value, Injuries.SHRAPNEL.value,
+                                          Injuries.PUNCTURE.value, Injuries.FOREHEAD_SCRAPE.value],
+        Supplies.TOURNIQUET.value: [Injuries.AMPUTATION.value, Injuries.LACERATION.value, Injuries.PUNCTURE.value,
+                                    Injuries.SHRAPNEL.value],
+        Supplies.EPI_PEN.value: [Injuries.ASTHMATIC.value],
+        Supplies.VENTED_CHEST_SEAL.value: [Injuries.LACERATION.value, Injuries.SHRAPNEL.value,
+                                           Injuries.BROKEN_BONE.value, Injuries.PUNCTURE.value],
+        Supplies.DECOMPRESSION_NEEDLE.value: [Injuries.CHEST_COLLAPSE.value],
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: [Injuries.ASTHMATIC.value, Injuries.BURN_SUFFOCATION.value],
+        Supplies.BURN_DRESSING.value: [Injuries.BURN.value],
+        Supplies.SPLINT.value: [Injuries.BROKEN_BONE.value]
+    }
 
 
 def update_smol_injury(injury: Injury, time_taken: float, treated=False):
@@ -254,7 +277,7 @@ def calc_TRISS_deathP(cas: Casualty):
             elif cas_mental == 'UNRESPONSIVE':
                 return 3  # min score
             else:
-                logger.critical('either an unsupported mental status was given or one was not provided to GCS')
+                # logger.critical('either an unsupported mental status was given or one was not provided to GCS')
                 return 15  # assume all is good
 
         def convert_hrpmin_to_blood_pressure(hrpmin):
@@ -264,7 +287,7 @@ def calc_TRISS_deathP(cas: Casualty):
             # high blood pressure is 140+ so heart rate of 60 or less
             # normal blood pressure is 90-140 ish so heart rate of 60-110
             # low blood pressure is less than 90 so heart rate of 110 or higher
-            if hrpmin is None:
+            if hrpmin is None or isinstance(hrpmin, str):
                 return 120  # something normal
             if hrpmin < 60:
                 return 140
@@ -285,7 +308,7 @@ def calc_TRISS_deathP(cas: Casualty):
             elif breathing == 'RESTRICTED' or breathing == 'collapsed':
                 return 8
             else:
-                logger.critical('unsupported or no breathing type provided')
+                # logger.critical('unsupported or no breathing type provided')
                 return 16
 
         gcs_points = mental_status_to_gcs_points(cas.vitals.mental_status)
@@ -359,8 +382,10 @@ def calc_TRISS_deathP(cas: Casualty):
 
     RTS = calculate_rts_score(cas)
     ISS = calculate_ISS(cas)
-    print(cas.demographics)
-    AgeIndex = 0 if cas.demographics.age < 55 else 1
+    AgeIndex = 0  # None assume less than 55
+
+    if cas.demographics.age is not None:
+        AgeIndex = 0 if cas.demographics.age < 55 else 1
 
     b_blunt = -0.4499 + 0.8085 * RTS - 0.0835 * ISS - 1.7430 * AgeIndex
     b_penetrating = -2.5355 + 0.9934 * RTS - 0.0651 * ISS - 1.1360 * AgeIndex

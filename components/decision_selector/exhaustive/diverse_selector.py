@@ -1,15 +1,21 @@
 import json
 import os
+import random
 from components import DecisionSelector
 from domain.internal import Scenario, TADProbe, Action, KDMAs, Decision
 from components.decision_selector.kdma_estimation import make_case, write_case_base, read_case_base
 from typing import Any
 
 CASE_FILE: str = "temp/pretraining_cases.json"
+INFORMATIONAL_WEIGHT = 0.5
+EXPLORATION_WEIGHT = 0.25
+KDMA_WEIGHT = 0.25
 
 class DiverseSelector(DecisionSelector):
     
     def __init__(self, continue_search = True):
+        self.rg = random.Random()
+        self.rg.seed()
         self.case_index : int = 0
         self.cases: dict[list[dict[str, Any]]] = dict()
         # self.new_cases : list[dict[str, Any]] = list()
@@ -27,7 +33,7 @@ class DiverseSelector(DecisionSelector):
         # Make a case and record it.
         self.case_index += 1
         
-        cur_decision = self.find_least_explored_decision(probe)
+        cur_decision = self.choose_random_decision(probe)
 
         new_case = make_case(probe.state, cur_decision)
         chash = hash_case(new_case)
@@ -50,27 +56,53 @@ class DiverseSelector(DecisionSelector):
         
         return (cur_decision, 0.0)
         
-    def find_least_explored_decision(self, probe: TADProbe) -> Decision:
-        score: int = 0
-        best_score: int = -1
-        best_decision: Decision[Action] = None
+    def choose_random_decision(self, probe: TADProbe) -> Decision:
+        likelihood_thresholds: list[tuple[real, Decision]] = []
+        for cas in probe.state.casualties:
+            print(f"{cas.id} Vitals: {cas.vitals}")
+            for i in cas.injuries:
+                print(str(i))
+        current_bar = 0
+        chash = hash_case(make_case(probe.state, probe.decisions[0]))
+        hash_cases = self.cases.get(chash, [])
+        
+        patient_choices_with_kdma = \
+            sum([1 for d in probe.decisions 
+                   if d.value.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"] and d.kdmas is not None])
+                                           
+        choices_with_kdma = \
+            sum([1 for d in probe.decisions 
+                   if d.kdmas is not None])
+                   
+        use_information_weight = (choices_with_kdma == patient_choices_with_kdma)
+        
         for d in probe.decisions:
-            score = 0
-            new_case = make_case(probe.state, d)
-            chash = hash_case(new_case)
             action = d.value
-            hash_cases = self.cases.get(chash, [])
-            for case in hash_cases:
-                case_action = case["actions"][-1]
-                if action.name == case_action["name"]:
-                    score += 1
-                    score += sum([val_distance(key, case_action["params"].get(key, None), value) 
-                                  for (key, value) in action.params.items()]) * 2
-            if best_score < 0 or score < best_score:
-                best_score = score
-                best_decision = d
-            print(f"{action}: {len(hash_cases)}, {score}")
-        return best_decision
+            if action.name in ["CHECK_RESPIRATION", "CHECK_PULSE"] and d.kdmas is None:
+                continue
+            similar_cases = 0
+            if len(hash_cases) > 0:
+                for case in hash_cases:
+                    case_action = case["actions"][-1]
+                    if action.name == case_action["name"]:
+                        similar_cases += 0.2
+                        param_similarity = \
+                            sum([val_distance(key, case_action["params"].get(key, None), value) 
+                                      for (key, value) in action.params.items()])
+                        similar_cases += 0.8 * (param_similarity / len(case_action["params"]))
+                current_bar += EXPLORATION_WEIGHT * (1 - (similar_cases / len(hash_cases)))
+            if d.kdmas is not None:
+                current_bar += KDMA_WEIGHT
+            if use_information_weight and d.value.name in ["SITREP", "CHECK_ALL_VITALS"]:
+                current_bar += INFORMATIONAL_WEIGHT
+            
+            likelihood_thresholds.append((current_bar, d))
+            print(f"{action}: {current_bar}")
+        rval = self.rg.uniform(0, current_bar)
+        for (threshold, decision) in likelihood_thresholds:
+            if rval < threshold:
+                print(f"Value: {rval} Threshold: {threshold} Decision: {decision.value}")
+                return decision
 
     def is_finished(self) -> bool:
         return False
