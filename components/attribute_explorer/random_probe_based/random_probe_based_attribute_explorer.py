@@ -15,6 +15,7 @@ class RandomProbeBasedAttributeExplorer(KDMAEstimationDecisionSelector):
         self._csv_file_path: str = csv_file
         if os.path.isfile(self._csv_file_path):
             self.cb = read_case_base(self._csv_file_path)
+            print(f"Branch A: {self.cb=}")
         else:
             self.cb = []
             
