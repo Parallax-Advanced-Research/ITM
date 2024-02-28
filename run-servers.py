@@ -49,7 +49,7 @@ def update_server(dir_name) -> bool:
         print("Updating repo " + dir_name + " to recorded commit hash.")
         if patching_status.difference_exists:
             print("Resetting prior patch.")
-            p = subprocess.run(["git", "reset", desired_hash, "--hard"], cwd=ldir)
+            p = subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir)
             
         p = subprocess.run(["git", "-c", "advice.detachedHead=false", "checkout", desired_hash], cwd=ldir)
         if p.returncode != 0:
@@ -83,7 +83,8 @@ def update_server(dir_name) -> bool:
         return True
 
     if not patching_status.user_edited and patching_status.patch_updated:
-        p = subprocess.run(["git", "clean", "--force", "-d"], cwd=ldir)
+        subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir, check=True)
+        subprocess.run(["git", "clean", "--force", "-d", "-x", "-e", "venv"], cwd=ldir, check=True)
         p = subprocess.run(["git", "apply", os.path.join("..", "..", patching_status.patch_filename)], 
                            cwd=ldir,  stdout=subprocess.PIPE, text=True)
         if p.returncode != 0:
