@@ -176,7 +176,8 @@ class TA3Elaborator(Elaborator):
             if ((cas.vitals.breathing in [BreathingLevelEnum.RESTRICTED, BreathingLevelEnum.NONE] 
                     or InjuryTypeEnum.BURN in [injury.name for injury in cas.injuries])
                  and decision.value.params.get(ParamEnum.TREATMENT, SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY)
-                      == SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY):
+                      == SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY
+                 and self._supply_quantity(state, SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY) > 0):
                 if (decision.value.params.get(ParamEnum.LOCATION, InjuryLocationEnum.LEFT_FACE)
                        == InjuryLocationEnum.LEFT_FACE):
                     dec_possible_treatments.append(
@@ -191,13 +192,14 @@ class TA3Elaborator(Elaborator):
                             {ParamEnum.CASUALTY: cas.id,
                              ParamEnum.LOCATION: InjuryLocationEnum.RIGHT_FACE,
                              ParamEnum.TREATMENT: SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY}))
-            if cas.vitals.mental_status == MentalStatusEnum.AGONY or cas.vitals.avpu == AvpuLevelEnum.PAIN:
-                if decision.value.params.get(ParamEnum.TREATMENT, SupplyTypeEnum.PAIN_MEDICATIONS) == SupplyTypeEnum.PAIN_MEDICATIONS:
-                    dec_possible_treatments.append(
-                        decision_copy_with_params(decision, 
-                            {ParamEnum.CASUALTY: cas.id,
-                             ParamEnum.LOCATION: InjuryLocationEnum.UNSPECIFIED,
-                             ParamEnum.TREATMENT: SupplyTypeEnum.PAIN_MEDICATIONS}))
+            if ((cas.vitals.mental_status == MentalStatusEnum.AGONY or cas.vitals.avpu == AvpuLevelEnum.PAIN)
+                 and decision.value.params.get(ParamEnum.TREATMENT, SupplyTypeEnum.PAIN_MEDICATIONS) == SupplyTypeEnum.PAIN_MEDICATIONS
+                 and self._supply_quantity(state, SupplyTypeEnum.PAIN_MEDICATIONS) > 0):
+                dec_possible_treatments.append(
+                    decision_copy_with_params(decision, 
+                        {ParamEnum.CASUALTY: cas.id,
+                         ParamEnum.LOCATION: InjuryLocationEnum.UNSPECIFIED,
+                         ParamEnum.TREATMENT: SupplyTypeEnum.PAIN_MEDICATIONS}))
         return list({consistent_decision_key(d):d for d in dec_possible_treatments}.values())
         
 
@@ -229,6 +231,12 @@ class TA3Elaborator(Elaborator):
             else:
                 tag_grounded.append(cas_action)
         return tag_grounded
+
+    def _supply_quantity(self, state: TA3State, supply_type: str):
+        for supply in state.supplies:
+            if supply.type == supply_type:
+                return supply.quantity
+        return 0
 
     @staticmethod
     def _ground_treatments(state: TA3State, decision: Decision[Action], tag_available: bool = True) -> list[Decision[Action]]:

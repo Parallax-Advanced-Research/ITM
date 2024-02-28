@@ -1,3 +1,16 @@
+diff --git a/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml b/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml
+index ddf0dbe..f2c6314 100644
+--- a/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml
++++ b/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml
+@@ -2306,7 +2306,7 @@ scenes:
+         action_type: APPLY_TREATMENT
+         unstructured: Treat Patient C
+         character_id: Patient C
+-        probe_id: MetricsEval.MD17.21
++        probe_id: MetricsEval.MD17.22
+         choice: MetricsEval.MD17.22.C
+         kdma_association:
+           MoralDesert: 1.0
 diff --git a/swagger_server/itm/itm_training_scenarios/adept/scenario_3/scenario.yaml b/swagger_server/itm/itm_training_scenarios/adept/scenario_3/scenario.yaml
 index a26ac36..66314cf 100644
 --- a/swagger_server/itm/itm_training_scenarios/adept/scenario_3/scenario.yaml
