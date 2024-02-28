@@ -994,6 +994,7 @@ def all_true(bools: list[bool]) -> bool:
     return True
 
 def write_case_base(fname: str, cb: list[dict[str, Any]]):
+    print(f"write_case_base(\n\tfname={fname}\n\tcb={cb}\n)")
     index : int = 0
     keys : list[str] = list(cb[0].keys())
     keyset : set[str] = set(keys)
