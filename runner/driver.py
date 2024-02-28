@@ -40,6 +40,10 @@ class Driver:
         self.actions_performed = []
 
     def translate_probe(self, itm_probe: ext.ITMProbe) -> TADProbe:
+        print(f"translate_probe({itm_probe=})")
+        import traceback
+        traceback.print_stack()
+            
         # Translate probe external state into internal state
         state = self._extract_state(itm_probe.state)
 
