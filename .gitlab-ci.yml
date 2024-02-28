@@ -50,6 +50,14 @@ before_script:
    - python install.py
    - source venv/bin/activate
 
+# TODO: remove
+integration_test_adept_bayes2:
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --no-keds --no-kedsd --no-csv --bayes
+    - python stop-servers.py
+
 
 lint_tools:
   stage: test
@@ -233,7 +241,7 @@ integration_test_adept_csv:
     - python stop-servers.py
 
 integration_test_adept_bayes:
-  stage: test # TODO: move back to individual_tests_adept
+  stage: individual_tests_adept
   needs: [ integration_test_adept_install ]
   script:
     - python run-servers.py
