@@ -267,7 +267,7 @@ elif soartech_server_available:
           + 'tad_tester.py should be unaffected.')
 
 if soartech_server_available:
-    start_server("ta1-server-mvp", ["itm_app", "--port", str(soartech_port)])
+    start_server("ta1-server-mvp", ["ta1_server", "--port", str(soartech_port)])
 elif adept_server_available:
     color('yellow', 
           'Soartech server is not in use. Training using ta3_training.py will require the argument '
