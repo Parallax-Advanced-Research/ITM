@@ -145,6 +145,12 @@ class TA3Elaborator(Elaborator):
         return []
 
     def _treatment(self, state: TA3State, decision: Decision[Action], tag_available = True) -> list[Decision[Action]]:
+        # If it's already fully grounded, don't second-guess the server
+        if (ParamEnum.TREATMENT in decision.value.params 
+              and ParamEnum.CASUALTY in decision.value.params
+              and ParamEnum.LOCATION in decision.value.params):
+            return [decision]
+            
         # Ground the decision for all casualties with injuries
         dec_grounded = self._ground_treatments(state, decision, tag_available=tag_available)
         
