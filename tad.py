@@ -94,6 +94,7 @@ def api_test(args, driver = None):
         logger.setLevel(LogLevel.INFO)
 
     if driver is None:
+        print(f"tad.py:api_test: TA3Driver({args=})")
         driver = TA3Driver(args)
     client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario)
     if args.training:

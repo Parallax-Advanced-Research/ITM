@@ -11,6 +11,7 @@ import time
 
 class RandomProbeBasedAttributeExplorer(KDMAEstimationDecisionSelector):
     def __init__(self, csv_file: str):
+        print(f"RandomProbeBasedAttributeExplorer({csv_file=})")
         self._csv_file_path: str = csv_file
         if os.path.isfile(self._csv_file_path):
             self.cb = read_case_base(self._csv_file_path)
