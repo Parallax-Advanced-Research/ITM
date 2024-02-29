@@ -5,6 +5,8 @@ import util
 
 def record_state(dir_name):
     dir = os.path.join(os.getcwd(), ".deprepos", dir_name)
+    if not os.path.exists(dir):
+        return
     print("\n **** Storing " + dir_name + " state. ****")
     hashfile = open(os.path.join("repo-cfgs", dir_name + "-commit-hash"), "w")
     p = subprocess.run(["git", "rev-parse", "HEAD"], cwd=dir, stdout=hashfile)
