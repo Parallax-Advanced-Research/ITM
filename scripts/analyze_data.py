@@ -30,7 +30,6 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
             index = index + 1
     return cases, training_data
 
-
 def stringify_action_list(actions: list[dict[str, Any]]) -> str:
     return ";".join([stringify_action(a) for a in actions])
 
@@ -225,4 +224,3 @@ def case_state_hash(case: dict[str, Any]) -> int:
                 'category', 'intent', 'directness_of_causality']:
         val_list.append(case.get(key, None))
     return hash(tuple(val_list))
-        
