@@ -1,7 +1,7 @@
 import socket
 
 
-def is_port_open(port):
+def is_port_open(port: int) -> bool:
    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    try:
       s.connect(("localhost", port))
