@@ -1,4 +1,4 @@
-import argparse, sys
+import argparse, sys, time
 
 def validate_args(args: argparse.Namespace) -> None:
 
@@ -25,6 +25,12 @@ def validate_args(args: argparse.Namespace) -> None:
 def parse_default_arguments() -> argparse.Namespace:
     args = get_default_parser().parse_args()
     validate_args(args)
+
+    if args.seed is None:
+        args.seed = time.time_ns()
+
+    print(f"SEED: {args.seed}")
+        
     return args
     
 def get_default_parser() -> argparse.ArgumentParser:
