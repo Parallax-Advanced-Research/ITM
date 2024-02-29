@@ -49,7 +49,7 @@ def update_server(dir_name) -> bool:
         print("Updating repo " + dir_name + " to recorded commit hash.")
         if patching_status.difference_exists:
             print("Resetting prior patch.")
-            p = subprocess.run(["git", "reset", desired_hash, "--hard"], cwd=ldir)
+            p = subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir)
             
         p = subprocess.run(["git", "-c", "advice.detachedHead=false", "checkout", desired_hash], cwd=ldir)
         if p.returncode != 0:
@@ -83,7 +83,8 @@ def update_server(dir_name) -> bool:
         return True
 
     if not patching_status.user_edited and patching_status.patch_updated:
-        p = subprocess.run(["git", "clean", "--force", "-d"], cwd=ldir)
+        subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir, check=True)
+        subprocess.run(["git", "clean", "--force", "-d", "-x", "-e", "venv"], cwd=ldir, check=True)
         p = subprocess.run(["git", "apply", "-v", os.path.join("..", "..", patching_status.patch_filename)], 
                            cwd=ldir,  stdout=subprocess.PIPE, text=True)
         if p.returncode != 0:
@@ -267,7 +268,7 @@ elif soartech_server_available:
           + 'tad_tester.py should be unaffected.')
 
 if soartech_server_available:
-    start_server("ta1-server-mvp", ["itm_app", "--port", str(soartech_port)])
+    start_server("ta1-server-mvp", ["ta1_server", "--port", str(soartech_port)])
 elif adept_server_available:
     color('yellow', 
           'Soartech server is not in use. Training using ta3_training.py will require the argument '

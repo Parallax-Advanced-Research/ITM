@@ -86,10 +86,13 @@ class DiverseSelector(DecisionSelector):
                     case_action = case["actions"][-1]
                     if action.name == case_action["name"]:
                         similar_cases += 0.2
-                        param_similarity = \
-                            sum([val_distance(key, case_action["params"].get(key, None), value) 
-                                      for (key, value) in action.params.items()])
-                        similar_cases += 0.8 * (param_similarity / len(case_action["params"]))
+                        if len(case_action["params"]) == 0:
+                            similar_cases += 0.8
+                        else:
+                            param_similarity = \
+                                sum([val_distance(key, case_action["params"].get(key, None), value) 
+                                          for (key, value) in action.params.items()])
+                            similar_cases += 0.8 * (param_similarity / len(case_action["params"]))
                 current_bar += EXPLORATION_WEIGHT * (1 - (similar_cases / len(hash_cases)))
             if d.kdmas is not None:
                 current_bar += KDMA_WEIGHT
