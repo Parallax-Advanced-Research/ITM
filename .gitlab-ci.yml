@@ -205,7 +205,7 @@ integration_test_soartech_mc:
   needs: [ integration_test_soartech_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech -no-ebd --mc --no-br --no-bayes
+    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --mc --no-br --no-bayes
     - python stop-servers.py
 
 integration_test_soartech_br:
@@ -267,7 +267,7 @@ integration_test_adept_mc:
   needs: [ integration_test_adept_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept -no-ebd --mc --no-br --no-bayes
+    - python tad_tester.py --no-verbose --session_type adept --no-ebd --mc --no-br --no-bayes
     - python stop-servers.py
 
 integration_test_adept_br:
@@ -328,7 +328,7 @@ integration_test_eval_mc:
   needs: [ integration_test_eval_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type eval -no-ebd --mc --no-br --no-bayes
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --mc --no-br --no-bayes
     - python stop-servers.py
 
 integration_test_eval_br:
