@@ -12,7 +12,7 @@ index f224de3..a3505a4 100644
                  f'Invalid session type `{session_type}`. Must be "adept, soartech, or eval"',
                  400
              )
-+            
++
 +        if session_type == 'standalone':
 +            self.ta1_integration = False
  

@@ -84,7 +84,7 @@ def update_server(dir_name) -> bool:
 
     if not patching_status.user_edited and patching_status.patch_updated:
         p = subprocess.run(["git", "clean", "--force", "-d"], cwd=ldir)
-        p = subprocess.run(["git", "apply", os.path.join("..", "..", patching_status.patch_filename)], 
+        p = subprocess.run(["git", "apply", "-v", os.path.join("..", "..", patching_status.patch_filename)], 
                            cwd=ldir,  stdout=subprocess.PIPE, text=True)
         if p.returncode != 0:
             color("yellow", "Failed to apply patch to repo " + dir_name + ". Starting anyway.")
