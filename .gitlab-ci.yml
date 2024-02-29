@@ -63,12 +63,8 @@ unit_tests:
   script:
     - python run_tests.py --nolint -v
 
-#psuedo_test:
-#  # Used to make the individual tests run iff integration_test fails
-#  needs: integration_test
-#  stage: test
-#  script:
-#    - true
+
+# TODO: remove these three once the main tests work
 integration_test0:
   stage: test
   script:
@@ -90,39 +86,84 @@ integration_test2:
     - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type soartech
     - python stop-servers.py
 
+
+# For each session_type, try with all decisiona analyzers enabled (and the default decision selector)
 integration_test_soartech:
   needs: []
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --keds --kedsd --csv --bayes
+    - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --bayes
     - python stop-servers.py
-  # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
-  # Ideally, only do that if the single everything job fails.
-  # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
 integration_test_adept:
   needs: []
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --keds --kedsd --csv --bayes
+    - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --bayes
     - python stop-servers.py
-  # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
-  # Ideally, only do that if the single everything job fails.
-  # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
 integration_test_eval:
   needs: []
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type eval --ebd --mc --br --keds --kedsd --csv --bayes
+    - python tad_tester.py --no-verbose --session_type eval --ebd --mc --br --bayes
     - python stop-servers.py
-  # TODO: run separate jobs with various --no-foo options, so we can see what specifically fails?
-  # Ideally, only do that if the single everything job fails.
-  # TODO: can't rely on constant output, since decisions change as TAD is improved, but should be able sanity check it somewhat
 
+# selector = kedsd
+integration_test_soartech_kedsd:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --bayes --selector kedsd
+    - python stop-servers.py
+
+integration_test_adept_kedsd:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --bayes --selector kedsd
+    - python stop-servers.py
+
+integration_test_eval_kedsd:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --ebd --mc --br --bayes --selector kedsd
+    - python stop-servers.py
+
+# selector = csv
+integration_test_soartech_csv:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --bayes --selector csv
+    - python stop-servers.py
+
+integration_test_adept_csv:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --bayes --selector csv
+    - python stop-servers.py
+
+integration_test_eval_csv:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --ebd --mc --br --bayes --selector csv
+    - python stop-servers.py
+
+
+# Big job that tests everything failed -- Test that servers installed
 
 integration_test_soartech_install:
   stage: install_servers
