@@ -1186,9 +1186,9 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                         # if "2" in Animals:
                         # rel_treatment_found = [x for x in probe.decisions if
                         #                           x.value.name == treatment and 'casualty' in x.value.params and x.value.params['casualty'] == casualty]
-                        if treatment == "SEARCH" or treatment == "SITREP": continue # if there is no casualty how can a decision be applied TODO: ask about this
+                        if treatment == "SEARCH" : continue # if there is no casualty how can a decision be applied TODO: ask about this
                         rel_treatment_found = [x for x in probe.decisions if
-                                               x.value.name == treatment and x.value.params['casualty'] == casualty]
+                                               x.value.name == treatment and 'casualty' in x .value.params and x.value.params['casualty'] == casualty]
                         if len(rel_treatment_found):
                             for name, val in data['treatment'][treatment].items():
                                 temp_data['treatment'][name] = {}
