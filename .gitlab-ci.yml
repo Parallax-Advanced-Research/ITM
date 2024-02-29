@@ -73,21 +73,21 @@ integration_test0:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-bayes --no-br --no-ebd --no-mc --no-dump --session_type adept --scenario MetricsEval.MD18
+    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type adept --scenario MetricsEval.MD18
     - python stop-servers.py
 
 integration_test1:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-bayes --no-br --no-ebd --no-mc --no-dump --session_type adept
+    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type adept
     - python stop-servers.py
 
 integration_test2:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-bayes --no-br --no-ebd --no-mc --no-dump --session_type soartech
+    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type soartech
     - python stop-servers.py
 
 integration_test_soartech:
