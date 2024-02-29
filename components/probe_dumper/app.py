@@ -11,6 +11,7 @@ if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, DAMAGE_PER_SECOND
 from components.probe_dumper.probe_dumper import DUMP_PATH
 from domain.mvp.mvp_state import Casualty, Supply
 from domain.internal import Decision
@@ -216,16 +217,20 @@ def get_html_justification(justification_list):
 
 def htmlify_casualty(casualty: Casualty):
     if len(casualty.injuries) == 0:
-        return '|%s| None | N/A | N/A|\n' % casualty.id
+        return '|%s| None | N/A | N/A| N/A | N/A| N/A |\n' % casualty.id
     lines = ''
     for injury in casualty.injuries:
-        lines += '|%s|%s|%s|%s|\n' % (casualty.id, injury.name, injury.location, injury.treated)
+        injury_effect = INJURY_UPDATE[injury.name]
+        bleed = f'{injury_effect.bleeding_effect} ({DAMAGE_PER_SECOND[injury_effect.bleeding_effect]})'
+        breath = f'{injury_effect.breathing_effect} ({DAMAGE_PER_SECOND[injury_effect.breathing_effect]})'
+        burn = f'{injury_effect.burning_effect} ({DAMAGE_PER_SECOND[injury_effect.burning_effect]})'
+        lines += '|%s|%s|%s|%s|%s|%s|%s|\n' % (casualty.id, injury.name, injury.location, injury.treated, bleed, breath, burn)
     return lines
 
 
 def get_casualty_table(scenario):
-    header = '''|Character| Injury | Location| Treated|
-|---|---|---|---|\n'''
+    header = '''|Character| Injury | Location| Treated| Bleed| Breath| Burn|
+|---|---|---|---|---|---|---|\n'''
     lines = ''
     for casualty in scenario.casualties:
         lines += htmlify_casualty(casualty)
