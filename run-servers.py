@@ -317,7 +317,11 @@ if not servers_up:
     if adept_server_available and not adept_verified:
         error("ADEPT server did not start successfully. Check .deprepos/adept_server/log.err")
     if soartech_server_available and not soartech_verified:
+        old_status = status
         error("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp/log.err")
+        if Status.SUCCESS == old_status:
+            warning("Temporarily returning success even though Soartech isn't running. Will change once TA1 fixes it")
+            status = old_status
 else:
     color('green', "Servers started successfully.")
 
