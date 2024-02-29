@@ -88,7 +88,7 @@ integration_test2:
 
 
 # For each session_type, try with all decisiona analyzers enabled (and the default decision selector)
-integration_test_soartech:
+integration_test_soartech_keds_full:
   needs: []
   stage: test
   script:
@@ -96,7 +96,7 @@ integration_test_soartech:
     - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --bayes
     - python stop-servers.py
 
-integration_test_adept:
+integration_test_adept_keds_full:
   needs: []
   stage: test
   script:
@@ -104,7 +104,7 @@ integration_test_adept:
     - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --bayes
     - python stop-servers.py
 
-integration_test_eval:
+integration_test_eval_keds_full:
   needs: []
   stage: test
   script:
@@ -113,7 +113,7 @@ integration_test_eval:
     - python stop-servers.py
 
 # selector = kedsd
-integration_test_soartech_kedsd:
+integration_test_soartech_kedsd_full:
   needs: []
   stage: test
   script:
@@ -121,7 +121,7 @@ integration_test_soartech_kedsd:
     - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --bayes --selector kedsd
     - python stop-servers.py
 
-integration_test_adept_kedsd:
+integration_test_adept_kedsd_full:
   needs: []
   stage: test
   script:
@@ -129,7 +129,7 @@ integration_test_adept_kedsd:
     - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --bayes --selector kedsd
     - python stop-servers.py
 
-integration_test_eval_kedsd:
+integration_test_eval_kedsd_full:
   needs: []
   stage: test
   script:
@@ -138,7 +138,7 @@ integration_test_eval_kedsd:
     - python stop-servers.py
 
 # selector = csv
-integration_test_soartech_csv:
+integration_test_soartech_csv_full:
   needs: []
   stage: test
   script:
@@ -146,7 +146,7 @@ integration_test_soartech_csv:
     - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --bayes --selector csv
     - python stop-servers.py
 
-integration_test_adept_csv:
+integration_test_adept_csv_full:
   needs: []
   stage: test
   script:
@@ -154,7 +154,7 @@ integration_test_adept_csv:
     - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --bayes --selector csv
     - python stop-servers.py
 
-integration_test_eval_csv:
+integration_test_eval_csv_full:
   needs: []
   stage: test
   script:
@@ -167,21 +167,21 @@ integration_test_eval_csv:
 
 integration_test_soartech_install:
   stage: install_servers
-  needs: [ integration_test_soartech ]
+  needs: [ integration_test_soartech_keds_full ]
   when: on_failure
   script:
     - python run-servers.py
 
 integration_test_adept_install:
   stage: install_servers
-  needs: [ integration_test_adept ]
+  needs: [ integration_test_adept_keds_full ]
   when: on_failure
   script:
     - python run-servers.py
 
 integration_test_eval_install:
   stage: install_servers
-  needs: [ integration_test_eval ]
+  needs: [ integration_test_keds_eval ]
   when: on_failure
   script:
     - python run-servers.py
