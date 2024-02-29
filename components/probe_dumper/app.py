@@ -47,14 +47,20 @@ def _get_params_from_decision(decision):
 
 def make_html_table_header(mc_only):
     if mc_only:
-        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s |
-|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|\n''' % (
+        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
+|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|---|---|---|---|---|---|\n''' % (
             """<div title=\"%s\">MCA<br>Time</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
             """<div title=\"%s\">MCA<br>Deterioration<br>per second</div>""" % metric_description_hash[
                 Metric.DAMAGE_PER_SECOND.value],
             """<div title=\"%s\">MCA<br>P(Death)</div>""" % metric_description_hash[Metric.P_DEATH.value],
             """<div title=\"%s\">MCA<br>P(Death)<br> + 60s</div>""" % metric_description_hash[
-                Metric.P_DEATH_ONEMINLATER.value]
+                Metric.P_DEATH_ONEMINLATER.value],
+            """<div title=\"%s\">BNDA<br>P(Death)</div>""" % """Posterior probability of death with no action""",
+            """<div title=\"%s\">BNDA<br>P(Pain)</div>""" % """Posterior probability of severe pain""",
+            """<div title=\"%s\">BNDA<br>P(Brain<br>Injury)</div>""" % """Posterior probability of a brain injury""",
+            """<div title=\"%s\">BNDA<br>P(Airway<br>Blocked)</div>""" % """Posterior probability of airway blockage""",
+            """<div title=\"%s\">BNDA<br>P(Internal<br>Bleeding)</div>""" % """Posterior probability of internal bleeding""",
+            """<div title=\"%s\">BNDA<br>P(External<br>Bleeding)</div>""" % """Posterior probability of external bleeding"""
         )
     return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
 |------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|--|--|--|--|--|--|--|\n''' % (
@@ -110,7 +116,7 @@ def get_html_line(decision, mc_only):
     is_pink = decision.selected
     no_just = "No justification given"
     if mc_only:
-        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
+        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
         if is_pink:
             base_string = base_string.replace("""%""", """<font color="#FF69B4">%""")
             base_string = base_string.replace("""s""", """s</font>""")
@@ -124,7 +130,19 @@ def get_html_line(decision, mc_only):
                               '''<div title=\"%s\">%.2f %%</div>''' % (medsim_pdeath_english, 100 * decision.metrics[
                                   Metric.P_DEATH.value].value) if Metric.P_DEATH.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%.2f %%</div>''' % (death_60s_english, 100 * decision.metrics[
-                                  Metric.P_DEATH_ONEMINLATER.value].value) if Metric.P_DEATH_ONEMINLATER.value in decision.metrics.keys() else UNKNOWN_NUMBER
+                                  Metric.P_DEATH_ONEMINLATER.value].value) if Metric.P_DEATH_ONEMINLATER.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics[
+                                  'pDeath'].value if 'pDeath' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics[
+                                  'pPain'].value if 'pPain' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics[
+                                  'pBrainInjury'].value if 'pBrainInjury' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics[
+                                  'pAirwayBlocked'].value if 'pAirwayBlocked' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics[
+                                  'pInternalBleeding'].value if 'pInternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER),
+                              '''<div title=\"%s\">%.2f %%</div>''' % (no_just, 100 * decision.metrics[
+                                  'pExternalBleeding'].value if 'pExternalBleeding' in decision.metrics.keys() else UNKNOWN_NUMBER)
                               )
     else:
         hra_strategy_selector = get_hra_strategy(decision)
@@ -185,6 +203,12 @@ def construct_decision_table(analysis_df, sort_metric='Time', mc_only=False):
                 Metric.P_DEATH.value].value if Metric.P_DEATH.value in x.metrics.keys() else x.id_,
             'Deterioration': lambda x: x.metrics[
                 Metric.DAMAGE_PER_SECOND.value].value if Metric.DAMAGE_PER_SECOND.value in x.metrics.keys() else x.id_,
+            'P(Death) (Bayes)': lambda x: x.metrics['pDeath'].value if 'pDeath' in x.metrics.keys() else 0.0,
+            'P(Pain) (Bayes)': lambda x: x.metrics['pPain'].value if 'pDeath' in x.metrics.keys() else 0.0,
+            'P(BI) (Bayes)': lambda x: x.metrics['pBrainInjury'].value if 'pBrainInjury' in x.metrics.keys() else 0.0,
+            'P(Airway Blocked) (Bayes)': lambda x: x.metrics['pAirwayBlocked'].value if 'pAirwayBlocked' in x.metrics.keys() else 0.0,
+            'P(Internal Bleeding) (Bayes)': lambda x: x.metrics['pInternalBleeding'].value if 'pInternalBleeding' in x.metrics.keys() else 0.0,
+            'P(External Bleeding) (Bayes)': lambda x: x.metrics['pExternalBleeding'].value if 'pExternalBleeding' in x.metrics.keys() else 0.0,
             'Character': lambda x: x.value.params['casualty'] if 'casualty' in x.value.params else x.id_
         }
     sorted_df = sorted(analysis_df, key=sort_funcs[sort_metric])
@@ -308,7 +332,9 @@ if __name__ == '__main__':
                     'P(Pain) (Bayes)', 'P(BI) (Bayes)', 'P(Airway Blocked) (Bayes)', 'P(Internal Bleeding) (Bayes)',
                     'P(External Bleeding) (Bayes)']
     if mc_only:
-        sort_options = ['Time', 'Probability Death', 'Deterioration', 'Character']
+        sort_options = ['Time', 'Probability Death', 'Deterioration', 'Character', 'P(Death) (Bayes)',
+                    'P(Pain) (Bayes)', 'P(BI) (Bayes)', 'P(Airway Blocked) (Bayes)', 'P(Internal Bleeding) (Bayes)',
+                    'P(External Bleeding) (Bayes)']
 
     if params.get('scen', None) is not None:
         scen = params['scen'].split('-')[:-1]

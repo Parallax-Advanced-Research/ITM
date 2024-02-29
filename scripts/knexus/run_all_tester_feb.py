@@ -6,15 +6,19 @@ import sys
 import tad
 
 
-def soartech_jungle():
-    args = parse_default_arguments()
-    args.bayes = False
+def get_tester_standard_params(args):
+    args.bayes = True
     args.br = False
     args.ebd = False
     args.session_type = 'standalone'
-    args.scenario = 'jungle-1'
     args.variant = 'aligned'
     args.decision_verbose = False
+    return args
+
+def soartech_jungle():
+    args = parse_default_arguments()
+    args = get_tester_standard_params(args)
+    args.scenario = 'jungle-1'
     if args.endpoint is None:
         if not util.is_port_open(8080):
             print("TA3 server not listening. Shutting down.")
@@ -24,13 +28,8 @@ def soartech_jungle():
 
 def soartech_urban():
     args = parse_default_arguments()
-    args.bayes = False
-    args.br = False
-    args.ebd = False
-    args.session_type = 'standalone'
+    args = get_tester_standard_params(args)
     args.scenario = 'urban-1'
-    args.variant = 'aligned'
-    args.decision_verbose = False
     if args.endpoint is None:
         if not util.is_port_open(8080):
             print("TA3 server not listening. Shutting down.")
@@ -40,13 +39,9 @@ def soartech_urban():
 
 def soartech_submarine():
     args = parse_default_arguments()
-    args.bayes = False
-    args.br = False
-    args.ebd = False
-    args.session_type = 'standalone'
+    args = get_tester_standard_params(args)
     args.scenario = 'submarine-1'
-    args.variant = 'aligned'
-    args.decision_verbose = False
+
     if args.endpoint is None:
         if not util.is_port_open(8080):
             print("TA3 server not listening. Shutting down.")
@@ -56,12 +51,8 @@ def soartech_submarine():
 
 def soartech_desert():
     args = parse_default_arguments()
-    args.bayes = False
-    args.br = False
-    args.ebd = False
-    args.session_type = 'standalone'
+    args = get_tester_standard_params(args)
     args.scenario = 'desert-1'
-    args.variant = 'aligned'
     args.decision_verbose = False
     if args.endpoint is None:
         if not util.is_port_open(8080):
@@ -72,13 +63,8 @@ def soartech_desert():
 
 def launch_moral_dessert(scene):
     args = parse_default_arguments()
-    args.bayes = False
-    args.br = False
-    args.ebd = False
-    args.session_type = 'standalone'
+    args = get_tester_standard_params(args)
     args.scenario = 'MetricsEval.MD%d' % scene
-    args.variant = 'aligned'
-    args.decision_verbose = False
     if args.endpoint is None:
         if not util.is_port_open(8080):
             print("TA3 server not listening. Shutting down.")
