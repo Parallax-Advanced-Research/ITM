@@ -163,7 +163,9 @@ integration_test_eval_csv_full:
     - python stop-servers.py
 
 
-# Big job that tests everything failed -- Test that servers installed
+# If big job that tests everything fails, start doing others piecemeal:
+
+# Test that servers installed
 
 integration_test_soartech_install:
   stage: install_servers
@@ -181,7 +183,7 @@ integration_test_adept_install:
 
 integration_test_eval_install:
   stage: install_servers
-  needs: [ integration_test_keds_eval ]
+  needs: [ integration_test_eval_keds_full ]
   when: on_failure
   script:
     - python run-servers.py
