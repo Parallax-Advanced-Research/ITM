@@ -25,5 +25,6 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to alignment target for selection purposes. Format is <kdma_name>-<kdma_value>")
     parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, requires --training.")
     parser.add_argument('--selector', default=None, help=argparse.SUPPRESS)
+    parser.add_argument('--seed', type=int, default=None, help="Changes the random seed to be used during this run; must be an integer")
     return parser
 
