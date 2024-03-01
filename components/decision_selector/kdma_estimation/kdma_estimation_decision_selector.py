@@ -20,12 +20,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 3
     def __init__(self, args):
         self.use_drexel_format = args.kedsd
-        self._csv_file_path: str = args.casefile
         if args.casefile is None:
             if self.use_drexel_format:
                 args.casefile = "data/sept/extended_case_base.csv"
             else:
                 args.casefile = "data/sept/alternate_case_base.csv"
+        self._csv_file_path: str = args.casefile
             
         self.cb = read_case_base(self._csv_file_path)
         self.variant: str = args.variant
