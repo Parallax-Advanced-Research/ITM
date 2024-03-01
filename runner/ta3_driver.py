@@ -26,7 +26,10 @@ class TA3Driver(Driver):
         elaborator = TA3Elaborator()
 
         if args.variant.lower() == "severity-baseline":
-            super().__init__(elaborator, SeverityDecisionSelector(), [mda])  # ?This is not declared will error
+            super().__init__(elaborator, SeverityDecisionSelector(), 
+                             [MonteCarloAnalyzer(max_rollouts=args.rollouts, max_depth=2)],
+                             None, None)
+                             # ?This is not declared will error
             return
 
         assert args.selector is not None
@@ -37,12 +40,8 @@ class TA3Driver(Driver):
         elif args.training:
             selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
         else:
-            if 'keds' == args.selector:
-                selector = KDMAEstimationDecisionSelector("data/sept/alternate_case_base.csv",
-                    variant = args.variant, print_neighbors = args.decision_verbose)
-            elif 'kedsd' == args.selector:
-                selector = KDMAEstimationDecisionSelector("data/sept/extended_case_base.csv", 
-                    variant = args.variant, print_neighbors = args.decision_verbose, use_drexel_format=True)
+            if args.selector in ['keds', 'kedsd']:
+                selector = KDMAEstimationDecisionSelector(args)
             elif 'csv' == args.selector:
                 selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
                     variant = args.variant, verbose = args.verbose)
