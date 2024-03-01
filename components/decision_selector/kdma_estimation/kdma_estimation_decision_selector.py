@@ -364,6 +364,8 @@ def make_case(s: State, d: Decision) -> dict[str, Any]:
         case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
                                                        for co in s.casualties if not co.id == c.id])
 
+    case['aid_available'] = probe.environment['decision_environment']['aid_delay'] is not None
+    case['environment_type'] = probe.environment['sim_environment']['type']
     a: Action = d.value
     case['questioning'] = a.name in ["SITREP"]
     case['assessing'] = a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION"]
