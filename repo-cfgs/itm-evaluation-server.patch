@@ -1,67 +1,35 @@
+diff --git a/swagger_server/itm/itm_scenario.py b/swagger_server/itm/itm_scenario.py
+index 1b09461..2440447 100644
+--- a/swagger_server/itm/itm_scenario.py
++++ b/swagger_server/itm/itm_scenario.py
+@@ -56,7 +56,7 @@ class ITMScenario:
+         self.id = scenario.id
+         self.name = scenario.name
+ 
+-        if not self.training:
++        if 'eval' in self.yaml_path:
+             self.alignment_target_reader = ITMAlignmentTargetReader(self.yaml_path + "alignment_target.yaml")
+ 
+         if self.session.ta1_integration:
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index f224de3..a3505a4 100644
+index 9c7294e..8d27443 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -278,11 +278,14 @@ class ITMSession:
-         Returns:
-             A new session Id to use in subsequent calls
-         """
--        if session_type not in ['adept', 'soartech', 'eval']:
-+        if session_type not in ['adept', 'soartech', 'eval', 'standalone']:
-             return (
-                 f'Invalid session type `{session_type}`. Must be "adept, soartech, or eval"',
-                 400
-             )
-+            
-+        if session_type == 'standalone':
-+            self.ta1_integration = False
- 
-         # Re-use current session for same ADM after a client crash
-         if self.session_id is None:
-@@ -315,9 +318,9 @@ class ITMSession:
+@@ -198,7 +198,7 @@ class ITMSession:
+                     break
+                 index += 1
+             if self.itm_scenario is None:
+-                return f'Scenario ID `{scenario_id}` does not exist as {"a training" if self.kdma_training else "an eval"} scenario for `{self.session_type}`', 404
++                return f'Scenario ID `{scenario_id}` does not exist as {"a training" if self.session_type != "eval" else "an eval"} scenario for `{self.session_type}`', 404
+             if self.itm_scenario.isd.current_scene.state is None:
+                 return self._end_session() # We have already run the specified scenario to completion
+         else:
+@@ -316,7 +316,7 @@ class ITMSession:
+                 self.session_id)
  
          yaml_paths = []
-         yaml_path = "swagger_server/itm/itm_" + ("training_scenarios/" if self.kdma_training else "eval_scenarios/")
--        if session_type == 'soartech' or session_type == 'eval':
-+        if session_type == 'soartech' or session_type == 'eval' or session_type == 'standalone':
+-        yaml_path = "swagger_server/itm/itm_" + ("training_scenarios/" if self.kdma_training else "eval_scenarios/")
++        yaml_path = "swagger_server/itm/itm_" + ("training_scenarios/" if session_type != 'eval' else "eval_scenarios/")
+         if session_type == 'soartech' or session_type == 'eval':
              yaml_paths.append(yaml_path + 'soartech/')
--        if session_type == 'adept' or session_type == 'eval':
-+        if session_type == 'adept' or session_type == 'eval' or session_type == 'standalone':
-             yaml_paths.append(yaml_path + 'adept/')
- 
-         selected_yaml_directories = [
-diff --git a/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml b/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml
-index ddf0dbe..f2c6314 100644
---- a/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml
-+++ b/swagger_server/itm/itm_training_scenarios/adept/scenario_2/scenario.yaml
-@@ -2306,7 +2306,7 @@ scenes:
-         action_type: APPLY_TREATMENT
-         unstructured: Treat Patient C
-         character_id: Patient C
--        probe_id: MetricsEval.MD17.21
-+        probe_id: MetricsEval.MD17.22
-         choice: MetricsEval.MD17.22.C
-         kdma_association:
-           MoralDesert: 1.0
-diff --git a/swagger_server/itm/itm_training_scenarios/adept/scenario_3/scenario.yaml b/swagger_server/itm/itm_training_scenarios/adept/scenario_3/scenario.yaml
-index a26ac36..66314cf 100644
---- a/swagger_server/itm/itm_training_scenarios/adept/scenario_3/scenario.yaml
-+++ b/swagger_server/itm/itm_training_scenarios/adept/scenario_3/scenario.yaml
-@@ -97,7 +97,7 @@ scenes:
-         unstructured: Treat Patient A
-         character_id: Patient A
-         probe_id: MetricsEval.MD18.1
--        parameters: { "treatment": "Nasopharyngeal airway", "location": "internal"}
-+        parameters: { "treatment": "Nasopharyngeal airway", "location": "left face"}
-         choice: MetricsEval.MD18.1.A
-         kdma_association:
-           MoralDesert: 0.5
-@@ -106,7 +106,7 @@ scenes:
-         unstructured: Treat Patient B
-         character_id: Patient B
-         probe_id: MetricsEval.MD18.1
--        parameters: { "treatment": "Nasopharyngeal airway", "location": "internal"}
-+        parameters: { "treatment": "Nasopharyngeal airway", "location": "left face"}
-         choice: MetricsEval.MD18.1.B
-         kdma_association:
-           MoralDesert: 0.5
+         if session_type == 'adept' or session_type == 'eval':

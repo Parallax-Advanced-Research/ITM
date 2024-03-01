@@ -20,11 +20,11 @@ def main():
     args.dump = False
 
     if args.diverse:
-        args.selector = DiverseSelector(not args.reset)
+        args.selector_object = DiverseSelector(not args.reset)
         if args.runs is None:
             args.runs = 1000
     elif args.exhaustive:
-        args.selector = ExhaustiveSelector(not args.reset)
+        args.selector_object = ExhaustiveSelector(not args.reset)
         if args.runs is None:
             args.runs = -1
     
@@ -52,7 +52,7 @@ def main():
         
     driver = TA3Driver(args)
 
-    while not args.selector.is_finished() and args.runs != 0:
+    while not args.selector_object.is_finished() and args.runs != 0:
         tad.api_test(args, driver)
         driver.actions_performed = []
         driver.treatments = {}

@@ -1,4 +1,4 @@
-import unittest
+import unittest, json
 import numpy as np
 from . import hra
 

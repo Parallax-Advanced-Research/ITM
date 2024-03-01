@@ -26,28 +26,30 @@ class TA3Driver(Driver):
         elaborator = TA3Elaborator()
 
         if args.variant.lower() == "severity-baseline":
-            super().__init__(elaborator, SeverityDecisionSelector(), [mda])  # ?This is not declared will error
+            super().__init__(elaborator, SeverityDecisionSelector(), 
+                             [MonteCarloAnalyzer(max_rollouts=args.rollouts, max_depth=2)],
+                             None, None)
+                             # ?This is not declared will error
             return
 
-        if args.selector is not None:
-            selector = args.selector
-        elif args.human:
-            selector = HumanDecisionSelector()
-        elif args.kedsd:
-            selector = KDMAEstimationDecisionSelector("data/sept/extended_case_base.csv", 
-                                                      variant = args.variant,
-                                                      print_neighbors = args.decision_verbose,
-                                                      use_drexel_format = True)
-        elif args.csv:
-            selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
-                                           variant = args.variant,
-                                           verbose = args.verbose)
-        elif args.training:
-            selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
+        assert args.selector is not None
+        assert type(args.selector) is str
+
+        if args.selector_object is not None:
+            selector = args.selector_object
         else:
-            selector = KDMAEstimationDecisionSelector("data/sept/alternate_case_base.csv", 
-                                                      variant = args.variant,
-                                                      print_neighbors = args.decision_verbose)
+            if args.selector in ['keds', 'kedsd']:
+                selector = KDMAEstimationDecisionSelector(args)
+            elif 'csv' == args.selector:
+                selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
+                    variant = args.variant, verbose = args.verbose)
+            elif 'human' == args.selector:
+                selector = HumanDecisionSelector()
+            elif 'random' == args.selector:
+                selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
+            else:
+                assert False, "Can't happen. Default --selector arg should have been set"
+        
         elaborator = TA3Elaborator()
 
         if args.dump:

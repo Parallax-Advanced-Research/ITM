@@ -31,3 +31,5 @@ rm -- "package.lisp"
 cd "$ITM_DIR"
 ln -s "$ITM_DIR/components/decision_analyzer/event_based_diagnosis/hems-package-replacement.lisp" "$HEMS_DIR/package.lisp"
 
+echo "Already installed python packages:"
+ls -l ~/.local/lib/python3.10/site-packages/
