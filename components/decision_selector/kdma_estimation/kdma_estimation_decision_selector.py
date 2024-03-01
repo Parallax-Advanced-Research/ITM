@@ -49,7 +49,6 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     self.weight_settings = json.loads(weight_file.read())
             except:
                 print(f"Could not read from weight file: {weight_filename}; using standard weights.")
-                breakpoint()
                 self.weight_settings = {}
         
         
@@ -112,7 +111,6 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             cur_case["distance"] = sqDist
         if self.print_neighbors:
             print(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
-        breakpoint()
             
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
