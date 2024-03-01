@@ -35,7 +35,7 @@ class DiverseSelector(DecisionSelector):
         
         cur_decision = self.choose_random_decision(probe)
 
-        new_case = make_case(probe.state, cur_decision)
+        new_case = make_case(probe, cur_decision)
         chash = hash_case(new_case)
         new_case["index"] = self.case_index
         if cur_decision.kdmas is not None and cur_decision.kdmas.kdma_map is not None:
@@ -63,7 +63,7 @@ class DiverseSelector(DecisionSelector):
             for i in cas.injuries:
                 print(str(i))
         current_bar = 0
-        chash = hash_case(make_case(probe.state, probe.decisions[0]))
+        chash = hash_case(make_case(probe, probe.decisions[0]))
         hash_cases = self.cases.get(chash, [])
         
         patient_choices_with_kdma = \
