@@ -15,7 +15,7 @@ def validate_args(args: argparse.Namespace) -> None:
     elif args.kedsd: args.selector = 'kedsd'
     elif args.csv: args.selector = 'csv'
     elif args.human: args.selector = 'human'
-
+    
     #args.keds = ('keds' == args.selector)
     #args.kedsd = ('kedsd' == args.selector)
     #args.csv = ('csv' == args.selector)
@@ -43,7 +43,7 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--scenario', type=str, default=None, help="ID of a scenario that TA3 can play back.")
     parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to alignment target for selection purposes. Format is <kdma_name>-<kdma_value>")
     parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, requires --training.")
-    parser.add_argument('--selector', default='keds', choices=['keds', 'kedsd', 'csv', 'human'], help="Sets the decision selector") # TODO: add details of what each option does
+    parser.add_argument('--selector', default='random', choices=['keds', 'kedsd', 'csv', 'human', 'random'], help="Sets the decision selector") # TODO: add details of what each option does
     parser.add_argument('--selector-object', default=None, help=argparse.SUPPRESS)
     parser.add_argument('--seed', type=int, default=None, help="Changes the random seed to be used during this run; must be an integer")
     parser.add_argument('--casefile', type=str, default=None, 

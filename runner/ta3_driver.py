@@ -37,8 +37,6 @@ class TA3Driver(Driver):
 
         if args.selector_object is not None:
             selector = args.selector_object
-        elif args.training:
-            selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
         else:
             if args.selector in ['keds', 'kedsd']:
                 selector = KDMAEstimationDecisionSelector(args)
@@ -47,6 +45,8 @@ class TA3Driver(Driver):
                     variant = args.variant, verbose = args.verbose)
             elif 'human' == args.selector:
                 selector = HumanDecisionSelector()
+            elif 'random' == args.selector:
+                selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
             else:
                 assert False, "Can't happen. Default --selector arg should have been set"
         
