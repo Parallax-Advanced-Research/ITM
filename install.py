@@ -87,7 +87,8 @@ def install_hems() -> None:
     ql_local_projects_dir = run_cmd_or_die(
         argv=[ "sbcl", "--noinform", "--non-interactive", "--eval",
                '(progn (format t "~a" (car ql:*local-project-directories*)) (quit))'],
-        err_msg ="quicklisp must be installed before we run this command.")
+        err_msg ="quicklisp must be installed before we run this command.",
+        capture_output=True)
 
     print(f"{ql_local_projects_dir=}")
     os.makedirs(ql_local_projects_dir, exist_ok=True)
