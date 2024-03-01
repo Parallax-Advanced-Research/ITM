@@ -13,4 +13,4 @@ class ParamEnum(object):
     CASUALTY = 'casualty'
     TREATMENT = 'treatment'
     CATEGORY = 'category'
-    
+    EVAC_ID = 'evac_id'
