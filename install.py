@@ -70,6 +70,7 @@ def run_cmd_or_die(argv: list[str], capture_output: bool = False, err_msg: str |
         if (err_msg): print(err_msg)
         sys.exit(1)
 
+    print(f"{argv=}, {capture_output=}, {p.stdout=}")
     if capture_output:
         assert type(p.stdout) is str
         return p.stdout
@@ -87,6 +88,8 @@ def install_hems() -> None:
         argv=[ "sbcl", "--noinform", "--non-interactive", "--eval",
                '(progn (format t "~a" (car ql:*local-project-directories*)) (quit))'],
         err_msg ="quicklisp must be installed before we run this command.")
+
+    print(f"{ql_local_projects_dir=}")
     os.makedirs(ql_local_projects_dir, exist_ok=True)
 
     # Install HEMS
