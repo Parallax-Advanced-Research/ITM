@@ -81,6 +81,7 @@ class DiverseSelector(DecisionSelector):
             if action.name in ["CHECK_RESPIRATION", "CHECK_PULSE"] and d.kdmas is None:
                 continue
             similar_cases = 0
+            current_bar += 0.01
             if len(hash_cases) > 0:
                 for case in hash_cases:
                     case_action = case["actions"][-1]
