@@ -1,4 +1,4 @@
-import argparse, sys, time
+import argparse, sys
 
 def validate_args(args: argparse.Namespace) -> None:
 
@@ -26,9 +26,6 @@ def parse_default_arguments() -> argparse.Namespace:
     args = get_default_parser().parse_args()
     validate_args(args)
 
-    if args.seed is None:
-        args.seed = time.time_ns()
-     
     return args
     
 def get_default_parser() -> argparse.ArgumentParser:
@@ -49,7 +46,19 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--selector', default='keds', choices=['keds', 'kedsd', 'csv', 'human'], help="Sets the decision selector") # TODO: add details of what each option does
     parser.add_argument('--selector-object', default=None, help=argparse.SUPPRESS)
     parser.add_argument('--seed', type=int, default=None, help="Changes the random seed to be used during this run; must be an integer")
-    
+    parser.add_argument('--casefile', type=str, default=None, 
+                        help="Provides cases to be used in making decisions by the decision "\
+                             + "selector. Used with keds, kedsd, not otherwise.")
+    parser.add_argument('--weightfile', type=str, default=None, 
+                        help="Provides weights to be used in comparing cases by the decision "\
+                             + "selector. Used with keds, kedsd, not otherwise.")
+    parser.add_argument('--uniformweight', action=argparse.BooleanOptionalAction, default=False, 
+                        help="Requests that a default uniform weight be used in comparing cases "\
+                             + "by the decision selector. Overrides --weightfile. Used with keds, "\
+                             + "kedsd, not otherwise.")    
+
+
+
     selectors = parser.add_argument_group('Decision Selectors', description='Exactly one of these must be enabled (or --selector must be set). \x1b[93m(Deprecated in favor of --selector)\x1b[0m')
     selectors.add_argument('--keds', action=argparse.BooleanOptionalAction, default=False, help="Uses KDMA Estimation Decision Selector for decision selection (default)")
     selectors.add_argument('--kedsd', action=argparse.BooleanOptionalAction, default=False, help="Uses KDMA with Drexel cases")
