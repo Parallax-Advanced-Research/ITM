@@ -16,8 +16,6 @@ def test_endpoint(args):
             print("TA3 server not listening. Shutting down.")
             sys.exit(1)
 
-    print("\x1b[93mWARNING: Temporarily overriding session type with 'standalone'\x1b[0m")
-    args.session_type = 'standalone'
     tad.api_test(args)
 
 

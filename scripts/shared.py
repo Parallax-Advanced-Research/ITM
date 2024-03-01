@@ -16,6 +16,14 @@ def validate_args(args: argparse.Namespace) -> None:
     elif args.csv: args.selector = 'csv'
     elif args.human: args.selector = 'human'
     
+    if args.session_type != 'eval' and args.selector in ['keds', 'kedsd', 'csv'] and args.kdmas is None:
+        sys.stderr.write("\x1b[93mYour selected decision selector requires an alignment target. "
+                         + "Provide one by running in evaluation mode (--session_type eval), or "
+                         + "by listing kdmas explicitly (e.g., --kdma mission=.8 --kdma denial=.5)."
+                        )
+        sys.exit(1)
+        
+    
     #args.keds = ('keds' == args.selector)
     #args.kedsd = ('kedsd' == args.selector)
     #args.csv = ('csv' == args.selector)
@@ -36,10 +44,9 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--rollouts', type=int, default=1000, help="Monte Carlo rollouts to perform")
     parser.add_argument('--endpoint', type=str, help="The URL of the TA3 api", default=None)
     parser.add_argument('--variant', type=str, help="TAD variant", default="aligned")
-    parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=True, help="Asks for KDMA associations to actions")
+    parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=False, help="Asks for KDMA associations to actions")
     parser.add_argument('--session_type', type=str, default='eval',
-        help="Modifies the server session type. possible values are 'soartech', 'adept', and 'eval'. Default is 'eval'."
-            + " \x1b[93mNOTE: Currently overridden with 'standalone' until a server issue is worked out\x1b[0m")
+        help="Modifies the server session type. possible values are 'soartech', 'adept', and 'eval'. Default is 'eval'.")
     parser.add_argument('--scenario', type=str, default=None, help="ID of a scenario that TA3 can play back.")
     parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to alignment target for selection purposes. Format is <kdma_name>-<kdma_value>")
     parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, requires --training.")
@@ -55,7 +62,7 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--uniformweight', action=argparse.BooleanOptionalAction, default=False, 
                         help="Requests that a default uniform weight be used in comparing cases "\
                              + "by the decision selector. Overrides --weightfile. Used with keds, "\
-                             + "kedsd, not otherwise.")    
+                             + "kedsd, not otherwise.")
 
 
 
