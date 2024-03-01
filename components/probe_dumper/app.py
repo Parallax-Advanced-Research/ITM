@@ -313,12 +313,38 @@ def read_saved_scenarios():
     return scenario_hash
 
 
-def construct_environment_table(environment: dict):
+def construct_environment_table_helper(environment: dict):
     header = '''|Environment Variable| State|
 |---|---|\n'''
     for env, state in environment.items():
-        header += '|%s|%s|\n' % (env, str(state).strip())
+        if type(state) is not list:
+            header += '|%s|%s|\n' % (env, str(state).strip())
+        else:
+            all_tables = ''
+            for x in state:
+                table = '<table> <tbody>'
+                for s in x:
+                    row = f'<tr>  <td>{s}</td> <td>{x[s]}</td>  </tr>'
+                    table += row
+                table += ' </tbody>  </table> <br>'
+                all_tables += table
+            header += '|%s|%s|\n' % (env, all_tables)
     return header
+
+
+def construct_environment_table(enviornment: dict):
+    if len(enviornment) == 2:
+        keys = list(enviornment)
+        env1 = enviornment[keys[0]]
+        env2 = enviornment[keys[1]]
+        sim_env = construct_environment_table_helper(env1)
+        dec_env = construct_environment_table_helper(env2)
+        return sim_env, dec_env
+    else:
+        env = construct_environment_table_helper(environment)
+        return env, None
+
+
 
 
 if __name__ == '__main__':
@@ -353,10 +379,15 @@ if __name__ == '__main__':
     sort_by = st.selectbox(label="Sort by", options=sort_options)
     st.header("""Scenario: %s""" % chosen_scenario.split('\\')[-1])
     st.subheader("""Probe %d/%d""" % (chosen_decision, len(num_decisions)))
-    st.caption("The pink decision in the table below is the chosen decision.")
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
     environment = scenario_pkls[chosen_scenario].environments[chosen_decision - 1]
+    environment_table_1, environment_table_2 = construct_environment_table(environment)
+    if environment_table_2 is not None:
+        notes = '##### CONTEXT: '
+        notes += environment['decision_environment']['unstructured']
+        st.markdown(notes)
+    st.caption("The pink decision in the table below is the chosen decision.")
 
     decision_table_html, supply_used = construct_decision_table(analysis_df, sort_metric=sort_by, mc_only=mc_only)
     casualty_html = get_casualty_table(state)
@@ -364,12 +395,16 @@ if __name__ == '__main__':
     previous_action_table = get_previous_actions(state)
     st.markdown(decision_table_html, unsafe_allow_html=True)
 
-    environment_table = construct_environment_table(environment)
-
     col0, col1, col2, col3 = st.columns(4)
     with col0:
         st.header('Environment')
-        st.markdown(environment_table, unsafe_allow_html=True)
+        if environment_table_2 is None:
+            st.markdown(environment_table_1, unsafe_allow_html=True)
+        else:
+            st.subheader('Simulation')
+            st.markdown(environment_table_1, unsafe_allow_html=True)
+            st.subheader('Decision')
+            st.markdown(environment_table_2, unsafe_allow_html=True)
     with col1:
         st.header('Supplies')
         if supply_used is not None:
