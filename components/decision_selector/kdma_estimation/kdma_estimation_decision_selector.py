@@ -19,15 +19,14 @@ _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")
 class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 3
     def __init__(self, args):
-        self.use_drexel_format = args.kedsd
-        self._csv_file_path: str = args.casefile
+        self.use_drexel_format = args.selector == 'kedsd'
         if args.casefile is None:
             if self.use_drexel_format:
                 args.casefile = "data/sept/extended_case_base.csv"
             else:
                 args.casefile = "data/sept/alternate_case_base.csv"
             
-        self.cb = read_case_base(self._csv_file_path)
+        self.cb = read_case_base(args.casefile)
         self.variant: str = args.variant
         self.analyzers: list[DecisionAnalyzer] = get_analyzers()
         self.print_neighbors = args.decision_verbose
@@ -54,6 +53,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
 
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+        if target is None:
+            raise Exception("KDMA Estimation Decision Selector needs an alignment target to operate correctly.")
         minDist: float = math.inf
         minDecision: Decision = None
         misalign = self.variant.lower() == "misaligned"
@@ -92,6 +93,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 kdma_name = kdma.id_.lower()
                 weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
                 estimate = self.estimate_KDMA(cur_case, weights, kdma_name)
+                if estimate is None:
+                    sqDist += 100
+                    continue
                 cur_case[kdma_name] = estimate
                 cur_kdmas[kdma_name] = estimate
                 if not cur_case['leaving']:
@@ -106,12 +110,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 minDist = sqDist
                 minDecision = cur_decision
                 best_kdmas = cur_kdmas
-            if target.kdmas[0].id_ == "Mission" and self.print_neighbors:
+            if self.print_neighbors:
                 print(f"New dist: {sqDist} Best Dist: {minDist}")
             cur_case["distance"] = sqDist
         if self.print_neighbors:
             print(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
-            
+        
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
         
@@ -123,7 +127,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             kdma = kdma + "-Ave"
         topk = self.top_K(cur_case, weights, kdma)
         if len(topk) == 0:
-            return 0
+            return None
         total = sum([max(dist, 0.01) for (dist, case) in topk])
         divisor = 0
         kdma_total = 0
