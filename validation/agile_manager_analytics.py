@@ -174,17 +174,18 @@ print(am_path)
 
 df = pd.read_excel(am_path).drop(['ID', 'Session ID', 'User ID'], axis=1)
 train, test = train_test_split(df, test_size=0.985)
-test = test.head(1000)
+train = train.head(10)
+test = test.head(1)
 num = 0
 for idx, row in train.iterrows():
     if idx >= -1:
-        #bn = row_to_hems_program(row, hems)
-        row_to_hems_program2(idx, row)
+        bn = row_to_hems_program(row, hems)
+        hems.py_push_to_ep_buffer(observation=bn,insertp=True,temporalp=False,hiddenstatep=False)
+        hems.eltm_to_pdf()
         print()
         print(num)
         num += 1
 
-hems.push_from_files("./Programs/HEMS_Agile_Manager/prog*.hems")
 gt_kdmas = []
 pred_kdmas = []
 model_probs_on_gt = dict()
@@ -193,7 +194,7 @@ var_name = metric.upper().replace(" ", "_").replace("(", "_").replace(")", "_").
 for idx, row in test.iterrows():
     gt_bn = row_to_hems_program(row, hems)
     bn = row_to_hems_program(row, hems, mask=metric)
-    (rec, eme) = hems.remember(hems.get_eltm(), lst(bn), Symbol("+"), 1, Symbol("NIL"))
+    (rec, eme) = hems.remember(hems.get_eltm(), bn, Symbol("+"), 1, False, temporalp=False)
     i = 0
     for ele in rec:
         if hems.rule_based_cpd_singleton_p(ele):
