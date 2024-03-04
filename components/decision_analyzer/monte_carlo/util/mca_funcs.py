@@ -34,7 +34,7 @@ def decision_to_actstr(decision: Decision) -> str:
 def tinymedact_to_actstr(decision: mcnode.MCDecisionNode) -> str:
     action: MedsimAction = decision.action
     retstr = "%s_" % action.action
-    for opt_param in ['casualty_id', 'location', 'supply', 'tag']:
+    for opt_param in ['casualty_id', 'location', 'supply', 'tag', 'evac_id']:
         retstr += '%s_' % action.lookup(opt_param) if action.lookup(opt_param) is not None else ''
     return retstr
 
@@ -261,14 +261,14 @@ def extract_medsim_state(probe: TADProbe) -> MedsimState:
     return medsim_state
 
 
-def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int) -> mcsim.MonteCarloTree:
+def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, probe_decisions: list[Decision]) -> mcsim.MonteCarloTree:
     score_functions = {Metric.SEVERITY.value: tiny_med_severity_score, Metric.SUPPLIES_REMAINING.value: tiny_med_resources_remaining,
                        Metric.AVERAGE_TIME_USED.value: tiny_med_time_score, Metric.CASUALTY_SEVERITY.value: tiny_med_casualty_severity,
                        Metric.DAMAGE_PER_SECOND.value: med_simulator_dps, Metric.CASUALTY_DAMAGE_PER_SECOND.value: med_casualty_dps,
                        Metric.P_DEATH.value: med_prob_death, Metric.CASUALTY_P_DEATH.value: med_casualty_prob_death,
                        Metric.P_DEATH_ONEMINLATER.value: prob_death_after_minute}
 
-    sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value)
+    sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe_constraints=probe_decisions)
     root = mcsim.MCStateNode(medsim_state)
     tree = mcsim.MonteCarloTree(sim, score_functions, [root])
 
@@ -351,6 +351,7 @@ def get_information_gained_element(action: str) -> int:
             return Metric.MOST_KNOWLEDGE.value
     logger.critical('%s not known for information gain' % action)
     return Metric.NO_KNOWLEDGE.value
+
 
 def get_doctor_number(pdeath, dps):
     pdeath_scaled = pdeath * 50.
