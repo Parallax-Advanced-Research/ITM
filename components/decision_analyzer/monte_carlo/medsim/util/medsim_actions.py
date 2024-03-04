@@ -2,6 +2,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import Me
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Injuries, Casualty, Locations, \
     Actions, Tags, Injury, Supply
+from domain.internal import Decision
 
 
 def supply_location_match(action: MedsimAction):
@@ -95,12 +96,18 @@ def get_treatment_actions(casualties: list[Casualty], supplies: list[str]) -> li
     return treatments
 
 
-def get_action_all(casualties: list[Casualty], action_str: str) -> list[tuple]:
+def get_action_all(casualties: list[Casualty], action_str: str, aid_delay: None | float | dict = None) -> list[tuple]:
     actions: list[tuple] = []
     for c in casualties:
         casualty_id: str = c.id
         action_tuple: tuple[str, str] = (action_str, casualty_id)
         actions.append(action_tuple)
+    if isinstance(aid_delay, list):
+        new_actions :list[tuple] = []
+        for aid_type in aid_delay:
+            for action in actions:
+                new_actions.append((action[0], action[1], aid_type['id']))
+        actions = new_actions
     if action_str == Actions.SITREP.value:
         one_tuple = (Actions.SITREP.value,)
         actions.append(one_tuple)  # sitrep can be done on casualty or on scene
@@ -124,14 +131,14 @@ def get_tag_options(casualties: list[Casualty]) -> list[tuple]:
     return actions
 
 
-def get_possible_actions(casualties: list[Casualty], supplies: list[str]) -> list[tuple]:
+def get_possible_actions(casualties: list[Casualty], supplies: list[str], aid_delay: float | dict) -> list[tuple]:
     possible_action_tuples: list[tuple] = []
     treatment_actions = get_treatment_actions(casualties, supplies)
     check_all_actions = get_action_all(casualties, Actions.CHECK_ALL_VITALS.value)
     check_pulse_actions = get_action_all(casualties, Actions.CHECK_PULSE.value)
     check_respire_actions = get_action_all(casualties, Actions.CHECK_RESPIRATION.value)
     direct_mobile_actions = get_dmc_actions()
-    move_to_evac_actions = get_action_all(casualties, Actions.MOVE_TO_EVAC.value)
+    move_to_evac_actions = get_action_all(casualties, Actions.MOVE_TO_EVAC.value, aid_delay)
     sitrep_actions = get_action_all(casualties, Actions.SITREP.value)
     tag_actions = get_tag_options(casualties)
     # search_options = get_search_options()  Done in get dmc_actions
@@ -145,6 +152,29 @@ def get_possible_actions(casualties: list[Casualty], supplies: list[str]) -> lis
     possible_action_tuples.extend(sitrep_actions)
     possible_action_tuples.extend(tag_actions)
     return possible_action_tuples
+
+
+def decision_to_medsimaction(decision: Decision) -> MedsimAction:
+    dval = decision.value
+    if dval.name in [Actions.CHECK_PULSE.value, Actions.CHECK_RESPIRATION.value, Actions.CHECK_ALL_VITALS.value,
+                     Actions.SITREP.value]:
+        ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'] if 'casualty' in dval.params.keys() else None)
+        return ma
+    if dval.name in [Actions.MOVE_TO_EVAC.value]:
+        ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'],
+                          evac_id=dval.params['evac_id'] if 'evac_id' in dval.params.keys() else None)
+        return ma
+    if dval.name in [Actions.TAG_CHARACTER.value]:
+        ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'], tag=dval.params['category'])
+        return ma
+    if dval.name in [Actions.APPLY_TREATMENT.value]:
+        ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'], location=dval.params['location'],
+                          supply=dval.params['treatment'])
+        return ma
+    if dval.name in [Actions.END_SCENE.value, Actions.END_SCENARIO.value]:
+        ma = MedsimAction(action=dval.name)
+        return ma
+    return 3
 
 
 def supply_dict_to_list(supplies: list[Supply]) -> list[str]:
@@ -164,6 +194,8 @@ def create_medsim_actions(actions: list[tuple]) -> list[MedsimAction]:
                         Actions.MOVE_TO_EVAC.value]:
             casualty = act_tuple[1]
             tm_action = MedsimAction(action, casualty_id=casualty)
+            if action == Actions.MOVE_TO_EVAC.value and len(act_tuple) > 2:
+                tm_action = MedsimAction(action, casualty_id=casualty, evac_id=act_tuple[2])
         elif action == Actions.DIRECT_MOBILE_CASUALTY.value or action == Actions.SEARCH.value:
             tm_action = MedsimAction(action=action)
         elif action == Actions.TAG_CHARACTER.value:
