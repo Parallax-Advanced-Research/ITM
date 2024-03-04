@@ -77,8 +77,16 @@ class TA3Elaborator(Elaborator):
     def _add_evac_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
         if probe.environment['decision_environment']['aid_delay'] == None:
             return []
-        actions = self._ground_casualty(probe.state.casualties, decision)
-        breakpoint()
+        decisions = self._ground_casualty(probe.state.casualties, decision)
+        ret_decisions = []
+        for dec in decisions:
+            if ParamEnum.EVAC_ID in dec.value.params:
+                ret_decisions.append(dec)
+            else:
+                for aid in probe.environment['decision_environment']['aid_delay']:
+                    ret_decisions.append(
+                        decision_copy_with_params(decision, {ParamEnum.EVAC_ID: aid['id']}))
+        return ret_decisions
 
     def _enumerate_check_actions(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
         # Ground the decision for all casualties with injuries
@@ -145,6 +153,12 @@ class TA3Elaborator(Elaborator):
         return []
 
     def _treatment(self, state: TA3State, decision: Decision[Action], tag_available = True) -> list[Decision[Action]]:
+        # If it's already fully grounded, don't second-guess the server
+        if (ParamEnum.TREATMENT in decision.value.params 
+              and ParamEnum.CASUALTY in decision.value.params
+              and ParamEnum.LOCATION in decision.value.params):
+            return [decision]
+            
         # Ground the decision for all casualties with injuries
         dec_grounded = self._ground_treatments(state, decision, tag_available=tag_available)
         

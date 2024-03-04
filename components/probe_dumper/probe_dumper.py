@@ -58,7 +58,15 @@ class ProbeDumper:
                 continue
 
             f2 = open(osp.join(self.dump_path, dump_artifact), mode='rb')
-            opened_dump = pkl.load(f2)
+            try:
+                opened_dump = pkl.load(f2)
+            except:
+                f2.close()
+                print("Failed dump re-open.")
+                breakpoint()
+                os.remove(osp.join(self.dump_path, dump_artifact))
+                opened_dump = None
+                continue
             f2.close()
 
             if opened_dump.session_uuid == session_uuid:

@@ -27,6 +27,9 @@ class CSVDecisionSelector(DecisionSelector):
 
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         """ Find the best decision from the probe by comparing to individual rows in the case base """
+        
+        if target is None:
+            raise Exception("CSV Decision Selector needs an alignment target to operate correctly.")
         max_sim: float = -math.inf
         max_decision: Decision[Action] = None
 

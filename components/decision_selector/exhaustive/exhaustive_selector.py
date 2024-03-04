@@ -82,7 +82,7 @@ class ExhaustiveSelector(DecisionSelector):
         self.action_index += 1
         
         # Make a case and record it.
-        new_case = make_case(probe.state, cur_decision)
+        new_case = make_case(probe, cur_decision)
         self.case_index += 1
         new_case["actions"] = [act.to_json() for act in probe.state.actions_performed] + [cur_decision.value.to_json()]
         new_case["index"] = self.case_index

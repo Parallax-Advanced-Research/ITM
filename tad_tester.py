@@ -14,8 +14,8 @@ def test_endpoint(args):
     if args.endpoint is None:
         if not util.is_port_open(ta3_port):
             print("TA3 server not listening. Shutting down.")
-            sys.exit(-1)
-    args.session_type = 'standalone'
+            sys.exit(1)
+
     tad.api_test(args)
 
 

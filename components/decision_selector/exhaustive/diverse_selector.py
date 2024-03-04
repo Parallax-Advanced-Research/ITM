@@ -35,7 +35,7 @@ class DiverseSelector(DecisionSelector):
         
         cur_decision = self.choose_random_decision(probe)
 
-        new_case = make_case(probe.state, cur_decision)
+        new_case = make_case(probe, cur_decision)
         chash = hash_case(new_case)
         new_case["index"] = self.case_index
         if cur_decision.kdmas is not None and cur_decision.kdmas.kdma_map is not None:
@@ -63,7 +63,7 @@ class DiverseSelector(DecisionSelector):
             for i in cas.injuries:
                 print(str(i))
         current_bar = 0
-        chash = hash_case(make_case(probe.state, probe.decisions[0]))
+        chash = hash_case(make_case(probe, probe.decisions[0]))
         hash_cases = self.cases.get(chash, [])
         
         patient_choices_with_kdma = \
@@ -81,15 +81,19 @@ class DiverseSelector(DecisionSelector):
             if action.name in ["CHECK_RESPIRATION", "CHECK_PULSE"] and d.kdmas is None:
                 continue
             similar_cases = 0
+            current_bar += 0.01
             if len(hash_cases) > 0:
                 for case in hash_cases:
                     case_action = case["actions"][-1]
                     if action.name == case_action["name"]:
                         similar_cases += 0.2
-                        param_similarity = \
-                            sum([val_distance(key, case_action["params"].get(key, None), value) 
-                                      for (key, value) in action.params.items()])
-                        similar_cases += 0.8 * (param_similarity / len(case_action["params"]))
+                        if len(case_action["params"]) == 0:
+                            similar_cases += 0.8
+                        else:
+                            param_similarity = \
+                                sum([val_distance(key, case_action["params"].get(key, None), value) 
+                                          for (key, value) in action.params.items()])
+                            similar_cases += 0.8 * (param_similarity / len(case_action["params"]))
                 current_bar += EXPLORATION_WEIGHT * (1 - (similar_cases / len(hash_cases)))
             if d.kdmas is not None:
                 current_bar += KDMA_WEIGHT

@@ -14,6 +14,7 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
         cases = [json.loads(line) for line in infile]
     with open(feedback_file, "r") as infile:
         training_data = [json.loads(line) for line in infile]
+    training_data = [d for d in training_data if len(d["feedback"]["kdmas"]) > 0]
     for case in cases:
         case["action-string"] = stringify_action_list(case["actions"])
         case["pre-action-string"] = stringify_action_list(case["actions"][:-1])
@@ -29,7 +30,6 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
             datum["actions"][index]["hash"] = hash(stringify_action_list(datum["actions"][:index+1]))
             index = index + 1
     return cases, training_data
-
 
 def stringify_action_list(actions: list[dict[str, Any]]) -> str:
     return ";".join([stringify_action(a) for a in actions])
@@ -170,17 +170,17 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
                     new_check = time.time()
                     print(f"Created {cases_checked}/{len(distinct_cases)}. {new_check-last_check} ms")
                     last_check = new_check
-                feedbacks += find_feedback(case["action-hash"], case["action-len"], 
-                                           case["action-string"], training_data)
+                new_feedbacks = find_feedback(case["action-hash"], case["action-len"], 
+                                              case["action-string"], training_data)
+                feedbacks += new_feedbacks
                 pre_string = case["pre-action-string"]
                 if pre_string not in tested_befores:
                     tested_befores.append(pre_string)
                     before_feedbacks += find_feedback(case["pre-action-hash"], case["action-len"]-1,       
                                                       pre_string, training_data)
-
-            if len(feedbacks) == 0:
-                print(f"No feedback for action sequence: {case['actions']}")
-                continue
+                if len(new_feedbacks) == 0:
+                    print(f"No feedback for action sequence: {case['actions']}")
+                    continue
             after_feedback_dist = get_kdma_score_distributions(feedbacks)
             before_feedback_dist = get_kdma_score_distributions(before_feedbacks)
             after_feedback_dist.pop("score")
@@ -195,8 +195,7 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
                     breakpoint()
                 new_case = new_case | flatten("feedback_delta", dfeedback)
         if "hint" in new_case:
-            new_case.pop("hint")
-            new_case = new_case | flatten("hint", case["hint"])
+            new_case = new_case | flatten("hint", new_case.pop("hint"))
         ret_cases.append(new_case)
         index = index + 1
         
@@ -226,4 +225,3 @@ def case_state_hash(case: dict[str, Any]) -> int:
                 'category', 'intent', 'directness_of_causality']:
         val_list.append(case.get(key, None))
     return hash(tuple(val_list))
-        

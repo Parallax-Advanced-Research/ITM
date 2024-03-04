@@ -2,62 +2,75 @@
 import subprocess
 import os
 import venv
-import threading
-import socket
 import util
 import sys
 import argparse
 import time
 from run_tests import color
+from enum import Enum
 
-def update_server(dir_name) -> bool:
+Status = Enum('Status', { 'SUCCESS': 0, 'WARNING': 1, 'ERROR': 2 })
+status = Status.SUCCESS
+
+def warning(msg: str) -> None:
+    global status
+    if Status.SUCCESS == status:
+        status = Status.WARNING
+    color('yellow', msg)
+
+def error(msg: str) -> None:
+    global status
+    status = Status.ERROR
+    color('red', msg)
+
+def update_server(dir_name: str) -> bool:
+    p: subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]
+
     print("\n **** Checking if " + dir_name + " needs updates. ****")
     ldir = os.path.join(os.getcwd(), ".deprepos", dir_name)
     if not os.path.exists(ldir):
-        print("Server " + dir_name + " not installed. Continuing without.")
+        warning("Server " + dir_name + " not installed. Continuing without.")
         return False
     try:
-        p = subprocess.run(["git", "fetch", "--all"], cwd=ldir) 
+        p = subprocess.run(["git", "fetch", "--all"], cwd=ldir, check=False) 
     except FileNotFoundError as err:
-        color('red', "Error occurred: " + str(err))
-        color('red', "Please check that git is in your PATH and PATH is well-formed.")
-        sys.exit(-1)
+        error("Error occurred: " + str(err))
+        error("Please check that git is in your PATH and PATH is well-formed.")
+        sys.exit(Status.ERROR.value)
     if p.returncode != 0:
-        color('yellow', "Failed to update git repository " + dir_name + ". Continuing anyway.")
-    p = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ldir, stdout=subprocess.PIPE, text=True) 
-    hash = p.stdout.strip()
+        warning("Failed to update git repository " + dir_name + ". Continuing anyway.")
+    p = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ldir, stdout=subprocess.PIPE, text=True, check=False)
+    hashval = p.stdout.strip()
     if p.returncode != 0:
-        color('red', "Failed to find current repository hash. Repository may be broken.")
+        error("Failed to find current repository hash. Repository may be broken.")
         raise Exception("Could not manage git repositories.")
-    hashfile = None
     desired_hash = None
     try:
-        hashfile = open(os.path.join("repo-cfgs", dir_name + "-commit-hash"), "r")
-        desired_hash = hashfile.read().strip()
+        with open(os.path.join("repo-cfgs", dir_name + "-commit-hash"), "r", encoding="utf-8") as hashfile:
+            desired_hash = hashfile.read().strip()
     except Exception as ex:
         print(ex)
-        raise Exception("Could not find expected commit hash.")
+        raise Exception("Could not find expected commit hash.") from ex
     
     patching_status = check_git_diff_against_patch(ldir, dir_name)
 
-    if hash != desired_hash and patching_status.user_edited:
-        color('yellow', 
-              "Cannot update repository due to local changes. Starting anyway, please consider "
+    if hashval != desired_hash and patching_status.user_edited:
+        warning("Cannot update repository due to local changes. Starting anyway, please consider "
               + "calling save-repo-states.py")
         return True
-    elif hash != desired_hash and not patching_status.user_edited:
+    elif hashval != desired_hash and not patching_status.user_edited:
         print("Updating repo " + dir_name + " to recorded commit hash.")
         if patching_status.difference_exists:
             print("Resetting prior patch.")
-            p = subprocess.run(["git", "reset", desired_hash, "--hard"], cwd=ldir)
+            p = subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir, check=True)
             
-        p = subprocess.run(["git", "-c", "advice.detachedHead=false", "checkout", desired_hash], cwd=ldir)
+        p = subprocess.run(["git", "-c", "advice.detachedHead=false", "checkout", desired_hash], cwd=ldir, check=False)
         if p.returncode != 0:
-            color('red', "Error running git checkout:")
+            error("Error running git checkout:")
             print(p.stdout)
             print(p.stderr)
-            color('red', "No servers started.")
-            sys.exit(-1)
+            error("No servers started.")
+            sys.exit(Status.ERROR.value)
         print("Update successful.")
         
         venv_dir = os.path.join(ldir, "venv")
@@ -68,9 +81,9 @@ def update_server(dir_name) -> bool:
             lctxt = lbuilder.ensure_directories(venv_dir)
             p = subprocess.run([lctxt.env_exe, "-m", "pip", "install", "-r",
                                                os.path.join(ldir, "requirements.txt")], 
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
             if p.returncode != 0:
-                color("red", "Failed to update " + dir_name + " dependencies.")
+                error("Failed to update " + dir_name + " dependencies.")
     else:
         print("Repository " + dir_name + " is on the right commit.")
     
@@ -83,43 +96,43 @@ def update_server(dir_name) -> bool:
         return True
 
     if not patching_status.user_edited and patching_status.patch_updated:
-        p = subprocess.run(["git", "clean", "--force", "-d"], cwd=ldir)
-        p = subprocess.run(["git", "apply", os.path.join("..", "..", patching_status.patch_filename)], 
-                           cwd=ldir,  stdout=subprocess.PIPE, text=True)
+        assert patching_status.last_patch_hash_filename and patching_status.current_patch_hash and patching_status.patch_filename
+
+        subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir, check=True)
+        subprocess.run(["git", "clean", "--force", "-d", "-x", "-e", "venv"], cwd=ldir, check=True)
+        p = subprocess.run(["git", "apply", "-v", os.path.join("..", "..", patching_status.patch_filename)], 
+                           cwd=ldir,  stdout=subprocess.PIPE, text=True, check=False)
         if p.returncode != 0:
-            color("yellow", "Failed to apply patch to repo " + dir_name + ". Starting anyway.")
+            warning("Failed to apply patch to repo " + dir_name + ". Starting anyway.")
             return True
         print("Applied patch to repo " + dir_name + ".")
-        patch_hash_file = open(patching_status.last_patch_hash_filename, "w")
-        patch_hash_file.write(patching_status.current_patch_hash)
-        patch_hash_file.close()
+        with open(patching_status.last_patch_hash_filename, "w", encoding="utf-8") as patch_hash_file:
+            patch_hash_file.write(patching_status.current_patch_hash)
         return True
 
     if patching_status.user_edited and patching_status.patch_updated:
-        color('yellow', 
-              "Repository " + dir_name + " is modified, and a new patch has been downloaded from "
+        warning("Repository " + dir_name + " is modified, and a new patch has been downloaded from "
               + "git. Please revert or combine your changes with the patch manually. Starting server "
               + "anyway. Please consider calling save-repo-states.py")
         return True
     raise Exception("Should not be possible to reach this point.")
 
 class PatchingStatus:
-    difference_exists: bool = None
-    patch_filename: str = None
-    patch_exists: bool = None
-    last_patch_hash_filename: str = None
-    last_patch_exists: bool = None
-    current_patch_hash: str = None
-    user_edited: bool = None
-    patch_updated: bool = None
+    difference_exists: bool | None = None
+    patch_filename: str | None = None
+    patch_exists: bool | None = None
+    last_patch_hash_filename: str | None = None
+    last_patch_exists: bool | None = None
+    current_patch_hash: str | None = None
+    user_edited: bool | None = None
+    patch_updated: bool | None = None
 
 # Returns difference_exists, patch_exists, patch_different, difference_hash
-def check_git_diff_against_patch(ldir, dir_name) -> PatchingStatus:
+def check_git_diff_against_patch(ldir: str, dir_name: str) -> PatchingStatus:
     st = PatchingStatus()
     temp_diff_filename = os.path.join("temp", "diff-file")
-    temp_diff_file = open(temp_diff_filename, "w")
-    p = subprocess.run(["git", "diff", "HEAD"], cwd=ldir, stdout=temp_diff_file, text=True, check=True) 
-    temp_diff_file.close()
+    with open(temp_diff_filename, "w", encoding="utf-8") as temp_diff_file:
+        subprocess.run(["git", "diff", "HEAD"], cwd=ldir, stdout=temp_diff_file, text=True, check=True) 
 
     difference_hash = util.hash_file(temp_diff_filename)
     st.difference_exists = (os.stat(temp_diff_filename).st_size > 0)
@@ -139,9 +152,8 @@ def check_git_diff_against_patch(ldir, dir_name) -> PatchingStatus:
     
     last_patch_hash = ""
     if st.last_patch_exists:
-        last_patch_hash_file = open(st.last_patch_hash_filename, "r")
-        last_patch_hash = last_patch_hash_file.readline()
-        last_patch_hash_file.close()
+        with open(st.last_patch_hash_filename, "r", encoding="utf-8") as last_patch_hash_file:
+            last_patch_hash = last_patch_hash_file.readline()
         if last_patch_hash == util.empty_hash():
             st.last_patch_exists = False
 
@@ -157,18 +169,17 @@ def check_git_diff_against_patch(ldir, dir_name) -> PatchingStatus:
         
 
 
-def start_server(dir_name, args):
+def start_server(dir_name: str, args: list[str]) -> None:
     ldir = os.path.join(os.getcwd(), ".deprepos", dir_name)
     builder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
     ctxt = builder.ensure_directories(os.path.join(ldir, "venv"))
     env = os.environ.copy()
     env["PATH"] = ctxt.bin_path + os.pathsep + env["PATH"]
     env["PYTHONPATH"] = ldir
-    with open(os.path.join(ldir, 'log.out'), "w") as out, open(os.path.join(ldir, 'log.err'), "w") as err:
-        p = subprocess.Popen([ctxt.env_exe, "-m"] + args, env=env, stdout=out, stderr=err, cwd=ldir) 
-    f = open(os.path.join(ldir, "process.pid"), "w")
-    f.write(str(p.pid))
-    f.close()
+    with open(os.path.join(ldir, 'log.out'), "w", encoding="utf-8") as out, open(os.path.join(ldir, 'log.err'), "w", encoding="utf-8") as err:
+        p = subprocess.Popen([ctxt.env_exe, "-m"] + args, env=env, stdout=out, stderr=err, cwd=ldir) # pylint: disable=consider-using-with # (daemon)
+    with open(os.path.join(ldir, "process.pid"), "w", encoding="utf-8") as f:
+        f.write(str(p.pid))
     
     # t1 = threading.Thread(target=redirect_output, args=(p.stdout, ))
     # t1.start()
@@ -210,67 +221,59 @@ update_server("itm-evaluation-client")
 ta3_server_available = update_server("itm-evaluation-server")
 
 if not ta3_server_available:
-    color('red', 
-          "TA3 server is not installed; neither tad_tester.py nor ta3_training.py will function. "
+    error("TA3 server is not installed; neither tad_tester.py nor ta3_training.py will function. "
           + " No servers started.")
-    sys.exit(-1)
+    sys.exit(Status.ERROR.value)
 
 if args.soartech:
     soartech_server_available = update_server("ta1-server-mvp")
     if not soartech_server_available:
-        color('yellow', "Training server from soartech not found. Proceeding without it.")
+        warning("Training server from soartech not found. Proceeding without it.")
 else:
     soartech_server_available = False
  
 if args.adept:
     adept_server_available = update_server("adept_server")
     if not adept_server_available:
-            color('yellow', "ADEPT training server not found. Proceeding without it.")
+        warning("ADEPT training server not found. Proceeding without it.")
 else:
     adept_server_available = False
 
 ready = True
 if ta3_server_available and util.is_port_open(ta3_port):
-    color('red', 
-          f"Port {ta3_port} is already in use (needed by evaluation server).")
+    error(f"Port {ta3_port} is already in use (needed by evaluation server).")
     ready = False
 if args.adept and adept_server_available and util.is_port_open(adept_port):
-    color('red', 
-          f"Port {adept_port} is already in use (needed by ADEPT server).")
+    error(f"Port {adept_port} is already in use (needed by ADEPT server).")
     ready = False
 if args.soartech and soartech_server_available and util.is_port_open(soartech_port):
-    color('red', 
-          f"Port {soartech_port} is already in use (needed by Soartech server).")
+    error(f"Port {soartech_port} is already in use (needed by Soartech server).")
     ready = False
 if not ready:
-    color('red', 
-          "Please stop the processes that are already using ports before running this script. " + 
+    error("Please stop the processes that are already using ports before running this script. " + 
           "The ports used are not yet configurable within the script. Remember to run " +
           "stop-servers.py to remove your own prior server processes if necessary.")
-    sys.exit(-1)
+    sys.exit(Status.ERROR.value)
     
 start_server("itm-evaluation-server", ["swagger_server"])
 
 
 if not adept_server_available and not soartech_server_available:
-    color('yellow', 
-          'No training servers in use. Using ta3_training.py will not be possible. Testing '
+    warning('No training servers in use. Using ta3_training.py will not be possible. Testing '
           + 'using tad_tester.py should be unaffected.')
 
 
 if adept_server_available:
     start_server("adept_server", ["openapi_server", "--port", str(adept_port)])
 elif soartech_server_available:
-    color('yellow', 
-          'ADEPT server is not in use. Training using ta3_training.py will require the argument '
+    warning('ADEPT server is not in use. Training using ta3_training.py will require the argument '
           + '"--session_type soartech" to use only the Soartech server in training. Testing using '
           + 'tad_tester.py should be unaffected.')
 
 if soartech_server_available:
-    start_server("ta1-server-mvp", ["itm_app", "--port", str(soartech_port)])
+    start_server("ta1-server-mvp", ["ta1_server", "--port", str(soartech_port)])
 elif adept_server_available:
-    color('yellow', 
-          'Soartech server is not in use. Training using ta3_training.py will require the argument '
+    warning('Soartech server is not in use. Training using ta3_training.py will require the argument '
           + '"--session_type adept" to use only the ADEPT server in training. Testing using '
           + 'tad_tester.py should be unaffected.')
 
@@ -310,10 +313,17 @@ while not servers_up and time.time() - wait_started < 30: # At least 30 seconds 
 
 if not servers_up:
     if ta3_server_available and not ta3_verified:
-        color('red', "TA3 server did not start successfully. Check .deprepos/itm-evaluation-server/log.err")
+        error("TA3 server did not start successfully. Check .deprepos/itm-evaluation-server/log.err")
     if adept_server_available and not adept_verified:
-        color('red', "ADEPT server did not start successfully. Check .deprepos/adept_server/log.err")
+        error("ADEPT server did not start successfully. Check .deprepos/adept_server/log.err")
     if soartech_server_available and not soartech_verified:
-        color('red', "Soartech server did not start successfully. Check .deprepos/ta1-server-mvp/log.err")
+        old_status = status
+        error("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp/log.err")
+        if Status.SUCCESS == old_status:
+            warning("Temporarily returning success even though Soartech isn't running. Will change once TA1 fixes it")
+            status = old_status
 else:
     color('green', "Servers started successfully.")
+
+
+sys.exit(status.value)
