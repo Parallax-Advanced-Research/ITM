@@ -61,16 +61,17 @@ def install_server(git_path: str) -> None:
 
 
 def run_cmd_or_die(argv: list[str], capture_output: bool = False, err_msg: str | None = None) -> str:
+    """ Just a wrapper around some common subprocess.run() stuff """
     p: subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]
     if capture_output:
         p = subprocess.run(argv, check=False, capture_output=True, text=True)
     else:
         p = subprocess.run(argv, check=False)
     if 0 != p.returncode:
-        if (err_msg): print(err_msg)
+        if err_msg is not None:
+            print(err_msg)
         sys.exit(1)
 
-    print(f"{argv=}, {capture_output=}, {p.stdout=}")
     if capture_output:
         assert type(p.stdout) is str
         return p.stdout
@@ -90,7 +91,6 @@ def install_hems() -> None:
         err_msg ="quicklisp must be installed before we run this command.",
         capture_output=True)
 
-    print(f"{ql_local_projects_dir=}")
     os.makedirs(ql_local_projects_dir, exist_ok=True)
 
     # Install HEMS
@@ -102,7 +102,7 @@ def install_hems() -> None:
         # Update
         os.chdir(hems_dir)
         run_cmd_or_die([ "git", "checkout", "package.lisp" ], capture_output=False)
-        run_cmd_or_die([ "git", "pull" ])
+        run_cmd_or_die([ "git", "pull", "--no-edit" ])
         os.chdir(ITM_DIR)
 
     ## Patch package.lisp

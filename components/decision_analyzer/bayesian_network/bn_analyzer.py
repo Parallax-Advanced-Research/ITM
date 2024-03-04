@@ -186,7 +186,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
     def get_pain(self, c : Casualty) -> Node_Val | None:
         # TODO: We're assuming that they can't be in pain if they aren't conscious
         if c.vitals.mental_status == "AGONY": return "high"
-        if c.vitals.avpu == "ALERT": return "low_or_none" # could report pain if it existed
+        #if c.vitals.avpu == "ALERT": return "low_or_none" # could report pain if it existed. Dropped this line, since mental_status can only report *high* pain. Moderate is still possible.
         if not c.vitals.conscious: return "low_or_none"
         return None
         
