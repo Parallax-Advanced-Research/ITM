@@ -46,17 +46,17 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
 
             metrics: list[DecisionMetric[float]] = []
             append("pDeath",
-				 "Posterior probability of death with no action", predictions['death']['true'])
+                    "Posterior probability of death with no action", predictions['death']['true'])
             append("pPain",
-				 "Posterior probability of severe pain", predictions['pain']['high'])
+                    "Posterior probability of severe pain", predictions['pain']['high'])
             append("pBrainInjury",
-				 "Posterior probability of a brain injury", predictions['brain_injury']['true'])
+                    "Posterior probability of a brain injury", predictions['brain_injury']['true'])
             append("pAirwayBlocked",
-				 "Posterior probability of airway blockage", predictions['airway_blocked']['true'])
+                    "Posterior probability of airway blockage", predictions['airway_blocked']['true'])
             append("pInternalBleeding",
-				 "Posterior probability of internal bleeding", predictions['internal_hemorrhage']['true'])
+                    "Posterior probability of internal bleeding", predictions['internal_hemorrhage']['true'])
             append("pExternalBleeding",
-				 "Posterior probability of external bleeding", predictions['external_hemorrhage']['true'])
+                    "Posterior probability of external bleeding", predictions['external_hemorrhage']['true'])
             decision.metrics.update(mdict)
             analysis[decision.id_] = mdict
 
@@ -185,6 +185,8 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         
     def get_pain(self, c : Casualty) -> Node_Val | None:
         # TODO: We're assuming that they can't be in pain if they aren't conscious
+        # TODO: Is there a way to observe a partial distribution, e.g. if mental_status != AGONY and patient is conscious,
+        # set P(pain=high) = 0 and redistribute the rest of the probability mass between moderate and low_or_none?
         if c.vitals.mental_status == "AGONY": return "high"
         #if c.vitals.avpu == "ALERT": return "low_or_none" # could report pain if it existed. Dropped this line, since mental_status can only report *high* pain. Moderate is still possible.
         if not c.vitals.conscious: return "low_or_none"
