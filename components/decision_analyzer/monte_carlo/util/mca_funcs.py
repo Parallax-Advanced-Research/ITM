@@ -352,6 +352,7 @@ def get_information_gained_element(action: str) -> int:
     logger.critical('%s not known for information gain' % action)
     return Metric.NO_KNOWLEDGE.value
 
+
 def get_doctor_number(pdeath, dps):
     pdeath_scaled = pdeath * 50.
     dps_scaled = dps * 1.
