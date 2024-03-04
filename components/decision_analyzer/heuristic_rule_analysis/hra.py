@@ -189,7 +189,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(kdma_list) == 0: raise Exception("there are no kdmas")
 
         # get kdma with highest value
-        max_kdma = max(zip(kdma_list.values(), kdma_list.keys()))[1]
+        #max_kdma = max(zip(kdma_list.values(), kdma_list.keys()))[1]
 
         # create table of casualty fields to worth
         casualty_val_table = dict()
@@ -201,15 +201,23 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         for person, info in casualty_dict.items():
             casualty_sum[person] = 0
-            match max_kdma:  # do try here
-                case 'mission':
-                    casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
-                        info['demographics']['rank'].lower()]
-                case 'denial':
-                    casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
-                        info['relationship'].lower()]
-                case _:
-                    raise Exception("invalid kdma")
+            #match max_kdma:  # do try here
+                # case 'moral_desert':
+                #     casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
+                #         info['demographics']['rank'].lower()]
+                # case 'maximization':
+                #     casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
+                #         info['relationship'].lower()]
+                # case _:
+                #     raise Exception("invalid kdma")
+            if kdma_list['relevance']['life_impact'] == 'high':
+                casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
+                info['demographics']['rank'].lower()]
+                casualty_sum[person] += 0 if info['demographics']['age'] is None else (
+                    1 if (0 <= info['demographics']['age'] <= 10 or 65 <= info['demographics']['age'] <= 100) else 0)
+            elif kdma_list['relevance']['resources'] == 'many':
+                casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
+                info['relationship'].lower()]
 
         # return casualty ranked highest
         max_casualty = max(zip(casualty_sum.values(), casualty_sum.keys()))[1]
@@ -883,10 +891,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
     '''
 
     # TODO: for now convert functions are stubs, they will be flushed out later
-    def convert_kdma_predictor(self, mission, denial, predictor):
-        if not isinstance(mission, numbers.Number) and (0 <= mission <= 10): raise AttributeError(
+    def convert_kdma_predictor(self, moral_desert, maximization, predictor):
+        if not isinstance(moral_desert, numbers.Number) and (0 <= moral_desert <= 10): raise AttributeError(
             "Incorrect arg types or size")
-        if not isinstance(denial, numbers.Number) and (0 <= denial <= 10): raise AttributeError(
+        if not isinstance(maximization, numbers.Number) and (0 <= maximization <= 10): raise AttributeError(
             "Incorrect arg types or size")
         if type(predictor) != str: raise AttributeError("Incorrect arg types or size")
 
@@ -901,19 +909,19 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         else:
             raise Exception("not a valid predictor")
 
-    def convert_between_kdma_risk_reward_ratio(self, mission, denial, predictor):
+    def convert_between_kdma_risk_reward_ratio(self, moral_desert, maximization, predictor):
         return "low"
 
-    def convert_between_kdma_resources(self, mission, denial, predictor):
+    def convert_between_kdma_resources(self, moral_desert, maximization, predictor):
         return "few"
 
-    def convert_between_kdma_time(self, mission, denial, predictor):
+    def convert_between_kdma_time(self, moral_desert, maximization, predictor):
         return "minutes"
 
-    def convert_between_kdma_system(self, mission, denial, predictor):
+    def convert_between_kdma_system(self, moral_desert, maximization, predictor):
         return "equal"
 
-    def convert_between_kdma_life_impact(self, mission, denial, predictor):
+    def convert_between_kdma_life_impact(self, moral_desert, maximization, predictor):
         return "medium"
 
     ''' placeholder data needed by hra strategies until functionality is implemented. Currently creates a scenario file
@@ -928,9 +936,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         # file["scenario"] = {"danger":"high", "urgency":"high", "error_prone":"high"}
 
-        file["kdma"] = {"mission": 8, "denial": 3}
+        file["kdma"] = {"moral_desert": 0.6, "maximization": 0.2} # where is moral desert info stored
 
-        # file["predictors"] = {"relevance":{"risk_reward_ratio":"low", "time":"seconds", "system":"equal", "resources":"few"}},
+        # TODO: should call functions to set predictors here
+        # predictors can take values in {few, some, many} or in {low, medium, high}
+        file["predictors"] = {"relevance":{"risk_reward_ratio":"low", "time":"seconds", "system":"equal", "resources":"few", "life_impact":"medium"}},
 
         temp_file = dict()
         temp_file["treatment"] = {
@@ -1066,11 +1076,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 data = json.load(f)
 
                 # extract kdma values from scenario input file
-                mission = data['kdma']['mission']
-                denial = data['kdma']['denial']
+                moral_desert = data['kdma']['moral_desert']
+                maximization = data['kdma']['maximization']
 
                 for predictor in data['predictors']['relevance']:
-                    data['predictors']['relevance'][predictor] = self.convert_kdma_predictor(mission, denial, predictor)
+                    data['predictors']['relevance'][predictor] = self.convert_kdma_predictor(moral_desert, maximization, predictor)
 
                 # add predictors to scenario file
                 json_object = json.dumps(data, indent=2)
@@ -1150,7 +1160,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 "tag": ele.tag, "assessed": ele.assessed, "relationship": ele.relationship
             }
         # get priority for each hra strategy
-        priority_take_the_best = self.take_the_best_priority(casualty_data, data['kdma'])
+        priority_take_the_best = self.take_the_best_priority(casualty_data, data['predictors'][0])#['relevance'])
+        #priority_take_the_best = self.take_the_best_priority(casualty_data, data['kdma'])
         priority_exhaustive = self.exhaustive_priority(casualty_data)
         priority_tallying = self.tallying_priority(casualty_data)
         priority_satisfactory = self.satisfactory_priority(casualty_data)
