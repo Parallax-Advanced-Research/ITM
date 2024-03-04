@@ -14,6 +14,7 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
         cases = [json.loads(line) for line in infile]
     with open(feedback_file, "r") as infile:
         training_data = [json.loads(line) for line in infile]
+    training_data = [d for d in training_data if len(d["feedback"]["kdmas"]) > 0]
     for case in cases:
         case["action-string"] = stringify_action_list(case["actions"])
         case["pre-action-string"] = stringify_action_list(case["actions"][:-1])
