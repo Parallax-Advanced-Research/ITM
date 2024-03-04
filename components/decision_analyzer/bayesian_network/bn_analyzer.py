@@ -39,24 +39,22 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
                 continue
 
             predictions = self.bn.predict(ob)
+            entropy = self.bn.entropy(ob)
 
             mdict = DecisionMetrics()
             def append(name: str, desc: str, prob: float) -> None:
                 mdict[name] = DecisionMetric[float](name, desc, prob)
 
             metrics: list[DecisionMetric[float]] = []
-            append("pDeath",
-                    "Posterior probability of death with no action", predictions['death']['true'])
-            append("pPain",
-                    "Posterior probability of severe pain", predictions['pain']['high'])
-            append("pBrainInjury",
-                    "Posterior probability of a brain injury", predictions['brain_injury']['true'])
-            append("pAirwayBlocked",
-                    "Posterior probability of airway blockage", predictions['airway_blocked']['true'])
-            append("pInternalBleeding",
-                    "Posterior probability of internal bleeding", predictions['internal_hemorrhage']['true'])
-            append("pExternalBleeding",
-                    "Posterior probability of external bleeding", predictions['external_hemorrhage']['true'])
+            append("pDeath", "Posterior probability of death with no action", predictions['death']['true'])
+            append("pPain", "Posterior probability of severe pain", predictions['pain']['high'])
+            append("pBrainInjury", "Posterior probability of a brain injury", predictions['brain_injury']['true'])
+            append("pAirwayBlocked", "Posterior probability of airway blockage", predictions['airway_blocked']['true'])
+            append("pInternalBleeding", "Posterior probability of internal bleeding", predictions['internal_hemorrhage']['true'])
+            append("pExternalBleeding", "Posterior probability of external bleeding", predictions['external_hemorrhage']['true'])
+            append("entropy", "H[entire bayesian network | observations]", entropy[0])
+            append("entropyDeath", "H[death | observations]", entropy[1]['death'])
+
             decision.metrics.update(mdict)
             analysis[decision.id_] = mdict
 
