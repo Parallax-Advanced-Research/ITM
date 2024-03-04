@@ -10,7 +10,7 @@ def get_tester_standard_params(args):
     args.bayes = True
     args.br = False
     args.ebd = False
-    args.session_type = 'standalone'
+    args.session_type = 'adept'
     args.variant = 'aligned'
     args.decision_verbose = False
     return args
@@ -19,6 +19,7 @@ def soartech_jungle():
     args = parse_default_arguments()
     args = get_tester_standard_params(args)
     args.scenario = 'jungle-1'
+    args.session_type = 'soartech'
     if args.endpoint is None:
         if not util.is_port_open(8080):
             print("TA3 server not listening. Shutting down.")
@@ -30,6 +31,7 @@ def soartech_urban():
     args = parse_default_arguments()
     args = get_tester_standard_params(args)
     args.scenario = 'urban-1'
+    args.session_type = 'soartech'
     if args.endpoint is None:
         if not util.is_port_open(8080):
             print("TA3 server not listening. Shutting down.")
@@ -41,7 +43,7 @@ def soartech_submarine():
     args = parse_default_arguments()
     args = get_tester_standard_params(args)
     args.scenario = 'submarine-1'
-
+    args.session_type = 'soartech'
     if args.endpoint is None:
         if not util.is_port_open(8080):
             print("TA3 server not listening. Shutting down.")
@@ -53,6 +55,7 @@ def soartech_desert():
     args = parse_default_arguments()
     args = get_tester_standard_params(args)
     args.scenario = 'desert-1'
+    args.session_type = 'soartech'
     args.decision_verbose = False
     if args.endpoint is None:
         if not util.is_port_open(8080):
