@@ -47,9 +47,12 @@ def _get_params_from_decision(decision):
 
 def make_html_table_header(mc_only):
     if mc_only:
-        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
-|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|---|---|---|---|---|---|\n''' % (
+        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
+|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|---|---|---|---|---|---|---|---|---|\n''' % (
             """<div title=\"%s\">MCA<br>Time</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
+            """<div title=\"%s\">MCA<br>Weighted Resource</div>""" % metric_description_hash[Metric.WEIGHTED_RESOURCE.value],
+            """<div title=\"%s\">MCA<br>Medical Soundness</div>""" % metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS.value],
+            """<div title=\"%s\">MCA<br>Information Gain</div>""" % metric_description_hash[Metric.INFORMATION_GAINED.value],
             """<div title=\"%s\">MCA<br>Deterioration<br>per second</div>""" % metric_description_hash[
                 Metric.DAMAGE_PER_SECOND.value],
             """<div title=\"%s\">MCA<br>P(Death)</div>""" % metric_description_hash[Metric.P_DEATH.value],
@@ -116,7 +119,7 @@ def get_html_line(decision, mc_only):
     is_pink = decision.selected
     no_just = "No justification given"
     if mc_only:
-        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
+        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
         if is_pink:
             base_string = base_string.replace("""%""", """<font color="#FF69B4">%""")
             base_string = base_string.replace("""s""", """s</font>""")
@@ -125,6 +128,12 @@ def get_html_line(decision, mc_only):
                               additional['Treatment'], additional['Tag'],
                               '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
                                   Metric.AVERAGE_TIME_USED.value].value) if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
+                                  Metric.WEIGHTED_RESOURCE.value].value) if Metric.WEIGHTED_RESOURCE.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
+                                  Metric.SMOL_MEDICAL_SOUNDNESS.value].value) if Metric.SMOL_MEDICAL_SOUNDNESS.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
+                                  Metric.INFORMATION_GAINED.value].value) if Metric.INFORMATION_GAINED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[
                                   Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%.2f %%</div>''' % (medsim_pdeath_english, 100 * decision.metrics[
@@ -184,6 +193,9 @@ def construct_decision_table(analysis_df, sort_metric='Time', mc_only=False):
     lines = ""
     sort_funcs = {
         'Time': lambda x: x.metrics[Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in x.metrics.keys() else x.id_,
+        'Weighted Resource': lambda x: x.metrics[Metric.WEIGHTED_RESOURCE.value].value if Metric.WEIGHTED_RESOURCE.value in x.metrics.keys() else x.id_,
+        'Smol Medical Soundness': lambda x: x.metrics[Metric.SMOL_MEDICAL_SOUNDNESS.value].value if Metric.SMOL_MEDICAL_SOUNDNESS.value in x.metrics.keys() else x.id_,
+        'Information Gain': lambda x: x.metrics[Metric.INFORMATION_GAINED.value].value if Metric.INFORMATION_GAINED.value in x.metrics.keys() else x.id_,
         'Probability Death': lambda x: x.metrics[Metric.P_DEATH.value].value if Metric.P_DEATH.value in x.metrics.keys() else x.id_,
         'Deterioration': lambda x: x.metrics[Metric.DAMAGE_PER_SECOND.value].value if Metric.DAMAGE_PER_SECOND.value in x.metrics.keys() else x.id_,
         'HRA Strategy': lambda x: get_hra_strategy(x)[0] if 'HRA Strategy' in x.metrics.keys() else x.id_,
@@ -199,6 +211,9 @@ def construct_decision_table(analysis_df, sort_metric='Time', mc_only=False):
         sort_funcs = {
             'Time': lambda x: x.metrics[
                 Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in x.metrics.keys() else x.id_,
+            'Weighted Resource': lambda x: x.metrics[Metric.WEIGHTED_RESOURCE.value].value if Metric.WEIGHTED_RESOURCE.value in x.metrics.keys() else x.id_,
+            'Smol Medical Soundness': lambda x: x.metrics[Metric.SMOL_MEDICAL_SOUNDNESS.value].value if Metric.SMOL_MEDICAL_SOUNDNESS.value in x.metrics.keys() else x.id_,
+            'Information Gain': lambda x: x.metrics[Metric.INFORMATION_GAINED.value].value if Metric.INFORMATION_GAINED.value in x.metrics.keys() else x.id_,
             'Probability Death': lambda x: x.metrics[
                 Metric.P_DEATH.value].value if Metric.P_DEATH.value in x.metrics.keys() else x.id_,
             'Deterioration': lambda x: x.metrics[

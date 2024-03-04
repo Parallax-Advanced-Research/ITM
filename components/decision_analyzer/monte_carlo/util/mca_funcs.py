@@ -404,12 +404,12 @@ def process_probe_decisions(probe: TADProbe, simulated_state_metrics: list[mcnod
     for idx in range(len(ordered_treatments)):
         action = ordered_treatments[idx]
         weighted_resource_decision = DecisionMetric(Metric.WEIGHTED_RESOURCE.value, metric_description_hash[Metric.WEIGHTED_RESOURCE.value],
-                                                    nextgen_stats[Metric.WEIGHTED_RESOURCE.value][idx])
+                                                    int(nextgen_stats[Metric.WEIGHTED_RESOURCE.value][idx]))
         medical_soundness_decision = DecisionMetric(Metric.SMOL_MEDICAL_SOUNDNESS.value, metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS.value],
-                                                    nextgen_stats[Metric.SMOL_MEDICAL_SOUNDNESS.value][idx])
+                                                    int(nextgen_stats[Metric.SMOL_MEDICAL_SOUNDNESS.value][idx]))
         information_gained_decision = DecisionMetric(Metric.INFORMATION_GAINED.value,
                                                      metric_description_hash[Metric.INFORMATION_GAINED.value],
-                                                     nextgen_stats[Metric.INFORMATION_GAINED.value][idx])
+                                                     int(nextgen_stats[Metric.INFORMATION_GAINED.value][idx]))
         analysis[action][Metric.WEIGHTED_RESOURCE.value] = weighted_resource_decision
         analysis[action][Metric.SMOL_MEDICAL_SOUNDNESS.value] = medical_soundness_decision
         analysis[action][Metric.INFORMATION_GAINED.value] = information_gained_decision
