@@ -15,25 +15,6 @@ SKIPLIST = [
 	'^__pycache__$' 
 ]
 
-MYPY_FLAGS = [
-	"--show-error-codes",
-	"--ignore-missing-imports",
-	"--warn-unused-configs",
-	"--disallow-any-generics",
-	"--disallow-untyped-calls",
-	"--disallow-untyped-defs",
-	"--disallow-incomplete-defs",
-	"--check-untyped-defs",
-	"--disallow-untyped-decorators",
-	"--no-implicit-optional",
-	"--warn-redundant-casts",
-	"--warn-unused-ignores",
-	"--warn-return-any",
-	"--strict-equality",
-	"--explicit-package-bases",
-	"--follow-imports=silent",
-]
-
 T = TypeVar('T')
 def static_vars(**kwargs: Any) -> Callable[[T], T]:
 	def decorate(f: T) -> T:
@@ -250,7 +231,7 @@ def mypy_all(paths: list[str]) -> dict[str, list[str]]:
 	"""
 	
 	results: dict[str,list[str]] = { path:[] for path in paths }
-	output = cmd([ 'mypy' ] + MYPY_FLAGS + paths, env={ 'MYPYPATH': os.getcwd() })
+	output = cmd([ 'mypy', '--config-file', os.path.join(ROOT_DIR, 'mypy.ini') ] + paths, env={ 'MYPYPATH': os.getcwd() })
 	# TODO: if mypy exits due to exception, print the whole message
 
 	for line in output.output[:-1]: # skip the summary line at the end
