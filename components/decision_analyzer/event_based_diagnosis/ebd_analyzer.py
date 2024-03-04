@@ -28,7 +28,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             cue = self.make_observation(scen, decision.value)
             if cue is None:
                 continue
-            (recollection, _) = self._hems.remember(self._hems.get_eltm(), lst(cue), Symbol('+', 'HEMS'), 1, True)
+            (recollection, _) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, temporalp=False)
             spreads = []
             for cpd in recollection:
                 if self._hems.rule_based_cpd_singleton_p(cpd):
@@ -138,12 +138,12 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
                 return cas
     
     def train(self, data):
-        bn1 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog1.hems")
-        bn2 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog2.hems")
-        bn3 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog3.hems")
-        bn4 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog4.hems")
-        bn5 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog5.hems")
+        bn1 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog1.hems", args=lst())
+        bn2 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog2.hems", args=lst())
+        bn3 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog3.hems", args=lst())
+        bn4 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog4.hems", args=lst())
+        bn5 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog5.hems", args=lst())
 
         for bn in [bn1, bn2, bn3, bn4, bn5]:
-            self._hems.push_to_ep_buffer(state=bn, insertp=True)
+            self._hems.py_push_to_ep_buffer(observation=bn, insertp=True, temporalp=False)
 
