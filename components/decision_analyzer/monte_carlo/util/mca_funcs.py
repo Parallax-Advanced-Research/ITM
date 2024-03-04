@@ -11,13 +11,15 @@ from domain.internal import TADProbe, DecisionMetrics, DecisionMetric, Decision,
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.util.sort_functions import injury_to_dps
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
-                                                                               MetricSet, SimulatorName, Actions)
+                                                                               MetricSet, SimulatorName, Actions,
+                                                                               Supplies)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calc_prob_death, calculate_injury_severity
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import MetricResultsT
 from util import logger
 import components.decision_analyzer.monte_carlo.util.ta3_converter as ta3_conv
 from domain.ta3 import TA3State
+import statistics
 
 
 def decision_to_actstr(decision: Decision) -> str:
@@ -306,15 +308,86 @@ def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode
     return simulated_state_metrics
 
 
+def get_weighted_score_element(action: str) -> int:
+    item_val = Metric.STOCK_ITEM.value
+    livesaving_treatments = [Supplies.TOURNIQUET.value, Supplies.DECOMPRESSION_NEEDLE.value, Supplies.EPI_PEN.value,
+                             Supplies.BLOOD.value]
+    important_treatments = [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value,
+                            Supplies.NASOPHARYNGEAL_AIRWAY.value, Supplies.VENTED_CHEST_SEAL.value,
+                            Supplies.BURN_DRESSING.value]
+    if Actions.APPLY_TREATMENT.value not in action:
+        return item_val
+    for item in livesaving_treatments:
+        if item in action:
+            return item_val - Metric.LIFESAVING_PENALTY.value
+    for item in important_treatments:
+        if item in action:
+            return item_val - Metric.IMPORTANT_PEMALTY.value
+    # must be if not triggered yet
+    return item_val - Metric.GLAMPING_PENALTY.value
+
+
+def get_information_gained_element(action: str) -> int:
+    no_knowledge = [Actions.APPLY_TREATMENT.value, Actions.DIRECT_MOBILE_CASUALTY.value, Actions.MOVE_TO_EVAC.value,
+                    Actions.TAG_CHARACTER.value, Actions.END_SCENE.value, Actions.END_SCENARIO.value]
+    little_knowledge = [Actions.CHECK_RESPIRATION.value, Actions.CHECK_PULSE.value]
+    some_knowledge = [Actions.CHECK_ALL_VITALS.value]
+    lots_knowledge = [Actions.SITREP.value]
+    most_knowledge = [Actions.SEARCH.value]
+    for know in no_knowledge:
+        if know in action:
+            return Metric.NO_KNOWLEDGE.value
+    for know in little_knowledge:
+        if know in action:
+            return Metric.LITTLE_KNOWLEDGE.value
+    for know in some_knowledge:
+        if know in action:
+            return Metric.SOME_KNOWLEDGE.value
+    for know in lots_knowledge:
+        if know in action:
+            return Metric.LOTS_KNOWLEDGE.value
+    for know in most_knowledge:
+        if know in action:
+            return Metric.MOST_KNOWLEDGE.value
+    logger.critical('%s not known for information gain' % action)
+    return Metric.NO_KNOWLEDGE.value
+
+def get_doctor_number(pdeath, dps):
+    pdeath_scaled = pdeath * 50.
+    dps_scaled = dps * 1.
+    return int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled]))
+
+
+def get_nextgen_stats(all_decision_metrics: dict[str, list], ordered_treatmenmts: list[str]) -> dict[str, int]:
+    logger.debug('wakka')
+    weighted_resource = [get_weighted_score_element(x) for x in ordered_treatmenmts] #get_weighted_resource_score(ordered_treatmenmts)
+    pdeath = all_decision_metrics[Metric.P_DEATH.value]
+    dps = all_decision_metrics[Metric.DAMAGE_PER_SECOND.value]
+    doctorness_metric = [get_doctor_number(x, y) for x, y in zip(pdeath, dps)]
+    information_gained = [get_information_gained_element(x) for x in ordered_treatmenmts]
+    if len(weighted_resource) != len(doctorness_metric):
+        # This is bad, it means the action was unsimulated. That usually happens on checks, whkich are at the start,
+        # so I will prepend 1, and hope for the best
+        # weighted_resource.insert(0, weighted_resource[0])
+        doctorness_metric.insert(0, doctorness_metric[0])
+        # information_gained.insert(0, information_gained[0])
+        logger.critical('Unsimulated action in %s' % ', '.join(ordered_treatmenmts))
+    return {Metric.WEIGHTED_RESOURCE.value: weighted_resource,
+            Metric.SMOL_MEDICAL_SOUNDNESS.value: doctorness_metric,
+            Metric.INFORMATION_GAINED.value: information_gained
+    }
+
+
 def process_probe_decisions(probe: TADProbe, simulated_state_metrics: list[mcnode.MCDecisionNode]) -> tuple:
     all_decision_metrics: dict[str, list] = dict()
     analysis = {}
+    ordered_treatments: list[str] = []
     for decision in probe.decisions:
         decision_str = decision_to_actstr(decision)
+        ordered_treatments.append(decision_str)
         analysis[decision_str] = {}
         decision_metrics_raw = simulated_state_metrics[decision_str] if decision_str in simulated_state_metrics.keys() else None
         metric_set: MetricSet = MetricSet()
-
         basic_metrics: list[DecisionMetrics] = dict_to_decisionmetrics(decision_metrics_raw)
         cut_metrics = metric_set.apply_metric_set(basic_metrics)
         for bm in cut_metrics:
@@ -326,6 +399,19 @@ def process_probe_decisions(probe: TADProbe, simulated_state_metrics: list[mcnod
             if value.name not in all_decision_metrics.keys():
                 all_decision_metrics[value.name] = list()
             all_decision_metrics[value.name].append(value.value)
+    nextgen_stats = get_nextgen_stats(all_decision_metrics, ordered_treatments)
+    all_decision_metrics.update(nextgen_stats)
+    for idx in range(len(ordered_treatments)):
+        action = ordered_treatments[idx]
+        analysis[action][Metric.WEIGHTED_RESOURCE.value] = DecisionMetric(Metric.WEIGHTED_RESOURCE.value,
+                                                                          metric_description_hash[Metric.WEIGHTED_RESOURCE.value],
+                                                                          nextgen_stats[Metric.WEIGHTED_RESOURCE.value][idx])
+        analysis[action][Metric.SMOL_MEDICAL_SOUNDNESS.value] = DecisionMetric(Metric.SMOL_MEDICAL_SOUNDNESS.value,
+                                                                          metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS.value],
+                                                                          nextgen_stats[Metric.SMOL_MEDICAL_SOUNDNESS.value][idx])
+        analysis[action][Metric.INFORMATION_GAINED.value] = DecisionMetric(Metric.INFORMATION_GAINED.value,
+                                                                          metric_description_hash[Metric.INFORMATION_GAINED.value],
+                                                                          nextgen_stats[Metric.INFORMATION_GAINED.value][idx])
     return analysis, all_decision_metrics
 
 

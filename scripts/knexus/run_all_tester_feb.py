@@ -64,7 +64,7 @@ def soartech_desert():
 def launch_moral_dessert(scene):
     args = parse_default_arguments()
     args = get_tester_standard_params(args)
-    args.scenario = 'MetricsEval.MD%d' % scene
+    args.scenario = 'MetricsEval.MD%s' % scene
     if args.endpoint is None:
         if not util.is_port_open(8080):
             print("TA3 server not listening. Shutting down.")
@@ -74,10 +74,10 @@ def launch_moral_dessert(scene):
 
 logger.setLevel(LogLevel.INFO)
 logger.critical("Beginning Knexus Test Harness...")
-logger.warning("Running MORAL DESSERT SCENES 3, 17, 18")
-launch_moral_dessert(scene=3)
-launch_moral_dessert(scene=17)
-launch_moral_dessert(scene=18)
+scenes = ['3', '17', '18']
+logger.warning("Running MORAL DESSERT SCENES %s" % ', '.join(scenes))
+for scene in scenes:
+    launch_moral_dessert(scene=scene)
 logger.warning("Running SOARTECH JUNGLE")
 soartech_jungle()
 logger.warning("SOARTECH JUNGLE succeeded")
