@@ -403,15 +403,19 @@ def process_probe_decisions(probe: TADProbe, simulated_state_metrics: list[mcnod
     all_decision_metrics.update(nextgen_stats)
     for idx in range(len(ordered_treatments)):
         action = ordered_treatments[idx]
-        analysis[action][Metric.WEIGHTED_RESOURCE.value] = DecisionMetric(Metric.WEIGHTED_RESOURCE.value,
-                                                                          metric_description_hash[Metric.WEIGHTED_RESOURCE.value],
-                                                                          nextgen_stats[Metric.WEIGHTED_RESOURCE.value][idx])
-        analysis[action][Metric.SMOL_MEDICAL_SOUNDNESS.value] = DecisionMetric(Metric.SMOL_MEDICAL_SOUNDNESS.value,
-                                                                          metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS.value],
-                                                                          nextgen_stats[Metric.SMOL_MEDICAL_SOUNDNESS.value][idx])
-        analysis[action][Metric.INFORMATION_GAINED.value] = DecisionMetric(Metric.INFORMATION_GAINED.value,
-                                                                          metric_description_hash[Metric.INFORMATION_GAINED.value],
-                                                                          nextgen_stats[Metric.INFORMATION_GAINED.value][idx])
+        weighted_resource_decision = DecisionMetric(Metric.WEIGHTED_RESOURCE.value, metric_description_hash[Metric.WEIGHTED_RESOURCE.value],
+                                                    nextgen_stats[Metric.WEIGHTED_RESOURCE.value][idx])
+        medical_soundness_decision = DecisionMetric(Metric.SMOL_MEDICAL_SOUNDNESS.value, metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS.value],
+                                                    nextgen_stats[Metric.SMOL_MEDICAL_SOUNDNESS.value][idx])
+        information_gained_decision = DecisionMetric(Metric.INFORMATION_GAINED.value,
+                                                     metric_description_hash[Metric.INFORMATION_GAINED.value],
+                                                     nextgen_stats[Metric.INFORMATION_GAINED.value][idx])
+        analysis[action][Metric.WEIGHTED_RESOURCE.value] = weighted_resource_decision
+        analysis[action][Metric.SMOL_MEDICAL_SOUNDNESS.value] = medical_soundness_decision
+        analysis[action][Metric.INFORMATION_GAINED.value] = information_gained_decision
+        probe.decisions[idx].metrics[Metric.WEIGHTED_RESOURCE.value] = weighted_resource_decision
+        probe.decisions[idx].metrics[Metric.SMOL_MEDICAL_SOUNDNESS.value] = medical_soundness_decision
+        probe.decisions[idx].metrics[Metric.INFORMATION_GAINED.value] = information_gained_decision
     return analysis, all_decision_metrics
 
 

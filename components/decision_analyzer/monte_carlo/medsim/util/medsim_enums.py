@@ -401,7 +401,8 @@ class MetricSet:
                     Metric.AVERAGE_TIME_USED.value, Metric.TARGET_SEVERITY.value, Metric.TARGET_SEVERITY_CHANGE.value,
                     Metric.SEVEREST_SEVERITY.value, Metric.SEVEREST_SEVERITY_CHANGE.value, Metric.SEVERITY_CHANGE.value,
                     Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value,
-                    Metric.P_DEATH_ONEMINLATER.value]
+                    Metric.P_DEATH_ONEMINLATER.value, Metric.WEIGHTED_RESOURCE.value, Metric.SMOL_MEDICAL_SOUNDNESS.value,
+                    Metric.INFORMATION_GAINED.value]
         elif self.set_name == 'full':
             return []
 
