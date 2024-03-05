@@ -14,7 +14,7 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
         cases = [json.loads(line) for line in infile]
     with open(feedback_file, "r") as infile:
         training_data = [json.loads(line) for line in infile]
-    training_data = [d for d in training_data if len(d["feedback"]["kdmas"]) > 0]
+    training_data = [d for d in training_data if len(d["feedback"]["kdmas"]) > 0 and d["final"]]
     for case in cases:
         case["action-string"] = stringify_action_list(case["actions"])
         case["pre-action-string"] = stringify_action_list(case["actions"][:-1])
@@ -22,6 +22,25 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
         case["action-hash"] = hash(case["action-string"])
         case["pre-action-hash"] = hash(case["pre-action-string"])
         case["state-hash"] = case_state_hash(case)
+    last_action_len : int = 1
+    last_hints : dict[str, float] = {}
+    for i in range(1,len(cases)+1):
+        cur_case = cases[-i]
+        if last_action_len == 1:
+            assert(cur_case["action-len"] > 1)
+            last_hints = {}
+        else:
+            assert(cur_case["action-len"] + 1 == last_action_len)
+        last_action_len = cur_case["action-len"]
+        new_hints = cur_case.get("hint", None)
+        if new_hints is not None:
+            for (key, val) in cur_case["hint"].items():
+                last_hints[key] = (val * 2) - 1
+        else:
+            for (key, val) in last_hints.items():
+                last_hints[key] = val * .99
+        cur_case["dhint"] = dict(last_hints)
+        
     for datum in training_data:
         datum["action-string"] = stringify_action_list(datum["actions"])
         datum["action-len"] = len(datum["actions"])
@@ -147,7 +166,6 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
     index = 1
     distinct_cases = {stringify_action_list(case["actions"]):case for case in cases}.values()
     print(f"Creating {len(distinct_cases)} distinct cases.")
-    last_check = time.time()
     hash_dict = {}
     for case in distinct_cases:
         case_list = hash_dict.get((case["state-hash"], stringify_action(case["actions"][-1])), list())
@@ -156,6 +174,7 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
         
     cases_checked = 0
         
+    last_check = time.time()
     for (hash, case_list) in hash_dict.items():
         new_case = dict(case_list[0])
         new_case["index"] = index
@@ -195,7 +214,30 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
                     breakpoint()
                 new_case = new_case | flatten("feedback_delta", dfeedback)
         if "hint" in new_case:
+            for key in new_case["hint"].keys():
+                vals = set([case.get("hint", {}).get(key, None) for case in case_list])
+                if len(vals) > 1:
+                    breakpoint()
             new_case = new_case | flatten("hint", new_case.pop("hint"))
+        if "dhint" in new_case:
+            for key in new_case["dhint"].keys():
+                avg : float = statistics.mean([case.get("dhint", {}).get(key, None) for case in case_list])
+                new_case[key.lower()] = (avg + 1.0) / 2
+                new_case.pop("dhint")
+        new_case.pop("hash")
+        new_case.pop("action-string")
+        new_case.pop("pre-action-string")
+        new_case.pop("actions")
+        new_case.pop("action-hash")
+        new_case.pop("pre-action-hash")
+        new_case.pop("action-len")
+        new_case.pop("state-hash")
+        keys = [key for key in new_case.keys() if not key.startswith('p') and not key.startswith("NONDETERMINISM")]
+        keys.remove("index")
+        for key in keys:
+            vals = set([str(case.get(key, None)) for case in case_list])
+            if len(vals) > 1:
+                print(f"Multiple values for key {key}: {vals}")
         ret_cases.append(new_case)
         index = index + 1
         
@@ -215,13 +257,14 @@ def write_alignment_target_cases_to_csv(fname: str, training_data: list[dict[str
     write_case_base(fname, score_cases)
     
 def subtract_dict(dict1: dict[str, Any], dict2: dict[str, Any]) -> dict[str, Any]:
-    return {key1:value1-dict2[key1] for (key1, value1) in dict1.items()}
+    return {key1:value1 - dict2[key1] for (key1, value1) in dict1.items() if value1 is not None}
 
 def case_state_hash(case: dict[str, Any]) -> int:
     val_list = []
     for key in ['age', 'tagged', 'visited', 'relationship', 'rank', 'conscious', 
                 'mental_status', 'breathing', 'hrpmin', 'unvisited_count', 'injured_count', 
                 'others_tagged_or_uninjured', 'assessing', 'treating', 'tagging', 'leaving', 
-                'category', 'intent', 'directness_of_causality']:
+                'category', 'intent', 'directness_of_causality', 'SEVERITY', 'SEVERITY_CHANGE', 
+                'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE', 'AVERAGE_TIME_USED']:
         val_list.append(case.get(key, None))
     return hash(tuple(val_list))
