@@ -6,6 +6,7 @@ from components.decision_selector.kdma_estimation import write_case_base
 from typing import Any
 from domain.enum import ParamEnum
 import statistics
+import argparse
 
 def read_training_data(case_file: str = exhaustive_selector.CASE_FILE, 
                        feedback_file: str = kdma_case_base_retainer.FEEDBACK_FILE
@@ -27,7 +28,8 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
     for i in range(1,len(cases)+1):
         cur_case = cases[-i]
         if last_action_len == 1:
-            assert(cur_case["action-len"] > 1)
+            if cur_case["action-len"] < 1:
+                breakpoint()
             last_hints = {}
         else:
             assert(cur_case["action-len"] + 1 == last_action_len)
@@ -265,6 +267,34 @@ def case_state_hash(case: dict[str, Any]) -> int:
                 'mental_status', 'breathing', 'hrpmin', 'unvisited_count', 'injured_count', 
                 'others_tagged_or_uninjured', 'assessing', 'treating', 'tagging', 'leaving', 
                 'category', 'intent', 'directness_of_causality', 'SEVERITY', 'SEVERITY_CHANGE', 
-                'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE', 'AVERAGE_TIME_USED']:
+                'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE', 'AVERAGE_TIME_USED', 
+                'SUPPLIES_REMAINING']:
         val_list.append(case.get(key, None))
     return hash(tuple(val_list))
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("case_file", default=None,
+                        help="A json file full of ITM case observations, written out by " + \
+                             "exhaustive or diverse selector."
+                       )
+    parser.add_argument("feedback_file", default=None,
+                        help="A json file full of feedback objects, written out by KDMA Case " + \
+                             "Base Retainer."
+                       )
+    parser.add_argument("kdma_case_output_file", default="kdma_cases.csv", nargs = '?',
+                        help="A csv file with KDMA data from feedback added to state cases."
+                       )
+    parser.add_argument("alignment_file", default="alignment_target_cases.csv", nargs = '?',
+                        help="A csv file with alignment data from feedback objects."
+                       )
+    args = parser.parse_args()
+    if args.case_file is None or args.feedback_file is None:
+        raise Error()
+    (cases, training_data) = read_training_data(args.case_file, args.feedback_file)
+    write_kdma_cases_to_csv(args.kdma_case_output_file, cases, training_data)
+    write_alignment_target_cases_to_csv(args.alignment_file, training_data)
+    
+
+if __name__ == '__main__':
+    main()
