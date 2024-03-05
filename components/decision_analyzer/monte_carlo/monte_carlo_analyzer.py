@@ -27,7 +27,7 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
 
     def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         medsim_state = extract_medsim_state(probe)
-        tree = train_mc_tree(medsim_state, self.max_rollouts, self.max_depth)
+        tree = train_mc_tree(medsim_state, self.max_rollouts, self.max_depth, probe.decisions)
 
         decision_node_list: list[mcnode.MCDecisionNode] = tree._roots[0].children
         simulated_state_metrics = get_simulated_states_from_dnl(decision_node_list, medsim_state)

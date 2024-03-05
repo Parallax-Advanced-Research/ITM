@@ -49,6 +49,7 @@ def color(color: str, s: str) -> None:
 	ansi = { 'bold': 1, 'red': 91, 'green': 92, 'yellow': 93, 'blue': 94 }
 	assert color in ansi
 	print(f"\x1b[{ansi[color]}m{s}\x1b[0m")
+	sys.stdout.flush()
 	
 def error(s: str) -> None:
 	color('red', s)
@@ -77,7 +78,7 @@ def uses_unittest(path: str) -> bool:
 	return False
 
 def find_python_files(dirname: str) -> Iterable[str]:
-	""" Recursively searches current directory for python files.
+	""" Recursively searches `dirname` for python files.
 	    Skips directories/files that match SKIPLIST, or are identified as venv
 	    directories. """
 	for skip in SKIPLIST:
@@ -144,15 +145,21 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 			unittest_results[path] = r.result
 			os.chdir(basedir)
 		elif re.match(r"^test_.*\.py", os.path.basename(path)) and not uses_unittest(path):
-			color('bold', f'\n## PYTEST: {path}:')
+			color('blue', f'\n## PYTEST: {path}:')
 			os.chdir(dirname)
 			assert path not in pytest_results
 
-			pytest_argv = [os.path.basename(path), '--no-header', '-q'] # -rP will also print the output from tests
-			# TODO: Might eventually make these different for verbose mode, but really, this is what I want for both normal and verbose. If I add a *quiet* mode, I might add --no-summary
+			if verbose:
+				pytest_argv = [os.path.basename(path), '--no-header', '-q', '-v'] # -rP will also print the output from tests
+			else:
+				# TODO: If I add a *quiet* mode, I might add --no-summary to this one
+				pytest_argv = [os.path.basename(path), '--no-header', '-q'] # -rP will also print the output from tests
 
 			pytest_results[path] = pytest.main(pytest_argv, plugins=[])
 			os.chdir(basedir)
+		
+		sys.stdout.flush()
+		sys.stderr.flush()
 
 	# Results summary
 
@@ -178,7 +185,7 @@ def run_tests(paths: list[str], verbose: bool) -> None:
 		max(len(a) for a in [""] + commands)
 	) + 1
 
-	color('bold', '\n## Summary')
+	color('blue', '\n## Summary')
 	for path,result in pytest_results.items():
 		pathfmt = ("%-" + str(longest_path) + "s") % path
 		if pytest.ExitCode.NO_TESTS_COLLECTED == result:
@@ -263,7 +270,7 @@ def mypy_all(paths: list[str]) -> dict[str, list[str]]:
 		
 	return results
 
-def compile_filter(paths: list[str], verbose: bool) -> list[str]:
+def compile_filter(paths: Iterable[str], verbose: bool) -> list[str]:
 	""" Attempts to compile all files in `paths`. Prints error for ones that fail;
 	    returns list of those that succeed. """
 
@@ -303,23 +310,33 @@ def delint(path: str, mypy_results: dict[str, list[str]], verbose: bool) -> None
 	print(f"{path} --- {entry('mypy', mypy_errors)}, {entry('pyflakes', pyflakes_errors)}, {entry('pylint', pylint_errors)}")
 	if verbose:
 		if mypy_errors:
-			color('bold', '## mypy')
+			color('blue', '## mypy')
 			for line in mypy_results[path]:
 				print(line)
 			print()
 		
 		if pyflakes_errors:
-			color('bold', '## pyflakes')
+			color('blue', '## pyflakes')
 			for line in pyflakes3.output:
 				print(line)
 			print()
 
 		if pylint_errors:
-			color('bold', '## pylint')
+			color('blue', '## pylint')
 			for line in pylint.output:
 				print(line)
 			print()
 
+def dir_to_py_contents(paths: list[str], dirpath = '.') -> list[str]:
+	""" Any entry in `paths` that is a directory is replaced by a list of all python files
+	    somewhere under that directory """
+	results: list[str] = []
+	for path in paths:
+		if not os.path.isdir(path):
+			results.append(path)
+		else:
+			results += find_python_files(path)
+	return results
 
 def main() -> None:
 	parser = argparse.ArgumentParser(
@@ -329,12 +346,16 @@ def main() -> None:
 			'detail to be useful.')
 
 	parser.add_argument('paths', nargs='*',
-		help='List of python files to check. If empty, will check all python files under the current directory')
+		help='List of python files to check. Any directories will be replaced'
+			+ ' by all python files under it. If empty, will check all python files'
+			+ ' under the current directory.')
 	parser.add_argument('--notest', action='store_true', help="Don't run unit tests")
 	parser.add_argument('--nolint', action='store_true', help="Don't run mypy, pyflakes, pylint")
 	parser.add_argument('-v', '--verbose', action='store_true', help="Bury summaries in extraneous detail")
 	args = parser.parse_args()
 	sys.argv = [ __file__ ] # pytest's main() function uses this
+	
+	args.paths = dir_to_py_contents(args.paths)
 
 	if not args.notest:
 		color('blue', '# Unit Tests')

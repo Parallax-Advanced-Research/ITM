@@ -69,21 +69,21 @@ integration_test0:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type adept --scenario MetricsEval.MD18
+    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type adept --kdma moraldesert=1 --scenario MetricsEval.MD18
     - python stop-servers.py
 
 integration_test1:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type adept
+    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type adept --kdma moraldesert=1
     - python stop-servers.py
 
 integration_test2:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type soartech
+    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type soartech --kdma maximization=1
     - python stop-servers.py
 
 
@@ -93,7 +93,7 @@ integration_test_soartech_keds_full:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --bayes
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --mc --br --bayes
     - python stop-servers.py
 
 integration_test_adept_keds_full:
@@ -101,7 +101,7 @@ integration_test_adept_keds_full:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --bayes
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --ebd --mc --br --bayes
     - python stop-servers.py
 
 integration_test_eval_keds_full:
@@ -118,7 +118,7 @@ integration_test_soartech_kedsd_full:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --bayes --selector kedsd
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --mc --br --bayes --selector kedsd
     - python stop-servers.py
 
 integration_test_adept_kedsd_full:
@@ -126,7 +126,7 @@ integration_test_adept_kedsd_full:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --bayes --selector kedsd
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --ebd --mc --br --bayes --selector kedsd
     - python stop-servers.py
 
 integration_test_eval_kedsd_full:
@@ -143,7 +143,7 @@ integration_test_soartech_csv_full:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --ebd --mc --br --bayes --selector csv
+    - python tad_tester.py --no-verbose --session_type soartechn--kdma maximization=1 --ebd --mc --br --bayes --selector csv
     - python stop-servers.py
 
 integration_test_adept_csv_full:
@@ -151,7 +151,7 @@ integration_test_adept_csv_full:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --ebd --mc --br --bayes --selector csv
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --ebd --mc --br --bayes --selector csv
     - python stop-servers.py
 
 integration_test_eval_csv_full:
@@ -197,7 +197,7 @@ integration_test_soartech_ebd:
   needs: [ integration_test_soartech_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --ebd --no-mc --no-br --no-bayes
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --no-mc --no-br --no-bayes
     - python stop-servers.py
 
 integration_test_soartech_mc:
@@ -205,7 +205,7 @@ integration_test_soartech_mc:
   needs: [ integration_test_soartech_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --mc --no-br --no-bayes
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --mc --no-br --no-bayes
     - python stop-servers.py
 
 integration_test_soartech_br:
@@ -213,7 +213,7 @@ integration_test_soartech_br:
   needs: [ integration_test_soartech_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
     - python stop-servers.py
 
 integration_test_soartech_bayes:
@@ -221,7 +221,7 @@ integration_test_soartech_bayes:
   needs: [ integration_test_soartech_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --no-br --bayes
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --bayes
     - python stop-servers.py
 
 
@@ -231,7 +231,7 @@ integration_test_soartech_keds:
   needs: [ integration_test_soartech_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --no-br --no-bayes --selector keds
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes --selector keds
     - python stop-servers.py
 
 integration_test_soartech_kedsd:
@@ -239,7 +239,7 @@ integration_test_soartech_kedsd:
   needs: [ integration_test_soartech_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --no-br --no-bayes --selector kedsd
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes --selector kedsd
     - python stop-servers.py
 
 integration_test_soartech_csv:
@@ -247,7 +247,7 @@ integration_test_soartech_csv:
   needs: [ integration_test_soartech_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartech --no-ebd --no-mc --no-br --no-bayes --selector csv
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes --selector csv
     - python stop-servers.py
 
 
@@ -259,7 +259,7 @@ integration_test_adept_ebd:
   needs: [ integration_test_adept_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --ebd --no-mc --no-br --no-bayes
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --ebd --no-mc --no-br --no-bayes
     - python stop-servers.py
 
 integration_test_adept_mc:
@@ -267,7 +267,7 @@ integration_test_adept_mc:
   needs: [ integration_test_adept_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --no-ebd --mc --no-br --no-bayes
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --mc --no-br --no-bayes
     - python stop-servers.py
 
 integration_test_adept_br:
@@ -275,7 +275,7 @@ integration_test_adept_br:
   needs: [ integration_test_adept_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
     - python stop-servers.py
 
 integration_test_adept_bayes:
@@ -283,7 +283,7 @@ integration_test_adept_bayes:
   needs: [ integration_test_adept_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --bayes
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --bayes
     - python stop-servers.py
 
 
@@ -293,7 +293,7 @@ integration_test_adept_keds:
   needs: [ integration_test_adept_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --no-bayes --selector keds
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --no-bayes --selector keds
     - python stop-servers.py
 
 integration_test_adept_kedsd:
@@ -301,7 +301,7 @@ integration_test_adept_kedsd:
   needs: [ integration_test_adept_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --no-bayes --selector kedsd
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --no-bayes --selector kedsd
     - python stop-servers.py
 
 integration_test_adept_csv:
@@ -309,7 +309,7 @@ integration_test_adept_csv:
   needs: [ integration_test_adept_install ]
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type adept --no-ebd --no-mc --no-br --no-bayes --selector csv
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --no-bayes --selector csv
     - python stop-servers.py
 
 # Eval individual tests

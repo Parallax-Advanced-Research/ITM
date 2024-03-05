@@ -39,6 +39,10 @@ class TA3Elaborator(Elaborator):
                 to_return += self._enumerate_direct_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_ALL_VITALS: 
                 to_return += self._enumerate_check_actions(probe.state, d)
+            elif _name == ActionTypeEnum.CHECK_PULSE:
+                to_return += self._enumerate_check_pulse_actions(probe.state, d)
+            elif _name == ActionTypeEnum.CHECK_RESPIRATION:
+                to_return += self._enumerate_check_resp_actions(probe.state, d)
             elif _name == ActionTypeEnum.SEARCH: 
                 to_return += [d]
             elif _name == ActionTypeEnum.TAG_CHARACTER:
@@ -115,6 +119,32 @@ class TA3Elaborator(Elaborator):
                 # continue
             if not cas.assessed:
                 dec_applicable.append(cur_decision)
+                
+        return dec_applicable
+
+    def _enumerate_check_pulse_actions(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
+        # Ground the decision for all casualties with injuries
+        dec_grounded = self._ground_casualty(state.casualties, decision, injured_only = False)
+        dec_applicable = []
+
+        for cur_decision in dec_grounded:
+            cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
+            if cas.vitals.hrpmin is None:
+                dec_applicable.append(cur_decision)
+                continue
+                
+        return dec_applicable
+
+    def _enumerate_check_resp_actions(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
+        # Ground the decision for all casualties with injuries
+        dec_grounded = self._ground_casualty(state.casualties, decision, injured_only = False)
+        dec_applicable = []
+
+        for cur_decision in dec_grounded:
+            cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
+            if cas.vitals.breathing is None:
+                dec_applicable.append(cur_decision)
+                continue
                 
         return dec_applicable
 

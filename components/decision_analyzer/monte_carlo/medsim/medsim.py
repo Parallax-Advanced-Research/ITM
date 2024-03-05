@@ -12,16 +12,19 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
                                                                                  trim_medsim_actions,
                                                                                  remove_non_injuries,
                                                                                  create_moraldesert_options)
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import decision_to_medsimaction
 import util.logger
 from typing import Optional
 import random
+
+from domain.internal import Decision
 
 logger = util.logger
 
 
 class MedicalSimulator(MCSim):
     def __init__(self, init_state: MedsimState, seed: Optional[float] = None,
-                 simulator_name: str = SimulatorName.TINY.value):
+                 simulator_name: str = SimulatorName.TINY.value, probe_constraints: list[Decision] | None = None):
         self._rand: random.Random = random.Random(seed)
         self._init_state = deepcopy(init_state)
         self._init_supplies = deepcopy(init_state.supplies)
@@ -30,6 +33,8 @@ class MedicalSimulator(MCSim):
         self.current_supplies: list[Supply] = self._init_state.supplies
         self.action_map = tiny_action_map
         self.simulator_name = simulator_name
+        self.probe_constraints = probe_constraints
+        self.has_constraints = True if self.probe_constraints is not None else False
         if simulator_name == SimulatorName.SMOL.value:
             self.action_map = smol_action_map
         # self.aid_delay = init_state.aid_delay if init_state.aid_delay != [] else 0.0
@@ -64,7 +69,7 @@ class MedicalSimulator(MCSim):
     def actions(self, state: MedsimState) -> list[MedsimAction]:
         casualties: list[Casualty] = state.casualties
         supplies: list[str] = supply_dict_to_list(state.supplies)
-        actions: list[tuple] = get_possible_actions(casualties, supplies)
+        actions: list[tuple] = get_possible_actions(casualties, supplies, state.aid_delay)
         tinymed_actions: list[MedsimAction] = create_medsim_actions(actions)
         tinymed_actions_trimmed: list[MedsimAction] = trim_medsim_actions(tinymed_actions)
         tinymed_actions_trimmed = remove_non_injuries(state, tinymed_actions_trimmed)
@@ -72,6 +77,10 @@ class MedicalSimulator(MCSim):
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENE.value))
         md_actiomns = create_moraldesert_options(state.casualties)
         tinymed_actions_trimmed.extend(md_actiomns)
+        if self.has_constraints:
+            constrained_list = self.probe_constraints
+            constrained_actions = [decision_to_medsimaction(x) for x in constrained_list]
+            return constrained_actions
         return tinymed_actions_trimmed
 
     def reset(self):

@@ -12,6 +12,7 @@ from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
+from util import logger
 
 _default_weight_file = os.path.join("data", "keds_weights.json")
 _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")
@@ -31,6 +32,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.analyzers: list[DecisionAnalyzer] = get_analyzers()
         self.print_neighbors = args.decision_verbose
         self.index = 0
+        self.decisions_made = 0
+        self.kdma_totals = {}
         if args.weightfile is None:
             global _default_weight_file
             if self.use_drexel_format:
@@ -116,6 +119,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.print_neighbors:
             print(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
         
+        self.decisions_made += 1
+        logger.warn(f"KDMA Estimates after {self.decisions_made} decisions:")
+        for (kdma, val) in best_kdmas.items():
+            self.kdma_totals[kdma] = self.kdma_totals.get(kdma, 0) + val
+            logger.warn(f"{kdma}: {self.kdma_totals[kdma] / self.decisions_made}")
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
         
@@ -179,10 +187,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             lst.sort(key=first)
             lst = lst[:KDMAEstimationDecisionSelector.K]
         if len(lst) == 0:
+            # breakpoint()
             return lst
         if self.print_neighbors:
             print(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
-            print(f"kdma: {kdma} weights: {{key:val for (key, val) in weights.items() if val != 0}}")
+            print(f"kdma: {kdma} weights: { {key:val for (key, val) in weights.items() if val != 0} }")
             for i in range(0, len(lst)):
                 print(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
         return lst
@@ -358,10 +367,13 @@ def make_case(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['mental_status'] = c.vitals.mental_status
         case['breathing'] = c.vitals.breathing
         case['hrpmin'] = c.vitals.hrpmin
+        case['avpu'] = c.vitals.avpu
         case['intent'] = c.intent
         case['directness_of_causality'] = c.directness_of_causality
-        case['unvisited_count'] = len([co for co in s.casualties if not co.assessed and not co.id == c.id])
-        case['injured_count'] = len([co for co in s.casualties if len(co.injuries) > 0 and not co.id == c.id])
+        case['unvisited_count'] = len([co for co in s.casualties if not co.assessed 
+                                                                    and not co.id == c.id])
+        case['injured_count'] = len([co for co in s.casualties if len(co.injuries) > 0 
+                                                                  and not co.id == c.id])
         case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
                                                        for co in s.casualties if not co.id == c.id])
 

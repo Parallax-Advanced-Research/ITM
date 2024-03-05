@@ -47,9 +47,12 @@ def _get_params_from_decision(decision):
 
 def make_html_table_header(mc_only):
     if mc_only:
-        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
-|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|---|---|---|---|---|---|\n''' % (
+        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
+|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|---|---|---|---|---|---|---|---|---|\n''' % (
             """<div title=\"%s\">MCA<br>Time</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
+            """<div title=\"%s\">MCA<br>Weighted Resource</div>""" % metric_description_hash[Metric.WEIGHTED_RESOURCE.value],
+            """<div title=\"%s\">MCA<br>Medical Soundness</div>""" % metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS.value],
+            """<div title=\"%s\">MCA<br>Information Gain</div>""" % metric_description_hash[Metric.INFORMATION_GAINED.value],
             """<div title=\"%s\">MCA<br>Deterioration<br>per second</div>""" % metric_description_hash[
                 Metric.DAMAGE_PER_SECOND.value],
             """<div title=\"%s\">MCA<br>P(Death)</div>""" % metric_description_hash[Metric.P_DEATH.value],
@@ -116,7 +119,7 @@ def get_html_line(decision, mc_only):
     is_pink = decision.selected
     no_just = "No justification given"
     if mc_only:
-        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
+        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
         if is_pink:
             base_string = base_string.replace("""%""", """<font color="#FF69B4">%""")
             base_string = base_string.replace("""s""", """s</font>""")
@@ -125,6 +128,12 @@ def get_html_line(decision, mc_only):
                               additional['Treatment'], additional['Tag'],
                               '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
                                   Metric.AVERAGE_TIME_USED.value].value) if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%d</div>''' % (time_english, decision.metrics[
+                                  Metric.WEIGHTED_RESOURCE.value].value) if Metric.WEIGHTED_RESOURCE.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%d</div>''' % (time_english, decision.metrics[
+                                  Metric.SMOL_MEDICAL_SOUNDNESS.value].value) if Metric.SMOL_MEDICAL_SOUNDNESS.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%d</div>''' % (time_english, decision.metrics[
+                                  Metric.INFORMATION_GAINED.value].value) if Metric.INFORMATION_GAINED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[
                                   Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%.2f %%</div>''' % (medsim_pdeath_english, 100 * decision.metrics[
@@ -184,6 +193,9 @@ def construct_decision_table(analysis_df, sort_metric='Time', mc_only=False):
     lines = ""
     sort_funcs = {
         'Time': lambda x: x.metrics[Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in x.metrics.keys() else x.id_,
+        'Weighted Resource': lambda x: x.metrics[Metric.WEIGHTED_RESOURCE.value].value if Metric.WEIGHTED_RESOURCE.value in x.metrics.keys() else x.id_,
+        'Smol Medical Soundness': lambda x: x.metrics[Metric.SMOL_MEDICAL_SOUNDNESS.value].value if Metric.SMOL_MEDICAL_SOUNDNESS.value in x.metrics.keys() else x.id_,
+        'Information Gain': lambda x: x.metrics[Metric.INFORMATION_GAINED.value].value if Metric.INFORMATION_GAINED.value in x.metrics.keys() else x.id_,
         'Probability Death': lambda x: x.metrics[Metric.P_DEATH.value].value if Metric.P_DEATH.value in x.metrics.keys() else x.id_,
         'Deterioration': lambda x: x.metrics[Metric.DAMAGE_PER_SECOND.value].value if Metric.DAMAGE_PER_SECOND.value in x.metrics.keys() else x.id_,
         'HRA Strategy': lambda x: get_hra_strategy(x)[0] if 'HRA Strategy' in x.metrics.keys() else x.id_,
@@ -199,6 +211,9 @@ def construct_decision_table(analysis_df, sort_metric='Time', mc_only=False):
         sort_funcs = {
             'Time': lambda x: x.metrics[
                 Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in x.metrics.keys() else x.id_,
+            'Weighted Resource': lambda x: x.metrics[Metric.WEIGHTED_RESOURCE.value].value if Metric.WEIGHTED_RESOURCE.value in x.metrics.keys() else x.id_,
+            'Smol Medical Soundness': lambda x: x.metrics[Metric.SMOL_MEDICAL_SOUNDNESS.value].value if Metric.SMOL_MEDICAL_SOUNDNESS.value in x.metrics.keys() else x.id_,
+            'Information Gain': lambda x: x.metrics[Metric.INFORMATION_GAINED.value].value if Metric.INFORMATION_GAINED.value in x.metrics.keys() else x.id_,
             'Probability Death': lambda x: x.metrics[
                 Metric.P_DEATH.value].value if Metric.P_DEATH.value in x.metrics.keys() else x.id_,
             'Deterioration': lambda x: x.metrics[
@@ -313,12 +328,38 @@ def read_saved_scenarios():
     return scenario_hash
 
 
-def construct_environment_table(environment: dict):
+def construct_environment_table_helper(environment: dict):
     header = '''|Environment Variable| State|
 |---|---|\n'''
     for env, state in environment.items():
-        header += '|%s|%s|\n' % (env, str(state).strip())
+        if type(state) is not list:
+            header += '|%s|%s|\n' % (env, str(state).strip())
+        else:
+            all_tables = ''
+            for x in state:
+                table = '<table> <tbody>'
+                for s in x:
+                    row = f'<tr>  <td>{s}</td> <td>{x[s]}</td>  </tr>'
+                    table += row
+                table += ' </tbody>  </table> <br>'
+                all_tables += table
+            header += '|%s|%s|\n' % (env, all_tables)
     return header
+
+
+def construct_environment_table(enviornment: dict):
+    if len(enviornment) == 2:
+        keys = list(enviornment)
+        env1 = enviornment[keys[0]]
+        env2 = enviornment[keys[1]]
+        sim_env = construct_environment_table_helper(env1)
+        dec_env = construct_environment_table_helper(env2)
+        return sim_env, dec_env
+    else:
+        env = construct_environment_table_helper(environment)
+        return env, None
+
+
 
 
 if __name__ == '__main__':
@@ -353,10 +394,15 @@ if __name__ == '__main__':
     sort_by = st.selectbox(label="Sort by", options=sort_options)
     st.header("""Scenario: %s""" % chosen_scenario.split('\\')[-1])
     st.subheader("""Probe %d/%d""" % (chosen_decision, len(num_decisions)))
-    st.caption("The pink decision in the table below is the chosen decision.")
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
     environment = scenario_pkls[chosen_scenario].environments[chosen_decision - 1]
+    environment_table_1, environment_table_2 = construct_environment_table(environment)
+    if environment_table_2 is not None:
+        notes = '##### CONTEXT: '
+        notes += environment['decision_environment']['unstructured']
+        st.markdown(notes)
+    st.caption("The pink decision in the table below is the chosen decision.")
 
     decision_table_html, supply_used = construct_decision_table(analysis_df, sort_metric=sort_by, mc_only=mc_only)
     casualty_html = get_casualty_table(state)
@@ -364,12 +410,16 @@ if __name__ == '__main__':
     previous_action_table = get_previous_actions(state)
     st.markdown(decision_table_html, unsafe_allow_html=True)
 
-    environment_table = construct_environment_table(environment)
-
     col0, col1, col2, col3 = st.columns(4)
     with col0:
         st.header('Environment')
-        st.markdown(environment_table, unsafe_allow_html=True)
+        if environment_table_2 is None:
+            st.markdown(environment_table_1, unsafe_allow_html=True)
+        else:
+            st.subheader('Simulation')
+            st.markdown(environment_table_1, unsafe_allow_html=True)
+            st.subheader('Decision')
+            st.markdown(environment_table_2, unsafe_allow_html=True)
     with col1:
         st.header('Supplies')
         if supply_used is not None:

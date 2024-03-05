@@ -14,6 +14,14 @@ def select_random_node(rand: random.Random, nodes: list[MCStateNode | MCDecision
     return rand.choice(nodes)
 
 
+def select_unselected_node_then_random(rand: random.Random,
+                                       nodes: list[MCStateNode | MCDecisionNode]) -> MCStateNode | MCDecisionNode:
+    unselected = list(filter(lambda x: x.count == 0, nodes))
+    if len(unselected):
+        return select_random_node(rand, unselected)
+    return select_random_node(rand, nodes)
+
+
 def score_weighted_averager(node: MCStateNode | MCDecisionNode) -> MetricResultsT:
     total_dict = {}
     for child in node.children:

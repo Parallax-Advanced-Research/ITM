@@ -317,6 +317,21 @@ class Metric(Enum):
 
     IS_TIED = 'IS_TIED'
 
+    STOCK_ITEM = 5
+    LIFESAVING_PENALTY = 4
+    IMPORTANT_PEMALTY = 2
+    GLAMPING_PENALTY = 1
+
+    NO_KNOWLEDGE = 0
+    LITTLE_KNOWLEDGE = 1
+    SOME_KNOWLEDGE = 2
+    LOTS_KNOWLEDGE = 3
+    MOST_KNOWLEDGE = 4
+
+    WEIGHTED_RESOURCE = 'WEIGHTED_RESOURCE_SCORE'
+    INFORMATION_GAINED = 'INFORMATION_GAINED'
+    SMOL_MEDICAL_SOUNDNESS = 'SMOL_MEDICAL_SOUNDNESS'
+
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
 
 
@@ -364,7 +379,10 @@ metric_description_hash: dict[str, str] = {
     Metric.AVERAGE_DECISION_SUPPLIES_REMAINING.value: 'how this metric compares to others in supplies remaining',
     Metric.AVERAGE_PDEATH.value: 'how this metric compares to others in probability of death',
     Metric.AVERAGE_URGENCY.value: 'how this metric compares to others in terms of average time used',
-    Metric.P_DEATH_ONEMINLATER.value: 'Probability of death after one minute of inactivity after action performed'
+    Metric.P_DEATH_ONEMINLATER.value: 'Probability of death after one minute of inactivity after action performed',
+    Metric.SMOL_MEDICAL_SOUNDNESS.value: 'Harmonic mean of scaled damagage per second and probability of death',
+    Metric.INFORMATION_GAINED.value: 'Credits different actions with a higher reward for returning more knowledge',
+    Metric.WEIGHTED_RESOURCE.value: 'Resources sorted by the lifesaving value they have'
 }
 
 
@@ -383,7 +401,8 @@ class MetricSet:
                     Metric.AVERAGE_TIME_USED.value, Metric.TARGET_SEVERITY.value, Metric.TARGET_SEVERITY_CHANGE.value,
                     Metric.SEVEREST_SEVERITY.value, Metric.SEVEREST_SEVERITY_CHANGE.value, Metric.SEVERITY_CHANGE.value,
                     Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value,
-                    Metric.P_DEATH_ONEMINLATER.value]
+                    Metric.P_DEATH_ONEMINLATER.value, Metric.WEIGHTED_RESOURCE.value, Metric.SMOL_MEDICAL_SOUNDNESS.value,
+                    Metric.INFORMATION_GAINED.value]
         elif self.set_name == 'full':
             return []
 

@@ -49,7 +49,7 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
 def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int],
                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.action])
-    if action.casualty_id is None:
+    if action.casualty_id is None and False:  # I think this should never execute
         # Apply for all if not other instructions
         retlist = []
         for c in casualties:
