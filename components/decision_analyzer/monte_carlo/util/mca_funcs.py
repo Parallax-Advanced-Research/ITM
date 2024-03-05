@@ -18,6 +18,7 @@ import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import MetricResultsT
 from util import logger
 import components.decision_analyzer.monte_carlo.util.ta3_converter as ta3_conv
+from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import select_unselected_node_then_random
 from domain.ta3 import TA3State
 import statistics
 
@@ -270,7 +271,7 @@ def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, 
 
     sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe_constraints=probe_decisions)
     root = mcsim.MCStateNode(medsim_state)
-    tree = mcsim.MonteCarloTree(sim, score_functions, [root])
+    tree = mcsim.MonteCarloTree(sim, score_functions, [root], node_selector=select_unselected_node_then_random)
 
     for rollout in range(max_rollouts):
         tree.rollout(max_depth=max_depth)
@@ -305,6 +306,8 @@ def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode
                 casualty_best_worst[cas][Metric.CAS_HIGH_P_DEATH_DECISION.value] = [dec_str]
             elif cas_p_death == casualty_best_worst[cas][Metric.CAS_HIGH_P_DEATH.value]:
                 casualty_best_worst[cas][Metric.CAS_HIGH_P_DEATH_DECISION.value].append(dec_str)
+    if len(decision_node_list) != len(simulated_state_metrics.keys()):
+        logger.debug('mismatch list size')
     return simulated_state_metrics
 
 

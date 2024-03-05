@@ -128,11 +128,11 @@ def get_html_line(decision, mc_only):
                               additional['Treatment'], additional['Tag'],
                               '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
                                   Metric.AVERAGE_TIME_USED.value].value) if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
-                              '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
+                              '''<div title=\"%s\">%d</div>''' % (time_english, decision.metrics[
                                   Metric.WEIGHTED_RESOURCE.value].value) if Metric.WEIGHTED_RESOURCE.value in decision.metrics.keys() else UNKNOWN_NUMBER,
-                              '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
+                              '''<div title=\"%s\">%d</div>''' % (time_english, decision.metrics[
                                   Metric.SMOL_MEDICAL_SOUNDNESS.value].value) if Metric.SMOL_MEDICAL_SOUNDNESS.value in decision.metrics.keys() else UNKNOWN_NUMBER,
-                              '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
+                              '''<div title=\"%s\">%d</div>''' % (time_english, decision.metrics[
                                   Metric.INFORMATION_GAINED.value].value) if Metric.INFORMATION_GAINED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[
                                   Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else UNKNOWN_NUMBER,
