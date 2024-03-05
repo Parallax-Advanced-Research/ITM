@@ -32,8 +32,8 @@
             "MEDSIM_P_DEATH": 1
         },
         "moraldesert": {
-            "intent": 1,
-            "directness_of_causality": 1
+            "intent": 10,
+            "directness_of_causality": 10
         }
     },
     "activity_weights": {
