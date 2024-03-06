@@ -6,6 +6,7 @@ from domain.internal import Decision
 from util import logger
 from util.logger import LogLevel
 
+
 def supply_location_match(action: MedsimAction):
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
         return action.location != Locations.UNSPECIFIED.value
@@ -175,7 +176,7 @@ def decision_to_medsimaction(decision: Decision) -> MedsimAction:
     if dval.name in [Actions.END_SCENE.value, Actions.END_SCENARIO.value]:
         ma = MedsimAction(action=dval.name)
         return ma
-    logger.critical("%s NOT A VALID ACTION!!! FIX THIS!!! (might be caught okay tho")
+    logger.critical("%s NOT A VALID ACTION!!! FIX THIS!!! (might be caught okay tho)" % dval.name)
     return MedsimAction(action=Actions.SITREP.value, casualty_id=dval.params['casualty'] if 'casualty' in dval.params.keys() else None,
                         evac_id=dval.params['evac_id'] if 'evac_id' in dval.params.keys() else None,
                         tag=dval.params['category'] if 'category' in dval.params.keys() else None,

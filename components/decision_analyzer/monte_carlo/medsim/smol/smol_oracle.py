@@ -154,9 +154,9 @@ INJURY_UPDATE = {
                                                 breath=BodySystemEffect.MODERATE.value)  # Assuming ET -> Brain injury
     }
 
-INITIAL_SEVERITIES = {Injuries.FOREHEAD_SCRAPE.value: 0.1, Injuries.PUNCTURE.value: .3, Injuries.SHRAPNEL.value: .4,
-                      Injuries.LACERATION.value: .6, Injuries.EAR_BLEED.value: .8, Injuries.CHEST_COLLAPSE.value: .9,
-                      Injuries.AMPUTATION.value: .1}
+# INITIAL_SEVERITIES = {Injuries.FOREHEAD_SCRAPE.value: 0.1, Injuries.PUNCTURE.value: .3, Injuries.SHRAPNEL.value: .4,
+#                       Injuries.LACERATION.value: .6, Injuries.EAR_BLEED.value: .8, Injuries.CHEST_COLLAPSE.value: .9,
+#                       Injuries.AMPUTATION.value: .1}
 
 # TODO: May need separate SA models for younger casualties
 location_surface_areas: dict[str, float] = {

@@ -14,6 +14,15 @@ class Demographics:
         return self.age == other.age and self.sex == other.sex and self.rank == other.rank
 
 
+class BodySystemEffect(Enum):
+    NONE = 'NONE'
+    MINIMAL = 'MINIMAL'
+    MODERATE = 'MODERATE'
+    SEVERE = 'SEVERE'
+    CRITICAL = 'CRITICAL'
+    FATAL = 'FATAL'
+
+
 class Injury:
     STANDARD_BODY_VOLUME = 5000  # mL
 
