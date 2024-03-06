@@ -107,6 +107,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         if val is None: return None
         if 'NONE' == val: return "low" # TODO: need a none value in graph
         if 'RESTRICTED' == val: return "low"
+        if 'SLOW' == val: return "low"
         if 'NORMAL' == val: return "normal"
         if 'FAST' == val: return "high"
         assert False, f"Invalid c.vitals.breathing: {val}"
