@@ -8,7 +8,7 @@ import tad
 
 def get_tester_standard_params(args):
     args.bayes = True
-    args.br = False
+    args.hra = True
     args.ebd = False
     args.session_type = 'adept'
     args.variant = 'aligned'

@@ -3,7 +3,8 @@ from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import Smo
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Injuries, Casualty, Locations, \
     Actions, Tags, Injury, Supply
 from domain.internal import Decision
-
+from util import logger
+from util.logger import LogLevel
 
 def supply_location_match(action: MedsimAction):
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
@@ -174,7 +175,8 @@ def decision_to_medsimaction(decision: Decision) -> MedsimAction:
     if dval.name in [Actions.END_SCENE.value, Actions.END_SCENARIO.value]:
         ma = MedsimAction(action=dval.name)
         return ma
-    return 3
+    logger.critical("%s NOT A VALID ACTION!!! FIX THIS!!! Casting to Blank Sitrep" % dval.name)
+    return MedsimAction(action=Actions.SITREP.value)
 
 
 def supply_dict_to_list(supplies: list[Supply]) -> list[str]:
