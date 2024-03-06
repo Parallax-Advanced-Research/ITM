@@ -317,7 +317,7 @@ def get_weighted_score_element(action: str) -> int:
                              Supplies.BLOOD.value]
     important_treatments = [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value,
                             Supplies.NASOPHARYNGEAL_AIRWAY.value, Supplies.VENTED_CHEST_SEAL.value,
-                            Supplies.BURN_DRESSING.value]
+                            Supplies.BURN_DRESSING.value, Supplies.IV_BAG.value]
     if Actions.APPLY_TREATMENT.value not in action:
         return item_val
     for item in livesaving_treatments:
@@ -370,10 +370,6 @@ def get_nextgen_stats(all_decision_metrics: dict[str, list], ordered_treatmenmts
     doctorness_metric = [get_doctor_number(x, y) for x, y in zip(pdeath, dps)]
     information_gained = [get_information_gained_element(x) for x in ordered_treatmenmts]
     if len(weighted_resource) != len(doctorness_metric):
-        # This is bad, it means the action was unsimulated. That usually happens on checks, whkich are at the start,
-        # so I will prepend 1, and hope for the best
-        # weighted_resource.insert(0, weighted_resource[0])
-        doctorness_metric.insert(0, doctorness_metric[0])
         # information_gained.insert(0, information_gained[0])
         logger.critical('Unsimulated action in %s' % ', '.join(ordered_treatmenmts))
     return {Metric.WEIGHTED_RESOURCE.value: weighted_resource,

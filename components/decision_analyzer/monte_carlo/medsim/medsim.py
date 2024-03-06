@@ -67,6 +67,10 @@ class MedicalSimulator(MCSim):
         return outcomes
 
     def actions(self, state: MedsimState) -> list[MedsimAction]:
+        if self.has_constraints:
+            constrained_list = self.probe_constraints
+            constrained_actions = [decision_to_medsimaction(x) for x in constrained_list]
+            return constrained_actions
         casualties: list[Casualty] = state.casualties
         supplies: list[str] = supply_dict_to_list(state.supplies)
         actions: list[tuple] = get_possible_actions(casualties, supplies, state.aid_delay)
@@ -77,10 +81,7 @@ class MedicalSimulator(MCSim):
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENE.value))
         md_actiomns = create_moraldesert_options(state.casualties)
         tinymed_actions_trimmed.extend(md_actiomns)
-        if self.has_constraints:
-            constrained_list = self.probe_constraints
-            constrained_actions = [decision_to_medsimaction(x) for x in constrained_list]
-            return constrained_actions
+
         return tinymed_actions_trimmed
 
     def reset(self):
