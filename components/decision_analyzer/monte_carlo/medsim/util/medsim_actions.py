@@ -175,8 +175,12 @@ def decision_to_medsimaction(decision: Decision) -> MedsimAction:
     if dval.name in [Actions.END_SCENE.value, Actions.END_SCENARIO.value]:
         ma = MedsimAction(action=dval.name)
         return ma
-    logger.critical("%s NOT A VALID ACTION!!! FIX THIS!!! Casting to Blank Sitrep" % dval.name)
-    return MedsimAction(action=Actions.SITREP.value)
+    logger.critical("%s NOT A VALID ACTION!!! FIX THIS!!! (might be caught okay tho")
+    return MedsimAction(action=Actions.SITREP.value, casualty_id=dval.params['casualty'] if 'casualty' in dval.params.keys() else None,
+                        evac_id=dval.params['evac_id'] if 'evac_id' in dval.params.keys() else None,
+                        tag=dval.params['category'] if 'category' in dval.params.keys() else None,
+                        location=dval.params['location'] if 'location' in dval.params.keys() else None,
+                        supply=dval.params['treatment'] if 'treatment' in dval.params.keys() else None)
 
 
 def supply_dict_to_list(supplies: list[Supply]) -> list[str]:
