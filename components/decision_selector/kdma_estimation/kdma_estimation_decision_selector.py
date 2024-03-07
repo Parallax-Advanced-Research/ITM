@@ -3,6 +3,7 @@ import csv
 import json
 import math
 import statistics
+import util
 from typing import Any, Sequence, Callable
 from numbers import Real
 from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State
@@ -12,20 +13,21 @@ from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
-from util import logger
 
 _default_weight_file = os.path.join("data", "keds_weights.json")
 _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")
+_default_kdma_case_file = os.path.join("data", "kdma_cases.csv")
+_default_drexel_case_file = os.path.join("data", "sept" "extended_case_base.csv")
 
 class KDMAEstimationDecisionSelector(DecisionSelector):
-    K = 3
+    K = 4
     def __init__(self, args):
         self.use_drexel_format = args.selector == 'kedsd'
         if args.casefile is None:
             if self.use_drexel_format:
-                args.casefile = "data/sept/extended_case_base.csv"
+                args.casefile = _default_drexel_case_file
             else:
-                args.casefile = "data/sept/alternate_case_base.csv"
+                args.casefile = _default_kdma_case_file
             
         self.cb = read_case_base(args.casefile)
         self.variant: str = args.variant
@@ -120,10 +122,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             print(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
         
         self.decisions_made += 1
-        logger.warn(f"KDMA Estimates after {self.decisions_made} decisions:")
+        util.logger.warn(f"KDMA Estimates after {self.decisions_made} decisions:")
         for (kdma, val) in best_kdmas.items():
             self.kdma_totals[kdma] = self.kdma_totals.get(kdma, 0) + val
-            logger.warn(f"{kdma}: {self.kdma_totals[kdma] / self.decisions_made}")
+            util.logger.warn(f"{kdma}: {self.kdma_totals[kdma] / self.decisions_made}")
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
         
@@ -154,21 +156,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             print(f"kdma_val: {kdma_val}")
         return kdma_val
         
-    def calculate_distance(self, case1: dict[str, Any], case2: dict[str, Any], weights: dict[str, float]) -> float:
-        weighted_average: float = 0
-        count = 0
-        for (feature, weight) in weights.items():
-            diff = compare(case1.get(feature, None), case2.get(feature, None), feature)
-            if diff is not None:
-                count += weight
-                weighted_average += diff * weight
-        if count > 0:
-            return weighted_average / count
-        else:
-            return math.inf
-
     def top_K(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str) -> list[dict[str, Any]]:
         lst = []
+        max_distance = 10000
         for pcase in self.cb:
             if kdma not in pcase or pcase[kdma] is None:
                 continue
@@ -182,19 +172,82 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 continue
             if cur_case['questioning'] and not pcase['questioning']:
                 continue
-            distance = self.calculate_distance(pcase, cur_case, weights)
+            distance = calculate_distance(pcase, cur_case, weights)
+            if distance > max_distance:
+                continue
             lst.append((distance, pcase))
+            if len(lst) < KDMAEstimationDecisionSelector.K:
+                continue
             lst.sort(key=first)
-            lst = lst[:KDMAEstimationDecisionSelector.K]
+            max_distance = lst[KDMAEstimationDecisionSelector.K - 1][0] * 1.01
+            lst = [item for item in lst if first(item) < max_distance]
         if len(lst) == 0:
             # breakpoint()
             return lst
+        if len(lst) > KDMAEstimationDecisionSelector.K:
+            guarantee_distance = max_distance * 0.99
+            lst_guaranteed = []
+            lst_pool = []
+            for item in lst:
+                if first(item) < guarantee_distance:
+                    lst_guaranteed.append(item[1])
+                else:
+                    lst_pool.append(item[1])
+            lst = construct_distanced_list(lst_guaranteed, lst_pool, weights | {kdma: 10})
+            lst = [(calculate_distance(item, cur_case, weights), item) for item in lst]
+            
         if self.print_neighbors:
             print(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
             print(f"kdma: {kdma} weights: { {key:val for (key, val) in weights.items() if val != 0} }")
             for i in range(0, len(lst)):
                 print(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
         return lst
+
+def calculate_distance(case1: dict[str, Any], case2: dict[str, Any], weights: dict[str, float]) -> float:
+    weighted_average: float = 0
+    count = 0
+    for (feature, weight) in weights.items():
+        diff = compare(case1.get(feature, None), case2.get(feature, None), feature)
+        if diff is not None:
+            count += weight
+            weighted_average += diff * weight
+    if count > 0:
+        return weighted_average / count
+    else:
+        return math.inf
+
+
+def construct_distanced_list(initial_list: list[dict[str, Any]], 
+                             additional_items: list[dict[str, Any]], 
+                             weights: dict[str, float],
+                             dist_fn: Callable[[dict[str, Any], dict[str, Any], dict[str, float]], int] = calculate_distance, 
+                             max_item_count: int = KDMAEstimationDecisionSelector.K):
+    if len(initial_list) >= max_item_count:
+        return initial_list
+    if len(initial_list) == 0:
+        max_dist_items = additional_items
+    else:
+        min_avg_dist = 0
+        max_avg_dist = 0
+        max_dist_items = []
+        for item in additional_items:
+            cur_avg_dist = min([dist_fn(item, init_item, weights) for init_item in initial_list])
+            if cur_avg_dist > max_avg_dist:
+                max_dist_items = [item]
+                min_avg_dist = cur_avg_dist * 0.99
+                max_avg_dist = cur_avg_dist * 1.01
+            elif cur_avg_dist > min_avg_dist:
+                max_dist_items.append(item)
+    if len(max_dist_items) == 0:
+        return initial_list
+    chosen_item = util.get_global_random_generator().choice(max_dist_items)
+    initial_list.append(chosen_item)
+    additional_items.remove(chosen_item)
+    return construct_distanced_list(initial_list, additional_items, weights, dist_fn, max_item_count)
+        
+        
+    
+
 
 def read_case_base(csv_filename: str):
     """ Convert the csv into a list of dictionaries """
@@ -239,6 +292,12 @@ def isFloat(val: str):
     except ValueError:
         return False    
             
+VALUED_FEATURES = {
+        "intent": {"intend minor help": 0.25, "no intent": 0.0, "intend minor harm": 0.25, "intend major harm": 0.5},
+        "directness_of_causality": 
+            {"none": 0.0, "indirect": 0.25, "somewhat indirect": 0.5, "somewhat direct": 0.75, "direct": 1.0}
+    }    
+
 def compare(val1: Any, val2: Any, feature: str):
     if val1 is None and val2 is not None:
         return 1
@@ -256,6 +315,8 @@ def compare(val1: Any, val2: Any, feature: str):
         return 0
     if isinstance(val1, Real):
         return abs(val1-val2)
+    if feature in VALUED_FEATURES:
+        return abs(VALUED_FEATURES[feature][val1.lower()] - VALUED_FEATURES[feature][val2.lower()])
     return 1
 
 def make_postvisit_state(included_names: list[str]) -> State:
@@ -377,7 +438,9 @@ def make_case(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
                                                        for co in s.casualties if not co.id == c.id])
 
-    case['aid_available'] = probe.environment['decision_environment']['aid_delay'] is not None
+    case['aid_available'] = \
+        (probe.environment['decision_environment']['aid_delay'] is not None
+         and len(probe.environment['decision_environment']['aid_delay']) > 0)
     case['environment_type'] = probe.environment['sim_environment']['type']
     a: Action = d.value
     case['questioning'] = a.name in ["SITREP"]
