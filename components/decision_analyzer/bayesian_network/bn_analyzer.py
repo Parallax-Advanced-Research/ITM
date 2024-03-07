@@ -45,7 +45,6 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
             def append(name: str, desc: str, prob: float) -> None:
                 mdict[name] = DecisionMetric[float](name, desc, prob)
 
-            metrics: list[DecisionMetric[float]] = []
             append("pDeath", "Posterior probability of death with no action", predictions['death']['true'])
             append("pPain", "Posterior probability of severe pain", predictions['pain']['high'])
             append("pBrainInjury", "Posterior probability of a brain injury", predictions['brain_injury']['true'])
@@ -94,8 +93,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         }
 
         return {name: value for (name, value) in data.items() if value is not None}
-   
-
+  
     # Specific node values
     def get_SpO2(self, c: Casualty) -> Node_Val | None:
         # https://www.mayoclinic.org/symptoms/hypoxemia/basics/definition/sym-20050930
@@ -119,17 +117,24 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         return None
 
     def get_hemorrhage(self, c: Casualty, internal: bool) -> Node_Val | None:
+        if not c.assessed: return None
+
         for i in c.injuries:
             # TODO: should we also count a moderate bleed as hemorrhage?
             valid_injury = [ 'Laceration', 'Shrapnel', 'Puncture' ]
-            valid_severity = [ 'substantial', 'major', 'extreme' ]
+            valid_severity = [ 'substantial', 'major', 'extreme', None ] # assume that unknown severity is "severe enough"
             if (i.name in valid_injury) and (i.severity in valid_severity):
                 # unspecified counts as internal because if we don't know where it's coming from, that's the better bet,
                 # and I'd rather give the wrong location than say "no hemmorhage" when there is one
                 if internal == (i.location in [ 'unspecified', 'internal' ]): return "true"
-        return "false"
+
+            if (not internal) and ('Amputation' == i.name) and (not i.treated):
+                return True # might result in some false positives, e.g. if it was cauterized, but better false positive than false negative
+
+        return None if internal else "false" # internal hemorrhages can go undetected more easily
 
     def get_limb_fracture(self, c: Casualty) -> Node_Val | None:
+        if not c.assessed: return None
         for i in c.injuries:
             if 'Broken Bone' == i.name and on_extremity(i): return "true"
         return "false"
@@ -147,15 +152,17 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         assert False, f"Invalid hrpmin: {val}"
 
     def get_burns(self, c : Casualty) -> Node_Val | None:
+        if not c.assessed: return None
         for i in c.injuries:
             if i.name == 'Burn':
                 # TODO: Use same bins as the new vocabulary
                 return "true" if i.severity in [ "moderate", "substantial", "severe", "extreme" ] else "false"
                 #return "true" if i.severity > 0.5 else "false"
-        return None
+        return "false"
 
     def get_trauma(self, c: Casualty, region: str) -> Node_Val:
         # TODO: The 'unspecified' location isn't handled (nor is 'internal, but that's not a *visible* trauma)
+        if not c.assessed: return None
 
         def trauma(i: Injury) -> bool:
             return i.name in [ 'Amputation', 'Broken Bone', 'Burn', 'Laceration', 'Puncture', 'Shrapnel' ]
@@ -188,7 +195,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
         # set P(pain=high) = 0 and redistribute the rest of the probability mass between moderate and low_or_none?
         if c.vitals.mental_status == "AGONY": return "high"
         #if c.vitals.avpu == "ALERT": return "low_or_none" # could report pain if it existed. Dropped this line, since mental_status can only report *high* pain. Moderate is still possible.
-        if not c.vitals.conscious: return "low_or_none"
+        if c.vitals.conscious is False: return "low_or_none"
         return None
         
     def get_AVPU(self, c: Casualty) -> Node_Val | None:
