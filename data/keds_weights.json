@@ -29,9 +29,13 @@
             "priority": 1
         },
         "maximization": {
-            "MEDSIM_P_DEATH": 1
+            "MEDSIM_P_DEATH": 1,
+            "ACTION_TARGET_SEVERITY": 5,
+            "injured_count": 2,
+            "visited": 4
         },
         "moraldesert": {
+            "aid_available": 3,
             "intent": 10,
             "directness_of_causality": 10
         }
