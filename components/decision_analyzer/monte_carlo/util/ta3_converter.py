@@ -2,7 +2,8 @@ from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, V
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, Casualty, Locations, Supply
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, INITIAL_SEVERITIES, BodySystemEffect
+from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (INJURY_UPDATE, INITIAL_SEVERITIES,
+                                                                        BodySystemEffect)
 from domain.external import Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
 

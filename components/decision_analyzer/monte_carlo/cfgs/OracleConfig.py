@@ -1,5 +1,5 @@
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import BodySystemEffect
+from enum import Enum
 
 
 class Medical:
@@ -80,6 +80,67 @@ class Medical:
         Supplies.VENTED_CHEST_SEAL.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
                                            Locations.UNSPECIFIED.value]
     }
+
+
+class BodySystemEffect(Enum):
+    NONE = 'NONE'
+    MINIMAL = 'MINIMAL'
+    MODERATE = 'MODERATE'
+    SEVERE = 'SEVERE'
+    CRITICAL = 'CRITICAL'
+    FATAL = 'FATAL'
+
+
+class SmolSystems(Enum):
+    BREATHING = 'BREATHING'
+    BLEEDING = 'BLEEDING'
+    BURNING = 'BURNING'
+
+
+class InjuryUpdate:
+    def __init__(self, bleed: str, breath: str, burn: str = BodySystemEffect.NONE.value):
+        self.bleeding_effect = bleed
+        self.breathing_effect = breath
+        self.burning_effect = burn
+
+    def as_dict(self) -> dict[str, str]:
+        return {SmolSystems.BLEEDING.value: self.bleeding_effect, SmolSystems.BREATHING.value: self.breathing_effect,
+                SmolSystems.BURNING.value: self.burning_effect}
+
+INJURY_UPDATE = {
+        # TODO - Injury update now needs to take in burn, and we need to add burn
+        Injuries.LACERATION.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                breath=BodySystemEffect.NONE.value),
+        Injuries.FOREHEAD_SCRAPE.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                                     breath=BodySystemEffect.NONE.value),
+        Injuries.BURN.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                          breath=BodySystemEffect.NONE.value,
+                                          burn=BodySystemEffect.SEVERE.value),
+        Injuries.BURN_SUFFOCATION.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                      breath=BodySystemEffect.SEVERE.value),
+        Injuries.ASTHMATIC.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                               breath=BodySystemEffect.MODERATE.value),
+        Injuries.AMPUTATION.value: InjuryUpdate(bleed=BodySystemEffect.CRITICAL.value,
+                                                breath=BodySystemEffect.MINIMAL.value),
+        Injuries.CHEST_COLLAPSE.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                    breath=BodySystemEffect.SEVERE.value),
+        Injuries.PUNCTURE.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                              breath=BodySystemEffect.MINIMAL.value),
+        Injuries.EAR_BLEED.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                               breath=BodySystemEffect.NONE.value),
+        Injuries.SHRAPNEL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                              breath=BodySystemEffect.NONE.value),
+        Injuries.BROKEN_BONE.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                                 breath=BodySystemEffect.MINIMAL.value),
+        Injuries.INTERNAL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                              breath=BodySystemEffect.MINIMAL.value),
+        Injuries.EYE_TRAUMA.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                breath=BodySystemEffect.MODERATE.value)  # Assuming ET -> Brain injury
+}
+
+INITIAL_SEVERITIES = {Injuries.FOREHEAD_SCRAPE.value: 0.1, Injuries.PUNCTURE.value: .3, Injuries.SHRAPNEL.value: .4,
+                          Injuries.LACERATION.value: .6, Injuries.EAR_BLEED.value: .8, Injuries.CHEST_COLLAPSE.value: .9,
+                          Injuries.AMPUTATION.value: .1}
 
 
 location_surface_areas: dict[str, float] = {

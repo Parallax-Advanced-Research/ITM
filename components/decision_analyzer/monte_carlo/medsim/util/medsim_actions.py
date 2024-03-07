@@ -1,11 +1,9 @@
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Injuries, Casualty, Locations, \
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Casualty, Locations, \
     Actions, Tags, Injury, Supply
 from domain.internal import Decision
 from util import logger
-from util.logger import LogLevel
-
+from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle
 
 def supply_location_match(action: MedsimAction):
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
