@@ -180,7 +180,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 continue
             lst.sort(key=first)
             max_distance = lst[KDMAEstimationDecisionSelector.K - 1][0] * 1.01
-            lst = [item for item in lst if first(item) < max_distance]
+            lst = [item for item in lst if first(item) <= max_distance]
         if len(lst) == 0:
             # breakpoint()
             return lst
