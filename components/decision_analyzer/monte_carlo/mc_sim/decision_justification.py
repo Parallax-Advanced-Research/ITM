@@ -63,7 +63,8 @@ class DecisionJustifier:
     def generate_justification(self, metric_name: str, metric_val: DecisionMetric, decision_name: str) -> str:
         if metric_name not in self.analyzed_values:
             return 'delete'
-        reverseables = [Metric.SUPPLIES_REMAINING.value]
+        reverseables = [Metric.SUPPLIES_REMAINING.value, Metric.WEIGHTED_RESOURCE.value,
+                        Metric.SMOL_MEDICAL_SOUNDNESS.value, Metric.INFORMATION_GAINED.value]
         reverse = True if metric_name in reverseables else False
         ranked_title, total = get_ranked_title(self.analyzed_values[metric_name], metric_val, reverse)
         retstr = "%s Metrics for Decision %s is %s/%d in ranking. Val = %.3f, (Range %.3f - %.3f, avg %.3f)." % (metric_name, decision_name,
