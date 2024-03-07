@@ -20,9 +20,13 @@ def validate_args(args: argparse.Namespace) -> None:
         sys.stderr.write("\x1b[93mYour selected decision selector requires an alignment target. "
                          + "Provide one by running in evaluation mode (--session_type eval), or "
                          + "by listing kdmas explicitly (e.g., --kdma mission=.8 --kdma denial=.5)."
+                         + "\x1b[0m\n"
                         )
         sys.exit(1)
         
+    if args.session_type == 'eval' and args.kdmas is not None:
+        sys.stderr.write("\x1b[93mPlease do not supply your own KDMAs in evaluation mode.\x1b[0m\n")
+        sys.exit(1)
     
     #args.keds = ('keds' == args.selector)
     #args.kedsd = ('kedsd' == args.selector)
