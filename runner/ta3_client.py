@@ -62,11 +62,8 @@ class TA3Client:
 
         if self._session_type == 'eval':
             at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
-            self._eval_target_names += [at.id]
-
-            if self._align_tgt is None:
-                kdmas: KDMAs = KDMAs([KDMA(kdma.kdma, kdma.value) for kdma in at.kdma_values])
-                self._align_tgt = kdmas
+            kdmas: KDMAs = KDMAs([KDMA(kdma.kdma, kdma.value) for kdma in at.kdma_values])
+            self._align_tgt = kdmas
 
         self._scenario = scen
         self._probe_count = 0
