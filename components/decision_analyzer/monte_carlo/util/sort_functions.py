@@ -1,6 +1,6 @@
 import sys
 
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import DAMAGE_PER_SECOND
+from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import DAMAGE_PER_SECOND
 from domain.internal import Decision, Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, Injury
 import numpy as np

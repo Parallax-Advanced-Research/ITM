@@ -115,6 +115,9 @@ def get_html_line(decision, mc_only):
     medsim_pdeath_english = justifications[Metric.P_DEATH.value].split('is')[-1]
     dps_english = justifications[Metric.DAMAGE_PER_SECOND.value].split('is')[-1]
     death_60s_english = justifications[Metric.P_DEATH_ONEMINLATER.value].split('is')[-1]
+    weighted_resource_eng = justifications[Metric.WEIGHTED_RESOURCE.value].split('is')[-1]
+    medical_soundness_eng = justifications[Metric.SMOL_MEDICAL_SOUNDNESS.value].split('is')[-1]
+    infogain_eng = justifications[Metric.INFORMATION_GAINED.value].split('is')[-1]
     decision_html_string = get_html_decision(decision)
     is_pink = decision.selected
     no_just = "No justification given"
@@ -128,11 +131,11 @@ def get_html_line(decision, mc_only):
                               additional['Treatment'], additional['Tag'],
                               '''<div title=\"%s\">%.1f</div>''' % (time_english, decision.metrics[
                                   Metric.AVERAGE_TIME_USED.value].value) if Metric.AVERAGE_TIME_USED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
-                              '''<div title=\"%s\">%d</div>''' % (time_english, decision.metrics[
+                              '''<div title=\"%s\">%d</div>''' % (weighted_resource_eng, decision.metrics[
                                   Metric.WEIGHTED_RESOURCE.value].value) if Metric.WEIGHTED_RESOURCE.value in decision.metrics.keys() else UNKNOWN_NUMBER,
-                              '''<div title=\"%s\">%d</div>''' % (time_english, decision.metrics[
+                              '''<div title=\"%s\">%d</div>''' % (medical_soundness_eng, decision.metrics[
                                   Metric.SMOL_MEDICAL_SOUNDNESS.value].value) if Metric.SMOL_MEDICAL_SOUNDNESS.value in decision.metrics.keys() else UNKNOWN_NUMBER,
-                              '''<div title=\"%s\">%d</div>''' % (time_english, decision.metrics[
+                              '''<div title=\"%s\">%d</div>''' % (infogain_eng, decision.metrics[
                                   Metric.INFORMATION_GAINED.value].value) if Metric.INFORMATION_GAINED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[
                                   Metric.DAMAGE_PER_SECOND.value].value) if Metric.DAMAGE_PER_SECOND.value in decision.metrics.keys() else UNKNOWN_NUMBER,
@@ -251,7 +254,10 @@ def get_html_justification(justification_list):
     return {Metric.DAMAGE_PER_SECOND.value: justification_list[3][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
             Metric.P_DEATH.value: justification_list[4][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
             Metric.AVERAGE_TIME_USED.value: justification_list[2][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
-            Metric.P_DEATH_ONEMINLATER.value: justification_list[5][Metric.DECISION_JUSTIFICATION_ENGLISH.value]}
+            Metric.P_DEATH_ONEMINLATER.value: justification_list[5][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+            Metric.WEIGHTED_RESOURCE.value: justification_list[12][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+            Metric.SMOL_MEDICAL_SOUNDNESS.value: justification_list[13][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+            Metric.INFORMATION_GAINED.value: justification_list[14][Metric.DECISION_JUSTIFICATION_ENGLISH.value]}
 
 
 def htmlify_casualty(casualty: Casualty):

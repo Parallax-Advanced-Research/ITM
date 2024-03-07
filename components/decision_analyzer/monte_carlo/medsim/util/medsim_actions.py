@@ -1,9 +1,9 @@
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Injuries, Casualty, Locations, \
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Casualty, Locations, \
     Actions, Tags, Injury, Supply
 from domain.internal import Decision
-
+from util import logger
+from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle
 
 def supply_location_match(action: MedsimAction):
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
@@ -157,7 +157,7 @@ def get_possible_actions(casualties: list[Casualty], supplies: list[str], aid_de
 def decision_to_medsimaction(decision: Decision) -> MedsimAction:
     dval = decision.value
     if dval.name in [Actions.CHECK_PULSE.value, Actions.CHECK_RESPIRATION.value, Actions.CHECK_ALL_VITALS.value,
-                     Actions.SITREP.value]:
+                     Actions.SITREP.value, Actions.SEARCH.value]:
         ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'] if 'casualty' in dval.params.keys() else None)
         return ma
     if dval.name in [Actions.MOVE_TO_EVAC.value]:
@@ -174,7 +174,13 @@ def decision_to_medsimaction(decision: Decision) -> MedsimAction:
     if dval.name in [Actions.END_SCENE.value, Actions.END_SCENARIO.value]:
         ma = MedsimAction(action=dval.name)
         return ma
-    return 3
+    logger.critical("%s NOT A VALID ACTION!!! FIX THIS!!! (might be caught okay tho)" % dval.name)
+    return MedsimAction(action=Actions.SITREP.value,
+                        casualty_id=dval.params['casualty'] if 'casualty' in dval.params.keys() else None,
+                        evac_id=dval.params['evac_id'] if 'evac_id' in dval.params.keys() else None,
+                        tag=dval.params['category'] if 'category' in dval.params.keys() else None,
+                        location=dval.params['location'] if 'location' in dval.params.keys() else None,
+                        supply=dval.params['treatment'] if 'treatment' in dval.params.keys() else None)
 
 
 def supply_dict_to_list(supplies: list[Supply]) -> list[str]:

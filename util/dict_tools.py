@@ -145,9 +145,9 @@ def dict_difference(d1: dict[Any,Any], d2: dict[Any,Any], keep_keys: Optional[se
         v2 = d2[k]
 
         v3: Union[bool, dict[Any,Any], list[Any]] = False
-        if isinstance(v1, dict):
+        if isinstance(v1, dict) and isinstance(v2, dict):
             v3 = dict_difference(v1, v2, keep_keys)
-        elif isinstance(v1, list):
+        elif isinstance(v1, list) and isinstance(v2, list):
             v3 = list_difference(v1, v2, keep_keys)
         elif _is_different(v1, v2):
             v3 = v2

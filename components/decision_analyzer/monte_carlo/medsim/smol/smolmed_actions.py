@@ -4,8 +4,10 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
                                                                                  supply_location_match)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Supplies, Actions, Injury
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import SmolMedicalOracle, update_smol_injury
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import update_smol_injury
 import typing
+
+from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle
 
 
 def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
