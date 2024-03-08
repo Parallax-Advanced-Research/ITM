@@ -50,6 +50,7 @@ before_script:
    - CI/install_libs.sh
    - wget https://get.docker.com -O install-docker.sh
    - sudo sh install-docker.sh
+   - sudo service docker start
    - sudo docker run hello-world
    - python install.py
    - source venv/bin/activate
