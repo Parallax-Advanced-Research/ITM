@@ -1,107 +1,39 @@
 #!/usr/bin/env python
 import tad
 import util
-import sys
+from runner.eval_driver import EvaluationDriver
 from scripts.shared import parse_default_arguments
 
 
-def test_endpoint(args):
-    # args.model = 'bbn'
-    # args.endpoint = '127.0.0.1:8080'
-    args.variant = 'aligned'
-    args.decision_verbose = True
-    ta3_port = util.find_environment("TA3_PORT", 8080)
-    if args.endpoint is None:
-        if not util.is_port_open(ta3_port):
-            print("TA3 server not listening. Shutting down.")
-            sys.exit(1)
-
-    tad.api_test(args)
-
-
-def test_local_soar():
-    args = type("Foo", (object,), {})()
-    args.model = 'soar'
-    args.expr = 'data/mvp/test/soar.json'
-    args.kdmas = ['mission=7', 'denial=3']
-    args.output = None
-    args.batch = True
-    args.verbose = True
-
-    args.variant = 'aligned'
-    tad.ltest(args)
-    args.variant = 'baseline'
-    tad.ltest(args)
-    args.variant = 'misaligned'
-    tad.ltest(args)
-
-
-def test_local_bbn():
-    args = type("Foo", (object,), {})()
-    args.model = 'bbn'
-    args.expr = 'data/mvp/test/bbn.json'
-    args.kdmas = ['knowledge=3']
-    args.output = None
-    args.batch = True
-    args.verbose = True
-
-    args.variant = 'aligned'
-    tad.ltest(args)
-    args.variant = 'baseline'
-    tad.ltest(args)
-    args.variant = 'misaligned'
-    tad.ltest(args)
-
-
-def test_gen_soar():
-    args = type("Foo", (object,), {})()
-    args.ta1 = 'soar'
-    args.dir = 'data/mvp/train/soar'
-    args.output = None
-    args.verbose = True
-
-    tad.generate(args)
-
-
-def test_gen_bbn():
-    args = type("Foo", (object,), {})()
-    args.ta1 = 'bbn'
-    args.dir = 'data/mvp/train/bbn'
-    args.output = None
-    args.verbose = True
-
-    tad.generate(args)
-
-
-def test_train_bbn():
-    args = type("Foo", (object,), {})()
-    args.ta1 = 'bbn'
-    args.dir = 'data/mvp/train/bbn'
-    args.model_name = 'bbn'
-    args.verbose = True
-
-    tad.train(args)
-
-
-def test_train_soar():
-    args = type("Foo", (object,), {})()
-    args.ta1 = 'soar'
-    args.dir = 'data/mvp/train/soar'
-    args.model_name = 'soar'
-    args.verbose = True
-
-    tad.train(args)
-
-
 def main():
-    # test_train_bbn()
-    # test_train_soar()
-    # test_gen_soar()
-    # test_gen_bbn()
-    # test_local_bbn()
-    # test_local_soar()
+    args = parse_default_arguments()
+    if args.endpoint is None:
+        ta3_port = util.find_environment("TA3_PORT", 8080)
+        if not util.is_port_open(ta3_port):
+            util.logger.error("TA3 server not listening. Shutting down.")
+            sys.exit(1)
+        check_adept = False
+        check_soartech = False
+        if args.session_type == 'eval'
+            check_adept = True
+            check_soartech = True
+        if args.training and args.session_type == 'adept'
+            check_adept = True
+        if args.training and args.session_type == 'soartech'
+            check_adept = True
+            
+        if check_adept:
+            adept_port = util.find_environment("ADEPT_PORT", 8081)
+            if not util.is_port_open(adept_port):
+                util.logger.error("ADEPT server not listening. Shutting down.")
+                sys.exit(1)
+        if check_soartech:
+            adept_port = util.find_environment("SOARTECH_PORT", 8084)
+            if not util.is_port_open(adept_port):
+                util.logger.error("ADEPT server not listening. Shutting down.")
+                sys.exit(1)
 
-    test_endpoint(parse_default_arguments())
+    tad.api_test(args, EvaluationDriver(args))
 
 
 if __name__ == '__main__':
