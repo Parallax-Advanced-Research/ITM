@@ -30,7 +30,8 @@
         },
         "maximization": {
             "MEDSIM_P_DEATH": 1,
-            "ACTION_TARGET_SEVERITY": 5,
+            "ACTION_TARGET_SEVERITY": 0.005,
+            "DAMAGE_PER_SECOND": 1,
             "injured_count": 2,
             "visited": 4
         },
@@ -45,8 +46,8 @@
             "visited": 2,
             "treatment": 3,
             "unvisited_count": 3,
-            "ACTION_TARGET_SEVERITY": 5,
-            "ACTION_TARGET_SEVERITY_CHANGE": 500
+            "ACTION_TARGET_SEVERITY": 0.005,
+            "ACTION_TARGET_SEVERITY_CHANGE": 0.05
         },
         "tagging": {
             "category": 3
