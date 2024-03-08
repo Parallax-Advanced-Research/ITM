@@ -210,6 +210,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 #         info['relationship'].lower()]
                 # case _:
                 #     raise Exception("invalid kdma")
+            casualty_sum[person] += 0 if info['directness_of_causality'] is None else (
+                1.5 if info['directness_of_causality'] == 'none' else -1)
+            casualty_sum[person] += 0 if info['intent'] is None else (
+                1.5 if info['intent'] == 'no intent' else -1)
             if kdma_list['relevance']['life_impact'] == 'high':
                 casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
                 info['demographics']['rank'].lower()]
@@ -317,6 +321,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         for person, info in casualty_dict.items():
 
             casualty_sum[person] = 0
+            casualty_sum[person] += 0 if info['directness_of_causality'] is None else (
+                1.5 if info['directness_of_causality'] == 'none' else -1)
+            casualty_sum[person] += 0 if info['intent'] is None else (
+                1.5 if info['intent'] == 'no intent' else -1)
             casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
                 info['demographics']['rank'].lower()]
             casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
@@ -485,6 +493,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             cnt = 0  # stays <= m
 
             if cnt >= m: continue
+            casualty_sum[person] += 0 if info['directness_of_causality'] is None else (
+                1.5 if info['directness_of_causality'] == 'none' else -1)
+            casualty_sum[person] += 0 if info['intent'] is None else (
+                1.5 if info['intent'] == 'no intent' else -1)
+            cnt += 1
+            if cnt >= m: continue
             casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
                 info['relationship'].lower()]
             cnt += 1
@@ -648,9 +662,13 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         for person, info in casualty_dict.items():
             if info['demographics']['rank'] is not None:
                 if info['demographics']['rank'].lower() == 'vip':
-                    for injury in info['injuries']:
-                        if isinstance(injury['severity'], float):
-                            if 0 <= injury['severity'] <= 1: return {person: info}
+                    if info['directness_of_causality'] is not None:
+                        if info['directness_of_causality'] == 'none':
+                            if info['intent'] is not None:
+                                if info['intent'] == 'no intent':
+                                    for injury in info['injuries']:
+                                        if isinstance(injury['severity'], float):
+                                            if 0 <= injury['severity'] <= 1: return {person: info}
 
         # if no casualty that satisfies requirements return first in list
         return {list(casualty_dict.keys())[0]: list(casualty_dict.values())[0]}
@@ -858,6 +876,14 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 info0 = casualty_dict[person0]
                 info1 = casualty_dict[person1]
 
+                casualty0_sum += 0 if info0['directness_of_causality'] is None else (
+                    1.5 if info0['directness_of_causality'] == 'none' else -1)
+                casualty0_sum += 0 if info0['intent'] is None else (
+                    1.5 if info0['intent'] == 'no intent' else -1)
+                casualty1_sum += 0 if info1['directness_of_causality'] is None else (
+                    1.5 if info1['directness_of_causality'] == 'none' else -1)
+                casualty1_sum += 0 if info1['intent'] is None else (
+                    1.5 if info1['intent'] == 'no intent' else -1)
                 casualty0_sum += 0 if info0['demographics']['rank'] is None else casualty_val_table['rank'][
                     info0['demographics']['rank'].lower()]
                 casualty1_sum += 0 if info1['demographics']['rank'] is None else casualty_val_table['rank'][
@@ -1157,6 +1183,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                  "rank": ele.demographics.rank},
                 "vitals": {"breathing": ele.vitals.breathing, "hrpmin": ele.vitals.hrpmin,
                            "conscious": ele.vitals.conscious, "mental_status": ele.vitals.mental_status},
+                "directness_of_causality":ele.directness_of_causality,
+                "intent":ele.intent,
                 "tag": ele.tag, "assessed": ele.assessed, "relationship": ele.relationship
             }
         # get priority for each hra strategy
