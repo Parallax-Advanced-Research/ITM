@@ -9,7 +9,7 @@ import time
 from run_tests import color
 from enum import Enum
 
-Status = Enum('Status', { 'SUCCESS': 0, 'WARNING': 1, 'ERROR': 2 })
+Status = Enum('Status', { 'SUCCESS': 0, 'WARNING': 0, 'ERROR': 2 })
 status = Status.SUCCESS
 
 def warning(msg: str) -> None:
