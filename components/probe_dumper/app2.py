@@ -174,7 +174,18 @@ def construct_environment_table(enviornment: dict):
         return env, None
 
 
-def construct_decision_table(analysis_df, metric_choices):
+def construct_decision_table(analysis_df, metric_choices, sort_metric):
+    sort_funcs = {}
+    for m_c in metric_choices:
+        if m_c.chosen_metric:
+            display_name = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][0].replace('<br>', ' ')
+            sort_funcs[display_name] = lambda x: x.metrics[m_c.name].value if m_c.name in x.metrics.keys() else 0.0
+            # 'Time': lambda x: x.metrics[
+            #     Metric.AVERAGE_TIME_USED.value].value if Metric.AVERAGE_TIME_USED.value in x.metrics.keys() else x.id_,
+
+    # sort the dataframe
+    sorted_df = sorted(analysis_df, key=sort_funcs[sort_metric])
+
     table_full_html = "<table>"
     # header
     table_full_html += '<tr> <th>Decision</th> <th>Character</th> <th>Location</th> <th>Treatment</th> <th>Tag</th>'
@@ -186,7 +197,7 @@ def construct_decision_table(analysis_df, metric_choices):
 
     # table
     supply_used = None
-    for decision in analysis_df:
+    for decision in sorted_df:
         pink_style = ''
         # get the supply if one was used
         if decision.selected:
@@ -283,20 +294,16 @@ if __name__ == '__main__':
 
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
     scenario_pkls = read_saved_scenarios()
-    sort_options = ['Time', 'Probability Death', 'Deterioration', 'Character', 'HRA Strategy', 'P(Death) (Bayes)',
-                    'P(Pain) (Bayes)', 'P(BI) (Bayes)', 'P(Airway Blocked) (Bayes)', 'P(Internal Bleeding) (Bayes)',
-                    'P(External Bleeding) (Bayes)']
-    if mc_only:
-        sort_options = ['Time', 'Probability Death', 'Deterioration', 'Character', 'P(Death) (Bayes)',
-                    'P(Pain) (Bayes)', 'P(BI) (Bayes)', 'P(Airway Blocked) (Bayes)', 'P(Internal Bleeding) (Bayes)',
-                    'P(External Bleeding) (Bayes)']
 
+    # get the scen from url or drop down
     if params.get('scen', None) is not None:
         scen = params['scen'].split('-')[:-1]
         scen = '-'.join(scen)
         chosen_scenario = scen
     else:
         chosen_scenario = st.selectbox(label="Choose a scenario", options=scenario_pkls)
+
+    # get the decision
     num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
     # have to check again, for the probe number, need the total number of decision from the scen though
     if params.get('scen', None) is not None:
@@ -305,11 +312,10 @@ if __name__ == '__main__':
     else:
         chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)
 
-    sort_by = st.selectbox(label="Sort by", options=sort_options)
-
+    # get the scen
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
 
-    # checkbox stuff
+    # checkbox stuff for metrics
     metric_choices = make_checkboxes_list_for_metrics(analysis_df)
     with st.expander('Open to select which metrics are displayed'):
         for m_choice in metric_choices:
@@ -319,6 +325,11 @@ if __name__ == '__main__':
                 m_choice.chosen_metric = True
             else:
                 m_choice.chosen_metric = False
+
+    # sort options depends on metric choices so needs to be after
+    # it will be done using display name, so will need to index the sort functions by display name
+    # kinda sad, but not sure how to get around it right now
+    sort_by = st.selectbox(label="Sort by", options=[METRIC_DISPLAY_NAME_DESCRIPTION[x.name][0].replace('<br>', ' ') for x in metric_choices if x.chosen_metric])
 
     st.header("""Scenario: %s""" % chosen_scenario.split('\\')[-1])
     st.subheader("""Probe %d/%d""" % (chosen_decision, len(num_decisions)))
@@ -332,7 +343,7 @@ if __name__ == '__main__':
         st.markdown(notes)
     st.caption("The pink decision in the table below is the chosen decision.")
 
-    decision_table_html, supply_used = construct_decision_table(analysis_df, metric_choices)
+    decision_table_html, supply_used = construct_decision_table(analysis_df, metric_choices, sort_metric=sort_by)
     casualty_html = get_casualty_table(state)
     supply_html = get_supplies_table(state, supply_used)
     previous_action_table = get_previous_actions(state)
