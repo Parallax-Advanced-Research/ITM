@@ -14,12 +14,12 @@ def main():
             sys.exit(1)
         check_adept = False
         check_soartech = False
-        if args.session_type == 'eval'
+        if args.session_type == 'eval':
             check_adept = True
             check_soartech = True
-        if args.training and args.session_type == 'adept'
+        if args.training and args.session_type == 'adept':
             check_adept = True
-        if args.training and args.session_type == 'soartech'
+        if args.training and args.session_type == 'soartech':
             check_adept = True
             
         if check_adept:
