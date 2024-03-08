@@ -1,8 +1,9 @@
 diff --git a/swagger_server/itm/itm_scenario.py b/swagger_server/itm/itm_scenario.py
-index f927221..f8a8fb9 100644
+index f927221..a28fd17 100644
 --- a/swagger_server/itm/itm_scenario.py
 +++ b/swagger_server/itm/itm_scenario.py
-@@ -59,11 +59,14 @@ class ITMScenario:
+@@ -58,12 +58,12 @@ class ITMScenario:
+         self.id = scenario.id
          self.name = scenario.name
  
 -        if not self.training:
