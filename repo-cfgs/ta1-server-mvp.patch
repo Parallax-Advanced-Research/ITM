@@ -1,28 +1,27 @@
-diff --git a/itm_app/data/scenarios/st-september-2023-mvp2/anchors.yaml b/itm_app/data/scenarios/st-september-2023-mvp2/anchors.yaml
-index 110d2d5..84c5220 100644
---- a/itm_app/data/scenarios/st-september-2023-mvp2/anchors.yaml
-+++ b/itm_app/data/scenarios/st-september-2023-mvp2/anchors.yaml
-@@ -1,19 +1,19 @@
--st-september-2023-mvp:
-+st-september-2023-mvp2:
- 
-   select-casualty-abc:
-     A:
-       denial: 0
--      mission: 0
-+      mission: 0.3
-       risktol: 0
-       timeurg: 0
-     B:
-       denial: 0
--      mission: 0
-+      mission: 0.8
-       risktol: 0
-       timeurg: 0
-     C:
-       denial: 0
--      mission: 0
-+      mission: 0.4
-       risktol: 0
-       timeurg: 0
- 
+diff --git a/submodules/itm-schema b/submodules/itm-schema
+index f43b88d..58746fd 160000
+--- a/submodules/itm-schema
++++ b/submodules/itm-schema
+@@ -1 +1 @@
+-Subproject commit f43b88dba99d6caa1d2c9ee3fc527d6c3bd715de
++Subproject commit 58746fd9b74d2dc3285f70fd333788b88f7689a4
+diff --git a/ta1_server/data/alignment_targets/current/maximization_high/alignment_target.yaml b/ta1_server/data/alignment_targets/current/maximization_high/alignment_target.yaml
+index 3f1e0dd..ebd72c0 100644
+--- a/ta1_server/data/alignment_targets/current/maximization_high/alignment_target.yaml
++++ b/ta1_server/data/alignment_targets/current/maximization_high/alignment_target.yaml
+@@ -1,4 +1,4 @@
+ id: maximization_high
+-kdmas:
++kdma_values:
+   - kdma: maximization
+     value: 0.9
+diff --git a/ta1_server/data/alignment_targets/current/maximization_low/alignment_target.yaml b/ta1_server/data/alignment_targets/current/maximization_low/alignment_target.yaml
+index 87d8beb..90cdf3a 100644
+--- a/ta1_server/data/alignment_targets/current/maximization_low/alignment_target.yaml
++++ b/ta1_server/data/alignment_targets/current/maximization_low/alignment_target.yaml
+@@ -1,4 +1,4 @@
+ id: maximization_low
+-kdmas:
++kdma_values:
+   - kdma: maximization
+     value: 0.1

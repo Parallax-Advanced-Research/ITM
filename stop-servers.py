@@ -2,10 +2,16 @@
 import os
 import glob
 import signal
+import subprocess
 
-pid_files = glob.glob(os.path.join(".deprepos", "*", "process.pid"))
+pid_files = glob.glob(os.path.join(".deprepos", "*.pid"))
 if len(pid_files) == 0:
     print("No known running servers.")
+
+if os.path.exists(os.path.join(".deprepos", "ta1-server-mvp.pid")):
+    p = subprocess.run(["docker", "compose", "-f" "docker-compose-dev.yaml", "down"],
+                         cwd=os.path.join(".deprepos", "ta1-server-mvp"))
+
 
 for fname in pid_files:
     f = None
@@ -40,4 +46,5 @@ for fname in pid_files:
     except Exception as ex:
         print(ex)
         print("Could not remove pid file " + fname + ".")
+        
     

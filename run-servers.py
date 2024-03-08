@@ -169,16 +169,23 @@ def check_git_diff_against_patch(ldir: str, dir_name: str) -> PatchingStatus:
         
 
 
-def start_server(dir_name: str, args: list[str]) -> None:
+def start_server(dir_name: str, args: list[str], use_venv = True, extra_env = {}) -> None:
     ldir = os.path.join(os.getcwd(), ".deprepos", dir_name)
-    builder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
-    ctxt = builder.ensure_directories(os.path.join(ldir, "venv"))
-    env = os.environ.copy()
-    env["PATH"] = ctxt.bin_path + os.pathsep + env["PATH"]
-    env["PYTHONPATH"] = ldir
-    with open(os.path.join(ldir, 'log.out'), "w", encoding="utf-8") as out, open(os.path.join(ldir, 'log.err'), "w", encoding="utf-8") as err:
-        p = subprocess.Popen([ctxt.env_exe, "-m"] + args, env=env, stdout=out, stderr=err, cwd=ldir) # pylint: disable=consider-using-with # (daemon)
-    with open(os.path.join(ldir, "process.pid"), "w", encoding="utf-8") as f:
+    env = os.environ.copy() | extra_env
+    out_path = os.path.join(os.getcwd(), ".deprepos", dir_name + ".out")
+    err_path = os.path.join(os.getcwd(), ".deprepos", dir_name + ".err")
+    pid_path = os.path.join(os.getcwd(), ".deprepos", dir_name + ".pid")
+    if use_venv:
+        builder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
+        ctxt = builder.ensure_directories(os.path.join(ldir, "venv"))
+        env["PATH"] = ctxt.bin_path + os.pathsep + env["PATH"]
+        env["PYTHONPATH"] = ldir
+        cmd = [ctxt.env_exe, "-m"] + args
+    else:
+        cmd = args
+    with open(out_path, "w", encoding="utf-8") as out, open(err_path, "w", encoding="utf-8") as err:
+        p = subprocess.Popen(cmd, env=env, stdout=out, stderr=err, cwd=ldir) # pylint: disable=consider-using-with # (daemon)
+    with open(pid_path, "w", encoding="utf-8") as f:
         f.write(str(p.pid))
     
     # t1 = threading.Thread(target=redirect_output, args=(p.stdout, ))
@@ -271,7 +278,8 @@ elif soartech_server_available:
           + 'tad_tester.py should be unaffected.')
 
 if soartech_server_available:
-    start_server("ta1-server-mvp", ["ta1_server", "--port", str(soartech_port)])
+    start_server("ta1-server-mvp", ["docker", "compose", "-f" "docker-compose-dev.yaml", "up"],
+                 use_venv = False, extra_env={"ITM_PORT": str(soartech_port)})
 elif adept_server_available:
     warning('Soartech server is not in use. Training using ta3_training.py will require the argument '
           + '"--session_type adept" to use only the ADEPT server in training. Testing using '
@@ -313,12 +321,12 @@ while not servers_up and time.time() - wait_started < 30: # At least 30 seconds 
 
 if not servers_up:
     if ta3_server_available and not ta3_verified:
-        error("TA3 server did not start successfully. Check .deprepos/itm-evaluation-server/log.err")
+        error("TA3 server did not start successfully. Check .deprepos/itm-evaluation-server.err")
     if adept_server_available and not adept_verified:
-        error("ADEPT server did not start successfully. Check .deprepos/adept_server/log.err")
+        error("ADEPT server did not start successfully. Check .deprepos/adept_server.err")
     if soartech_server_available and not soartech_verified:
         old_status = status
-        error("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp/log.err")
+        error("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp.err")
         if Status.SUCCESS == old_status:
             warning("Temporarily returning success even though Soartech isn't running. Will change once TA1 fixes it")
             status = old_status
