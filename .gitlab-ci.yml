@@ -48,11 +48,11 @@ before_script:
    - chmod 600 $HOME/.ssh/config
    - touch $HOME/.ssh/known_hosts
    - CI/install_libs.sh
-   - python install.py
-   - source venv/bin/activate
-   - sudo apt install docker.io docker-compose
    - wget https://get.docker.com -O install-docker.sh
    - sudo sh install-docker.sh
+   - sudo docker run hello-world
+   - python install.py
+   - source venv/bin/activate
 
 
 lint_tools:
