@@ -64,6 +64,9 @@ class TA3Driver(Driver):
 
         analyzers = [ebd, br, bnd, mca]
         analyzers = [a for a in analyzers if a is not None]
+        
+        if args.variant == 'baseline': 
+            analyzers = []
 
         trainer = KDMACaseBaseRetainer()
 
