@@ -34,7 +34,6 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.analyzers: list[DecisionAnalyzer] = get_analyzers()
         self.print_neighbors = args.decision_verbose
         self.index = 0
-        self.decisions_made = 0
         self.kdma_totals = {}
         if args.weightfile is None:
             global _default_weight_file
@@ -43,16 +42,17 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             else:
                 weight_filename = _default_weight_file
         else:
-            weight_filename = args.weight_filename
+            weight_filename = args.weightfile
 
-        if args.uniformweight:
+        if args.uniformweight or args.variant == 'baseline':
             self.weight_settings = {}
         else:
             try:
                 with open(weight_filename, "r") as weight_file:
                     self.weight_settings = json.loads(weight_file.read())
             except:
-                print(f"Could not read from weight file: {weight_filename}; using standard weights.")
+                util.logger.warn(
+                    f"Could not read from weight file: {weight_filename}; using default weights.")
                 self.weight_settings = {}
         
         
@@ -121,11 +121,6 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.print_neighbors:
             print(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
         
-        self.decisions_made += 1
-        util.logger.warn(f"KDMA Estimates after {self.decisions_made} decisions:")
-        for (kdma, val) in best_kdmas.items():
-            self.kdma_totals[kdma] = self.kdma_totals.get(kdma, 0) + val
-            util.logger.warn(f"{kdma}: {self.kdma_totals[kdma] / self.decisions_made}")
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
         
@@ -293,7 +288,8 @@ def isFloat(val: str):
         return False    
             
 VALUED_FEATURES = {
-        "intent": {"intend minor help": 0.25, "no intent": 0.0, "intend minor harm": 0.25, "intend major harm": 0.5},
+        "intent": {"intend major help": 0.5, "intend minor help": 0.25, "no intent": 0.0, 
+                   "intend minor harm": -0.25, "intend major harm": -0.5},
         "directness_of_causality": 
             {"none": 0.0, "indirect": 0.25, "somewhat indirect": 0.5, "somewhat direct": 0.75, "direct": 1.0}
     }    
