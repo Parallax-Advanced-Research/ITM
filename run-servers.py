@@ -236,6 +236,15 @@ if args.soartech:
     soartech_server_available = update_server("ta1-server-mvp")
     if not soartech_server_available:
         warning("Training server from soartech not found. Proceeding without it.")
+    if soartech_server_available:
+        try:
+            p = subprocess.run("docker compose --help", stdout=subprocess.PIPE)
+            if p.returncode != 0:
+                soartech_server_available = False
+        except FileNotFoundError:
+            soartech_server_available = False
+        if not soartech_server_available:
+            warning("Docker not found; proceeding without Soartech server.")
 else:
     soartech_server_available = False
  
@@ -273,17 +282,19 @@ if not adept_server_available and not soartech_server_available:
 if adept_server_available:
     start_server("adept_server", ["openapi_server", "--port", str(adept_port)])
 elif soartech_server_available:
-    warning('ADEPT server is not in use. Training using ta3_training.py will require the argument '
-          + '"--session_type soartech" to use only the Soartech server in training. Testing using '
-          + 'tad_tester.py should be unaffected.')
+    warning('ADEPT server is not in use. Use the arguments '
+          + '"--session_type soartech" to use only the Soartech server with ta3_training.py. The '
+          + 'arguments "--no-training --session_type adept" will also work with tad_tester.py, but '
+          + '"--session_type eval" will not.')
 
 if soartech_server_available:
     start_server("ta1-server-mvp", ["docker", "compose", "-f" "docker-compose-dev.yaml", "up"],
                  use_venv = False, extra_env={"ITM_PORT": str(soartech_port)})
 elif adept_server_available:
-    warning('Soartech server is not in use. Training using ta3_training.py will require the argument '
-          + '"--session_type adept" to use only the ADEPT server in training. Testing using '
-          + 'tad_tester.py should be unaffected.')
+    warning('Soartech server is not in use. Use the arguments '
+          + '"--session_type adept" to use only the ADEPT server with ta3_training.py. The arguments '
+          + '"--no-training --session_type soartech" will also work with tad_tester.py, but '
+          + '"--session_type eval" will not.')
 
 
 if soartech_server_available and adept_server_available:
