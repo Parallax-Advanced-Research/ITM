@@ -1,9 +1,8 @@
 diff --git a/swagger_server/itm/itm_scenario.py b/swagger_server/itm/itm_scenario.py
-index 1b09461..2440447 100644
+index f927221..f8a8fb9 100644
 --- a/swagger_server/itm/itm_scenario.py
 +++ b/swagger_server/itm/itm_scenario.py
-@@ -56,7 +56,7 @@ class ITMScenario:
-         self.id = scenario.id
+@@ -59,11 +59,14 @@ class ITMScenario:
          self.name = scenario.name
  
 -        if not self.training:
@@ -11,8 +10,14 @@ index 1b09461..2440447 100644
              self.alignment_target_reader = ITMAlignmentTargetReader(self.yaml_path + "alignment_target.yaml")
  
          if self.session.ta1_integration:
+             self.ta1_controller = ITMTa1Controller(
+-                self.alignment_target_reader.alignment_target.id if not self.training else None,
++                self.alignment_target_reader.alignment_target.id if self.alignment_target_reader is not None else None,
+                 self.scene_type
+             )
+ 
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index 9c7294e..8d27443 100644
+index 9c7294e..b9ff245 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
 @@ -198,7 +198,7 @@ class ITMSession:
@@ -20,7 +25,7 @@ index 9c7294e..8d27443 100644
                  index += 1
              if self.itm_scenario is None:
 -                return f'Scenario ID `{scenario_id}` does not exist as {"a training" if self.kdma_training else "an eval"} scenario for `{self.session_type}`', 404
-+                return f'Scenario ID `{scenario_id}` does not exist as {"a training" if self.session_type != "eval" else "an eval"} scenario for `{self.session_type}`', 404
++                return f'Scenario ID `{scenario_id}` does not exist as {"a training" if session_type != "eval" else "an eval"} scenario for `{self.session_type}`', 404
              if self.itm_scenario.isd.current_scene.state is None:
                  return self._end_session() # We have already run the specified scenario to completion
          else:
@@ -29,7 +34,7 @@ index 9c7294e..8d27443 100644
  
          yaml_paths = []
 -        yaml_path = "swagger_server/itm/itm_" + ("training_scenarios/" if self.kdma_training else "eval_scenarios/")
-+        yaml_path = "swagger_server/itm/itm_" + ("training_scenarios/" if session_type != 'eval' else "eval_scenarios/")
++        yaml_path = "swagger_server/itm/itm_" + ("training_scenarios/" if session_type != "eval" else "eval_scenarios/")
          if session_type == 'soartech' or session_type == 'eval':
              yaml_paths.append(yaml_path + 'soartech/')
          if session_type == 'adept' or session_type == 'eval':
