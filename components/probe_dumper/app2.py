@@ -244,7 +244,13 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
     'ACTION_TARGET_SEVERITY': ('Target<br>Severity', 'The severity of the target', '{:.1f}'),
     'ACTION_TARGET_SEVERITY_CHANGE': ('Target<br>Severity<br>Change', 'how much the target of the actions severity changes', '{:.1f}'),
     'SEVEREST_SEVERITY': ('Severest<br>Severity', 'what the most severe targets severity is', '{:.1f}'),
-    'SEVEREST_SEVERITY_CHANGE': ('Severest<br>Severity<br>Change', 'What the change in the severest severity target is', '{:.1f}')
+    'SEVEREST_SEVERITY_CHANGE': ('Severest<br>Severity<br>Change', 'What the change in the severest severity target is', '{:.1f}'),
+    'All Predictors': ('All<br>Predictors', 'ALL....Predictors.', '{:.1f}'),
+    'entropy': ('BNDA<br>Entropy', 'H[entire bayesian network | observations]', '{:.3f}'),
+    'entropyDeath': ('BNDA<br>Entropy<br>Death', 'H[death | observations]', '{:.3f}'),
+    'WEIGHTED_RESOURCE_SCORE': ('MCA<br>Weighted<br>Resource', 'More lifesaving items are weighted heavier', '{:.0f}'),
+    'SMOL_MEDICAL_SOUNDNESS': ('MCA<br>Medical<br>Soundness', 'Harmonic Mean of Damage Per Second and Probability Death', '{:.0f}'),
+    'INFORMATION_GAINED': ('MCA<br>Information<br>Gained', 'How much information is gained by the action', '{:.0f}')
 }
 
 
