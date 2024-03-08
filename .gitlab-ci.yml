@@ -50,6 +50,9 @@ before_script:
    - CI/install_libs.sh
    - python install.py
    - source venv/bin/activate
+   - sudo apt install docker.io docker-compose
+   - wget https://get.docker.com -O install-docker.sh
+   - sudo sh install-docker.sh
 
 
 lint_tools:
