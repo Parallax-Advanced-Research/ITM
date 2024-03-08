@@ -238,7 +238,7 @@ if args.soartech:
         warning("Training server from soartech not found. Proceeding without it.")
     if soartech_server_available:
         try:
-            p = subprocess.run("docker compose --help", stdout=subprocess.PIPE)
+            p = subprocess.run(["docker", "compose", "--help"], stdout=subprocess.PIPE)
             if p.returncode != 0:
                 soartech_server_available = False
         except FileNotFoundError:
