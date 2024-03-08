@@ -87,7 +87,11 @@ class Driver:
     def respond(decision: Decision[Action], url: str = None) -> ext.Action:
         params = decision.value.params.copy()
         casualty = params.pop('casualty') if 'casualty' in params.keys() else None  # Sitrep can take no casualty
-        return ext.Action(decision.id_, decision.value.name, casualty, {}, params, url)
+        if decision.kdmas is not None and type(decision.kdmas.kdma_map) == dict:
+            kdma_dict = decision.kdmas.kdma_map
+        else:
+            kdma_dict = {}
+        return ext.Action(decision.id_, decision.value.name, casualty, kdma_dict, params, url)
 
     def decide(self, itm_probe: ext.ITMProbe) -> ext.Action:
         probe: TADProbe = self.translate_probe(itm_probe)
