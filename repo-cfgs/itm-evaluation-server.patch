@@ -1,3 +1,27 @@
+diff --git a/swagger_server/itm/itm_action_handler.py b/swagger_server/itm/itm_action_handler.py
+index 9d343d0..207cdd3 100644
+--- a/swagger_server/itm/itm_action_handler.py
++++ b/swagger_server/itm/itm_action_handler.py
+@@ -214,9 +214,6 @@ class ITMActionHandler:
+                     if self._proper_treatment(supply_used, injury.name, injury.location):
+                         injury.status = InjuryStatusEnum.TREATED
+ 
+-        if not attempted_treatment: # Realize the injury is already treated, but no vital/injury discovery happens
+-            return self.times_dict["treatmentTimes"]["ALREADY_TREATED"]
+-
+         # Decrement unreusable supplies and increment time passed during treatment, even if the injury is untreated
+         time_passed = 0
+         for supply in self.session.state.supplies:
+@@ -227,6 +224,9 @@ class ITMActionHandler:
+                     time_passed = self.times_dict["treatmentTimes"][supply_used]
+                 break
+ 
++        if not attempted_treatment: # Realize the injury is already treated, but no vital/injury discovery happens
++            return self.times_dict["treatmentTimes"]["ALREADY_TREATED"]
++
+         # Injuries and certain basic vitals are discovered when a character is treated.
+         for isd_character in self.current_scene.state.characters:
+             if isd_character.id == character.id:
 diff --git a/swagger_server/itm/itm_scenario.py b/swagger_server/itm/itm_scenario.py
 index f927221..a28fd17 100644
 --- a/swagger_server/itm/itm_scenario.py
