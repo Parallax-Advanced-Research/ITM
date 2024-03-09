@@ -24,6 +24,8 @@ class Driver:
             self.dumper = None
         else:
             self.dumper = ProbeDumper(dumper_config)
+        self.treatments: dict[str, list[str]] = {}
+
         self.session_uuid = uuid.uuid4()
 
 
