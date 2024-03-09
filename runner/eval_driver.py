@@ -15,12 +15,15 @@ class EvaluationDriver(TA3Driver):
         act = super().decide(itm_probe)
         if len(act.kdmas) > 0:
             self.estimated_kdma_opps += 1
-            for (kdma, val) in act.kdmas.items():
+            for (kdmaName, val) in act.kdmas.items():
+                kdma = kdmaName.lower()
                 self.estimated_kdma_counts[kdma] = self.estimated_kdma_counts.get(kdma, 0) + 1
                 self.estimated_kdmas[kdma] = self.estimated_kdmas.get(kdma, 0) + val
-                kdmamin = min([opt.kdmas[kdma] for opt in itm_probe.options if opt.kdmas is not None])
-                kdmamax = max([opt.kdmas[kdma] for opt in itm_probe.options if opt.kdmas is not None])
-                # if kdmamax > val:
+                kdmamin = min([opt.kdmas[kdmaName] for opt in itm_probe.options if opt.kdmas is not None])
+                kdmamax = max([opt.kdmas[kdmaName] for opt in itm_probe.options if opt.kdmas is not None])
+                # if self.alignment_tgt.kdma_map[kdma] > val and kdmamax > val:
+                    # breakpoint()
+                # if self.alignment_tgt.kdma_map[kdma] < val and kdmamin < val:
                     # breakpoint()
                 self.estimated_min_kdmas[kdma] = self.estimated_min_kdmas.get(kdma, 0) + kdmamin
                 self.estimated_max_kdmas[kdma] = self.estimated_max_kdmas.get(kdma, 0) + kdmamax
@@ -31,8 +34,9 @@ class EvaluationDriver(TA3Driver):
         if not final:
             return
         for (kdma, count) in self.estimated_kdma_counts.items():
-            print("%s: Estimated: %3f Minimum: %3f Maximum: %3f" %
+            print("%s: Target: %3f Estimated: %3f Minimum: %3f Maximum: %3f" %
                   (kdma, 
+                   self.alignment_tgt.kdma_map[kdma],
                    self.estimated_kdmas[kdma] / count, 
                    self.estimated_min_kdmas[kdma] / count,
                    self.estimated_max_kdmas[kdma] / count))
