@@ -81,9 +81,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 cur_case = make_case(probe, cur_decision)
             new_cases.append(cur_case)
             if target.kdmas[0].id_.lower() == "mission" and self.print_neighbors:
-                print(f"Decision: {cur_decision}")
+                util.logger.info(f"Decision: {cur_decision}")
                 for (key, value) in cur_case.items():
-                    print(f"  {key}: {value}")
+                    util.logger.info(f"  {key}: {value}")
             sqDist: float = 0.0
             
             default_weight = self.weight_settings.get("default", 1)
@@ -93,7 +93,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 if cur_case[act]:
                     weights = weights | self.weight_settings.get("activity_weights", {}).get(act, {})
             if self.print_neighbors:
-                print(f"Evaluating action: {cur_decision.value}")
+                util.logger.info(f"Evaluating action: {cur_decision.value}")
             for kdma in target.kdmas:
                 kdma_name = kdma.id_.lower()
                 weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
@@ -116,10 +116,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 minDecision = cur_decision
                 best_kdmas = cur_kdmas
             if self.print_neighbors:
-                print(f"New dist: {sqDist} Best Dist: {minDist}")
+                util.logger.info(f"New dist: {sqDist} Best Dist: {minDist}")
             cur_case["distance"] = sqDist
         if self.print_neighbors:
-            print(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
+            util.logger.info(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
         
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
@@ -148,7 +148,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
         kdma_val = kdma_total / divisor
         if self.print_neighbors:
-            print(f"kdma_val: {kdma_val}")
+            util.logger.info(f"kdma_val: {kdma_val}")
         return kdma_val
         
     def top_K(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str) -> list[dict[str, Any]]:
@@ -192,10 +192,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             lst = [(calculate_distance(item, cur_case, weights), item) for item in lst]
             
         if self.print_neighbors:
-            print(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
-            print(f"kdma: {kdma} weights: { {key:val for (key, val) in weights.items() if val != 0} }")
+            util.logger.info(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
+            util.logger.info(f"kdma: {kdma} weights: { {key:val for (key, val) in weights.items() if val != 0} }")
             for i in range(0, len(lst)):
-                print(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
+                util.logger.info(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
         return lst
 
 def calculate_distance(case1: dict[str, Any], case2: dict[str, Any], weights: dict[str, float]) -> float:
