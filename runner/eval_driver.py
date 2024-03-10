@@ -10,6 +10,7 @@ class EvaluationDriver(TA3Driver):
         self.estimated_min_kdmas = {}
         self.estimated_max_kdmas = {}
         self.estimated_kdma_opps = 0
+        self.actual_kdma_vals = {}
 
     def decide(self, itm_probe: ext.ITMProbe) -> ext.Action:
         act = super().decide(itm_probe)
@@ -17,6 +18,9 @@ class EvaluationDriver(TA3Driver):
             self.estimated_kdma_opps += 1
             for (kdmaName, val) in act.kdmas.items():
                 kdma = kdmaName.lower()
+                if not kdma in self.actual_kdma_vals:
+                    self.actual_kdma_vals[kdma] = []
+                self.actual_kdma_vals[kdma].append(val)
                 self.estimated_kdma_counts[kdma] = self.estimated_kdma_counts.get(kdma, 0) + 1
                 self.estimated_kdmas[kdma] = self.estimated_kdmas.get(kdma, 0) + val
                 kdmamin = min([opt.kdmas[kdmaName] for opt in itm_probe.options if opt.kdmas is not None])
