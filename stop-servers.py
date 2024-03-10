@@ -9,7 +9,7 @@ if len(pid_files) == 0:
     print("No known running servers.")
 
 if os.path.exists(os.path.join(".deprepos", "ta1-server-mvp.pid")):
-    p = subprocess.run(["docker", "compose", "-f" "docker-compose-dev.yaml", "down"],
+    p = subprocess.run(["docker", "compose", "-f", "docker-compose-dev.yaml", "down"],
                          cwd=os.path.join(".deprepos", "ta1-server-mvp"))
 
 

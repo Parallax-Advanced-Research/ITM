@@ -288,7 +288,7 @@ elif soartech_server_available:
           + '"--session_type eval" will not.')
 
 if soartech_server_available:
-    start_server("ta1-server-mvp", ["docker", "compose", "-f" "docker-compose-dev.yaml", "up"],
+    start_server("ta1-server-mvp", ["docker", "compose", "-f", "docker-compose-dev.yaml", "up"],
                  use_venv = False, extra_env={"ITM_PORT": str(soartech_port)})
 elif adept_server_available:
     warning('Soartech server is not in use. Use the arguments '
