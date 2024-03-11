@@ -86,7 +86,7 @@ def install_hems() -> None:
         err_msg="sbcl must be installed before we run this command.")
     
     ql_local_projects_dir = run_cmd_or_die(
-        argv=[ "sbcl", "--noinform", "--non-interactive", "--eval",
+        argv=[ "sbcl", "dynamic-space-size", "20000", "--noinform", "--non-interactive", "--eval",
                '(progn (format t "~a" (car ql:*local-project-directories*)) (quit))'],
         err_msg ="quicklisp must be installed before we run this command.",
         capture_output=True)
