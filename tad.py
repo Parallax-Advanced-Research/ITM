@@ -2,7 +2,7 @@ import json
 import pickle
 import argparse
 import dataclasses
-import os
+import os, sys
 import uuid
 from pydantic.tools import parse_obj_as
 from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
@@ -41,7 +41,7 @@ def check_for_servers(args):
     if check_soartech:
         adept_port = util.find_environment("SOARTECH_PORT", 8084)
         if not util.is_port_open(adept_port):
-            util.logger.error("ADEPT server not listening. Shutting down.")
+            util.logger.error("Soartech server not listening. Shutting down.")
             sys.exit(1)
             
 def train(args):
