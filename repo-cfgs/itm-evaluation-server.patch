@@ -26,7 +26,7 @@ index 9c7294e..b9ff245 100644
                  index += 1
              if self.itm_scenario is None:
 -                return f'Scenario ID `{scenario_id}` does not exist as {"a training" if self.kdma_training else "an eval"} scenario for `{self.session_type}`', 404
-+                return f'Scenario ID `{scenario_id}` does not exist as {"a training" if session_type != "eval" else "an eval"} scenario for `{self.session_type}`', 404
++                return f'Scenario ID `{scenario_id}` does not exist as {"a training" if self.session_type != "eval" else "an eval"} scenario for `{self.session_type}`', 404
              if self.itm_scenario.isd.current_scene.state is None:
                  return self._end_session() # We have already run the specified scenario to completion
          else:
