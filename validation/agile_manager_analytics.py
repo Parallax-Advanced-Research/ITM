@@ -173,9 +173,10 @@ am_path = os.path.join(ROOT_DIR, 'data/agile_manager/KDMA is strategy-Decision i
 print(am_path)
 
 df = pd.read_excel(am_path).drop(['ID', 'Session ID', 'User ID'], axis=1)
-train, test = train_test_split(df, test_size=0.985)
-train = train.head(10)
-test = test.head(1)
+#train, test = train_test_split(df, test_size=0.985)
+train, test = train_test_split(df, test_size=.2)
+train = train.head(1000)
+test = test.head(10)
 num = 0
 for idx, row in train.iterrows():
     if idx >= -1:
@@ -211,14 +212,21 @@ for idx, row in test.iterrows():
                 max_prob = -1
                 max_pred = []
                 r_pred = []
+                vvbm, _ = hems.get_hash(0, hems.rule_based_cpd_var_value_block_map(ele))
+                seen = []
                 for rule in hems.rule_based_cpd_rules(ele):
+                    print(hems.rule_probability(rule))
                     r_prob = float(hems.rule_probability(rule))
+                    index, _ = hems.get_hash(dep_id, hems.rule_conditions(rule))
+                    key = hems._car(hems._car(vvbm[index]))
+                    seen.append(key)
+                    model_probs_on_gt[idx][key]=r_prob
                     if r_prob >= max_prob:
-                        index, _ = hems.get_hash(dep_id, hems.rule_conditions(rule))
-                        vvbm, _ = hems.get_hash(0, hems.rule_based_cpd_var_value_block_map(ele))
+                        
+                        
                         #print(vvbm)
-                        for vvb in vvbm:
-                            model_probs_on_gt[idx][hems._car(hems._car(vvb))] = r_prob
+                        #for vvb in vvbm:
+                        #    model_probs_on_gt[idx][hems._car(hems._car(vvb))] = r_prob
                         for vvb in vvbm:
                             if hems._cdr(hems._car(vvb)) == index:
                                 r_pred = hems._car(hems._car(vvb))
@@ -231,7 +239,9 @@ for idx, row in test.iterrows():
                         else:
                             max_prob = r_prob
                             max_pred = [r_pred]
-                        
+                for vvb in vvbm:
+                    if hems._car(hems._car(vvb)) not in seen:
+                        model_probs_on_get[idx][hems._car(hems._car(vvb))] = 0
                 pred_kdmas.append(max_pred)
                 print()
             i += 1
