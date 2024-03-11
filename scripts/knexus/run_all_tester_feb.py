@@ -8,7 +8,7 @@ import tad
 
 def get_tester_standard_params(args):
     args.bayes = True
-    args.hra = False
+    args.hra = True
     args.ebd = False
     args.session_type = 'adept'
     args.variant = 'aligned'
@@ -77,10 +77,10 @@ def launch_moral_dessert(scene):
 
 logger.setLevel(LogLevel.INFO)
 logger.critical("Beginning Knexus Test Harness...")
-scenes = ['3', '17', '18', '20']
-logger.warning("Running MORAL DESSERT SCENES %s" % ', '.join(scenes))
-for scene in scenes:
-    launch_moral_dessert(scene=scene)
+# scenes = ['3', '17', '18', '20']
+# logger.warning("Running MORAL DESSERT SCENES %s" % ', '.join(scenes))
+# for scene in scenes:
+#     launch_moral_dessert(scene=scene)
 logger.warning("Running SOARTECH JUNGLE")
 soartech_jungle()
 logger.warning("SOARTECH JUNGLE succeeded")
