@@ -356,10 +356,11 @@ def get_information_gained_element(action: str) -> int:
     return Metric.NO_KNOWLEDGE.value
 
 
-def get_doctor_number(pdeath, dps):
+def get_doctor_number(pdeath, dps, pdeath_60):
     pdeath_scaled = pdeath * 50.
     dps_scaled = dps * 1.
-    return int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled]))
+    pdeath_60_scaled = pdeath_60 * 50.
+    return int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled, pdeath_60_scaled]))
 
 
 def get_nextgen_stats(all_decision_metrics: dict[str, list], ordered_treatmenmts: list[str]) -> dict[str, int]:
@@ -367,7 +368,8 @@ def get_nextgen_stats(all_decision_metrics: dict[str, list], ordered_treatmenmts
     weighted_resource = [get_weighted_score_element(x) for x in ordered_treatmenmts] #get_weighted_resource_score(ordered_treatmenmts)
     pdeath = all_decision_metrics[Metric.P_DEATH.value]
     dps = all_decision_metrics[Metric.DAMAGE_PER_SECOND.value]
-    doctorness_metric = [get_doctor_number(x, y) for x, y in zip(pdeath, dps)]
+    pdeath_60 = all_decision_metrics[Metric.P_DEATH_ONEMINLATER.value]
+    doctorness_metric = [get_doctor_number(x, y, z) for x, y, z in zip(pdeath, dps, pdeath_60)]
     information_gained = [get_information_gained_element(x) for x in ordered_treatmenmts]
     if len(weighted_resource) != len(doctorness_metric):
         # information_gained.insert(0, information_gained[0])
