@@ -15,10 +15,11 @@ def get_tester_standard_params(args):
     args.decision_verbose = False
     return args
 
+
 def soartech_jungle():
     args = parse_default_arguments()
     args = get_tester_standard_params(args)
-    args.scenario = 'jungle-1'
+    args.scenario = 'jungle-1-train1'
     args.session_type = 'soartech'
     if args.endpoint is None:
         if not util.is_port_open(8080):
@@ -30,7 +31,7 @@ def soartech_jungle():
 def soartech_urban():
     args = parse_default_arguments()
     args = get_tester_standard_params(args)
-    args.scenario = 'urban-1'
+    args.scenario = 'urban-1-train1'
     args.session_type = 'soartech'
     if args.endpoint is None:
         if not util.is_port_open(8080):
@@ -42,7 +43,7 @@ def soartech_urban():
 def soartech_submarine():
     args = parse_default_arguments()
     args = get_tester_standard_params(args)
-    args.scenario = 'submarine-1'
+    args.scenario = 'submarine-1-train1'
     args.session_type = 'soartech'
     if args.endpoint is None:
         if not util.is_port_open(8080):
@@ -54,7 +55,7 @@ def soartech_submarine():
 def soartech_desert():
     args = parse_default_arguments()
     args = get_tester_standard_params(args)
-    args.scenario = 'desert-1'
+    args.scenario = 'desert-1-train1'
     args.session_type = 'soartech'
     args.decision_verbose = False
     if args.endpoint is None:
@@ -77,10 +78,10 @@ def launch_moral_dessert(scene):
 
 logger.setLevel(LogLevel.INFO)
 logger.critical("Beginning Knexus Test Harness...")
-# scenes = ['3', '17', '18', '20']
-# logger.warning("Running MORAL DESSERT SCENES %s" % ', '.join(scenes))
-# for scene in scenes:
-#     launch_moral_dessert(scene=scene)
+scenes = ['3', '17', '18', '20']
+logger.warning("Running MORAL DESSERT SCENES %s" % ', '.join(scenes))
+for scene in scenes:
+    launch_moral_dessert(scene=scene)
 logger.warning("Running SOARTECH JUNGLE")
 soartech_jungle()
 logger.warning("SOARTECH JUNGLE succeeded")
