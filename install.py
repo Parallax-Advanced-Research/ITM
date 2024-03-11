@@ -106,12 +106,12 @@ def install_hems() -> None:
         os.chdir(ITM_DIR)
 
     ## Patch package.lisp
-    print("Patching HEMS")
-    patched_file = os.path.join(ITM_DIR, "components", "decision_analyzer",
-        "event_based_diagnosis", "hems-package-replacement.lisp")
-    package_file = os.path.join(hems_dir, "package.lisp")
-    os.remove(package_file)
-    shutil.copyfile(patched_file, package_file)
+    #print("Patching HEMS")
+    #patched_file = os.path.join(ITM_DIR, "components", "decision_analyzer",
+    #    "event_based_diagnosis", "hems-package-replacement.lisp")
+    #package_file = os.path.join(hems_dir, "package.lisp")
+    #os.remove(package_file)
+    #shutil.copyfile(patched_file, package_file)
     
 
     # replace patched version (if it exists) with non-patched so we can pull.

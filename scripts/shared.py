@@ -20,9 +20,24 @@ def validate_args(args: argparse.Namespace) -> None:
         sys.stderr.write("\x1b[93mYour selected decision selector requires an alignment target. "
                          + "Provide one by running in evaluation mode (--session_type eval), or "
                          + "by listing kdmas explicitly (e.g., --kdma mission=.8 --kdma denial=.5)."
+                         + "\x1b[0m\n"
                         )
         sys.exit(1)
         
+    if args.session_type == 'eval' and args.scenario is not None:
+        sys.stderr.write("\x1b[93mCannot specify a scenario in evaluation mode.\x1b[0m\n")
+        sys.exit(1)
+
+    if args.session_type == 'eval' and args.kdmas is not None:
+        sys.stderr.write("\x1b[93mPlease do not supply your own KDMAs in evaluation mode.\x1b[0m\n")
+        sys.exit(1)
+
+    if args.eval_targets is not None and len(args.eval_targets) > 0 and not args.training:
+        args.training = True
+
+    if args.session_type == 'eval' and args.training:
+        sys.stderr.write("\x1b[93mCannot perform training in evaluation mode.\x1b[0m\n")
+        sys.exit(1)
     
     #args.keds = ('keds' == args.selector)
     #args.kedsd = ('kedsd' == args.selector)
@@ -43,13 +58,14 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--dump', action=argparse.BooleanOptionalAction, default=True, help="Dumps probes out for UI exploration.")
     parser.add_argument('--rollouts', type=int, default=256, help="Monte Carlo rollouts to perform")
     parser.add_argument('--endpoint', type=str, help="The URL of the TA3 api", default=None)
-    parser.add_argument('--variant', type=str, help="TAD variant", default="aligned")
-    parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=False, help="Asks for KDMA associations to actions")
+    parser.add_argument('--variant', type=str, help="TAD variant", default="aligned", choices=["aligned", "misaligned", "baseline"])
     parser.add_argument('--session_type', type=str, default='eval',
-        help="Modifies the server session type. possible values are 'soartech', 'adept', and 'eval'. Default is 'eval'.")
+        help="Modifies the server session type. possible values are 'soartech', 'adept', and 'eval'. Default is 'eval'.",
+        choices = ["soartech", "adept", "eval"])
     parser.add_argument('--scenario', type=str, default=None, help="ID of a scenario that TA3 can play back.")
     parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to alignment target for selection purposes. Format is <kdma_name>-<kdma_value>")
-    parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, requires --training.")
+    parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=False, help="Asks for KDMA associations to actions")
+    parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, implies --training.")
     parser.add_argument('--selector', default='random', choices=['keds', 'kedsd', 'csv', 'human', 'random'], help="Sets the decision selector") # TODO: add details of what each option does
     parser.add_argument('--selector-object', default=None, help=argparse.SUPPRESS)
     parser.add_argument('--seed', type=int, default=None, help="Changes the random seed to be used during this run; must be an integer")
@@ -63,6 +79,8 @@ def get_default_parser() -> argparse.ArgumentParser:
                         help="Requests that a default uniform weight be used in comparing cases "\
                              + "by the decision selector. Overrides --weightfile. Used with keds, "\
                              + "kedsd, not otherwise.")
+    parser.add_argument('--decision_verbose', action=argparse.BooleanOptionalAction, default=False, 
+                        help="Causes a decision selector to output extra information explaining its selections.")
 
 
 

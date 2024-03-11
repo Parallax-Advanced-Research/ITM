@@ -8,7 +8,7 @@ from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical a
 def supply_location_match(action: MedsimAction):
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
         return action.location != Locations.UNSPECIFIED.value
-    if action.supply == Supplies.TOURNIQUET.value:
+    if action.supply in [Supplies.TOURNIQUET.value, Supplies.SPLINT.value]:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.TOURNIQUET.value]:
             return False
         return True

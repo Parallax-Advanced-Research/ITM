@@ -189,6 +189,13 @@ class TA3Elaborator(Elaborator):
               and ParamEnum.LOCATION in decision.value.params):
             return [decision]
             
+        # If it's already mostly grounded, don't second-guess the server
+        if (ParamEnum.TREATMENT in decision.value.params 
+              and ParamEnum.CASUALTY in decision.value.params
+              and decision.value.params[ParamEnum.TREATMENT] in SPECIAL_SUPPLIES):
+            decision.value.params[ParamEnum.LOCATION] = InjuryLocationEnum.UNSPECIFIED
+            return [decision]
+
         # Ground the decision for all casualties with injuries
         dec_grounded = self._ground_treatments(state, decision, tag_available=tag_available)
         
@@ -217,6 +224,7 @@ class TA3Elaborator(Elaborator):
         for cas in state.casualties:
             if decision.value.params.get(ParamEnum.CASUALTY, None) not in [None, cas.id]:
                 continue
+            new_treatments = []
             if ((cas.vitals.breathing in [BreathingLevelEnum.RESTRICTED, BreathingLevelEnum.NONE] 
                     or InjuryTypeEnum.BURN in [injury.name for injury in cas.injuries])
                  and decision.value.params.get(ParamEnum.TREATMENT, SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY)
@@ -224,26 +232,32 @@ class TA3Elaborator(Elaborator):
                  and self._supply_quantity(state, SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY) > 0):
                 if (decision.value.params.get(ParamEnum.LOCATION, InjuryLocationEnum.LEFT_FACE)
                        == InjuryLocationEnum.LEFT_FACE):
-                    dec_possible_treatments.append(
+                    new_treatments.append(
                         decision_copy_with_params(decision, 
                             {ParamEnum.CASUALTY: cas.id,
                              ParamEnum.LOCATION: InjuryLocationEnum.LEFT_FACE,
                              ParamEnum.TREATMENT: SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY}))
                 elif (decision.value.params.get(ParamEnum.LOCATION, InjuryLocationEnum.RIGHT_FACE)
                         == InjuryLocationEnum.RIGHT_FACE):
-                    dec_possible_treatments.append(
+                    new_treatments.append(
                         decision_copy_with_params(decision, 
                             {ParamEnum.CASUALTY: cas.id,
                              ParamEnum.LOCATION: InjuryLocationEnum.RIGHT_FACE,
                              ParamEnum.TREATMENT: SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY}))
-            if ((cas.vitals.mental_status == MentalStatusEnum.AGONY or cas.vitals.avpu == AvpuLevelEnum.PAIN)
+            if ((cas.vitals.mental_status == MentalStatusEnum.AGONY 
+                    or cas.vitals.avpu == AvpuLevelEnum.PAIN
+                    or len(cas.injuries) > 0)
+#                )
                  and decision.value.params.get(ParamEnum.TREATMENT, SupplyTypeEnum.PAIN_MEDICATIONS) == SupplyTypeEnum.PAIN_MEDICATIONS
                  and self._supply_quantity(state, SupplyTypeEnum.PAIN_MEDICATIONS) > 0):
-                dec_possible_treatments.append(
+                new_treatments.append(
                     decision_copy_with_params(decision, 
                         {ParamEnum.CASUALTY: cas.id,
                          ParamEnum.LOCATION: InjuryLocationEnum.UNSPECIFIED,
                          ParamEnum.TREATMENT: SupplyTypeEnum.PAIN_MEDICATIONS}))
+            dec_possible_treatments += new_treatments
+            # dec_possible_treatments += \
+                # [t for t in new_treatments if t.value.params[ParamEnum.TREATMENT] not in cas.treatments]
         return list({consistent_decision_key(d):d for d in dec_possible_treatments}.values())
         
 
@@ -316,6 +330,8 @@ class TA3Elaborator(Elaborator):
                     grounded.append(treat_action)
                     continue
                 for injury in cas.injuries:
+                    if injury.status == 'treated':
+                        continue
                     treat_params = treat_action.value.params.copy()
                     if TA3Elaborator.medsim_allows_action(treat_action.value, injury.name):
                         treat_params[ParamEnum.LOCATION] = treat_params.get(ParamEnum.LOCATION, InjuryLocationEnum.UNSPECIFIED)
