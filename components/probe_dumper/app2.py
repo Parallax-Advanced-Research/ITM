@@ -174,6 +174,19 @@ def construct_environment_table(enviornment: dict):
         return env, None
 
 
+def get_hra_strategy(decision):
+    metrics, justifications = decision.metrics, decision.justifications
+    selected_strategy = "None"
+    selected_justification = "No justification provided"
+    hra_strategies = ['Take-The-Best Priority', 'Exhaustive Priority', 'Tallying Priority',
+                      'Satisfactory Priority', 'One-Bounce Priority']
+    for hra_s in hra_strategies:
+        if metrics[hra_s].value:
+            selected_strategy = hra_s
+            break
+    return selected_strategy, selected_justification
+
+
 def construct_decision_table(analysis_df, metric_choices, sort_metric):
     sort_func = None
     # create the sort func, a lambda directing to chosen metric in dataframe
@@ -181,7 +194,10 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
         if m_c.chosen_metric:
             display_name = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][0].replace('<br>', ' ')
             if display_name == sort_metric:
-                sort_func = lambda x: x.metrics[m_c.name].value if m_c.name in x.metrics.keys() else 0.0
+                if display_name == 'HRA Strategy':
+                    sort_func = lambda x: get_hra_strategy(x)[0] if 'HRA Strategy' in x.metrics.keys() else x.id_
+                else:
+                    sort_func = lambda x: x.metrics[m_c.name].value if m_c.name in x.metrics.keys() else 0.0
                 break
     # sort the dataframe
     sorted_df = sorted(analysis_df, key=sort_func)
@@ -195,7 +211,7 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
             table_full_html += f"""<th> <div title='{METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][1]}'> {display_name} </div> </th>"""
     table_full_html += '</tr>'  # end of headings
 
-    # table
+    # table data
     supply_used = None
     for decision in sorted_df:
         pink_style = ''
@@ -218,14 +234,17 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
         # dynamic stuff
         for m_c in metric_choices:
             if m_c.chosen_metric:
-                try:
-                    just_english = justifications[m_c.name].split('is')[-1]
-                except:
-                    just_english = 'No justification given'
-
-                metric = decision.metrics[m_c.name].value if m_c.name in decision.metrics.keys() else UNKNOWN_NUMBER
-                display_metric = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][2].format(metric + 0) if metric != UNKNOWN_NUMBER else UNKOWN_STRING
-                table_full_html += f"""<td {pink_style}> <div title='{just_english}'> {display_metric} </div> </td>"""
+                if m_c.name == 'HRA Strategy':
+                    strat_selected, strat_justification = get_hra_strategy(decision)
+                    table_full_html += f"""<td {pink_style}> <div title='{strat_justification}'> {strat_selected} </div> </td>"""
+                else:
+                    try:
+                        just_english = justifications[m_c.name].split('is')[-1]
+                    except:
+                        just_english = 'No justification given'
+                    metric = decision.metrics[m_c.name].value if m_c.name in decision.metrics.keys() else UNKNOWN_NUMBER
+                    display_metric = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][2].format(metric + 0) if metric != UNKNOWN_NUMBER else UNKOWN_STRING
+                    table_full_html += f"""<td {pink_style}> <div title='{just_english}'> {display_metric} </div> </td>"""
 
         table_full_html += '</tr>'  # end of data row  fixed = raw.replace(str(UNKNOWN_NUMBER), UNKOWN_STRING)
 
@@ -261,7 +280,8 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
     'entropyDeath': ('BNDA<br>Entropy<br>Death', 'H[death | observations]', '{:.3f}'),
     'WEIGHTED_RESOURCE_SCORE': ('MCA<br>Weighted<br>Resource', 'More lifesaving items are weighted heavier', '{:.0f}'),
     'SMOL_MEDICAL_SOUNDNESS': ('MCA<br>Medical<br>Soundness', 'Harmonic Mean of Damage Per Second and Probability Death', '{:.0f}'),
-    'INFORMATION_GAINED': ('MCA<br>Information<br>Gained', 'How much information is gained by the action', '{:.0f}')
+    'INFORMATION_GAINED': ('MCA<br>Information<br>Gained', 'How much information is gained by the action', '{:.0f}'),
+    'HRA Strategy': ('HRA<br>Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '')
 }
 
 
@@ -272,7 +292,7 @@ class ChosenMetric:
 
 
 def make_checkboxes_list_for_metrics(analysis_df):
-    ignore_metrics = ['origins', 'NONDETERMINISM', 'ALL Predictors', 'HRA Strategy', 'Take-The-Best Priority',
+    ignore_metrics = ['origins', 'NONDETERMINISM', 'All Predictors', 'Take-The-Best Priority',
                       'Exhaustive Priority', 'Tallying Priority', 'Satisfactory Priority', 'One-Bounce Priority']
     allowed_metrics: list[ChosenMetric] = []
 
