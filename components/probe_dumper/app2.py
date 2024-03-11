@@ -174,35 +174,17 @@ def construct_environment_table(enviornment: dict):
         return env, None
 
 
-def sort_analysis(analysis_df, sort_metric, chosen_metrics):
-    metric = ''
-    for m_c in chosen_metrics:
-        display_name = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][0].replace('<br>', ' ')
-        if sort_metric == display_name:
-            metric = m_c.name
-            break
-    return sorted(analysis_df, key=lambda x: x.metrics[metric].value if metric in x.metrics.keys() else 0.0)
-
-
 def construct_decision_table(analysis_df, metric_choices, sort_metric):
-    import copy
-    sort_funcs = {}
-
-    # hopefully can get this working with lambdas
-    # for m_c in metric_choices:
-    #     if m_c.chosen_metric:
-    #         display_name = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][0].replace('<br>', ' ')
-    #         # working
-    #         sort_funcs[display_name] = lambda x: x.metrics['AVERAGE_TIME_USED'].value if 'AVERAGE_TIME_USED' in x.metrics.keys() else x.id_
-    #
-    #         # try 1
-    #         perm_name = copy.deepcopy(m_c.name)
-    #         sort_funcs[display_name] = lambda x: x.metrics[perm_name].value if perm_name in x.metrics.keys() else x.id_
-    # # sort the dataframe
-    # sorted_df = sorted(analysis_df, key=sort_funcs[sort_metric])
-
-    # solution for now
-    sorted_df = sort_analysis(analysis_df, sort_metric, metric_choices)
+    sort_func = None
+    # create the sort func, a lambda directing to chosen metric in dataframe
+    for m_c in metric_choices:
+        if m_c.chosen_metric:
+            display_name = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][0].replace('<br>', ' ')
+            if display_name == sort_metric:
+                sort_func = lambda x: x.metrics[m_c.name].value if m_c.name in x.metrics.keys() else 0.0
+                break
+    # sort the dataframe
+    sorted_df = sorted(analysis_df, key=sort_func)
 
     table_full_html = "<table>"
     # header
