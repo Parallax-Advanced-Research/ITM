@@ -117,6 +117,17 @@ def update_server(dir_name: str) -> bool:
         return True
     raise Exception("Should not be possible to reach this point.")
 
+def update_submodules(dirname: str) -> bool:
+    print(f"Updating submodules for {dirname}")
+    p: subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]
+    ldir = os.path.join(os.getcwd(), ".deprepos", dirname)
+    p = subprocess.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=ldir, check=False) 
+    if 0 != p.returncode:
+        warning(f"Failed to update submodules for {dirname}")
+        return False
+    return True
+   
+
 class PatchingStatus:
     difference_exists: bool | None = None
     patch_filename: str | None = None
@@ -167,7 +178,20 @@ def check_git_diff_against_patch(ldir: str, dir_name: str) -> PatchingStatus:
 
     return st
         
+def which_docker_compose() -> list[str] | None:
+	try:
+	    p = subprocess.run(["docker-compose", "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+	    if 0 == p.returncode: return [ "docker-compose" ]
+	except FileNotFoundError as err:
+	    pass
 
+	try:
+	    p = subprocess.run(["docker", "compose", "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+	    if 0 == p.returncode: return [ "docker", "compose" ]
+	except FileNotFoundError as err:
+	    pass
+
+	return None
 
 def start_server(dir_name: str, args: list[str], use_venv = True, extra_env = {}) -> None:
     ldir = os.path.join(os.getcwd(), ".deprepos", dir_name)
@@ -236,15 +260,15 @@ if args.soartech:
     soartech_server_available = update_server("ta1-server-mvp")
     if not soartech_server_available:
         warning("Training server from soartech not found. Proceeding without it.")
-    if soartech_server_available:
-        try:
-            p = subprocess.run(["docker", "compose", "--help"], stdout=subprocess.PIPE)
-            if p.returncode != 0:
-                soartech_server_available = False
-        except FileNotFoundError:
+    else:
+        if not update_submodules('ta1-server-mvp'):
+            warning("Failed to update soartech server. Proceeding without it.")
             soartech_server_available = False
-        if not soartech_server_available:
-            warning("Docker not found; proceeding without Soartech server.")
+        else:
+            docker_compose = which_docker_compose()
+            if docker_compose is None:
+                soartech_server_available = False
+                warning("Docker not found; proceeding without Soartech server.")
 else:
     soartech_server_available = False
  
@@ -288,7 +312,7 @@ elif soartech_server_available:
           + '"--session_type eval" will not.')
 
 if soartech_server_available:
-    start_server("ta1-server-mvp", ["docker", "compose", "-f", "docker-compose-dev.yaml", "up"],
+    start_server("ta1-server-mvp", docker_compose + ["-f", "docker-compose-dev.yaml", "up"],
                  use_venv = False, extra_env={"ITM_PORT": str(soartech_port)})
 elif adept_server_available:
     warning('Soartech server is not in use. Use the arguments '
