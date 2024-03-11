@@ -13,23 +13,4 @@ index 5148f00..df94b23 100644
  
      ## The AlignmentResults object
      result = ps.AlignmentResults(
-diff --git a/ta1_server/data/alignment_targets/current/maximization_high/alignment_target.yaml b/ta1_server/data/alignment_targets/current/maximization_high/alignment_target.yaml
-index 3f1e0dd..ebd72c0 100644
---- a/ta1_server/data/alignment_targets/current/maximization_high/alignment_target.yaml
-+++ b/ta1_server/data/alignment_targets/current/maximization_high/alignment_target.yaml
-@@ -1,4 +1,4 @@
- id: maximization_high
--kdmas:
-+kdma_values:
-   - kdma: maximization
-     value: 0.9
-diff --git a/ta1_server/data/alignment_targets/current/maximization_low/alignment_target.yaml b/ta1_server/data/alignment_targets/current/maximization_low/alignment_target.yaml
-index 87d8beb..90cdf3a 100644
---- a/ta1_server/data/alignment_targets/current/maximization_low/alignment_target.yaml
-+++ b/ta1_server/data/alignment_targets/current/maximization_low/alignment_target.yaml
-@@ -1,4 +1,4 @@
- id: maximization_low
--kdmas:
-+kdma_values:
-   - kdma: maximization
-     value: 0.1
+
