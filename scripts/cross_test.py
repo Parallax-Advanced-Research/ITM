@@ -145,7 +145,7 @@ def main():
             else:
                 rscores = scores
             # result["estimated_kdma"] = driver.estimated_kdmas[target_kdma.lower()] / len(scores)
-            result["kdma_overall"] = sum(rscores) / len(scores)
+            result["kdma_overall"] = sum(rscores) / len(rscores)
             result["best_possible_val"] = ss["average"]
             results.append(result)
             write_case_base("cross-test-results.csv", results)
