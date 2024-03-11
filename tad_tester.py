@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import tad
-import util
+import sys
+import tad, util
 from runner.eval_driver import EvaluationDriver
 from scripts.shared import parse_default_arguments
 
