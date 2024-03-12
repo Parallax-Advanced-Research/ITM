@@ -194,7 +194,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # create table of casualty fields to worth
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2}
-        casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
+        #casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
+        casualty_val_table['rank'] = {'recruit': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
 
         # hold sums for each casualty
         casualty_sum = dict()
@@ -213,7 +214,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             casualty_sum[person] += 0 if info['directness_of_causality'] is None else (
                 1.5 if info['directness_of_causality'] == 'none' else -1)
             casualty_sum[person] += 0 if info['intent'] is None else (
-                1.5 if info['intent'] == 'no intent' else -1)
+                1.5 if (info['intent'] == 'no intent' or info['intent'] == 'intend minor help' or info['intent'] == 'intend major help') else -1)
             if kdma_list['relevance']['life_impact'] == 'high':
                 casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
                 info['demographics']['rank'].lower()]
@@ -313,7 +314,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # create table of casualty fields to worth
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2, 'neutral': 0}
-        casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
+        #casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
+        casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
 
         # hold sums for each casualty
         casualty_sum = dict()
@@ -324,7 +326,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             casualty_sum[person] += 0 if info['directness_of_causality'] is None else (
                 1.5 if info['directness_of_causality'] == 'none' else -1)
             casualty_sum[person] += 0 if info['intent'] is None else (
-                1.5 if info['intent'] == 'no intent' else -1)
+                1.5 if (info['intent'] == 'no intent' or info['intent'] == 'intend minor help' or info['intent'] == 'intend major help') else -1)
             casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
                 info['demographics']['rank'].lower()]
             casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
@@ -483,7 +485,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # create table of casualty fields to worth
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 1, 'neutral': 0}
-        casualty_val_table['rank'] = {'civilian': 1, 'marine': 1, 'intel officer': 1, 'vip': 1, 'e-4': 1}
+        #casualty_val_table['rank'] = {'civilian': 1, 'marine': 1, 'intel officer': 1, 'vip': 1, 'e-4': 1}
+        casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
 
         # variables for checking each casualty
         casualty_sum = dict()
@@ -496,7 +499,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             casualty_sum[person] += 0 if info['directness_of_causality'] is None else (
                 1.5 if info['directness_of_causality'] == 'none' else -1)
             casualty_sum[person] += 0 if info['intent'] is None else (
-                1.5 if info['intent'] == 'no intent' else -1)
+                1.5 if (info['intent'] == 'no intent' or info['intent'] == 'intend minor help' or info['intent'] == 'intend major help') else -1)
             cnt += 1
             if cnt >= m: continue
             casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
@@ -665,7 +668,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     if info['directness_of_causality'] is not None:
                         if info['directness_of_causality'] == 'none':
                             if info['intent'] is not None:
-                                if info['intent'] == 'no intent':
+                                if (info['intent'] == 'no intent' or info['intent'] == 'intend minor help' or info['intent'] == 'intend major help'):
                                     for injury in info['injuries']:
                                         if isinstance(injury['severity'], float):
                                             if 0 <= injury['severity'] <= 1: return {person: info}
@@ -857,7 +860,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         # create table of casualty fields to worth
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'neutral': 0, 'same-unit': 1, 'friend': 2}
-        casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
+        #casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
+        casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
 
         # get random ordering of casualties
         casualty_list = list(casualty_dict)
@@ -879,11 +883,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 casualty0_sum += 0 if info0['directness_of_causality'] is None else (
                     1.5 if info0['directness_of_causality'] == 'none' else -1)
                 casualty0_sum += 0 if info0['intent'] is None else (
-                    1.5 if info0['intent'] == 'no intent' else -1)
+                    1.5 if (info0['intent'] == 'no intent' or info0['intent'] == 'intend minor help' or info0['intent'] == 'intend major help') else -1)
                 casualty1_sum += 0 if info1['directness_of_causality'] is None else (
                     1.5 if info1['directness_of_causality'] == 'none' else -1)
                 casualty1_sum += 0 if info1['intent'] is None else (
-                    1.5 if info1['intent'] == 'no intent' else -1)
+                    1.5 if (info1['intent'] == 'no intent' or info1['intent'] == 'intend minor help' or info1['intent'] == 'intend major help') else -1)
                 casualty0_sum += 0 if info0['demographics']['rank'] is None else casualty_val_table['rank'][
                     info0['demographics']['rank'].lower()]
                 casualty1_sum += 0 if info1['demographics']['rank'] is None else casualty_val_table['rank'][
@@ -1175,12 +1179,14 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         casualty_data = dict()
         for ele in scen.state.casualties:
+            if ele.demographics.rank == "e-1" or ele.demographics.rank_title == "recruit":# TODO: debug
+                print("hello bug")
             casualty_data[ele.id] = {
                 "id": ele.id,
                 "name": ele.name,
                 "injuries": [{"location": l.location, "name": l.name, "severity": l.severity} for l in ele.injuries],
                 "demographics": {"age": ele.demographics.age, "sex": ele.demographics.sex,
-                                 "rank": ele.demographics.rank},
+                                 "rank": ele.demographics.rank_title},
                 "vitals": {"breathing": ele.vitals.breathing, "hrpmin": ele.vitals.hrpmin,
                            "conscious": ele.vitals.conscious, "mental_status": ele.vitals.mental_status},
                 "directness_of_causality":ele.directness_of_causality,
