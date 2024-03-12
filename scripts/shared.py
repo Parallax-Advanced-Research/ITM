@@ -58,7 +58,7 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--dump', action=argparse.BooleanOptionalAction, default=True, help="Dumps probes out for UI exploration.")
     parser.add_argument('--rollouts', type=int, default=256, help="Monte Carlo rollouts to perform")
     parser.add_argument('--endpoint', type=str, help="The URL of the TA3 api", default=None)
-    parser.add_argument('--variant', type=str, help="TAD variant", default="aligned", choices=["aligned", "misaligned", "baseline"])
+    parser.add_argument('--variant', type=str, help="TAD variant", default="aligned", choices=["aligned", "misaligned", "baseline", "severity-baseline"])
     parser.add_argument('--session_type', type=str, default='eval',
         help="Modifies the server session type. possible values are 'soartech', 'adept', and 'eval'. Default is 'eval'.",
         choices = ["soartech", "adept", "eval"])
