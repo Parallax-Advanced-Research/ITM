@@ -179,19 +179,19 @@ def check_git_diff_against_patch(ldir: str, dir_name: str) -> PatchingStatus:
     return st
         
 def which_docker_compose() -> list[str] | None:
-	try:
-	    p = subprocess.run(["docker-compose", "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
-	    if 0 == p.returncode: return [ "docker-compose" ]
-	except FileNotFoundError as err:
-	    pass
+    try:
+        p = subprocess.run(["docker-compose", "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+        if 0 == p.returncode: return [ "docker-compose" ]
+    except FileNotFoundError as err:
+        pass
 
-	try:
-	    p = subprocess.run(["docker", "compose", "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
-	    if 0 == p.returncode: return [ "docker", "compose" ]
-	except FileNotFoundError as err:
-	    pass
+    try:
+        p = subprocess.run(["docker", "compose", "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+        if 0 == p.returncode: return [ "docker", "compose" ]
+    except FileNotFoundError as err:
+        pass
 
-	return None
+    return None
 
 def start_server(dir_name: str, args: list[str], use_venv = True, extra_env = {}) -> None:
     ldir = os.path.join(os.getcwd(), ".deprepos", dir_name)

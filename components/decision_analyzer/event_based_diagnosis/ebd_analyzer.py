@@ -22,10 +22,11 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         self._hems = self._lisp.find_package("HEMS")
         self.train(None)
 
-    def analyze(self, scen: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
+    def analyze(self, _: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         analysis = {}
+
         for decision in probe.decisions:
-            cue = self.make_observation(scen, decision.value)
+            cue = self.make_observation(probe.state, decision.value)
             if cue is None:
                 continue
             (recollection, _) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, temporalp=False)
@@ -46,11 +47,11 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             analysis[decision.id_] = metrics
         return analysis
             
-    def make_observation(self, scen: Scenario, a: Action):
+    def make_observation(self, state: State, a: Action):
         patient = a.params.get('casualty', None)
         if patient is None:
             return None
-        cas = self.find_casualty(patient, scen.state)
+        cas = self.find_casualty(patient, state)
         if cas is None:
             raise Exception("No casualty in state with name: " + patient)
         data = [
@@ -66,6 +67,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
              ('amputation', self.get_amputation(cas), 105),
              #('relationship', cas.relationship, 107)
              ]
+        # TODO: Needs to make use of new stuff the server gives us. q.v. bn_analyzer:make_observation()
         
         cue = self.get_cue_string(data)
         
@@ -74,14 +76,17 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         text_file.close()
         return self._hems.compile_program_from_file("temp/cue.hems")
         
-    def get_hrpmin(self, c : Casualty):
-        if c.vitals.hrpmin is None:
+    def get_hrpmin(self, c: Casualty) -> str | None:
+        val = c.vitals.hrpmin
+
+        if val is None:
             return None
-        if c.vitals.hrpmin < 60:
-            return "low"
-        if c.vitals.hrpmin > 100:
-            return "high"
-        return "normal"
+            
+        if 'FAST' == val: return "high"
+        if 'FAINT' == val: return "low"
+        if 'NONE' == val: return "low" # TODO: add a NONE value to bayesian net
+        if 'NORMAL' == val: return "normal"
+        assert False, f"Invalid hrpmin: {val}"
 
     def get_burns(self, c : Casualty):
         for i in c.injuries:
@@ -108,20 +113,12 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             return None
         if c.vitals.mental_status == "AGONY":
             return "high"
-        return "low_or_none"
-        
+        if c.vitals.conscious is False: return "low_or_none"
+        return None
        
-    def get_AVPU(self, c: Casualty):
-        pain = self.get_pain(c)
-        conscious = c.vitals.conscious
-        if conscious:
-            return "A"
-        if pain and not conscious:
-            return "P"
-        if not pain and not conscious:
-            return "U"
-                
-        
+    def get_AVPU(self, c: Casualty) -> str | None:
+        d = { "ALERT": "A", "VOICE": "V", "PAIN": "P", "UNRESPONSIVE": "U", None: None }
+        return d[c.vitals.avpu]
         
     def get_cue_string(self, data : list[tuple]):
         i = 1
@@ -132,10 +129,11 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
                 i += 1
         return ret
 
-    def find_casualty(self, name: str, s: State):
+    def find_casualty(self, name: str, s: State) -> Casualty | None:
         for cas in s.casualties:
             if cas.id == name:
                 return cas
+        return None
     
     def train(self, data):
         bn1 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog1.hems", args=lst())
