@@ -6,6 +6,7 @@
             "DAMAGE_PER_SECOND": 1,
             "injured_count": 2,
             "visited": 4
+            "breathing": 1
         },
         "moraldesert": {
             "intent": 0.42,
