@@ -143,7 +143,7 @@ integration_test_soartech_csv_full:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartechn--kdma maximization=1 --ebd --mc --br --bayes --selector csv
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --mc --br --bayes --selector csv
     - python stop-servers.py
 
 integration_test_adept_csv_full:
@@ -167,26 +167,32 @@ integration_test_eval_csv_full:
 
 # Test that servers installed
 
-integration_test_soartech_install:
+integration_test_keds_soartech_no_analyzers:
   stage: install_servers
   needs: [ integration_test_soartech_keds_full ]
   when: on_failure
   script:
     - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes
+    - python stop-servers.py
 
-integration_test_adept_install:
+integration_test_keds_adept_no_analyzers:
   stage: install_servers
   needs: [ integration_test_adept_keds_full ]
   when: on_failure
   script:
     - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes
+    - python stop-servers.py
 
-integration_test_eval_install:
+integration_test_keds_eval_no_analyzers:
   stage: install_servers
   needs: [ integration_test_eval_keds_full ]
   when: on_failure
   script:
     - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes
+    - python stop-servers.py
 
 
 # Soartech individual tests
@@ -194,7 +200,7 @@ integration_test_eval_install:
 ## different decision analyzers (default decision selector)
 integration_test_soartech_ebd:
   stage: individual_tests_soartech
-  needs: [ integration_test_soartech_install ]
+  needs: [ integration_test_keds_soartech_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --no-mc --no-br --no-bayes
@@ -202,7 +208,7 @@ integration_test_soartech_ebd:
 
 integration_test_soartech_mc:
   stage: individual_tests_soartech
-  needs: [ integration_test_soartech_install ]
+  needs: [ integration_test_keds_soartech_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --mc --no-br --no-bayes
@@ -210,7 +216,7 @@ integration_test_soartech_mc:
 
 integration_test_soartech_br:
   stage: individual_tests_soartech
-  needs: [ integration_test_soartech_install ]
+  needs: [ integration_test_keds_soartech_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
@@ -218,7 +224,7 @@ integration_test_soartech_br:
 
 integration_test_soartech_bayes:
   stage: individual_tests_soartech
-  needs: [ integration_test_soartech_install ]
+  needs: [ integration_test_keds_soartech_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --bayes
@@ -228,7 +234,7 @@ integration_test_soartech_bayes:
 ## different decision selectors (no decision analyzers)
 integration_test_soartech_keds:
   stage: individual_tests_soartech
-  needs: [ integration_test_soartech_install ]
+  needs: [ integration_test_keds_soartech_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes --selector keds
@@ -236,7 +242,7 @@ integration_test_soartech_keds:
 
 integration_test_soartech_kedsd:
   stage: individual_tests_soartech
-  needs: [ integration_test_soartech_install ]
+  needs: [ integration_test_keds_soartech_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes --selector kedsd
@@ -244,7 +250,7 @@ integration_test_soartech_kedsd:
 
 integration_test_soartech_csv:
   stage: individual_tests_soartech
-  needs: [ integration_test_soartech_install ]
+  needs: [ integration_test_keds_soartech_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes --selector csv
@@ -256,7 +262,7 @@ integration_test_soartech_csv:
 ## different decision analyzers (default decision selector)
 integration_test_adept_ebd:
   stage: individual_tests_adept
-  needs: [ integration_test_adept_install ]
+  needs: [ integration_test_keds_adept_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --ebd --no-mc --no-br --no-bayes
@@ -264,7 +270,7 @@ integration_test_adept_ebd:
 
 integration_test_adept_mc:
   stage: individual_tests_adept
-  needs: [ integration_test_adept_install ]
+  needs: [ integration_test_keds_adept_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --mc --no-br --no-bayes
@@ -272,7 +278,7 @@ integration_test_adept_mc:
 
 integration_test_adept_br:
   stage: individual_tests_adept
-  needs: [ integration_test_adept_install ]
+  needs: [ integration_test_keds_adept_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
@@ -280,7 +286,7 @@ integration_test_adept_br:
 
 integration_test_adept_bayes:
   stage: individual_tests_adept
-  needs: [ integration_test_adept_install ]
+  needs: [ integration_test_keds_adept_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --bayes
@@ -290,7 +296,7 @@ integration_test_adept_bayes:
 ## different decision selectors (no decision analyzers)
 integration_test_adept_keds:
   stage: individual_tests_adept
-  needs: [ integration_test_adept_install ]
+  needs: [ integration_test_keds_adept_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --no-bayes --selector keds
@@ -298,7 +304,7 @@ integration_test_adept_keds:
 
 integration_test_adept_kedsd:
   stage: individual_tests_adept
-  needs: [ integration_test_adept_install ]
+  needs: [ integration_test_keds_adept_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --no-bayes --selector kedsd
@@ -306,7 +312,7 @@ integration_test_adept_kedsd:
 
 integration_test_adept_csv:
   stage: individual_tests_adept
-  needs: [ integration_test_adept_install ]
+  needs: [ integration_test_keds_adept_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --no-bayes --selector csv
@@ -317,7 +323,7 @@ integration_test_adept_csv:
 ## different decision analyzers (default decision selector)
 integration_test_eval_ebd:
   stage: individual_tests_eval
-  needs: [ integration_test_eval_install ]
+  needs: [ integration_test_keds_eval_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type eval --ebd --no-mc --no-br --no-bayes
@@ -325,7 +331,7 @@ integration_test_eval_ebd:
 
 integration_test_eval_mc:
   stage: individual_tests_eval
-  needs: [ integration_test_eval_install ]
+  needs: [ integration_test_keds_eval_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type eval --no-ebd --mc --no-br --no-bayes
@@ -333,7 +339,7 @@ integration_test_eval_mc:
 
 integration_test_eval_br:
   stage: individual_tests_eval
-  needs: [ integration_test_eval_install ]
+  needs: [ integration_test_keds_eval_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
@@ -341,7 +347,7 @@ integration_test_eval_br:
 
 integration_test_eval_bayes:
   stage: individual_tests_eval
-  needs: [ integration_test_eval_install ]
+  needs: [ integration_test_keds_eval_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --bayes
@@ -351,7 +357,7 @@ integration_test_eval_bayes:
 ## different decision selectors (no decision analyzers)
 integration_test_eval_keds:
   stage: individual_tests_eval
-  needs: [ integration_test_eval_install ]
+  needs: [ integration_test_keds_eval_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --no-bayes --selector keds
@@ -359,7 +365,7 @@ integration_test_eval_keds:
 
 integration_test_eval_kedsd:
   stage: individual_tests_eval
-  needs: [ integration_test_eval_install ]
+  needs: [ integration_test_keds_eval_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --no-bayes --selector kedsd
@@ -367,7 +373,7 @@ integration_test_eval_kedsd:
 
 integration_test_eval_csv:
   stage: individual_tests_eval
-  needs: [ integration_test_eval_install ]
+  needs: [ integration_test_keds_eval_no_analyzers ]
   script:
     - python run-servers.py
     - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --no-bayes --selector csv

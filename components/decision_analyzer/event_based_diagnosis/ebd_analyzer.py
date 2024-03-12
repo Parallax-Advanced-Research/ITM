@@ -13,7 +13,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         super().__init__()
         
         # get a handle to the lisp subprocess with quicklisp loaded.
-        self._lisp = cl4py.Lisp(quicklisp=True, backtrace=True)
+        self._lisp = cl4py.Lisp(cmd=('sbcl', '--dynamic-space-size', '20000', '--script'), quicklisp=True, backtrace=True)
         
         # Start quicklisp and import HEMS package
         self._lisp.find_package('QL').quickload('HEMS')
