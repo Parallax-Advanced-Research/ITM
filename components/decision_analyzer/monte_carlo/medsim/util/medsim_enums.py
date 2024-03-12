@@ -258,7 +258,7 @@ class Injuries(Enum):
     INTERNAL = 'Internal'
 
 
-class Metric(Enum):
+class       Metric(Enum):
     SEVERITY = 'SEVERITY'
     AVERAGE_CASUALTY_SEVERITY = 'AVERAGE_CASUALTY_SEVERITY'
     AVERAGE_INJURY_SEVERITY = 'AVERAGE_INJURY_SEVERITY'
