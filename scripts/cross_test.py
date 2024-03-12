@@ -5,8 +5,9 @@ import tad
 import yaml
 import glob
 from runner.eval_driver import EvaluationDriver
-from scripts.shared import parse_default_arguments
+from scripts.shared import *
 from components.decision_selector.kdma_estimation import write_case_base
+from scripts.combine_case_bases import combine_case_bases
 
 paths = [
     ".deprepos/adept_server/openapi_server/data/scenario/metrics_eval/*.yaml",
@@ -174,9 +175,14 @@ def compare_histories():
 
         
 def main():
-    ssl = read_score_sequence_list("train_score_sequence_list.json")
-    args = parse_default_arguments()
+    parser = get_default_parser()
+    parser.add_argument('--ssl_file', type=str, help="File with a score sequence list to compare against", default="train_score_sequence_list.json")
+    parser.add_argument('--casebase_dir', type=str, help="Directory where case bases are found", default="local/casebases-20240310")
+    parser.add_argument('--source_count', type=int, help="How many source files to use", default=1)
+    args = parser.parse_args()
+    ssl = read_score_sequence_list(args.ssl_file)
     args.session_type = 'eval'
+    validate_args(args)
     tad.check_for_servers(args)
     args.training = True
     results = []
@@ -185,26 +191,62 @@ def main():
         target_kdma = ss["kdma"]
         target_val = ss["target"]
         training_sources = set([oss["id"] for oss in ssl if oss["kdma"] == target_kdma and oss["id"] != target_id])
-        for source in training_sources:
-            if "adept" in ss["filename"]:
-                args.session_type = "adept"
-                id = source.removeprefix("MetricsEval.")
-            else:
-                args.session_type = "soartech"
-                id = source.removesuffix("-train1")
-            training_casebase = os.path.join("local", "casebases-20240310", id, "kdma_cases.csv")
+        source_set = find_all_subsets(training_sources, size = args.source_count)
+        for sources in source_set:
+            training_casebases = []
+            for source in sources:
+                if "adept" in ss["filename"]:
+                    args.session_type = "adept"
+                    id = source.removeprefix("MetricsEval.")
+                else:
+                    args.session_type = "soartech"
+                    id = source.removesuffix("-train1")
+                training_casebases.append(os.path.join(args.casebase_dir, id, "kdma_cases.csv"))
+            if len(sources) > 1:
+                args.casefile = "temp/joined_case_base.csv"
+                combine_case_bases(training_casebases, args.casefile)
+            elif len(sources) == 1:
+                args.casefile = training_casebases[0]
+            elif len(sources) == 0:
+                args.casefile = "data/empty_case_base.csv"
+                
             args.selector = 'keds'
             args.kdmas = [target_kdma + "=" + str(target_val)]
-            args.casefile = training_casebase
             args.scenario = target_id
             driver = EvaluationDriver(args)
             tad.api_test(args, driver)
             scores = driver.actual_kdma_vals[target_kdma.lower()]
-            results.append(record_comparison(ss, scores))
+            results.append(record_comparison(ss, ";".join(sources), scores))
             write_case_base("cross-test-results.csv", results)
             
+def find_all_subsets(full_set: set, size=None):
+    subsets = []
+    full_set_list = list(full_set)
+    if size is None:
+        for i in range(0, len(full_set_list) + 1):
+            subsets += find_all_subsets(full_set_list, size = i)
+        return subsets
+    if size == 0:
+        return set(set())
+    while len(full_set_list) > 0:
+        item = full_set_list.pop()
+        subsets += construct_subsets([item], list(full_set_list), size - 1)
+    return subsets
+        
+def construct_subsets(subset_as_list: list, remaining_items: set, size_remaining : int):
+    if size_remaining == 0:
+        return [subset_as_list]
+    subsets = []
+    while len(remaining_items) > 0:
+        item = remaining_items.pop()
+        new_subset = list(subset_as_list)
+        new_subset.append(item)
+        subsets += construct_subsets(new_subset, list(remaining_items), size_remaining - 1)
+    return subsets
+        
+    
 
-def record_comparison(ssr, source, scores, results):
+def record_comparison(ssr, source, scores):
     tscores = ssr["score_sequence"]
     result = {"id": ssr["id"], "kdma": ssr["kdma"], "target": ssr["target"], "source": source}
     result["lengthdiff"] = len(scores) - len(tscores)
