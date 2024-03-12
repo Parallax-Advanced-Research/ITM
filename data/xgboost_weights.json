@@ -5,7 +5,7 @@
             "ACTION_TARGET_SEVERITY": 0.005,
             "DAMAGE_PER_SECOND": 1,
             "injured_count": 2,
-            "visited": 4
+            "visited": 4,
             "breathing": 1
         },
         "moraldesert": {
