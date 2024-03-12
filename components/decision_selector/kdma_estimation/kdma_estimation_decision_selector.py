@@ -17,7 +17,7 @@ from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAn
 _default_weight_file = os.path.join("data", "keds_weights.json")
 _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")
 _default_kdma_case_file = os.path.join("data", "kdma_cases.csv")
-_default_drexel_case_file = os.path.join("data", "sept" "extended_case_base.csv")
+_default_drexel_case_file = os.path.join("data", "sept", "extended_case_base.csv")
 
 class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 4
