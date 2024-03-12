@@ -360,7 +360,10 @@ def get_doctor_number(pdeath, dps, pdeath_60):
     pdeath_scaled = pdeath * 10.
     dps_scaled = dps * 1.
     pdeath_60_scaled = pdeath_60 * 10.
-    return max(0, min(100, int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled, pdeath_60_scaled]))))
+    pdeath_scaled = pdeath * 50.
+    dps_scaled = dps * 1.
+    return int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled]))
+    # return max(0, min(100, int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled, pdeath_60_scaled]))))
 
 
 def get_nextgen_stats(all_decision_metrics: dict[str, list], ordered_treatmenmts: list[str]) -> dict[str, int]:
