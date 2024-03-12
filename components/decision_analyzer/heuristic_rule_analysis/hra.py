@@ -195,7 +195,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2}
         #casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
-        casualty_val_table['rank'] = {'recruit': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
+        casualty_val_table['rank'] = {'e-1': 1, 'e-2': 2, 'e-3': 3, 'e-4': 4, 'e-5': 5, 'e-6': 6, 'e-7': 7, 'e-8': 8, \
+                                      'e-9': 9, 'w-1': 1, 'w-2': 2, 'w-3': 3, 'w-4': 4, 'w-5': 5, 'o-1': 1, 'o-2': 2, \
+                                      'o-3': 3, 'o-4': 4, 'o-5': 5, 'o-6': 6, 'o-7': 7, 'o-8': 8, 'o-9': 9, 'o-10': 10, \
+                                      'special (navy)': 9, 'special (coast guard)': 9, 'special': 9}
 
         # hold sums for each casualty
         casualty_sum = dict()
@@ -315,7 +318,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2, 'neutral': 0}
         #casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
-        casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
+        #casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
+        casualty_val_table['rank'] = {'e-1': 1, 'e-2': 2, 'e-3': 3, 'e-4': 4, 'e-5': 5, 'e-6': 6, 'e-7': 7, 'e-8': 8,\
+                                      'e-9': 9, 'w-1': 1, 'w-2': 2, 'w-3': 3, 'w-4': 4, 'w-5': 5, 'o-1': 1, 'o-2': 2,\
+                                      'o-3': 3, 'o-4': 4, 'o-5': 5, 'o-6': 6, 'o-7': 7, 'o-8': 8, 'o-9': 9, 'o-10': 10,\
+                                      'special (navy)': 9, 'special (coast guard)': 9, 'special': 9}
 
         # hold sums for each casualty
         casualty_sum = dict()
@@ -486,7 +493,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 1, 'neutral': 0}
         #casualty_val_table['rank'] = {'civilian': 1, 'marine': 1, 'intel officer': 1, 'vip': 1, 'e-4': 1}
-        casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
+        #casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
+        casualty_val_table['rank'] = {'e-1': 1, 'e-2': 2, 'e-3': 3, 'e-4': 4, 'e-5': 5, 'e-6': 6, 'e-7': 7, 'e-8': 8,\
+                                      'e-9': 9, 'w-1': 1, 'w-2': 2, 'w-3': 3, 'w-4': 4, 'w-5': 5, 'o-1': 1, 'o-2': 2,\
+                                      'o-3': 3, 'o-4': 4, 'o-5': 5, 'o-6': 6, 'o-7': 7, 'o-8': 8, 'o-9': 9, 'o-10': 10,\
+                                      'special (navy)': 9, 'special (coast guard)': 9, 'special': 9}
 
         # variables for checking each casualty
         casualty_sum = dict()
@@ -861,7 +872,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         casualty_val_table = dict()
         casualty_val_table['relationship'] = {'neutral': 0, 'same-unit': 1, 'friend': 2}
         #casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
-        casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
+        #casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
+        casualty_val_table['rank'] = {'e-1': 1, 'e-2': 2, 'e-3': 3, 'e-4': 4, 'e-5': 5, 'e-6': 6, 'e-7': 7, 'e-8': 8,\
+                                      'e-9': 9, 'w-1': 1, 'w-2': 2, 'w-3': 3, 'w-4': 4, 'w-5': 5, 'o-1': 1, 'o-2': 2,\
+                                      'o-3': 3, 'o-4': 4, 'o-5': 5, 'o-6': 6, 'o-7': 7, 'o-8': 8, 'o-9': 9, 'o-10': 10,\
+                                      'special (navy)': 9, 'special (coast guard)': 9, 'special': 9}
 
         # get random ordering of casualties
         casualty_list = list(casualty_dict)
@@ -1179,14 +1194,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
         casualty_data = dict()
         for ele in scen.state.casualties:
-            if ele.demographics.rank == "e-1" or ele.demographics.rank_title == "recruit":# TODO: debug
-                print("hello bug")
             casualty_data[ele.id] = {
                 "id": ele.id,
                 "name": ele.name,
                 "injuries": [{"location": l.location, "name": l.name, "severity": l.severity} for l in ele.injuries],
                 "demographics": {"age": ele.demographics.age, "sex": ele.demographics.sex,
-                                 "rank": ele.demographics.rank_title},
+                                 "rank": ele.demographics.rank},#"rank": ele.demographics.rank_title},
                 "vitals": {"breathing": ele.vitals.breathing, "hrpmin": ele.vitals.hrpmin,
                            "conscious": ele.vitals.conscious, "mental_status": ele.vitals.mental_status},
                 "directness_of_causality":ele.directness_of_causality,
