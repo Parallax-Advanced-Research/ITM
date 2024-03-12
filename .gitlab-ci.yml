@@ -143,7 +143,7 @@ integration_test_soartech_csv_full:
   stage: test
   script:
     - python run-servers.py
-    - python tad_tester.py --no-verbose --session_type soartechn--kdma maximization=1 --ebd --mc --br --bayes --selector csv
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --mc --br --bayes --selector csv
     - python stop-servers.py
 
 integration_test_adept_csv_full:
