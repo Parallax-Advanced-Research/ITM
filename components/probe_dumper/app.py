@@ -1,7 +1,8 @@
 import os
+import urllib
 
 import streamlit as st
-import pandas as pd
+from pathlib import Path
 import pickle as pkl
 import os.path as osp
 import sys
@@ -326,11 +327,9 @@ def read_saved_scenarios():
     scenarios_run = os.listdir(DUMP_PATH)
     scenarios_run = [osp.join(DUMP_PATH, x) for x in scenarios_run if 'pkl' in x]
     scenario_hash = {}
+
     for sr in scenarios_run:
-        if 'MD' in sr:
-            scenario_hash[''.join(sr.split('.')[:-1]).split(os.sep)[-1]] = pkl.load(file=open(sr, mode='rb'))
-        else:
-            scenario_hash[sr.split('.')[0].split(os.sep)[-1]] = pkl.load(file=open(sr, mode='rb'))
+        scenario_hash[Path(sr).stem] = pkl.load(file=open(sr, mode='rb'))
     return scenario_hash
 
 
@@ -384,7 +383,8 @@ if __name__ == '__main__':
                     'P(External Bleeding) (Bayes)']
 
     if params.get('scen', None) is not None:
-        scen = params['scen'].split('-')[:-1]
+        clean_scenario = urllib.parse.unquote_plus(params.get('scen', None))
+        scen = clean_scenario.split('-')[:-1]
         scen = '-'.join(scen)
         chosen_scenario = scen
     else:
@@ -392,7 +392,8 @@ if __name__ == '__main__':
     num_decisions = [i + 1 for i in range(len(scenario_pkls[chosen_scenario].decisions_presented))]
     # have to check again, for the probe number, need the total number of decision from the scen though
     if params.get('scen', None) is not None:
-        probe = params['scen'].split('-')[-1]
+        clean_scenario = urllib.parse.unquote_plus(params.get('scen', None))
+        probe = clean_scenario.split('-')[-1]
         chosen_decision = int(probe) + 1  # adding 1 for display
     else:
         chosen_decision = st.selectbox(label="Choose a decision", options=num_decisions)

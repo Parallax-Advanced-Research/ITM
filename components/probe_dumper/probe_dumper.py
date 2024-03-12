@@ -1,10 +1,11 @@
 import os
 import os.path as osp
 import pickle as pkl
+import urllib
 
 from domain.internal import TADProbe, Decision
 from domain.ta3 import TA3State
-
+from util.logger import logger
 
 DUMP_PATH = osp.join('components', 'probe_dumper', 'tmp')
 
@@ -62,8 +63,7 @@ class ProbeDumper:
                 opened_dump = pkl.load(f2)
             except:
                 f2.close()
-                print("Failed dump re-open.")
-                breakpoint()
+                logger.debug('Dump Load failed.')
                 os.remove(osp.join(self.dump_path, dump_artifact))
                 opened_dump = None
                 continue
@@ -81,7 +81,10 @@ class ProbeDumper:
 
         opened_dump = opened_dump if opened_dump is not None else Dump(probe, session_uuid)
         opened_dump.add_decisionstate(probe, decision)
-        save_name = osp.join(self.dump_path, '%s.pkl' % new_id)
+        #1 Encode as base 64 string
+        #Use url
+        clean_id = urllib.parse.quote_plus(new_id)
+        save_name = osp.join(self.dump_path, '%s.pkl' % clean_id)
         f1 = open(save_name, 'wb')
         pkl.dump(opened_dump, f1)
         f1.close()
