@@ -44,7 +44,8 @@ class TA3Elaborator(Elaborator):
             elif _name == ActionTypeEnum.CHECK_RESPIRATION:
                 to_return += self._enumerate_check_resp_actions(probe.state, d)
             elif _name == ActionTypeEnum.SEARCH: 
-                to_return += [d]
+                pass #No good theory of the search action.
+                # to_return += [d]
             elif _name == ActionTypeEnum.TAG_CHARACTER:
                 to_return += self._tag(probe.state.casualties, d)
             elif _name == ActionTypeEnum.END_SCENE:
