@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+from pathlib import Path
 
 import streamlit as st
 import pandas as pd
@@ -11,10 +12,9 @@ import sys
 if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, Casualty, Supply
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, DAMAGE_PER_SECOND
 from components.probe_dumper.probe_dumper import DUMP_PATH
-from domain.mvp.mvp_state import Casualty, Supply
 from domain.internal import Decision
 
 UNKNOWN_NUMBER = -12.34
@@ -185,12 +185,27 @@ def get_hra_strategy(decision):
     return selected_strategy, selected_justification
 
 
+def _make_display_name(metric_name):
+    return METRIC_DISPLAY_NAME_DESCRIPTION[metric_name][0].replace('<br>', ' ') + ' ' + METRIC_DISPLAY_NAME_DESCRIPTION[metric_name][3]
+
+def _calc_group_names_count(sorted_metrics):
+    groups = {}
+    for metric in sorted_metrics:
+        if metric.chosen_metric:
+            group_name = METRIC_DISPLAY_NAME_DESCRIPTION[metric.name][3]
+            if groups.get(group_name, None) is None:
+                groups[group_name] = 1
+            else:
+                groups[group_name] = groups[group_name] + 1
+    return groups
+
+
 def construct_decision_table(analysis_df, metric_choices, sort_metric):
     sort_func = None
     # create the sort func, a lambda directing to chosen metric in dataframe
     for m_c in metric_choices:
         if m_c.chosen_metric:
-            display_name = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][0].replace('<br>', ' ')
+            display_name = _make_display_name(m_c.name)
             if display_name == sort_metric:
                 if display_name == 'HRA Strategy':
                     sort_func = lambda x: get_hra_strategy(x)[0] if 'HRA Strategy' in x.metrics.keys() else x.id_
@@ -200,10 +215,23 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
     # sort the dataframe
     sorted_df = sorted(analysis_df, key=sort_func)
 
+    # sort metric_choices by grouping
+    sorted_metric_choices = sorted(metric_choices, key=lambda x: x.group_name)
+    group_names_counts = _calc_group_names_count(sorted_metric_choices)
+
     table_full_html = "<table>"
+
+    # header for groupings
+    # constant metrics
+    table_full_html += '<tr style="text-align: center"> <th colspan="5"> </th>'
+    # dynamic metrics
+    for group in group_names_counts.items():
+        table_full_html += f'<th colspan="{group[1]}"> {group[0]} </th>'
+    table_full_html += '</tr>'
+
     # header
     table_full_html += '<tr> <th>Decision</th> <th>Character</th> <th>Location</th> <th>Treatment</th> <th>Tag</th>'
-    for m_c in metric_choices:
+    for m_c in sorted_metric_choices:
         if m_c.chosen_metric:
             display_name = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][0]
             table_full_html += f"""<th> <div title='{METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][1]}'> {display_name} </div> </th>"""
@@ -230,7 +258,7 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
         justifications = get_html_justification(decision.justifications)
 
         # dynamic stuff
-        for m_c in metric_choices:
+        for m_c in sorted_metric_choices:
             if m_c.chosen_metric:
                 if m_c.name == 'HRA Strategy':
                     strat_selected, strat_justification = get_hra_strategy(decision)
@@ -254,32 +282,33 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
 #  - the way it should be displayed (use <br> for where the desired break is in the name for the table
 #  - the description of the metric (hover over the name in the table and a tool tip will appear)
 #  - formatting for the number (percentage, leading 0s, number of decimals, etc)
+#  - what group they are apart of BNDA, MCA, ect
 METRIC_DISPLAY_NAME_DESCRIPTION = {
-    'pDeath': ('BNDA<br>P(Death)', 'Posterior probability of death with no action', '{:.2%}'),
-    'pPain': ('BNDA<br>P(Pain)', 'Posterior probability of severe pain', '{:.2%}'),
-    'pBrainInjury': ('BNDA<br>P(Brain<br>Injury)', 'Posterior probability of a brain injury', '{:.2%}'),
-    'pAirwayBlocked': ('BNDA<br>P(Airway<br>Blocked)', 'Posterior probability of airway blockage', '{:.2%}'),
-    'pInternalBleeding': ('BNDA<br>P(Internal<br>Bleeding)', 'Posterior probability of internal bleeding', '{:.2%}'),
-    'pExternalBleeding': ('BNDA<br>P(External<br>Bleeding)', 'Posterior probability of external bleeding', '{:.2%}'),
-    'SEVERITY': ('Total<br>Severity', 'Sum of all Severities for all Injuries for all Casualties', '{:.0f}'),
-    'SUPPLIES_REMAINING': ('Supplies<br>Remaining', 'Supplies remaining', '{:.0f}'),
-    'AVERAGE_TIME_USED': ('MCA<br>Time', 'Average time used in action', '{:.0f}'),
-    'DAMAGE_PER_SECOND': ('MCA<br>Deterioration<br>per second', 'Blood loss ml/sec + lung hp loss/sec + burn shock/second for ALL casualties', '{:.0f}'),
-    'MEDSIM_P_DEATH': ('MCA<br>P(Death)', 'Medical simulator probability at least one patient bleeds out, dies of burn shock or asphyxiates from action', '{:.2%}'),
-    'MEDSIM_P_DEATH_ONE_MIN_LATER': ('MCA<br>P(Death)<br> + 60s', 'Probability of death after one minute of inactivity after action performed', '{:.2%}'),
-    'SEVERITY_CHANGE': ('Severity<br>Change', 'Change in severity from previous state normalized for time.', '{:.2f}'),
-    'SUPPLIES_USED': ('Supplies<br>Used', 'Supplies used in between current state and projected state', '{:.0f}'),
-    'ACTION_TARGET_SEVERITY': ('Target<br>Severity', 'The severity of the target', '{:.1f}'),
-    'ACTION_TARGET_SEVERITY_CHANGE': ('Target<br>Severity<br>Change', 'how much the target of the actions severity changes', '{:.1f}'),
-    'SEVEREST_SEVERITY': ('Severest<br>Severity', 'what the most severe targets severity is', '{:.1f}'),
-    'SEVEREST_SEVERITY_CHANGE': ('Severest<br>Severity<br>Change', 'What the change in the severest severity target is', '{:.1f}'),
-    'All Predictors': ('All<br>Predictors', 'ALL....Predictors.', '{:.1f}'),
-    'entropy': ('BNDA<br>Entropy', 'H[entire bayesian network | observations]', '{:.3f}'),
-    'entropyDeath': ('BNDA<br>Entropy<br>Death', 'H[death | observations]', '{:.3f}'),
-    'WEIGHTED_RESOURCE_SCORE': ('MCA<br>Weighted<br>Resource', 'More lifesaving items are weighted heavier', '{:.0f}'),
-    'SMOL_MEDICAL_SOUNDNESS': ('MCA<br>Medical<br>Soundness', 'Harmonic Mean of Damage Per Second and Probability Death', '{:.0f}'),
-    'INFORMATION_GAINED': ('MCA<br>Information<br>Gained', 'How much information is gained by the action', '{:.0f}'),
-    'HRA Strategy': ('HRA<br>Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '')
+    'pDeath': ('P(Death)', 'Posterior probability of death with no action', '{:.2%}', 'BNDA'),
+    'pPain': ('P(Pain)', 'Posterior probability of severe pain', '{:.2%}', 'BNDA'),
+    'pBrainInjury': ('P(Brain<br>Injury)', 'Posterior probability of a brain injury', '{:.2%}', 'BNDA'),
+    'pAirwayBlocked': ('P(Airway<br>Blocked)', 'Posterior probability of airway blockage', '{:.2%}', 'BNDA'),
+    'pInternalBleeding': ('P(Internal<br>Bleeding)', 'Posterior probability of internal bleeding', '{:.2%}', 'BNDA'),
+    'pExternalBleeding': ('P(External<br>Bleeding)', 'Posterior probability of external bleeding', '{:.2%}', 'BNDA'),
+    'SEVERITY': ('Total<br>Severity', 'Sum of all Severities for all Injuries for all Casualties', '{:.0f}', ''),
+    'SUPPLIES_REMAINING': ('Supplies<br>Remaining', 'Supplies remaining', '{:.0f}', ''),
+    'AVERAGE_TIME_USED': ('Time', 'Average time used in action', '{:.0f}', 'MCA'),
+    'DAMAGE_PER_SECOND': ('Deterioration<br>per second', 'Blood loss ml/sec + lung hp loss/sec + burn shock/second for ALL casualties', '{:.0f}', 'MCA'),
+    'MEDSIM_P_DEATH': ('P(Death)', 'Medical simulator probability at least one patient bleeds out, dies of burn shock or asphyxiates from action', '{:.2%}', 'MCA'),
+    'MEDSIM_P_DEATH_ONE_MIN_LATER': ('P(Death)<br> + 60s', 'Probability of death after one minute of inactivity after action performed', '{:.2%}', 'MCA'),
+    'SEVERITY_CHANGE': ('Severity<br>Change', 'Change in severity from previous state normalized for time.', '{:.2f}', ''),
+    'SUPPLIES_USED': ('Supplies<br>Used', 'Supplies used in between current state and projected state', '{:.0f}', ''),
+    'ACTION_TARGET_SEVERITY': ('Target<br>Severity', 'The severity of the target', '{:.1f}', ''),
+    'ACTION_TARGET_SEVERITY_CHANGE': ('Target<br>Severity<br>Change', 'how much the target of the actions severity changes', '{:.1f}', ''),
+    'SEVEREST_SEVERITY': ('Severest<br>Severity', 'what the most severe targets severity is', '{:.1f}', ''),
+    'SEVEREST_SEVERITY_CHANGE': ('Severest<br>Severity<br>Change', 'What the change in the severest severity target is', '{:.1f}', ''),
+    'All Predictors': ('All<br>Predictors', 'ALL....Predictors.', '{:.1f}', ''),  # thought we were skipping this not sure why it is here
+    'entropy': ('Entropy', 'H[entire bayesian network | observations]', '{:.3f}', 'BNDA'),
+    'entropyDeath': ('Entropy<br>Death', 'H[death | observations]', '{:.3f}', 'BNDA'),
+    'WEIGHTED_RESOURCE_SCORE': ('Weighted<br>Resource', 'More lifesaving items are weighted heavier', '{:.0f}', 'MCA'),
+    'SMOL_MEDICAL_SOUNDNESS': ('Medical<br>Soundness', 'Harmonic Mean of Damage Per Second and Probability Death', '{:.0f}', 'MCA'),
+    'INFORMATION_GAINED': ('Information<br>Gained', 'How much information is gained by the action', '{:.0f}', 'MCA'),
+    'HRA Strategy': ('HRA<br>Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '', 'HRA')
 }
 
 
@@ -287,6 +316,7 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
 class ChosenMetric:
     name: str
     chosen_metric: bool
+    group_name: str
 
 
 def make_checkboxes_list_for_metrics(analysis_df):
@@ -301,7 +331,7 @@ def make_checkboxes_list_for_metrics(analysis_df):
 
     for metric in metrics:
         if metric not in ignore_metrics:
-            allowed_metrics.append(ChosenMetric(metric, False))
+            allowed_metrics.append(ChosenMetric(metric, False, METRIC_DISPLAY_NAME_DESCRIPTION[metric][3]))
     return allowed_metrics
 
 
@@ -311,6 +341,13 @@ if __name__ == '__main__':
     mc_only = True  # while HRA/BN/EBD are finished
 
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
+    st.markdown("""
+    <style>
+    .big-font {
+        font-size:14px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     scenario_pkls = read_saved_scenarios()
 
     # get the scen from url or drop down
@@ -333,11 +370,12 @@ if __name__ == '__main__':
     # get the scen
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
 
+    st.markdown('<p class="big-font">Open to select which metrics are displayed</p>', unsafe_allow_html=True)
     # checkbox stuff for metrics
     metric_choices = make_checkboxes_list_for_metrics(analysis_df)
-    with st.expander('Open to select which metrics are displayed'):
+    with st.expander('Select'):
         for m_choice in metric_choices:
-            display_name = METRIC_DISPLAY_NAME_DESCRIPTION[m_choice.name][0].replace('<br>', ' ')
+            display_name = _make_display_name(m_choice.name)
             checkbox = st.checkbox(display_name)
             if checkbox:
                 m_choice.chosen_metric = True
@@ -347,7 +385,7 @@ if __name__ == '__main__':
     # sort options depends on metric choices so needs to be after
     # it will be done using display name, so will need to index the sort functions by display name
     # kinda sad, but not sure how to get around it right now
-    sort_by = st.selectbox(label="Sort by", options=[METRIC_DISPLAY_NAME_DESCRIPTION[x.name][0].replace('<br>', ' ') for x in metric_choices if x.chosen_metric])
+    sort_by = st.selectbox(label="Sort by", options=[_make_display_name(x.name) for x in metric_choices if x.chosen_metric])
 
     st.header("""Scenario: %s""" % chosen_scenario.split('\\')[-1])
     st.subheader("""Probe %d/%d""" % (chosen_decision, len(num_decisions)))
