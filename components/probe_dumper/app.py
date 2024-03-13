@@ -11,11 +11,11 @@ import sys
 if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
+                                                                               Casualty, Supply)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, DAMAGE_PER_SECOND
 from components.probe_dumper.probe_dumper import DUMP_PATH
-from domain.mvp.mvp_state import Casualty, Supply
-from domain.internal import Decision
+
 
 UNKNOWN_NUMBER = -12.34
 UNKOWN_STRING = "--"

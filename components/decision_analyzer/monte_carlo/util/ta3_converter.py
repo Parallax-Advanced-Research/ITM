@@ -8,6 +8,7 @@ from domain.external import Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
 
 
+
 def _convert_demographic(ta_demographic: TA_DEM) -> Demographics:
     return Demographics(age=ta_demographic.age, sex=ta_demographic.sex, rank=ta_demographic.rank)
 
@@ -33,7 +34,10 @@ def _convert_injury(ta_injury: TA_INJ) -> list[Injury]:
         severe = ta_injury.severity
     injuries = []
     effect = INJURY_UPDATE[ta_injury.name]
-    if ta_injury.name == Injuries.BURN.value:
+    if ta_injury.name == Injuries.BURN.value and ta_injury.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
+                                                                        Locations.LEFT_NECK.value, Locations.RIGHT_NECK.value,
+                                                                        Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]:
+
         burn_suffocation_injury = Injury(name=Injuries.BURN_SUFFOCATION.value, location=Locations.LEFT_FACE.value,
                                          severity=ta_injury.severity,
                                          breathing_effect=INJURY_UPDATE[Injuries.BURN_SUFFOCATION.value].breathing_effect,
@@ -43,6 +47,14 @@ def _convert_injury(ta_injury: TA_INJ) -> list[Injury]:
     burn_tissue_injury = Injury(name=ta_injury.name, location=ta_injury.location, severity=severe,
                                 burning_effect=effect.burning_effect, bleeding_effect=effect.bleeding_effect,
                                 breathing_effect=effect.breathing_effect)
+    if ta_injury.name == Injuries.BROKEN_BONE.value and ta_injury.location in [Locations.LEFT_CHEST.value,
+                                                                               Locations.RIGHT_CHEST.value]:
+        chest_collapse_injury = Injury(name=Injuries.CHEST_COLLAPSE.value, location=ta_injury.location,
+                                       severity=ta_injury.severity, treated=ta_injury.treated,
+                                       breathing_effect=INJURY_UPDATE[Injuries.CHEST_COLLAPSE.value].breathing_effect,
+                                       bleeding_effect=BodySystemEffect.NONE.value,
+                                       burning_effect=BodySystemEffect.NONE.value)
+        injuries.append(chest_collapse_injury)
     injuries.append(burn_tissue_injury)
     return injuries
 
