@@ -215,16 +215,22 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
                 if dfeedback["count"] == 0:
                     breakpoint()
                 new_case = new_case | flatten("feedback_delta", dfeedback)
-        if "hint" in new_case:
-            for key in new_case["hint"].keys():
-                vals = set([case.get("hint", {}).get(key, None) for case in case_list])
-                if len(vals) > 1:
-                    breakpoint()
-            new_case = new_case | flatten("hint", new_case.pop("hint"))
+        hint_names = set()
+        for case in case_list:
+            hint_names |= set(case.get("hint", {}).keys())
+        for hint_name in hint_names:
+            vals = set([case.get("hint", {}).get(hint_name, None)]) - {None}
+            if len(vals) > 0:
+                new_case["hint." + hint_name] = statistics.mean(vals)
         if "dhint" in new_case:
             for key in new_case["dhint"].keys():
-                avg : float = statistics.mean([case.get("dhint", {}).get(key, None) for case in case_list])
-                new_case[key.lower()] = (avg + 1.0) / 2
+                hint_val : float = 0
+                if key in hint_names:
+                    hint_val = new_case["hint." + key]
+                else:
+                    hint_val = statistics.mean([case.get("dhint", {}).get(key, None) for case in case_list])
+                    hint_val = (hint_val + 1.0) / 2
+                new_case[key.lower()] = hint_val
                 new_case.pop("dhint")
         new_case.pop("hash")
         new_case.pop("action-string")
