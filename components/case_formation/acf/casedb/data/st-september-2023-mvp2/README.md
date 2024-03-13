@@ -1,1 +1,0 @@
-Example scenario file. Eventually this will be replaced by an actual database. This should be kept updated with the current version of the message formats. To test, run `../../schema/test_pydantic.py`.
