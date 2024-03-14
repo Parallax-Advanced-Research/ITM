@@ -5,22 +5,379 @@
 # Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+
+
+image: registry.basic-research.parallaxgc.org/github-mirrors/itm/ci:latest
+
 stages:
-- build
+#- build
 - test
-- deploy
-- review
-- dast
-- staging
-- canary
-- production
-- incremental rollout 10%
-- incremental rollout 25%
-- incremental rollout 50%
-- incremental rollout 100%
-- performance
-- cleanup
-sast:
-  stage: test
+- integration_test_soartech
+- integration_test_adept
+- integration_test_eval
+- install_servers
+- individual_tests_soartech
+- individual_tests_adept
+- individual_tests_eval
+#- deploy
+#- review
+#- dast
+#- staging
+#- canary
+#- production
+#- incremental rollout 10%
+#- incremental rollout 25%
+#- incremental rollout 50%
+#- incremental rollout 100%
+#- performance
+#- cleanup
+#sast:
+#  stage: test
+
 include:
-- template: Auto-DevOps.gitlab-ci.yml
+#- template: Auto-DevOps.gitlab-ci.yml
+ - template: Jobs/SAST.gitlab-ci.yml
+ - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+before_script:
+   - export HOME=/home/itm
+   - mkdir -p "$HOME/.ssh"
+   - echo "$CI_ACCESS_KEY" > "$HOME/.ssh/id_rsa"
+   - chmod 600 "$HOME/.ssh/id_rsa"
+   - echo -e "Host github.com\n\tHostName github.com\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tPasswordAuthentication no\n\tStrictHostKeyChecking no\n" > $HOME/.ssh/config
+   - chmod 600 $HOME/.ssh/config
+   - touch $HOME/.ssh/known_hosts
+   - CI/install_libs.sh
+   - python install.py
+   - source venv/bin/activate
+
+
+lint_tools:
+  stage: test
+  allow_failure: true
+  script:
+    - python run_tests.py --notest
+
+unit_tests:
+  stage: test
+  script:
+    - python run_tests.py --nolint -v
+
+
+# TODO: remove these three once the main tests work
+integration_test0:
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type adept --kdma moraldesert=1 --scenario MetricsEval.MD18
+    - python stop-servers.py
+
+integration_test1:
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type adept --kdma moraldesert=1
+    - python stop-servers.py
+
+integration_test2:
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-br --no-ebd --no-mc --no-dump --session_type soartech --kdma maximization=1
+    - python stop-servers.py
+
+
+# For each session_type, try with all decisiona analyzers enabled (and the default decision selector)
+integration_test_soartech_keds_full:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --mc --br --bayes
+    - python stop-servers.py
+
+integration_test_adept_keds_full:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --ebd --mc --br --bayes
+    - python stop-servers.py
+
+integration_test_eval_keds_full:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --ebd --mc --br --bayes
+    - python stop-servers.py
+
+# selector = kedsd
+integration_test_soartech_kedsd_full:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --mc --br --bayes --selector kedsd
+    - python stop-servers.py
+
+integration_test_adept_kedsd_full:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --ebd --mc --br --bayes --selector kedsd
+    - python stop-servers.py
+
+integration_test_eval_kedsd_full:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --ebd --mc --br --bayes --selector kedsd
+    - python stop-servers.py
+
+# selector = csv
+integration_test_soartech_csv_full:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --mc --br --bayes --selector csv
+    - python stop-servers.py
+
+integration_test_adept_csv_full:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --ebd --mc --br --bayes --selector csv
+    - python stop-servers.py
+
+integration_test_eval_csv_full:
+  needs: []
+  stage: test
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --ebd --mc --br --bayes --selector csv
+    - python stop-servers.py
+
+
+# If big job that tests everything fails, start doing others piecemeal:
+
+# Test that servers installed
+
+integration_test_keds_soartech_no_analyzers:
+  stage: install_servers
+  needs: [ integration_test_soartech_keds_full ]
+  when: on_failure
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes
+    - python stop-servers.py
+
+integration_test_keds_adept_no_analyzers:
+  stage: install_servers
+  needs: [ integration_test_adept_keds_full ]
+  when: on_failure
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes
+    - python stop-servers.py
+
+integration_test_keds_eval_no_analyzers:
+  stage: install_servers
+  needs: [ integration_test_eval_keds_full ]
+  when: on_failure
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes
+    - python stop-servers.py
+
+
+# Soartech individual tests
+
+## different decision analyzers (default decision selector)
+integration_test_soartech_ebd:
+  stage: individual_tests_soartech
+  needs: [ integration_test_keds_soartech_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --ebd --no-mc --no-br --no-bayes
+    - python stop-servers.py
+
+integration_test_soartech_mc:
+  stage: individual_tests_soartech
+  needs: [ integration_test_keds_soartech_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --mc --no-br --no-bayes
+    - python stop-servers.py
+
+integration_test_soartech_br:
+  stage: individual_tests_soartech
+  needs: [ integration_test_keds_soartech_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_soartech_bayes:
+  stage: individual_tests_soartech
+  needs: [ integration_test_keds_soartech_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --bayes
+    - python stop-servers.py
+
+
+## different decision selectors (no decision analyzers)
+integration_test_soartech_keds:
+  stage: individual_tests_soartech
+  needs: [ integration_test_keds_soartech_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes --selector keds
+    - python stop-servers.py
+
+integration_test_soartech_kedsd:
+  stage: individual_tests_soartech
+  needs: [ integration_test_keds_soartech_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes --selector kedsd
+    - python stop-servers.py
+
+integration_test_soartech_csv:
+  stage: individual_tests_soartech
+  needs: [ integration_test_keds_soartech_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type soartech --kdma maximization=1 --no-ebd --no-mc --no-br --no-bayes --selector csv
+    - python stop-servers.py
+
+
+# Adept individual tests
+
+## different decision analyzers (default decision selector)
+integration_test_adept_ebd:
+  stage: individual_tests_adept
+  needs: [ integration_test_keds_adept_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --ebd --no-mc --no-br --no-bayes
+    - python stop-servers.py
+
+integration_test_adept_mc:
+  stage: individual_tests_adept
+  needs: [ integration_test_keds_adept_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --mc --no-br --no-bayes
+    - python stop-servers.py
+
+integration_test_adept_br:
+  stage: individual_tests_adept
+  needs: [ integration_test_keds_adept_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_adept_bayes:
+  stage: individual_tests_adept
+  needs: [ integration_test_keds_adept_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --bayes
+    - python stop-servers.py
+
+
+## different decision selectors (no decision analyzers)
+integration_test_adept_keds:
+  stage: individual_tests_adept
+  needs: [ integration_test_keds_adept_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --no-bayes --selector keds
+    - python stop-servers.py
+
+integration_test_adept_kedsd:
+  stage: individual_tests_adept
+  needs: [ integration_test_keds_adept_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --no-bayes --selector kedsd
+    - python stop-servers.py
+
+integration_test_adept_csv:
+  stage: individual_tests_adept
+  needs: [ integration_test_keds_adept_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type adept --kdma moraldesert=1 --no-ebd --no-mc --no-br --no-bayes --selector csv
+    - python stop-servers.py
+
+# Eval individual tests
+
+## different decision analyzers (default decision selector)
+integration_test_eval_ebd:
+  stage: individual_tests_eval
+  needs: [ integration_test_keds_eval_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --ebd --no-mc --no-br --no-bayes
+    - python stop-servers.py
+
+integration_test_eval_mc:
+  stage: individual_tests_eval
+  needs: [ integration_test_keds_eval_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --mc --no-br --no-bayes
+    - python stop-servers.py
+
+integration_test_eval_br:
+  stage: individual_tests_eval
+  needs: [ integration_test_keds_eval_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --br --no-keds --no-kedsd --no-csv --no-bayes
+    - python stop-servers.py
+
+integration_test_eval_bayes:
+  stage: individual_tests_eval
+  needs: [ integration_test_keds_eval_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --bayes
+    - python stop-servers.py
+
+
+## different decision selectors (no decision analyzers)
+integration_test_eval_keds:
+  stage: individual_tests_eval
+  needs: [ integration_test_keds_eval_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --no-bayes --selector keds
+    - python stop-servers.py
+
+integration_test_eval_kedsd:
+  stage: individual_tests_eval
+  needs: [ integration_test_keds_eval_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --no-bayes --selector kedsd
+    - python stop-servers.py
+
+integration_test_eval_csv:
+  stage: individual_tests_eval
+  needs: [ integration_test_keds_eval_no_analyzers ]
+  script:
+    - python run-servers.py
+    - python tad_tester.py --no-verbose --session_type eval --no-ebd --no-mc --no-br --no-bayes --selector csv
+    - python stop-servers.py
+
+
+

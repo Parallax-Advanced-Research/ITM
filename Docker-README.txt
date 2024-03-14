@@ -15,4 +15,6 @@ On either platform, you can pass command line arguments to run-docker.bat, inclu
   --no-verbose: Cuts down on the information spit out to the command line when running
   --variant=misaligned: Runs a misaligned variant of TAD
   --variant=baseline: Runs a baseline variant of TAD
+  --session_type soartech|adept: Requests soartech/adept mode from the TA3 server.
+  --training: Requests KDMA training mode from the TA3 server.
   

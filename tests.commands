@@ -1,0 +1,3 @@
+# Lines where the *first* non-space character is # are comments.
+# See Testing-README.md for more details
+#python scripts/tad_tester_wrapper.py

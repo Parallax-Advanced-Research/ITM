@@ -1,0 +1,27 @@
+{
+    "scenario":
+    {
+        "danger":"high",
+        "urgency":"high",
+        "error_prone":"high"
+    },
+    "kdma":
+    {
+        "mission": 8,
+        "denial": 3
+    },
+    "predictors":
+    {
+        "relevance":{"risk_reward_ratio":"low", "time":"seconds", "system":"equal", "resources":"few"}
+    },
+
+    "treatment":{
+"airway":{"risk_reward_ratio":"med", "resources":"few", "time":"seconds", "system":"respiratory"},
+"saline lock":{"risk_reward_ratio":"low", "resources":"few", "time":"seconds", "system":"cariovascular"},
+"iv fluids":{"risk_reward_ratio":"low", "resources":"some", "time":"minutes", "system":["vascular", "renal"]}
+     },
+    "casualty":
+    {
+        "injury":{"name":"broken arm", "system":"skeleton", "severity":"serious"}
+    }
+}

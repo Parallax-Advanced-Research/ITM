@@ -2,6 +2,7 @@ import enum
 import time
 import logging
 import functools
+import os
 
 
 class LogLevel(enum.IntEnum):
@@ -62,6 +63,7 @@ class SimpleFormatter(logging.Formatter):
         return formatter.format(record)
 
 
+os.system('') #Voodoo to make colors work in Windows CMD
 logger = logging.getLogger("TAD")
 logger.setLevel(logging.DEBUG)
 logger._log = functools.partial(_tagged_log, logger)

@@ -1,5 +1,7 @@
 # Additional/Manually ignored files
 *.p
+*.swp
+.python_check/
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/windows,python,virtualenv,visualstudiocode,pycharm,jetbrains,powershell
@@ -262,7 +264,7 @@ pyrightconfig.json
 [Ll]ib
 [Ll]ib64
 [Ll]ocal
-[Ss]cripts
+venv/[Ss]cripts
 pyvenv.cfg
 pip-selfcheck.json
 
@@ -318,3 +320,12 @@ temp/newfile.json
 
 temp/scene.json
 /temp/*
+
+adept_client/
+adept_server/
+align-system/
+itm-analysis-reporting/
+ta1-server-mvp/
+.deprepos/
+repo-cfgs/*-patch-hash
+components/probe_dumper/tmp/*.pkl

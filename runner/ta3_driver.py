@@ -1,36 +1,79 @@
 from domain.ta3 import TA3State
 from components.decision_selector.default import HumanDecisionSelector
-from components.decision_selector.sept_cbr import CSVDecisionSelector
+from components.decision_selector.kdma_estimation import KDMAEstimationDecisionSelector
+from components.decision_selector.severity import SeverityDecisionSelector
+from components.decision_selector.exhaustive import ExhaustiveSelector
+from components.alignment_trainer import KDMACaseBaseRetainer
 from components.elaborator.default import TA3Elaborator
 from components.decision_analyzer.default import BaselineDecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
+from components.attribute_explorer.random_probe_based import RandomProbeBasedAttributeExplorer
+from components.probe_dumper.probe_dumper import DEFAULT_DUMP
+import domain.external as ext
 from .driver import Driver
 
 
 class TA3Driver(Driver):
     def __init__(self, args):
-        elaborator = TA3Elaborator()
-        mda = MonteCarloAnalyzer(max_rollouts=1000, max_depth=2) if args.mc else None
+        # Instantiating empty, and then filling as needed
+        self.actions_performed: list[Action] = []
+        self.treatments: dict[str, list[str]] = {}
 
-        if args.human:
-            selector = HumanDecisionSelector()
+        elaborator = TA3Elaborator()
+
+        if args.variant.lower() == "severity-baseline":
+            super().__init__(elaborator, SeverityDecisionSelector(), 
+                             [MonteCarloAnalyzer(max_rollouts=args.rollouts, max_depth=2)],
+                             None, None)
+                             # ?This is not declared will error
+            return
+
+        assert args.selector is not None
+        assert type(args.selector) is str
+
+        if args.selector_object is not None:
+            selector = args.selector_object
         else:
-            selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
-                                           variant = args.variant,
-                                           verbose = args.verbose)
+            if args.selector in ['keds', 'kedsd']:
+                selector = KDMAEstimationDecisionSelector(args)
+            elif 'human' == args.selector:
+                selector = HumanDecisionSelector()
+            elif 'random' == args.selector:
+                selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
+            else:
+                assert False, "Can't happen. Default --selector arg should have been set"
+        
         elaborator = TA3Elaborator()
 
+        if args.dump:
+            dump_config = DEFAULT_DUMP
+        else:
+            dump_config = None
 
         ebd = EventBasedDiagnosisAnalyzer() if args.ebd else None
-        hra = HeuristicRuleAnalyzer()
-        bnd = BayesNetDiagnosisAnalyzer()
-        analyzers = [ebd, hra, bnd, mda]
-        analyzers = [a for a in analyzers if a is not None]
+        br = HeuristicRuleAnalyzer() if args.br else None  # Crashes in TMNT/differenct scenario
+        bnd = BayesNetDiagnosisAnalyzer() if args.bayes else None
+        mca = MonteCarloAnalyzer(max_rollouts=args.rollouts, max_depth=2) if args.mc else None
 
-        super().__init__(elaborator, selector, analyzers)
+        analyzers = [ebd, br, bnd, mca]
+        analyzers = [a for a in analyzers if a is not None]
+        
+        if args.variant == 'baseline': 
+            analyzers = []
+
+        trainer = KDMACaseBaseRetainer()
+
+        super().__init__(elaborator, selector, analyzers, trainer, dumper_config = dump_config)
 
     def _extract_state(self, dict_state: dict):
+        for character in dict_state['characters']:
+            character_id = character['id']
+            if character_id in self.treatments.keys():
+                character['treatments'] = self.treatments[character_id]
+            else:
+                character['treatments'] = list()
+        dict_state['actions_performed'] = self.actions_performed
         return TA3State.from_dict(dict_state)
