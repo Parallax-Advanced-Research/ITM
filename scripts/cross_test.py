@@ -120,7 +120,7 @@ def get_score_sequence_record_from_history(fname):
     target_value = None
     responses = []
     for record in records:
-        if record['command'] == 'TA1 Alignment Target Data':
+        if record['command'] in ['TA1 Alignment Target Data', 'Alignment Target']:
             scenario = record['parameters']['scenario_id']
             target_id = record['response']['id']
             if 'kdmas' in record['response']:
@@ -172,12 +172,12 @@ def get_score_sequence_record_from_history(fname):
 def compare_histories():
     ssl = read_score_sequence_list("eval_score_sequence_list.json")
     results = []
-    for fname in glob.glob(".deprepos/itm-evaluation-server/itm_history_output/itm_history_*.json"):
+    for fname in glob.glob(".deprepos/itm-evaluation-server/itm_history_output/*.json"):
         ssr = get_score_sequence_record_from_history(fname)
         if ssr is None:
             continue
-        old_ssrs = [ossr for ossr in ssl if ossr["id"] == ssr["id"] 
-                                            and ossr["kdma"] == ssr["kdma"] 
+        old_ssrs = [ossr for ossr in ssl if ossr["id"] == ssr["id"]
+                                            and ossr["kdma"] == ssr["kdma"]
                                             and abs(ossr["target"] - ssr["target"]) < 0.5]
         assert(1 == len(old_ssrs))
         result = record_comparison(old_ssrs[0], fname, ssr["score_sequence"])
