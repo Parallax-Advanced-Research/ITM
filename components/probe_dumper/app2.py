@@ -188,6 +188,10 @@ def get_hra_strategy(decision):
 def _make_display_name(metric_name):
     return METRIC_DISPLAY_NAME_DESCRIPTION[metric_name][0].replace('<br>', ' ') + ' ' + METRIC_DISPLAY_NAME_DESCRIPTION[metric_name][3]
 
+def _reset_chosen_metrics_to_false(chosen_metrics):
+    for choice in chosen_metrics:
+        choice.chosen_metric = False
+
 def _calc_group_names_count(sorted_metrics):
     groups = {}
     for metric in sorted_metrics:
@@ -227,7 +231,7 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
     # dynamic metrics
     for group in group_names_counts.items():
         table_full_html += f'<th colspan="{group[1]}"> {group[0]} </th>'
-    table_full_html += '</tr>'
+    table_full_html += '</tr>'  # end of group headings
 
     # header
     table_full_html += '<tr> <th>Decision</th> <th>Character</th> <th>Location</th> <th>Treatment</th> <th>Tag</th>'
@@ -272,7 +276,7 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
                     display_metric = METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][2].format(metric + 0) if metric != UNKNOWN_NUMBER else UNKOWN_STRING
                     table_full_html += f"""<td {pink_style}> <div title='{just_english}'> {display_metric} </div> </td>"""
 
-        table_full_html += '</tr>'  # end of data row  fixed = raw.replace(str(UNKNOWN_NUMBER), UNKOWN_STRING)
+        table_full_html += '</tr>'  # end of data row
 
     table_full_html += '</table>'
     return table_full_html, supply_used
@@ -282,7 +286,7 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
 #  - the way it should be displayed (use <br> for where the desired break is in the name for the table
 #  - the description of the metric (hover over the name in the table and a tool tip will appear)
 #  - formatting for the number (percentage, leading 0s, number of decimals, etc)
-#  - what group they are apart of BNDA, MCA, ect
+#  - what group they are a part of BNDA, MCA, ect
 METRIC_DISPLAY_NAME_DESCRIPTION = {
     'pDeath': ('P(Death)', 'Posterior probability of death with no action', '{:.2%}', 'BNDA'),
     'pPain': ('P(Pain)', 'Posterior probability of severe pain', '{:.2%}', 'BNDA'),
@@ -341,13 +345,6 @@ if __name__ == '__main__':
     mc_only = True  # while HRA/BN/EBD are finished
 
     st.set_page_config(page_title='ITM Decision Viewer', page_icon=':fire:', layout='wide')
-    st.markdown("""
-    <style>
-    .big-font {
-        font-size:14px !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
     scenario_pkls = read_saved_scenarios()
 
     # get the scen from url or drop down
@@ -370,17 +367,16 @@ if __name__ == '__main__':
     # get the scen
     analysis_df = scenario_pkls[chosen_scenario].decisions_presented[chosen_decision - 1]
 
-    st.markdown('<p class="big-font">Open to select which metrics are displayed</p>', unsafe_allow_html=True)
-    # checkbox stuff for metrics
+    # stuff for metrics selection
+    # gather all options
     metric_choices = make_checkboxes_list_for_metrics(analysis_df)
-    with st.expander('Select'):
-        for m_choice in metric_choices:
-            display_name = _make_display_name(m_choice.name)
-            checkbox = st.checkbox(display_name)
-            if checkbox:
-                m_choice.chosen_metric = True
-            else:
-                m_choice.chosen_metric = False
+    options_chosen = st.multiselect('Select metrics to display', [_make_display_name(x.name) for x in metric_choices])
+    # update metric_choices with which metrics were chosen
+    _reset_chosen_metrics_to_false(metric_choices)
+    for option in options_chosen:
+        for choice in metric_choices:
+            if _make_display_name(choice.name) == option:
+                choice.chosen_metric = True
 
     # sort options depends on metric choices so needs to be after
     # it will be done using display name, so will need to index the sort functions by display name
