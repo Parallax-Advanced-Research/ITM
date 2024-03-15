@@ -312,7 +312,9 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
     'WEIGHTED_RESOURCE_SCORE': ('Weighted<br>Resource', 'More lifesaving items are weighted heavier', '{:.0f}', 'MCA'),
     'SMOL_MEDICAL_SOUNDNESS': ('Medical<br>Soundness', 'Harmonic Mean of Damage Per Second and Probability Death', '{:.0f}', 'MCA'),
     'INFORMATION_GAINED': ('Information<br>Gained', 'How much information is gained by the action', '{:.0f}', 'MCA'),
-    'HRA Strategy': ('HRA<br>Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '', 'HRA')
+    'HRA Strategy': ('HRA<br>Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '', 'HRA',),
+    'STANDARD_TIME_SEVERITY': ('Standard<br>Time<br>Severity', 'Severity 200 seconds after the action is begiun', '{:.0f}', 'MCA'),
+    'SMOL_MEDICAL_SOUNDNESS_V2': ('Medical<br>Soundness V2', 'Percent corrected ranked ordering of STANDARD_TIME_SEVERITY', '{:.0f}', 'MCA')
 }
 
 
