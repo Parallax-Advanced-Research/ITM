@@ -222,14 +222,14 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
             vals = set([case.get("hint", {}).get(hint_name, None) for case in case_list]) - {None}
             if len(vals) > 0:
                 new_case["hint." + hint_name] = statistics.mean(vals)
-                if len(vals) > 1:
+                # if len(vals) > 1:
                     # breakpoint()
         if "dhint" in new_case:
             for key in new_case["dhint"].keys():
-                hint_val : float = 0
+                hint_val : float = -1
                 if key in hint_names:
-                    hint_val = new_case["hint." + key]
-                else:
+                    hint_val = new_case.get("hint." + key, -1)
+                if hint_val != -1:
                     hint_val = statistics.mean([case.get("dhint", {}).get(key, None) for case in case_list])
                     hint_val = (hint_val + 1.0) / 2
                 new_case[key.lower()] = hint_val
