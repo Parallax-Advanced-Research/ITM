@@ -80,7 +80,7 @@ class TA3Elaborator(Elaborator):
         
         return final_list
 
-    def remove_too_frequent_actions(probe, act_list)
+    def remove_too_frequent_actions(probe, act_list):
         action_counts = {}
         for act in probe.state.actions_performed:
             action_counts[str(act)] = action_counts.get(str(act), 0) + 1
