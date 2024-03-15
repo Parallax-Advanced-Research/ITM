@@ -318,7 +318,8 @@ elif adept_server_available:
           + '"--no-training --session_type soartech" will also work with tad_tester.py, but '
           + '"--session_type eval" will not.')
 
-time.sleep(30)
+if adept_server_available or soartech_server_available:
+    time.sleep(30)
 
 start_server("itm-evaluation-server", ["swagger_server"])
 
