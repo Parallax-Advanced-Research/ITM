@@ -76,8 +76,16 @@ class TA3Elaborator(Elaborator):
         final_list.sort(key=str)
         if len(final_list) == 0:
             breakpoint()
-        probe.decisions = final_list
+        probe.decisions = remove_too_frequent_actions(final_list)
+        
         return final_list
+
+    def remove_too_frequent_actions(probe, act_list)
+        action_counts = {}
+        for act in probe.state.actions_performed:
+            action_counts[str(act)] = action_counts.get(str(act), 0) + 1
+        return [d for d in dec_list if action_counts.get(str(dec.value), 0) < 5]
+        
 
     def _add_evac_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
         if probe.environment['decision_environment']['aid_delay'] == None:
