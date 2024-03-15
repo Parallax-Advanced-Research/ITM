@@ -258,7 +258,7 @@ class Injuries(Enum):
     INTERNAL = 'Internal'
 
 
-class       Metric(Enum):
+class Metric(Enum):
     SEVERITY = 'SEVERITY'
     AVERAGE_CASUALTY_SEVERITY = 'AVERAGE_CASUALTY_SEVERITY'
     AVERAGE_INJURY_SEVERITY = 'AVERAGE_INJURY_SEVERITY'
@@ -304,6 +304,7 @@ class       Metric(Enum):
     CAS_LOW_P_DEATH = 'CAS_LOW_P_DEATH'
     CAS_HIGH_P_DEATH_DECISION = 'CAS_HIGH_P_DEATH_DEC'
     CAS_LOW_P_DEATH_DECISION = 'CAS_LOW_P_DEATH_DEC'
+    STANDARD_TIME_SEVERITY = 'STANDARD_TIME_SEVERITY'
 
     AVERAGE_DECISION_DPS = 'AVERAGE_DECISION_DPS'
     AVERAGE_DECISION_SUPPLIES_REMAINING = 'AVERAGE_DECISION_SUPPLIES_REMAINING'
@@ -336,10 +337,12 @@ class       Metric(Enum):
     SOME_KNOWLEDGE = 2
     LOTS_KNOWLEDGE = 3
     MOST_KNOWLEDGE = 4
+    STANDARD_TIME = 200
 
     WEIGHTED_RESOURCE = 'WEIGHTED_RESOURCE_SCORE'
     INFORMATION_GAINED = 'INFORMATION_GAINED'
     SMOL_MEDICAL_SOUNDNESS = 'SMOL_MEDICAL_SOUNDNESS'
+    SMOL_MEDICAL_SOUNDNESS_V2 = 'SMOL_MEDICAL_SOUNDNESS_V2'
 
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
 
@@ -390,8 +393,10 @@ metric_description_hash: dict[str, str] = {
     Metric.AVERAGE_URGENCY.value: 'how this metric compares to others in terms of average time used',
     Metric.P_DEATH_ONEMINLATER.value: 'Probability of death after one minute of inactivity after action performed',
     Metric.SMOL_MEDICAL_SOUNDNESS.value: 'Harmonic mean of scaled damagage per second and probability of death',
+    Metric.SMOL_MEDICAL_SOUNDNESS_V2.value: 'Uses Standard time severity for simulated states',
     Metric.INFORMATION_GAINED.value: 'Credits different actions with a higher reward for returning more knowledge',
-    Metric.WEIGHTED_RESOURCE.value: 'Resources sorted by the lifesaving value they have'
+    Metric.WEIGHTED_RESOURCE.value: 'Resources sorted by the lifesaving value they have',
+    Metric.STANDARD_TIME_SEVERITY.value: 'What the severity is 120 seconds after the action is started.'
 }
 
 
@@ -411,7 +416,7 @@ class MetricSet:
                     Metric.SEVEREST_SEVERITY.value, Metric.SEVEREST_SEVERITY_CHANGE.value, Metric.SEVERITY_CHANGE.value,
                     Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value,
                     Metric.P_DEATH_ONEMINLATER.value, Metric.WEIGHTED_RESOURCE.value, Metric.SMOL_MEDICAL_SOUNDNESS.value,
-                    Metric.INFORMATION_GAINED.value]
+                    Metric.INFORMATION_GAINED.value, Metric.STANDARD_TIME_SEVERITY.value]
         elif self.set_name == 'full':
             return []
 
