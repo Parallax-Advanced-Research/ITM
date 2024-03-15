@@ -1,0 +1,22 @@
+{
+    "kdma_specific_weights": {
+        "maximization": {
+            "MEDSIM_P_DEATH": 1,
+            "ACTION_TARGET_SEVERITY": 0.005,
+            "DAMAGE_PER_SECOND": 1,
+            "injured_count": 2,
+            "visited": 4,
+            "breathing": 1
+        },
+        "moraldesert": {
+            "intent": 0.42,
+            "directness_of_causality": 0.45,
+            "injured_count": 0.02,
+            "hrpmin": 0.05
+        }
+    },
+    "activity_weights": {
+    },
+    "standard_weights": {},
+    "default": 0
+}

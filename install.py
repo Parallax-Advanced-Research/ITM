@@ -77,6 +77,47 @@ def run_cmd_or_die(argv: list[str], capture_output: bool = False, err_msg: str |
         return p.stdout
     return ''
 
+def install_hems() -> None:
+    print("Installing HEMS")
+
+    # Make sure sbcl and quicklisp are set up properly, and get the path to
+    # quicklisp's local projects directory
+    run_cmd_or_die([ "sbcl", "--version" ],
+        err_msg="sbcl must be installed before we run this command.")
+    
+    ql_local_projects_dir = run_cmd_or_die(
+        argv=[ "sbcl", "--noinform", "--non-interactive", "--eval",
+               '(progn (format t "~a" (car ql:*local-project-directories*)) (quit))'],
+        err_msg ="quicklisp must be installed before we run this command.",
+        capture_output=True)
+
+    os.makedirs(ql_local_projects_dir, exist_ok=True)
+
+    # Install HEMS
+    hems_dir = os.path.join(ql_local_projects_dir, 'HEMS')
+    if not os.path.isdir(hems_dir):
+        # Install
+        install_repo('https://github.com/dmenager/HEMS.git', hems_dir)
+    else:
+        # Update
+        os.chdir(hems_dir)
+        run_cmd_or_die([ "git", "checkout", "package.lisp" ], capture_output=False)
+        run_cmd_or_die([ "git", "pull", "--no-edit" ])
+        os.chdir(ITM_DIR)
+
+    ## Patch package.lisp
+    #print("Patching HEMS")
+    #patched_file = os.path.join(ITM_DIR, "components", "decision_analyzer",
+    #    "event_based_diagnosis", "hems-package-replacement.lisp")
+    #package_file = os.path.join(hems_dir, "package.lisp")
+    #os.remove(package_file)
+    #shutil.copyfile(patched_file, package_file)
+    
+
+    # replace patched version (if it exists) with non-patched so we can pull.
+    # git checkout package.lisp 
+        
+
 os.chdir(ITM_DIR)
 
 try:
@@ -126,6 +167,8 @@ try:
 except:
     handle_git_missing()
 
+install_hems()
+
 print("Installing TA3 client")
 #install_repo("git@github.com:NextCenturyCorporation/itm-evaluation-client.git")
 install_repo("https://github.com/NextCenturyCorporation/itm-evaluation-client.git")
@@ -133,3 +176,20 @@ install_repo("https://github.com/NextCenturyCorporation/itm-evaluation-client.gi
 subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-e",
                               os.path.join(".deprepos", "itm-evaluation-client")], check=True)
 
+print("Installing TA3 server")
+#install_server("git@github.com:NextCenturyCorporation/itm-evaluation-server.git")
+install_server("https://github.com/NextCenturyCorporation/itm-evaluation-server.git")
+
+print("Installing BBN (ADEPT) server")
+#install_server("git@gitlab.com:itm-ta1-adept-shared/adept_server.git")
+install_server("https://gitlab.com/itm-ta1-adept-shared/adept_server.git")
+
+try:
+    print("Installing Soartech server")
+    install_server("git@github.com:ITM-Soartech/ta1-server-mvp.git")
+except:
+    print("\x1b[91mFailed to install Soartech server.\x1b[0m")
+    print("Please consult Running-TAD.md for directions on getting access. You can run tad_tester.py "
+          + 'without the Soartech server, and can run ta3_training.py with the argument '
+          + '"--session_type adept" to ensure that the Soartech server is not used.')
+    sys.exit(1)

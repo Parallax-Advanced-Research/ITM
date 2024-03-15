@@ -1,5 +1,6 @@
 from domain.ta3 import TA3State
 from components.decision_selector.default import HumanDecisionSelector
+from components.decision_selector.sept_cbr import CSVDecisionSelector
 from components.decision_selector.kdma_estimation import KDMAEstimationDecisionSelector
 from components.decision_selector.severity import SeverityDecisionSelector
 from components.decision_selector.exhaustive import ExhaustiveSelector
@@ -39,6 +40,9 @@ class TA3Driver(Driver):
         else:
             if args.selector in ['keds', 'kedsd']:
                 selector = KDMAEstimationDecisionSelector(args)
+            elif 'csv' == args.selector:
+                selector = CSVDecisionSelector("data/sept/extended_case_base.csv", 
+                    variant = args.variant, verbose = args.verbose)
             elif 'human' == args.selector:
                 selector = HumanDecisionSelector()
             elif 'random' == args.selector:
