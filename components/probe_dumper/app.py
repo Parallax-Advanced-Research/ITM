@@ -15,6 +15,8 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (M
                                                                                Casualty, Supply)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, DAMAGE_PER_SECOND
 from components.probe_dumper.probe_dumper import DUMP_PATH
+from domain.ta3.ta3_state import Casualty, Supply
+from domain.internal import Decision
 
 
 UNKNOWN_NUMBER = -12.34
