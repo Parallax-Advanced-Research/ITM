@@ -295,8 +295,6 @@ if not ready:
           "stop-servers.py to remove your own prior server processes if necessary.")
     sys.exit(Status.ERROR.value)
     
-start_server("itm-evaluation-server", ["swagger_server"])
-
 
 if not adept_server_available and not soartech_server_available:
     warning('No training servers in use. Using ta3_training.py will not be possible. Testing '
@@ -320,6 +318,10 @@ elif adept_server_available:
           + '"--no-training --session_type soartech" will also work with tad_tester.py, but '
           + '"--session_type eval" will not.')
 
+if adept_server_available or soartech_server_available:
+    time.sleep(30)
+
+start_server("itm-evaluation-server", ["swagger_server"])
 
 if soartech_server_available and adept_server_available:
     color('green', "All servers in use. Both tad_tester.py and ta3_training.py should work properly.")

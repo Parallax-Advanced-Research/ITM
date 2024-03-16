@@ -1,16 +1,7 @@
-diff --git a/ta1_server/backend/alignment.py b/ta1_server/backend/alignment.py
-index 5148f00..df94b23 100644
---- a/ta1_server/backend/alignment.py
-+++ b/ta1_server/backend/alignment.py
-@@ -131,8 +131,8 @@ def convert_to_alignment_results(package: ml.AlignmentPackage,
-     ## Extract KDMA scores
-     rdm = package.rdm_alignments[0] # For now we are only using one RDM
-     kdma_values = []
--    for kdma_id, kdma_value in rdm.alignment_detail.kdma_alignments.items():
--        kdma_values.append(ps.KDMA(kdma=kdma_id, value=kdma_value))
-+    for kdma_id, kdma_value in package.aligner_profile.kdma_measurements.items():
-+        kdma_values.append(ps.KDMA(kdma=kdma_id, value=kdma_value.value))
- 
-     ## The AlignmentResults object
-     result = ps.AlignmentResults(
-
+diff --git a/submodules/itm-schema b/submodules/itm-schema
+index 697404e..f43b88d 160000
+--- a/submodules/itm-schema
++++ b/submodules/itm-schema
+@@ -1 +1 @@
+-Subproject commit 697404ea54d48baea68890f0c8b15d4b15f5ee98
++Subproject commit f43b88dba99d6caa1d2c9ee3fc527d6c3bd715de
