@@ -169,7 +169,7 @@ def get_score_sequence_record_from_history(fname):
             "aggregate": aggregate_value
            }
            
-def compare_histories():
+def compare_histories(variant: str):
     ssl = read_score_sequence_list("eval_score_sequence_list.json")
     results = []
     for fname in glob.glob(".deprepos/itm-evaluation-server/itm_history_output/*.json"):
@@ -183,6 +183,7 @@ def compare_histories():
         result = record_comparison(old_ssrs[0], fname, ssr["score_sequence"])
         result["alignment"] = ssr["alignment"]
         result["aggregate"] = ssr["aggregate"]
+        result["variant"] = variant
         results.append(result)
         write_case_base("eval-comparisons.csv", results)
         print(f"New: {ssr['id']}: {ssr['score_sequence']}")
@@ -198,7 +199,7 @@ def main():
     args = parser.parse_args()
     
     if args.compare_histories:
-        compare_histories()
+        compare_histories(args.variant)
     else:
         cross_test_training_data(args)
         
