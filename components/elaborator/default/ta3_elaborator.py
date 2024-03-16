@@ -76,8 +76,8 @@ class TA3Elaborator(Elaborator):
         final_list.sort(key=str)
         if len(final_list) == 0:
             breakpoint()
-        probe.decisions = remove_too_frequent_actions(probe, final_list)
-        
+        final_list = remove_too_frequent_actions(probe, final_list)
+        probe.decisions = final_list
         return final_list
 
         
