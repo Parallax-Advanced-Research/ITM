@@ -120,7 +120,7 @@ def get_score_sequence_record_from_history(fname):
     target_value = None
     responses = []
     for record in records:
-        if record['command'] == 'TA1 Alignment Target Data':
+        if record['command'] in ['TA1 Alignment Target Data', 'Alignment Target']:
             scenario = record['parameters']['scenario_id']
             target_id = record['response']['id']
             if 'kdmas' in record['response']:
@@ -150,25 +150,41 @@ def get_score_sequence_record_from_history(fname):
                  "value": record['response']['kdma_values'][0]['value']
                 }
             responses.append(response)
+        if record['command'] == 'TA1 Session Alignment':
+            assert(target_id is not None)
+            assert(record['parameters']['target_id'] == target_id)
+            assert(record['response']['kdma_values'][0]['kdma'] == target_kdma)
+            alignment = record['response']['score']
+            aggregate_value = record['response']['kdma_values'][0]['value']
     score_seq = [r["value"] for r in responses]
+    if len(score_seq) == 0: 
+        return None
     return {"id": scenario,
             "filename": fname,
             "kdma": target_kdma,
             "target": target_value,
             "score_sequence": score_seq,
-            "average": find_scores_average(score_seq, target_kdma)
+            "average": find_scores_average(score_seq, target_kdma),
+            "alignment": alignment,
+            "aggregate": aggregate_value
            }
            
-def compare_histories():
+def compare_histories(variant: str):
     ssl = read_score_sequence_list("eval_score_sequence_list.json")
     results = []
-    for fname in glob.glob(".deprepos/itm-evaluation-server/itm_history_output/itm_history_*.json"):
+    for fname in glob.glob(".deprepos/itm-evaluation-server/itm_history_output/*.json"):
         ssr = get_score_sequence_record_from_history(fname)
-        old_ssrs = [ossr for ossr in ssl if ossr["id"] == ssr["id"] 
-                                            and ossr["kdma"] == ssr["kdma"] 
+        if ssr is None:
+            continue
+        old_ssrs = [ossr for ossr in ssl if ossr["id"] == ssr["id"]
+                                            and ossr["kdma"] == ssr["kdma"]
                                             and abs(ossr["target"] - ssr["target"]) < 0.5]
         assert(1 == len(old_ssrs))
-        results.append(record_comparison(old_ssrs[0], fname, ssr["score_sequence"], results))
+        result = record_comparison(old_ssrs[0], fname, ssr["score_sequence"])
+        result["alignment"] = ssr["alignment"]
+        result["aggregate"] = ssr["aggregate"]
+        result["variant"] = variant
+        results.append(result)
         write_case_base("eval-comparisons.csv", results)
         print(f"New: {ssr['id']}: {ssr['score_sequence']}")
         print(f"Old: {old_ssrs[0]['id']}: {old_ssrs[0]['score_sequence']}")
@@ -179,7 +195,15 @@ def main():
     parser.add_argument('--ssl_file', type=str, help="File with a score sequence list to compare against", default="train_score_sequence_list.json")
     parser.add_argument('--casebase_dir', type=str, help="Directory where case bases are found", default="local/casebases-20240310")
     parser.add_argument('--source_count', type=int, help="How many source files to use", default=1)
+    parser.add_argument('--compare_histories', action=argparse.BooleanOptionalAction, help="Checks histories from TA3 server instead of running scenarios", default=False)
     args = parser.parse_args()
+    
+    if args.compare_histories:
+        compare_histories(args.variant)
+    else:
+        cross_test_training_data(args)
+        
+def cross_test_training_data(args):
     ssl = read_score_sequence_list(args.ssl_file)
     args.session_type = 'eval'
     validate_args(args)
@@ -198,9 +222,17 @@ def main():
                 if "adept" in ss["filename"]:
                     args.session_type = "adept"
                     id = source.removeprefix("MetricsEval.")
+                    if target_val == 0:
+                        args.eval_targets = ["ADEPT-metrics_eval-alignment-target-train-LOW"]
+                    else:
+                        args.eval_targets = ["ADEPT-metrics_eval-alignment-target-train-HIGH"]
                 else:
                     args.session_type = "soartech"
                     id = source.removesuffix("-train1")
+                    if target_val == 0:
+                        args.eval_targets = ["maximization_low"]
+                    else:
+                        args.eval_targets = ["maximization_high"]
                 training_casebases.append(os.path.join(args.casebase_dir, id, "kdma_cases.csv"))
             if len(sources) > 1:
                 args.casefile = "temp/joined_case_base.csv"
@@ -216,7 +248,11 @@ def main():
             driver = EvaluationDriver(args)
             tad.api_test(args, driver)
             scores = driver.actual_kdma_vals[target_kdma.lower()]
-            results.append(record_comparison(ss, ";".join(sources), scores))
+            result = record_comparison(ss, ";".join(sources), scores)
+            result["alignment"] = driver.alignment
+            result["aggregate"] = driver.aggregates[target_kdma]
+            result["true_target"] = driver.alignment_tgt[target_kdma]
+            results.append(result)
             write_case_base("cross-test-results.csv", results)
             
 def find_all_subsets(full_set: set, size=None):

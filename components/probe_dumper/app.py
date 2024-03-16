@@ -11,11 +11,11 @@ import sys
 if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
+                                                                               Casualty, Supply)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, DAMAGE_PER_SECOND
 from components.probe_dumper.probe_dumper import DUMP_PATH
-from domain.ta3.ta3_state import Casualty, Supply
-from domain.internal import Decision
+
 
 UNKNOWN_NUMBER = -12.34
 UNKOWN_STRING = "--"
@@ -48,11 +48,13 @@ def _get_params_from_decision(decision):
 
 def make_html_table_header(mc_only):
     if mc_only:
-        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
-|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|---|---|---|---|---|---|---|---|---|\n''' % (
+        return '''| Decision         | Character     | Location | Treatment  | Tag | %s | % s| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |
+|------------------|--------------|----------|------------|-------|----------|-------------------|-----|---|---|--|--|---|---|---|---|---|---|---|\n''' % (
             """<div title=\"%s\">MCA<br>Time</div>""" % metric_description_hash[Metric.AVERAGE_TIME_USED.value],
             """<div title=\"%s\">MCA<br>Weighted Resource</div>""" % metric_description_hash[Metric.WEIGHTED_RESOURCE.value],
             """<div title=\"%s\">MCA<br>Medical Soundness</div>""" % metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS.value],
+            """<div title=\"%s\">MCA<br>Medical Soundness V2</div>""" % metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS_V2.value],
+
             """<div title=\"%s\">MCA<br>Information Gain</div>""" % metric_description_hash[Metric.INFORMATION_GAINED.value],
             """<div title=\"%s\">MCA<br>Deterioration<br>per second</div>""" % metric_description_hash[
                 Metric.DAMAGE_PER_SECOND.value],
@@ -119,11 +121,12 @@ def get_html_line(decision, mc_only):
     weighted_resource_eng = justifications[Metric.WEIGHTED_RESOURCE.value].split('is')[-1]
     medical_soundness_eng = justifications[Metric.SMOL_MEDICAL_SOUNDNESS.value].split('is')[-1]
     infogain_eng = justifications[Metric.INFORMATION_GAINED.value].split('is')[-1]
+    smsv2_eng = "justifications[Metric.SMOL_MEDICAL_SOUNDNESS_V2.value]"
     decision_html_string = get_html_decision(decision)
     is_pink = decision.selected
     no_just = "No justification given"
     if mc_only:
-        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
+        base_string = '|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n'
         if is_pink:
             base_string = base_string.replace("""%""", """<font color="#FF69B4">%""")
             base_string = base_string.replace("""s""", """s</font>""")
@@ -136,6 +139,8 @@ def get_html_line(decision, mc_only):
                                   Metric.WEIGHTED_RESOURCE.value].value) if Metric.WEIGHTED_RESOURCE.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%d</div>''' % (medical_soundness_eng, decision.metrics[
                                   Metric.SMOL_MEDICAL_SOUNDNESS.value].value) if Metric.SMOL_MEDICAL_SOUNDNESS.value in decision.metrics.keys() else UNKNOWN_NUMBER,
+                              '''<div title=\"%s\">%d</div>''' % (smsv2_eng, decision.metrics[
+                                  Metric.SMOL_MEDICAL_SOUNDNESS_V2.value].value) if Metric.SMOL_MEDICAL_SOUNDNESS_V2.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%d</div>''' % (infogain_eng, decision.metrics[
                                   Metric.INFORMATION_GAINED.value].value) if Metric.INFORMATION_GAINED.value in decision.metrics.keys() else UNKNOWN_NUMBER,
                               '''<div title=\"%s\">%.2f</div>''' % (dps_english, decision.metrics[
