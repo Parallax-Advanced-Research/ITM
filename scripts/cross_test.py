@@ -169,10 +169,12 @@ def get_score_sequence_record_from_history(fname):
             "aggregate": aggregate_value
            }
            
-def compare_histories(variant: str):
-    ssl = read_score_sequence_list("eval_score_sequence_list.json")
+def compare_histories(args: argparse.Namespace):
+    ssl = read_score_sequence_list(args.ssl_file)
     results = []
-    for fname in glob.glob(".deprepos/itm-evaluation-server/itm_history_output/*.json"):
+    if args.history_files is None:
+        args.history_files = ".deprepos/itm-evaluation-server/itm_history_output/*.json"
+    for fname in glob.glob(args.history_files):
         ssr = get_score_sequence_record_from_history(fname)
         if ssr is None:
             continue
@@ -183,11 +185,11 @@ def compare_histories(variant: str):
         result = record_comparison(old_ssrs[0], fname, ssr["score_sequence"])
         result["alignment"] = ssr["alignment"]
         result["aggregate"] = ssr["aggregate"]
-        result["variant"] = variant
+        result["variant"] = args.variant
         results.append(result)
         write_case_base("eval-comparisons.csv", results)
-        print(f"New: {ssr['id']}: {ssr['score_sequence']}")
-        print(f"Old: {old_ssrs[0]['id']}: {old_ssrs[0]['score_sequence']}")
+        print(f"Reported: {ssr['id']}, target: {ssr['target']}: {ssr['score_sequence']}")
+        print(f"Optimal:  {old_ssrs[0]['id']}, target: {ssr['target']}: {old_ssrs[0]['score_sequence']}")
 
         
 def main():
@@ -196,14 +198,15 @@ def main():
     parser.add_argument('--casebase_dir', type=str, help="Directory where case bases are found", default="local/casebases-20240310")
     parser.add_argument('--source_count', type=int, help="How many source files to use", default=1)
     parser.add_argument('--compare_histories', action=argparse.BooleanOptionalAction, help="Checks histories from TA3 server instead of running scenarios", default=False)
+    parser.add_argument('--history_files', type=str, help="Checks histories from TA3 server instead of running scenarios", default=None)
     args = parser.parse_args()
     
     if args.compare_histories:
-        compare_histories(args.variant)
+        compare_histories(args)
     else:
         cross_test_training_data(args)
         
-def cross_test_training_data(args):
+def cross_test_training_data(args: argparse.Namespace):
     ssl = read_score_sequence_list(args.ssl_file)
     args.session_type = 'eval'
     validate_args(args)
