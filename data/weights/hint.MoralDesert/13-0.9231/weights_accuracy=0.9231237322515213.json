@@ -1,0 +1,15 @@
+{
+    "intent": 0.033633872866630554,
+    "directness_of_causality": 0.1763714998960495,
+    "aid_available": 0.17743989825248718,
+    "treating": 0.2865216135978699,
+    "HRA Strategy.time-risk_reward_ratio.one-bounce": 0.0009223353699781001,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0012143637286499143,
+    "HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce": 0.0003257804492022842,
+    "Take-The-Best Priority": 0.0007341542514041066,
+    "entropyDeath": 0.0004949938738718629,
+    "SUPPLIES_REMAINING": 0.11712723225355148,
+    "AVERAGE_TIME_USED": 0.0066056447103619576,
+    "SUPPLIES_USED": 0.19826549291610718,
+    "treatment": 0.00034308136673644185
+}
