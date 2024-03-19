@@ -123,12 +123,22 @@ def get_score_sequence_record_from_history(fname):
         if record['command'] in ['TA1 Alignment Target Data', 'Alignment Target']:
             scenario = record['parameters']['scenario_id']
             target_id = record['response']['id']
+            print(f"scenario_id: {scenario} target: {target_id}")
             if 'kdmas' in record['response']:
                 target_kdma = record['response']['kdmas'][0]['kdma']
                 target_value = record['response']['kdmas'][0]['value']
             else:
                 target_kdma = record['response']['kdma_values'][0]['kdma']
                 target_value = record['response']['kdma_values'][0]['value']
+        if record['command'] == 'Take Action':
+            params = []
+            params.append(record['parameters'].get('character', None))
+            params.append(record['parameters'].get('category', None))
+            params.append(record['parameters'].get('treatment', None))
+            params.append(record['parameters'].get('location', None))
+            params = [p for p in params if p is not None]
+            action_str = record['parameters']['action_type'] + '(' + ','.join(params) + ')'
+            print(action_str)
         if record['command'] == 'TA1 Probe Response Alignment':
             assert(scenario is not None)
             assert(record['parameters']['scenario_id'] == scenario)
