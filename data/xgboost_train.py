@@ -1,18 +1,18 @@
 import pandas as pd
 import numpy as np
-import csv, os, math
+import csv, os, math, shutil, json
 from sklearn.model_selection import LeaveOneOut
 from xgboost import XGBClassifier
 import xgboost
 from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.datasets import fetch_california_housing
-def drop_columns_by_patterns(df, keys={}):
-    patterns = ['index', 'hash', 'feedback', 'action-len', 'justification', 'unnamed', 'nondeterminism', 'action']
+def drop_columns_by_patterns(df, keys={}, lable=""):
+    patterns = ['index', 'hash', 'feedback', 'action-len', 'justification', 'unnamed', 'nondeterminism', 'action', 'hint', 'maximization', 'moraldesert']
     if keys != {}:
         patterns = [keys[x] for x in patterns]
-        columns_to_drop = [col for col in df.columns if col in patterns]
+        columns_to_drop = [col for col in df.columns if col in patterns and col != lable]
     else:
-        columns_to_drop = [col for col in df.columns if any(string in col.lower() for string in patterns)]
+        columns_to_drop = [col for col in df.columns if any(string in col.lower() for string in patterns) and col != lable]
     df = df.drop(columns=columns_to_drop)
     return df
 def drop_columns_if_all_unique(df):
@@ -29,13 +29,37 @@ def assign_integer_to_label(df):
     df[column_to_replace] = df[column_to_replace].astype(int)
     return df
 
+def drop_columns_by_weight_threshold(df, weights, output_label, t_factor=0.1):
+    w = [x for x in weights if x>0]
+    threshold = (sum(w) / len(w)) / t_factor
+    columns_to_drop = [col[1] for col in enumerate(df.drop(output_label, axis=1).columns) if weights[col[0]] <= threshold]
+    df = df.drop(columns=columns_to_drop)
+    return df
+
+def drop_one_column_by_weight(df, weights, output_label):
+    w = [x for x in weights if x>0]
+    columns_to_drop = [col[1] for col in enumerate(df.drop(output_label, axis=1).columns) if weights[col[0]] == 0 or weights[col[0]] == min(w)]
+    df = df.drop(columns=columns_to_drop)
+    return df
+
+def drop_zero_weights(df, weights, output_label):
+    columns_to_drop = [col[1] for col in enumerate(df.drop(output_label, axis=1).columns) if weights[col[0]] == 0]
+    df = df.drop(columns=columns_to_drop)
+    return df
+
+def drop_all_columns_by_weight(df, weights, output_label):
+    w = [x for x in weights if x>0]
+    columns_to_drop = [col[1] for col in enumerate(df.drop(output_label, axis=1).columns) if weights[col[0]] != max(w)]
+    df = df.drop(columns=columns_to_drop)
+    return df
+
 def xgboost_weights(case_base, output_label, c):
     y = np.array(case_base[output_label].tolist())
     x = case_base.drop(output_label, axis=1)
     for col in x.columns:
         if col in c:
             x[col] = x[col].astype('category')
-    print("Extracting XGBoost Weights..")
+    print(f"Extracting XGBoost Weights for {output_label} || {len(x.columns)}..")
     xgb = XGBClassifier(enable_categorical=True)
     unique = sorted(list(set(y)))
     transfer = {k: v for k, v in enumerate(unique)}
@@ -52,15 +76,21 @@ def xgboost_weights(case_base, output_label, c):
     weights = np.array(weights)
     return weights
 
-def save_weights(weights, columns, file="weights"):
-    weights_file = 'weights/{file}.csv'.format(file=file)
+def save_weights(weights, columns, accuracy=-1, score_key="weights"):
+    weights_file = f'weights/{score_key}/{len(weights)}-{round(accuracy, 4)}/weights_accuracy={accuracy}.csv'
+    weights_json = f'weights/{score_key}/{len(weights)}-{round(accuracy, 4)}/weights_accuracy={accuracy}.json'
     os.makedirs(os.path.dirname(weights_file), exist_ok=True)
+    weights_dict = {columns[i]: float(weights[i]) for i in range(len(columns)) if weights[i] > 0.0}
     list_weights = weights.tolist()
+    with open(weights_json, 'w') as f:
+        json.dump(weights_dict, f, indent=4)
     with open(weights_file, 'w') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(columns)
         csv_writer.writerows([list_weights])
     print(f"Saved weights to {weights_file}")
+    shutil.copy("cleaned_data.csv", os.path.dirname(weights_file) + "/cleaned_data.csv")
+    shutil.copy("kdma_cases.csv", os.path.dirname(weights_file) + "/kdma_cases.csv")
 
 def local_similarity(new_case, candidate_case, feature_type):
     local_sim = []
@@ -104,11 +134,11 @@ def retrieval(X_test, y_test, X_train, y_train, weights, attributes, k=1, thresh
     y_pred = y_train[global_sim.index(max(global_sim))]
     x_pred = X_train_df.iloc[global_sim.index(max(global_sim))]
 
-    if y_pred == y_test:
-        dec = 1
-    else:
-        dec = 0
-    return dec, y_pred, x_pred
+    #if y_pred == y_test:
+    #    dec = 1
+    #else:
+    #    dec = 0
+    return y_pred, x_pred
 
 if __name__ == "__main__":
     X, y = fetch_california_housing(return_X_y=True)

@@ -1,0 +1,134 @@
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Scenario</h5>
+        <p class="card-text">
+        <p><a href="{{ url_for('scenario.edit_scenario', scenario_id=scenario.id) }}">[edit]</a>
+            <a class="text-danger"
+                href="{{ url_for('scenario.delete_scenario', scenario_id=scenario.id, case_id=case.id) }}">[delete]</a>
+        </p>
+        <p>{{ scenario.description }}</p>
+        <div class="card bg-warning">
+            <div class="card-body">
+                <h6 class="card-title">Mission</h6>
+                <p class="card-text">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item ">Type: {{ scenario.mission_type | validate_mission_type | safe}}
+                    </li>
+                    <li class="list-group-item">Description: {{ scenario.mission_description }}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="card bg-warning mt-2">
+            <div class="card-body">
+                <h6 class="card-title">Threat State</h6>
+                <p class="card-text">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Description: {{ scenario.threat_state_description}}</li>
+                    <li class="list-group-item">
+                        <div>Threats <a href="{{ url_for('scenario.add_threat', scenario_id=scenario.id) }}">{{
+                                render_icon('plus-circle-fill', 15, 'primary')}}</a></div>
+                        {% for threat in scenario.threats %}
+                        {{ threat }}
+                        {% endfor %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="card mt-2">
+            <div class="card-body">
+                <h6 class="card-title">Environment</h6>
+                <p class="card-text">
+                    {% for environment in scenario.environment %}
+                <p>{{ scenario.environment.unstructured }}</p>
+                <div class="table-responsive-sm">
+                    <table class="table table-danger">
+                        <thead>
+                            <tr>
+                                <th class="bg-warning" scope="col">Aid Delay</th>
+                                <th scope="col">Fauna</th>
+                                <th scope="col">Flora</th>
+                                <th scope="col">Humidity</th>
+                                <th scope="col">Lighting</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Noise</th>
+                            </tr>
+
+                        </thead>
+                        <tbody>
+                            <tr class="">
+                                <td class="bg-warning">{{ environment.aid_delay }}</td>
+                                <td>{{ environment.fauna}}</td>
+                                <td>{{ environment.flora }}</td>
+                                <td>{{ environment.humidity }}</td>
+                                <td>{{ environment.lighting }}</td>
+                                <td>{{ environment.location }}</td>
+                                <td>{{ environment.noise_ambient }}</td>
+
+                        </tbody>
+                    </table>
+                </div>
+
+
+
+                <div class="table-responsive-sm">
+                    <table class="table table-danger">
+                        <tr>
+                            <th scope="col">Noise Peak</th>
+                            <th scope="col">Soundscape</th>
+                            <th scope="col">Temperature</th>
+                            <th scope="col">Terrain</th>
+                            <th scope="col">Visibility</th>
+                            <th scope="col">Weather</th>
+                        </tr>
+                        <tr class="">
+                            <td>{{ environment.noise_peak }}</td>
+                            <td>{{ environment.soundscape }}</td>
+                            <td>{{ environment.temperature }}</td>
+                            <td>{{ environment.terrain }}</td>
+                            <td>{{ environment.visibility }}</td>
+                            <td>{{ environment.weather }}</td>
+                        </tr>
+                    </table>
+                </div>
+                {% endfor %}
+                {% if scenario.environment %}
+                <a href="{{ url_for('scenario.edit_environment', scenario_id=scenario.id) }}">[edit]</a>
+                <a class="text-danger"
+                    href="{{ url_for('scenario.delete_environment', scenario_id=scenario.id) }}">[delete]</a>
+                {% else %}
+                <a href="{{ url_for('scenario.add_environment', scenario_id=scenario.id) }}">[add]</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card mt-2 bg-warning">
+            <div class="card-body">
+                <h6 class="card-title">Supplies <a href="{{ url_for('scenario.add_supply', scenario_id=scenario.id)
+                                    }}">{{ render_icon('plus-circle-fill', 15, 'primary')}}</a></h6>
+                <p class="card-text">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        {% if scenario.supplies|count >0 %}
+                        {% include '_supplies_view.html' %}
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="card bg-danger mt-2">
+            <div class="card-body">
+                <h6 class="card-title text-light">Additional Information</h6>
+                <div class="card-text bg-light">
+                    {% if scenario.elapsed_time %}
+                    Elapsed time: {{ scenario.elapsed_time }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% include '_casualty_view.html' %}
+    </div>
+    </p>
+
+</div>
+
+{% include 'view_probes.html' %}

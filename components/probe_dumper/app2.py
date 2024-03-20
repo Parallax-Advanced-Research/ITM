@@ -12,10 +12,12 @@ import sys
 if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, Casualty, Supply
+
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, DAMAGE_PER_SECOND
 from components.probe_dumper.probe_dumper import DUMP_PATH
-from domain.internal import Decision
+from domain.mvp.mvp_state import Casualty, Supply
+
 
 UNKNOWN_NUMBER = -12.34
 UNKOWN_STRING = "--"
@@ -323,6 +325,7 @@ class ChosenMetric:
     name: str
     chosen_metric: bool
     group_name: str
+
 
 
 def make_checkboxes_list_for_metrics(analysis_df):

@@ -76,8 +76,11 @@ class TA3Elaborator(Elaborator):
         final_list.sort(key=str)
         if len(final_list) == 0:
             breakpoint()
+        final_list = remove_too_frequent_actions(probe, final_list)
         probe.decisions = final_list
         return final_list
+
+        
 
     def _add_evac_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
         if probe.environment['decision_environment']['aid_delay'] == None:
@@ -400,3 +403,8 @@ def decision_copy_with_params(dec: Decision[Action], params: dict[str, Any]):
 def supply_filter(supplies: list[Supply]):
     return [s for s in supplies if s.type not in SPECIAL_SUPPLIES]
         
+def remove_too_frequent_actions(probe, dec_list):
+    action_counts = {}
+    for act in probe.state.actions_performed:
+        action_counts[str(act)] = action_counts.get(str(act), 0) + 1
+    return [d for d in dec_list if action_counts.get(str(d.value), 0) < 5]

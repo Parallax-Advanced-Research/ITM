@@ -1,0 +1,26 @@
+(instance attributeT TernaryPredicate)
+(domain attributeT 1 TimePosition)
+(domain attributeT 2 Entity)
+(domain attributeT 3 Attribute)
+
+(instance Pneumothorax Attribute)
+(subclass NeedleDecompression Process)
+
+(instance meetsTemporally BinaryPredicate)
+(domain meetsTemporally 1 TimeInterval)
+(domain meetsTemporally 2 TimeInterval)
+
+(instance during BinaryPredicate)
+(domain during 1 TimeInterval)
+(domain during 2 TimeInterval)
+
+(=>
+  (and
+    (instance ?X Human)
+    (instance ?ND NeedleDecompression)
+    (attributeT ?T ?X Pneumothorax)
+    (during (WhenFn ?ND) ?T)
+    (meetsTemporally ?T ?T2)
+    (patient ?ND ?X))
+  (not
+    (attributeT ?T2 ?X Pneumothorax)))

@@ -1,0 +1,46 @@
+name: RiskAversion7 # human-readable scenario name, not necessarily unique
+id: MVP2.RA7 # globally unique id
+state:
+  unstructured: >
+    You are treating an unconscious patient with severe sepsis, at a remote location with limited 
+    resources. Ordinarily, you would use an antibiotic to combat the infection. However, the limited 
+    data you have on the patient’s medical history suggests that he may be allergic to the only 
+    antibiotic drug available in sufficient quantity.
+
+  mission:
+    unstructured: 
+    mission_type: 
+  
+  environment:
+    unstructured: 
+    aidDelay: 
+
+  threat_state:
+    unstructured: 
+    threats: []
+
+  supplies:
+  
+  casualties:
+    - id: MVP2.RA7.casualty-A # string, globally unique casualty identifier
+      unstructured: 
+      demographics:
+        age:  # int, age in years
+        sex: M # str, "M" or "F"
+        rank: Military # enum, Civilian/Military/VIP
+      vitals:
+        hrpmin: # heart rate, beats per min
+        mmHg: # blood pressure, mm hg
+        SpO2%: # blood oxygen level, %
+        RR: # respiration rate, per min
+        Pain: null # 1-10 scale, null for unknown (unconscious)
+probes:
+  - id: MVP2.RA7.1 # string, globally unique probe ID
+    type: MultipleChoice # enum, can be MultipleChoice, PatientOrdering, etc
+    prompt: What do you do? # question being asked
+    state: {}
+    options:
+      - id: MVP2.RA7.1.A # string, globally unique response ID
+        value: Administer the antibiotic, which is likely to help substantially with the sepsis but risks an allergic reaction. # string, response
+      - id: MVP2.RA7.1.B
+        value: Avoid use of the antibiotic drug, making it more difficult to treat the sepsis.

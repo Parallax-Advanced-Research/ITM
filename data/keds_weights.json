@@ -1,21 +1,62 @@
 {
     "kdma_specific_weights": {
+        "mission": {
+            "rank": 1,
+            "priority": 1,
+            "pDeath": 1
+        },
+        "denial": {
+            "MEDSIM_P_DEATH": 1,
+            "pBrainInjury": 1,
+            "pPain": 1,
+            "category": 5,
+            "others_tagged_or_uninjured": 10
+        },
+        "risktol": {
+            "injured_count": 1,
+            "pDeath": 1,
+            "Severity": 0.1,
+            "category": 1
+        },
+        "urgency": {
+            "injured_count": 1,
+            "visited_count": 1,
+            "Severity": 0.1,
+            "category": 1
+        },
+        "friendship": {
+            "relationship": 1,
+            "priority": 1
+        },
         "maximization": {
             "MEDSIM_P_DEATH": 1,
             "ACTION_TARGET_SEVERITY": 0.005,
             "DAMAGE_PER_SECOND": 1,
             "injured_count": 2,
-            "visited": 4,
-            "breathing": 1
+            "visited": 4
         },
         "moraldesert": {
-            "intent": 0.42,
-            "directness_of_causality": 0.45,
-            "injured_count": 0.02,
-            "hrpmin": 0.05
+            "aid_available": 3,
+            "intent": 10,
+            "directness_of_causality": 10
         }
     },
     "activity_weights": {
+        "treating": {
+            "visited": 2,
+            "treatment": 3,
+            "unvisited_count": 3,
+            "ACTION_TARGET_SEVERITY": 0.005,
+            "ACTION_TARGET_SEVERITY_CHANGE": 0.05
+        },
+        "tagging": {
+            "category": 3
+        },
+        "leaving": {
+            "unvisited_count": 10,
+            "injured_count": 2,
+            "others_tagged_or_uninjured": 2
+        }
     },
     "standard_weights": {},
     "default": 0
