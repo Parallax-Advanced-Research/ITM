@@ -213,7 +213,7 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
         if m_c.chosen_metric:
             display_name = _make_display_name(m_c.name)
             if display_name == sort_metric:
-                if display_name == 'HRA Strategy':
+                if display_name == 'Heuristic Rule Analytic Strategy HRA':
                     sort_func = lambda x: get_hra_strategy(x)[0] if 'HRA Strategy' in x.metrics.keys() else x.id_
                 else:
                     sort_func = lambda x: x.metrics[m_c.name].value if m_c.name in x.metrics.keys() else 0.0
@@ -314,7 +314,7 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
     'WEIGHTED_RESOURCE_SCORE': ('Weighted<br>Resource', 'More lifesaving items are weighted heavier', '{:.0f}', 'MCA'),
     'SMOL_MEDICAL_SOUNDNESS': ('Medical<br>Soundness', 'Harmonic Mean of Damage Per Second and Probability Death', '{:.0f}', 'MCA'),
     'INFORMATION_GAINED': ('Information<br>Gained', 'How much information is gained by the action', '{:.0f}', 'MCA'),
-    'HRA Strategy': ('HRA<br>Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '', 'HRA',),
+    'HRA Strategy': ('Heuristic Rule<br>Analytic Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '', 'HRA',),
     'STANDARD_TIME_SEVERITY': ('Standard<br>Time<br>Severity', 'Severity 200 seconds after the action is begiun', '{:.0f}', 'MCA'),
     'SMOL_MEDICAL_SOUNDNESS_V2': ('Medical<br>Soundness V2', 'Percent corrected ranked ordering of STANDARD_TIME_SEVERITY', '{:.0f}', 'MCA')
 }
