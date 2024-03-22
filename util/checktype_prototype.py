@@ -47,6 +47,13 @@ class TypeInfo_Union:
 	pass
 
 class TypeInfo:
+	"""
+	TypeInfo is basically a version of _GenericAlias that is an actual type, and that
+	can also represent things that aren't generic.
+	self.origin is the actual type.
+	self.args is a list of template/generic arguments. If not a generic, this will be empty.
+	"""
+
 	# TODO: mypy @overrides for ctor
 	def __init__(self, *args: Any) -> None:
 		if 2 == len(args):
@@ -161,6 +168,7 @@ def bind_params(obj: object) -> Bound_Annotation:
 	# some undocumented fields, and at one point, construct an object just so we can
 	# force a particular function call so we can follow the call stack up and pull
 	# the necessary information directly from the stack frame.
+	# TODO: above summary isn't completely accurate anymore.
 	# 
 	# Lasciate ogne speranza, voi ch'intrate.
 
@@ -186,10 +194,12 @@ def bind_params(obj: object) -> Bound_Annotation:
 			# and retrieve that information from the stack frame.
 			# If we're not in the constructor of a Generic, this will not work.
 
+			ERR = "Can't happen. Did you call when not in a constructor of a Generic?"
 			frame = inspect.currentframe()
-			#for _ in range(2):
-			#	assert frame is not None, "Can't happen. Did you call when not in a constructor of a Generic?"
-			#	frame = frame.f_back
+			for _ in range(2):
+				assert frame is not None, ERR
+				frame = frame.f_back
+			assert frame is not None, ERR
 
 			while frame:
 				print(f"{frame.f_code.co_filename=}:{frame.f_lineno=}")
@@ -208,11 +218,12 @@ def bind_params(obj: object) -> Bound_Annotation:
 						print(f"Bad origin: Saw {res.__origin__}, expect {cls}")
 						frame = frame.f_back
 				except (KeyError, AttributeError):
+					assert frame is not None, ERR
 					frame = frame.f_back
 			del frame
 
 			traceback.print_stack()
-			assert False, "Can't happen. Did you call when not in a constructor of a Generic?"
+			assert False, ERR
 
 		cls = object.__getattribute__(obj, '__class__')
 		# TODO: need to map e.g., T->int, U->str
@@ -481,18 +492,25 @@ def checktype(expected_type: TypeInfo, val: Any, permit_extra_values: bool) -> A
 #    assert '__dict__' not in dir(b)
 #    print(dir(b))
 
-def _validate_input(self: T, values: dict[str, Any], annotations: Bound_Annotation, permit_extra_values: bool) -> None:
+def _validate_input(self: T, data: dict[str, Any], annotations: Bound_Annotation, permit_unused_keys: bool) -> None:
 	# TODO: check that values is of type dict[str, Any]. Can probably just declare a local class with a single field of dict[str, Any] and use checktype.
 
 	print(f"{type(self)=}, {typing.get_args(type(self))=}, {annotations=}")
 	errors: list[str] = []
-	if not permit_extra_values:
+	if not permit_unused_keys:
 		# TODO: what if there are extra values in a dict that's a value of the toplevel?
 		# Except what would that even mean. We only define needed keys if the subtype is
 		# a class, not a dict.
-		for k in values:
+		for k in data:
 			if k not in annotations:
 				errors.append(f"Unrecognized key {k} in dictionary")
+				
+
+	# TODO: What happens if I have an optional *object*? That would have a TypeInfo not at the leaf,
+	# but TypeInfo has to be a leaf.
+	# Maybe add a third field to TypeInfo, 'fields'. Then Bound_Annotation can be completely
+	# replaced by TypeInfo.
+	# So TypeInfo(origin, args, fields) would be a TypeInfo[args](fields) (assuming a normal ctor)
 		
 	# TODO: What if there's a key name in the dictionary that isn't a legal identifier?
 	# How do I handle mapping it onto one that is?
@@ -500,17 +518,35 @@ def _validate_input(self: T, values: dict[str, Any], annotations: Bound_Annotati
 	# the *class*'s field of that name.
 	for k,v in annotations.items():
 		print(f"{type(self)=}, {v=}")
-		t = TypeInfo(v)
-		if k not in values:
-			if t.is_optional():
-				setattr(self, k, None)
+		if isinstance(v, TypeInfo):
+			if k not in data:
+				if t.is_optional():
+					setattr(self, k, None)
+				else:
+					errors.append(f"Dictionary missing value: {k} of type {v}")
 			else:
-				errors.append(f"Dictionary missing value: {k} of type {v.__name__}")
+				try:
+					setattr(self, k, checktype(t, data[k], permit_unused_keys=permit_unused_keys))
+				except WrongType as e:
+					errors.append(f"Dictionary has wrong type for {k} ({v}): could not assign `{e.val}` ({type(e.val).__name__}) to {e.expected_type}")
 		else:
-			try:
-				setattr(self, k, checktype(t, values[k], permit_extra_values=permit_extra_values))
-			except WrongType as e:
-				errors.append(f"Dictionary has wrong type for {k} ({v.__name__}): could not assign `{e.val}` ({type(e.val).__name__}) to {e.expected_type}")
+			if k not in data:
+				errors.append(f"Dictionary missing value: {k} of type {v}")
+			else:
+				setattr(self, k, checktype(t, data[k], permit_unused_keys=permit_unused_keys))
+
+
+		#t = TypeInfo(v)
+		#if k not in values:
+#		if t.is_optional():
+#			setattr(self, k, None)
+#		else:
+#			errors.append(f"Dictionary missing value: {k} of type {v.__name__}")
+#	else:
+#		try:
+#			setattr(self, k, checktype(t, values[k], permit_extra_values=permit_extra_values))
+#		except WrongType as e:
+#			errors.append(f"Dictionary has wrong type for {k} ({v.__name__}): could not assign `{e.val}` ({type(e.val).__name__}) to {e.expected_type}")
 
 	# TODO: instead of printing, include in the exception?
 	if 0 != len(errors):
@@ -694,7 +730,7 @@ def test2():
 	class A(Generic[T,U]): # float,str
 		a: int
 		b: T
-		c: B[U]
+		c: B[U] | None
 		d: C
 
 
