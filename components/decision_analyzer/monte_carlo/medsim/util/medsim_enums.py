@@ -24,7 +24,6 @@ class BodySystemEffect(Enum):
 
 
 class Injury:
-    STANDARD_BODY_VOLUME = 5000  # mL
 
     def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
                  bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
@@ -72,16 +71,6 @@ class Vitals:
 
 
 class Casualty:
-    MAX_BURN_HP = 5000
-    BLEEDOUT_CHANCE_NONE = 0.15
-    BLEEDOUT_CHANCE_LOW = 0.3
-    BLEEDOUT_CHANCE_MED = 0.4
-    BLEEDOUT_CHANCE_HIGH = 0.5
-    NO_P_BLEEDOUT = 0.0
-    LOW_P_BLEEDOUT = 0.1
-    MED_P_BLEEDOUT = 0.5
-    HIGH_P_BLEEDOUT = 0.75
-    CRITICAL_P_BLEEDOUT = 0.9999
 
     def __init__(self, id: str, unstructured: str, name: str, demographics: Demographics,
                  injuries: list[Injury], vitals: Vitals, complete_vitals: Vitals, assessed: bool, tag: str):
@@ -327,6 +316,7 @@ class Metric(Enum):
 
     IS_TIED = 'IS_TIED'
 
+    # maybe these numbers belong in oracle
     STOCK_ITEM = 5
     LIFESAVING_PENALTY = 4
     IMPORTANT_PEMALTY = 2

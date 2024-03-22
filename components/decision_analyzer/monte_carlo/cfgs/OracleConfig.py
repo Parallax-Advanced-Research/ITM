@@ -81,6 +81,19 @@ class Medical:
                                            Locations.UNSPECIFIED.value]
     }
 
+    CASUALTY_MAX_BURN_HP = 5000
+
+    class CasualtyBleedout(Enum):
+        BLEEDOUT_CHANCE_NONE = 0.15
+        BLEEDOUT_CHANCE_LOW = 0.3
+        BLEEDOUT_CHANCE_MED = 0.4
+        BLEEDOUT_CHANCE_HIGH = 0.5
+        NO_P_BLEEDOUT = 0.0
+        LOW_P_BLEEDOUT = 0.1
+        MED_P_BLEEDOUT = 0.5
+        HIGH_P_BLEEDOUT = 0.75
+        CRITICAL_P_BLEEDOUT = 0.9999
+
 
 class BodySystemEffect(Enum):
     NONE = 'NONE'
