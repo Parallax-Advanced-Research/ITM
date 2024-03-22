@@ -58,16 +58,29 @@ def get_html_decision(decision):
     return retstr
 
 
-def get_html_justification(justification_list):
+def get_html_justification(justification_list, decision_metrics: list[str]):
     if justification_list[0][Metric.DECISION_JUSTIFICATION_ENGLISH.value] == 'End Scenario not Simulated':
         return {Metric.DAMAGE_PER_SECOND.value: 'End Scenario not Ranked',
                 Metric.P_DEATH.value: 'End Scenario not Ranked',
                 Metric.AVERAGE_TIME_USED.value: 'Undefined by TA3',
                 Metric.P_DEATH_ONEMINLATER.value: 'End Scenario not Ranked'}
-    return {Metric.DAMAGE_PER_SECOND.value: justification_list[3][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
-            Metric.P_DEATH.value: justification_list[4][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
-            Metric.AVERAGE_TIME_USED.value: justification_list[2][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
-            Metric.P_DEATH_ONEMINLATER.value: justification_list[5][Metric.DECISION_JUSTIFICATION_ENGLISH.value]}
+    rethash = dict()
+    for dm in decision_metrics:
+        # This is a stupid kludge because I'm looking up what's basically NLP strings. To ensure that we're not
+        # ever grabbing a substring I take the english string, make it the length of the DM, and if they match
+        # then that's our value. This gives a value for all. Might should work great.
+        justification = 'Justification not supplied.'
+        for i, jl in enumerate(justification_list):
+            metric_candidate = jl['DECISION_JUSTIFICATION_ENGLISH'][:len(dm)]
+            if metric_candidate == dm:
+                justification = jl['DECISION_JUSTIFICATION_ENGLISH']
+                break
+        rethash[dm] = justification
+    return rethash
+    # return {Metric.DAMAGE_PER_SECOND.value: justification_list[3][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+    #         Metric.P_DEATH.value: justification_list[4][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+    #         Metric.AVERAGE_TIME_USED.value: justification_list[2][Metric.DECISION_JUSTIFICATION_ENGLISH.value],
+    #         Metric.P_DEATH_ONEMINLATER.value: justification_list[5][Metric.DECISION_JUSTIFICATION_ENGLISH.value]}
 
 
 def htmlify_casualty(casualty: Casualty):
@@ -261,7 +274,7 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
         decision_html_string = get_html_decision(decision)
         table_full_html += f"""<tr {pink_style}> <td>{decision_html_string}</td> <td>{casualty}</td> <td>{additional['Location']}</td> <td>{additional['Treatment']}</td> <td>{additional['Tag']}</td>"""
 
-        justifications = get_html_justification(decision.justifications)
+        justifications = get_html_justification(decision.justifications, list(decision.metrics.keys()))
 
         # dynamic stuff
         for m_c in sorted_metric_choices:
@@ -296,18 +309,18 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
     'pAirwayBlocked': ('P(Airway<br>Blocked)', 'Posterior probability of airway blockage', '{:.2%}', 'BNDA'),
     'pInternalBleeding': ('P(Internal<br>Bleeding)', 'Posterior probability of internal bleeding', '{:.2%}', 'BNDA'),
     'pExternalBleeding': ('P(External<br>Bleeding)', 'Posterior probability of external bleeding', '{:.2%}', 'BNDA'),
-    'SEVERITY': ('Total<br>Severity', 'Sum of all Severities for all Injuries for all Casualties', '{:.0f}', ''),
-    'SUPPLIES_REMAINING': ('Supplies<br>Remaining', 'Supplies remaining', '{:.0f}', ''),
+    'SEVERITY': ('Total<br>Severity', 'Sum of all Severities for all Injuries for all Casualties', '{:.0f}', 'MCA'),
+    'SUPPLIES_REMAINING': ('Supplies<br>Remaining', 'Supplies remaining', '{:.0f}', 'MCA'),
     'AVERAGE_TIME_USED': ('Time', 'Average time used in action', '{:.0f}', 'MCA'),
     'DAMAGE_PER_SECOND': ('Deterioration<br>per second', 'Blood loss ml/sec + lung hp loss/sec + burn shock/second for ALL casualties', '{:.0f}', 'MCA'),
     'MEDSIM_P_DEATH': ('P(Death)', 'Medical simulator probability at least one patient bleeds out, dies of burn shock or asphyxiates from action', '{:.2%}', 'MCA'),
     'MEDSIM_P_DEATH_ONE_MIN_LATER': ('P(Death)<br> + 60s', 'Probability of death after one minute of inactivity after action performed', '{:.2%}', 'MCA'),
-    'SEVERITY_CHANGE': ('Severity<br>Change', 'Change in severity from previous state normalized for time.', '{:.2f}', ''),
-    'SUPPLIES_USED': ('Supplies<br>Used', 'Supplies used in between current state and projected state', '{:.0f}', ''),
-    'ACTION_TARGET_SEVERITY': ('Target<br>Severity', 'The severity of the target', '{:.1f}', ''),
-    'ACTION_TARGET_SEVERITY_CHANGE': ('Target<br>Severity<br>Change', 'how much the target of the actions severity changes', '{:.1f}', ''),
-    'SEVEREST_SEVERITY': ('Severest<br>Severity', 'what the most severe targets severity is', '{:.1f}', ''),
-    'SEVEREST_SEVERITY_CHANGE': ('Severest<br>Severity<br>Change', 'What the change in the severest severity target is', '{:.1f}', ''),
+    'SEVERITY_CHANGE': ('Severity<br>Change', 'Change in severity from previous state normalized for time.', '{:.2f}', 'MCA'),
+    'SUPPLIES_USED': ('Supplies<br>Used', 'Supplies used in between current state and projected state', '{:.0f}', 'MCA'),
+    'ACTION_TARGET_SEVERITY': ('Target<br>Severity', 'The severity of the target', '{:.1f}', 'MCA'),
+    'ACTION_TARGET_SEVERITY_CHANGE': ('Target<br>Severity<br>Change', 'how much the target of the actions severity changes', '{:.1f}', 'MCA'),
+    'SEVEREST_SEVERITY': ('Severest<br>Severity', 'what the most severe targets severity is', '{:.1f}', 'MCA'),
+    'SEVEREST_SEVERITY_CHANGE': ('Severest<br>Severity<br>Change', 'What the change in the severest severity target is', '{:.1f}', 'MCA'),
     'All Predictors': ('All<br>Predictors', 'ALL....Predictors.', '{:.1f}', ''),  # thought we were skipping this not sure why it is here
     'entropy': ('Entropy', 'H[entire bayesian network | observations]', '{:.3f}', 'BNDA'),
     'entropyDeath': ('Entropy<br>Death', 'H[death | observations]', '{:.3f}', 'BNDA'),
@@ -325,7 +338,6 @@ class ChosenMetric:
     name: str
     chosen_metric: bool
     group_name: str
-
 
 
 def make_checkboxes_list_for_metrics(analysis_df):
