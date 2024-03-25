@@ -12,11 +12,48 @@ U = TypeVar('U')
 # https://docs.python.org/3/library/stdtypes.html#types-genericalias
 
 #GenericAlias = Any # TODO: Figure out how to document this. It's really typing._GenericAlias, but I can't import private vars apparently?
+		
+def pull_type_from_ctor_stack_frame_tmp(cls) -> list['TypeInfo']:
+	# TODO: do we ever call this if not a generic?
+	# When constructing the generic, it first goes through _BaseGenericAlias.__call__(), which does
+	# *nothing* except throw away the type information I'm looking for
+	# (by calling self.__origin__.__init__; what I want is in __args__)
+	# So we follow the call stack up a step (two steps, to get out of *this* function first)
+	# and retrieve that information from the stack frame.
+	# If we're not in the constructor of a Generic, this will not work.
 
-def is_generic(cls: type[object]) -> bool:
-	# TODO: find a reliable way to test this that mypy likes, if possible. Otherwise, just ignore warning (if it works)
-	return issubclass(cls, typing.Generic)
-	#return hasattr(cls, '__origin__')
+	ERR = "Can't happen. Did you call when not in a constructor of a Generic?"
+	frame = inspect.currentframe()
+	for _ in range(2):
+		assert frame is not None, ERR
+		frame = frame.f_back
+	assert frame is not None, ERR
+
+	while frame:
+		# TODO: check a few other things to make sure we're on the
+		# right frame and not just something that defines __origin__
+		# and __args__? Might reduce compatibility across versions,
+		# though.
+		try:
+			res = frame.f_locals['self']
+			#print(f"{res.__origin__=}")
+			if res.__origin__ is cls:
+				del frame
+				return [a for a in res.__args__]
+			else:
+				print(f"Bad origin: Saw {res.__origin__}, expect {cls}")
+				frame = frame.f_back
+		except (KeyError, AttributeError):
+			assert frame is not None, ERR
+			frame = frame.f_back
+	del frame
+
+	traceback.print_stack()
+	assert False, ERR
+
+
+def is_validated_class(cls: type[Any]) -> bool:
+	return hasattr(cls, MAGIC_NUMBER[0]) and getattr(cls, MAGIC_NUMBER[0]) == MAGIC_NUMBER[1]
 
 # TODO: I don't think checktype knows how to deal with Any. It should probably
 # print a "missing the point" warning if it sees one, but # it should still work.
@@ -41,11 +78,6 @@ MAGIC_NUMBER = ('_typechecked', 0x536369656e636521)
 # TODO: Maybe make a TypeInfo Union that's just like Union, except it *is* a type. Since that's already
 # what TypeInfo is doing for _GenericAlias.
 
-# typing.Union isn't a type, which makes everything stupidly complicated.
-# So we map those to this.
-class TypeInfo_Union:
-	pass
-
 class TypeInfo:
 	"""
 	TypeInfo is basically a version of _GenericAlias that is an actual type, and that
@@ -56,20 +88,24 @@ class TypeInfo:
 
 	# TODO: mypy @overrides for ctor
 	def __init__(self, *args: Any) -> None:
-		if 2 == len(args):
+		if 3 == len(args):
 			self._init_origin_args(*args)
-		else:
+		elif 1 == len(args):
 			self._init_annotation(*args)
+		else:
+			assert False, "Bad args"
 
 	# NOTE: If this is a Union, origin needs to be typing.UnionType, because *that's* an actual type.
 	# typing.Union, typing.Optional, etc are typing._SpecialForm, which is something weird.
-	def _init_origin_args(self, origin: type[Any], args: list['TypeInfo']) -> None:
-		print(f"_init_origin_args")
+	def _init_origin_args(self, origin: type[Any], args: list['TypeInfo'], fields: list['TypeInfo']) -> None:
+		print("_init_origin_args")
 		assert all(type(a) is TypeInfo for a in args)
+		assert all(type(a) is TypeInfo for a in fields)
 
 		assert inspect.isclass(origin), f"{origin=} ({type(origin)})"
 		self.origin = origin
 		self.args = args
+		self.fields = fields
 
 	def _init_annotation(self, annotation: Any) -> None:
 		# TODO: What type is annotation?
@@ -258,7 +294,7 @@ def bind_params(obj: object) -> Bound_Annotation:
 			if type(t) is TypeVar:
 				return bindings[t]
 			else:
-				return TypeInfo(t, [])
+				return TypeInfo(t, [], [])
 
 		assert hasattr(cls, '__annotations__')
 		for k,v in cls.__annotations__.items():
@@ -296,10 +332,10 @@ def bind_params(obj: object) -> Bound_Annotation:
 				#typevar_vals: dict[TypeVar, TypeInfo] = get_generic_args(field_cls())
 
 				res[k] = bind_params_aux(typing.get_origin(v), typevar_vals)
+			elif is_validated_class(v):
+				pass # TODO:
 			else: # normal type with no TypeVar or templating involved
-				print(f"{k=}: {v=}")
-				if hasattr(v, '__parameters__'): print(f"{v.__parameters__=}")
-				res[k] = TypeInfo(v, [])
+				res[k] = TypeInfo(v, [], [])
 			print()
 		return res
 
@@ -720,34 +756,172 @@ def test2():
 	#	for k in dir(obj):
 	#		print(f"{k}: {getattr(obj, k)}")
 
+	def is_union(cls) -> bool:
+		origin = typing.get_origin(cls)
+		r = (origin is typing.Union) or (origin is types.UnionType)
+		#print(f"is_union -> {r}. cls={cls} ({type(cls)}). origin={origin} ({type(origin)})")
+		return r
 	
+	def union_args(cls) -> list[type[Any]]:
+		origin = typing.get_origin(cls)
+		#if origin is typing.Optional:
+		#	args = inspect.getargs(cls)
+		#	assert 1 == len(args)
+		#	return [ args[0], type(None) ]
+		if (origin is typing.Union) or (origin is types.UnionType):
+			return typing.get_args(cls) # TODO: or is this a tuple?
+		assert False, f"{cls} ({type(cls)})"
+
+	def validate(cls: T) -> T:
+		def construct_object(val: Any, expected_type: type[Any], typevar_assignments) -> Any:
+			print(f"construct_object({val}, {expected_type}")
+			# recurse on union. Will recurse both construct_object and _init_validated (via the ctor in
+			# the is_validated_class branch)
+			if is_union(expected_type): # TODO: need to check *all* union types
+				# TODO: loop through all possibilities and try to construct each in turn.
+				print("# UNION -- trying options")
+				for option in union_args(expected_type):
+					assert type(expected_type) is not TypeVar, f"{expected_type} ({type(expected_type)=})"
+					try:
+						r = construct_object(val, option, typevar_assignments)
+						print("# Done with union -- success")
+						return r
+					except WrongType as e:
+						pass
+				print("# Done with union -- failure")
+				raise WrongType(val, expected_type)
+
+			# leaf of this particular construct_object traversal (we might end up in construct_object
+			# again, but only if we first go through _init_validated)
+			if expected_type is type(None):
+				assert val is None
+				raise WrongType(val, type(None))
+				return None
+			elif is_validated_class(expected_type):
+				return expected_type(val, typevar_assignments)
+			else:
+				# leaf of *everything*
+				# TODO: need to check that the type matches
+				if not isinstance(val, expected_type):
+					raise WrongType(val, expected_type)
+				return expected_type(val)
+			
+		def beta_substitution(possibly_generic_type, typevar_assignments):
+			# Replace template parameter with real type
+			t = possibly_generic_type
+
+			print(f"beta_substitution({possibly_generic_type},\n\t{typevar_assignments})")
+
+			if type(t) is TypeVar:
+				t = typevar_assignments[t]
+				assert type(t) is not TypeVar, f"{t} ({type(t)=})"
+			elif hasattr(t, '__args__'): # Generic or Union
+				t.__args__ = [beta_substitution(a, typevar_assignments) for a in t.__args__]
+			return t
+
+		# TODO: get rid of that Any. It's a recursive type.
+		def _init_validated(self, values: dict[str, Any], typevar_assignments = None) -> None:
+			print(f"init_validated({self.__class__.__name__},\n\t{values}\n\t{typevar_assignments}\n)")
+			#bound_annotations = bind_params(self)
+			#print(f"{bound_annotations=}")
+
+#			print("pull: ", pull_type_from_ctor_stack_frame_tmp(self.__class__))
+#			for k,v in self.__annotations__.items():
+#				print(f"{k}: {v}")
+
+			if typevar_assignments is None:
+				typevar_assignments = {}
+
+			# Get the typevar assignments that are set in the square brackets, e.g. Foo[int,T]
+			typevar_assignments_inner = dict(zip(self.__parameters__,
+				pull_type_from_ctor_stack_frame_tmp(self.__class__)))
+
+			print(f"BEFORE: {typevar_assignments=}")
+			print(f"INNER_BEFORE: {typevar_assignments_inner=}")
+
+			# If any of those are still typevars (e.g. the T in Foo[int,T], get the real
+			# type from the mapping passed down from the parent.
+			# e.g. if we have this:
+			#   class Bar(Generic[T,U]):
+			#       ...
+			#   class Foo(Generic[T]):
+			#       a: Bar[int, T]
+			#   foo = Foo[str]()
+			# typevar_assignments_inner will have { T: int, U: ~T }.
+			# typevar_assignments will have { T: str }
+			# And finally, we end up with { T: int, U: str }
+			for k,v in typevar_assignments_inner.items():
+				if type(v) is TypeVar:
+					typevar_assignments_inner[k] = typevar_assignments[v]
+			typevar_assignments = typevar_assignments_inner
+
+			print(f"AFTER: {typevar_assignments=}")
+			print(f"{self.__annotations__}")
+			for k,v in self.__annotations__.items():
+				print(f"FIELD BEFORE: {k}: {v} ({type(v)})")
+				v = beta_substitution(v, typevar_assignments)
+				print(f"FIELD AFTER: {k}: {v} ({type(v)})")
+
+				# TODO:
+				# This is the problem:
+				# a: B[B[T]] appears in G. T is str there. But then when we recurse,
+				# T gets set to B[T] because that's what it is in the next context down.
+				# The problem is that we're evaluating from outside in, but the type-binding works
+				# inside-out, like a function call.
+				# So I think what we need is some sort of stack mechanism. Maybe...maybe not.
+				# What I need to do is make *all* the substitutions at the level where the TypeVar first appears.
+				# So right now, I've got the output: 
+				#    d: __main__.test2.<locals>.B[__main__.test2.<locals>.B[~T]] (<class 'typing._GenericAlias'>)
+				# I need to do something right after that print statement s.t. I can repeat the print and get
+				#    d: __main__.test2.<locals>.B[__main__.test2.<locals>.B[str]] (<class 'typing._GenericAlias'>)
+				obj = construct_object(values.get(k, None), v, typevar_assignments)
+				setattr(self, k, obj)
+
+			print("return from _init_validated")
+		
+		def __str__(self, showtypes = False) -> str:
+			annotations = inspect.get_annotations(cls)
+			if showtypes:
+				fields = ', '.join(f"{k}:{t} = {getattr(self, k)}" for k,t in annotations.items())
+			else:
+				fields = ', '.join(f"{k} = {getattr(self, k)}" for k,_ in annotations.items())
+			# TODO: It'd be nice if we could also print the template arguments here.
+			# Easiest way might be to store that fully-substituted name as a _field when we're
+			# in _init_validate.
+			return f"{self.__class__.__name__}({fields})"
+
+		# TODO: This was mostly working (was failing at leaf) when I didn't override __init__
+		# (the classes all have manual inits that call _init_validated)
+		# Oh, the problem was just that is_validated_class looks to see if _init_validated exists.
+		# TODO: replace that with the magic number and update is_validated_class.
+		#setattr(cls, '_init_validated', _init_validated)
+		setattr(cls, MAGIC_NUMBER[0], MAGIC_NUMBER[1])
+		#setattr(cls, '__init__', _init_validated)
+		setattr(cls, '__init__', _init_validated)
+		setattr(cls, '__str__', __str__)
+		return cls
+
+
+	@validate
 	class B(Generic[T]): # str
 		a: T
 
+	@validate
 	class C:
 		a: int
 
+	@validate
 	class A(Generic[T,U]): # float,str
 		a: int
 		b: T
 		c: B[U] | None
-		d: C
 
-
+	@validate
 	class G(Generic[T,U]): # str, float
 		a: T
 		b: int
 		c: A[U,str] # NOTE that A uses TypeVar T for this.
-		def __init__(self, values: dict[str, Any]) -> None:
-			bound_annotations = bind_params(self)
-			print(bound_annotations)
-			#_validate_input(self, values, bound_annotations, permit_extra_values=False)
-
-			#bind_params(self)
-			#traceback.print_stack()
-			#print(self.__orig_bases__[0].__args__)
-			#print(dir(T))
-			#dump(self.__parameters__)
+		d: B[B[T]]
 
 	data = {
 		'a': 'G_a_str',
@@ -760,6 +934,11 @@ def test2():
 			},
 			'd': {
 				'a': 97
+			}
+		},
+		'd': {
+			'a': {
+				'a': 'B_B_a_str'
 			}
 		}
 	}
