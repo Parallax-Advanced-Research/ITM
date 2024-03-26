@@ -3,9 +3,6 @@ import typing, types, json
 from typing import TypeVar, Any, Optional, Generic
 from enum import Enum
 
-# TODO: I don't support enums in the new one yet.
-
-
 # Python doesn't really have generics. Its "generics" are actually just normal
 # classes that inherit from typing.Generic. That, in turn, is a kind of *array*
 # that contains objects of type TypeVar. When instantiating a generic object,
@@ -32,11 +29,15 @@ MAGIC_NUMBER = ('_typechecked', 0x536369656e636521)
 def is_validated_class(cls: type[Any]) -> bool:
 	return hasattr(cls, MAGIC_NUMBER[0]) and getattr(cls, MAGIC_NUMBER[0]) == MAGIC_NUMBER[1]
 
-def simple_typename(datatype: type[Any]) -> str:
+Input_Dictionary = dict[str, typing.Union[type[Any], 'Input_Dictionary']]
+
+def simple_typename(datatype: type[Any] | None) -> str:
 	if datatype is type(None):
 		return "None"
 	if type(datatype) is type:
 		return datatype.__name__
+	if is_enum(datatype):
+		return f"enum {datatype.__name__}"
 
 	# Generics and Unions
 	origin = typing.get_origin(datatype)
@@ -47,7 +48,9 @@ def simple_typename(datatype: type[Any]) -> str:
 	args_str = ",".join(simple_typename(a) for a in args)
 	return f"{simple_typename(origin)}[{args_str}]"
 
-def pull_type_from_ctor_stack_frame_tmp(cls) -> list[type[Any]]:
+# TODO: Can I insist that cls is a Generic without knowing the number of args? typing.TypeVarTuple
+# seems relevant, but 3.10 doesn't have it.
+def pull_type_from_ctor_stack_frame_tmp(cls: type[Any]) -> list[type[Any]]:
 	# TODO: do we ever call this if not a generic?
 	# When constructing the generic, it first goes through _BaseGenericAlias.__call__(), which does
 	# *nothing* except throw away the type information I'm looking for
@@ -73,7 +76,7 @@ def pull_type_from_ctor_stack_frame_tmp(cls) -> list[type[Any]]:
 			#print(f"{res.__origin__=}")
 			if res.__origin__ is cls:
 				del frame
-				return [a for a in res.__args__]
+				return list(res.__args__)
 			else:
 				print(f"Bad origin: Saw {res.__origin__}, expect {cls}")
 				frame = frame.f_back
@@ -85,13 +88,19 @@ def pull_type_from_ctor_stack_frame_tmp(cls) -> list[type[Any]]:
 	assert False, ERR
 
 
-def is_union(cls) -> bool:
+def is_union(cls: type[Any]) -> bool:
 	origin = typing.get_origin(cls)
 	r = (origin is typing.Union) or (origin is types.UnionType)
 	#print(f"is_union -> {r}. cls={cls} ({type(cls)}). origin={origin} ({type(origin)})")
 	return r
 
-def union_args(cls) -> list[type[Any]]:
+def is_generic_or_union(cls: type[Any]) -> bool:
+	return hasattr(cls, '__parameters__')
+
+def is_enum(cls: type[Any]) -> bool:
+	return inspect.isclass(cls) and issubclass(cls, Enum)
+
+def union_args(cls: type[Any]) -> tuple[type[Any]]:
 	origin = typing.get_origin(cls)
 	#if origin is typing.Optional:
 	#	args = inspect.getargs(cls)
@@ -101,7 +110,7 @@ def union_args(cls) -> list[type[Any]]:
 		return typing.get_args(cls) # TODO: or is this a tuple?
 	assert False, f"{cls} ({type(cls)})"
 	
-def construct_object(val: Any, expected_type: type[Any], typevar_assignments, print_errors: bool) -> Any:
+def construct_object(val: Any, expected_type: type[Any], print_errors: bool, typevar_assignments: dict[TypeVar,type[Any]]) -> Any:
 	#print(f"construct_object({val}, {expected_type}")
 	# recurse on union. Will recurse both construct_object and _init_validated (via the ctor in
 	# the is_validated_class branch)
@@ -116,8 +125,9 @@ def construct_object(val: Any, expected_type: type[Any], typevar_assignments, pr
 				# This does mean that if we have a union of complex types, we don't know why
 				# get further details on why the *right* one failed, but we can't know which
 				# that is, so the alternative is to print details on why *all* of them failed.
-				return construct_object(val, option, typevar_assignments, print_errors=False)
-			except WrongType as e:
+				return construct_object(val, option, print_errors=False, typevar_assignments=typevar_assignments)
+			except WrongType:
+				# Permitted to fail to match one branch. Only a failure if we can't match any
 				pass
 		#print("# Done with union -- failure")
 
@@ -128,15 +138,27 @@ def construct_object(val: Any, expected_type: type[Any], typevar_assignments, pr
 	if expected_type is type(None):
 		if val is None: return None
 		raise WrongType(val, type(None))
-	elif is_validated_class(expected_type):
-		return expected_type(val, typevar_assignments, print_errors, toplevel=False)
-	else:
-		# leaf of *everything*
-		if not isinstance(val, expected_type):
+
+	if is_validated_class(expected_type):
+		return expected_type(val, print_errors, typevar_assignments, toplevel=False)
+
+	# If we reach here, we're at the leaf of *everything*. Either expected_type is
+	# an enum, a primitive, or a class that takes whatever val is as the sole argument
+	# to its constructor (primitives being a special case of that). Or an error.
+
+	# enum
+	if is_enum(expected_type):
+		if val not in expected_type.__members__:
 			raise WrongType(val, expected_type)
-		return expected_type(val)
+		return expected_type.__members__[val]
+
+	# primitive or class with the right constructor
+	# TODO: warn if not a primitive? Since classes inside a validated class should probably also be validated.
+	if not isinstance(val, expected_type):
+		raise WrongType(val, expected_type)
+	return expected_type(val)
 	
-def beta_substitution(possibly_generic_type, typevar_assignments):
+def beta_substitution(possibly_generic_type: type[Any], typevar_assignments: dict[TypeVar, type[Any]]) -> type[Any]:
 	# Replace template parameter with real type
 	t = possibly_generic_type
 
@@ -152,25 +174,39 @@ def beta_substitution(possibly_generic_type, typevar_assignments):
 		return typing.get_origin(t).__class_getitem__(args)
 	return t
 					
-def pretty_print_val(values: dict[str, Any], name: Any) -> str:
+def pretty_print_val(values: Input_Dictionary, name: Any) -> str:
 	val = values.get(name, None)
 	if val is None:
 		return "Received None" if (name in values) else "Value missing."
 	elif type(val) is str:
-		s = json.dumps(val)
-		return "Received {s}" # dumps handles escaping quotes
+		return f"Received {json.dumps(val)}" # dumps handles escaping quotes
 	else:
-		return "Received {val}"
+		return f"Received {val}"
 
 def validate(cls: T) -> T:
-	# TODO: get rid of that Any. It's a recursive type.
-	def _init_validated(self, values: dict[str, Any], typevar_assignments = None, print_errors = True, toplevel = True) -> None:
+	def _init_validated(self, values: Input_Dictionary, 
+			print_errors = True, 
+			typevar_assignments: dict[TypeVar,type[Any]] | None = None, 
+			toplevel = True) -> None:
+		""" `values` is a dictionary {k:v, ...} s.t. v is an appropriate value for initializing field k.
+			The constructor will raise a ValueError if anything doesn't match the expected type.
+
+			`print_errors` may be set to False if you want to suppress the error messages (it'll still
+			raise the exception.)
+
+			`typevar_assignments` and `toplevel` are magic arguments that are used internally.
+			If you manually pass them to a constructor, you will be cursed.
+		"""
+
 		if typevar_assignments is None:
 			typevar_assignments = {}
 
 		# Get the typevar assignments that are set in the square brackets, e.g. Foo[int,T]
-		typevar_assignments_inner = dict(zip(self.__parameters__,
-			pull_type_from_ctor_stack_frame_tmp(self.__class__)))
+		if is_generic_or_union(type(self)):
+			typevar_assignments_inner = dict(zip(self.__parameters__,
+				pull_type_from_ctor_stack_frame_tmp(self.__class__)))
+		else:
+			typevar_assignments_inner = {}
 
 		# If any of those are still typevars (e.g. the T in Foo[int,T], get the real
 		# type from the mapping passed down from the parent.
@@ -212,19 +248,20 @@ def validate(cls: T) -> T:
 			#    d: __main__.test2.<locals>.B[__main__.test2.<locals>.B[str]] (<class 'typing._GenericAlias'>)
 			field_name = f"{type(self).__name__}.{k}"
 			try:
-				obj = construct_object(values.get(k, None), datatype, typevar_assignments, print_errors)
+				obj = construct_object(values.get(k, None), datatype, print_errors, typevar_assignments)
 				setattr(self, k, obj)
-			except WrongType as e:
+			except WrongType:
 				if print_errors:
-					print(f"\x1b[91mBad value for {field_name}: Expected data of type {simple_typename(datatype)}. {pretty_print_val(values, k)}\x1b[0m")
+					print(f"\x1b[91mBad value for {field_name}:",
+						f"Expected data of type {simple_typename(datatype)}.",
+						f"{pretty_print_val(values, k)}\x1b[0m")
 				n_errors += 1
 				#raise WrongType(values.get(k, None), datatype, print_errors=False)
 
 		if n_errors:
 			if toplevel:
 				raise TypeError(f"Failed to construct {self.__class__.__name__}: invalid data")
-			else:
-				raise WrongType(values, type(self))
+			raise WrongType(values, type(self))
 
 	# TODO: pass in an errors list at the toplevel and pass it down. Assemble all errors in it.
 	# When doing union recursion, pass a throwaway list instead.
@@ -232,7 +269,7 @@ def validate(cls: T) -> T:
 
 		#print("return from _init_validated")
 	
-	def __str__(self, showtypes = False) -> str:
+	def __str__(self: object, showtypes = False) -> str:
 		annotations = inspect.get_annotations(cls)
 		if showtypes:
 			fields = ', '.join(f"{k}:{t} = {getattr(self, k)}" for k,t in annotations.items())
@@ -282,13 +319,9 @@ class WrongType(Exception):
 	
 
 
-Bound_Annotation = dict[str, typing.Union[type[Any], 'Bound_Annotation']]
-
 
 
 def test1() -> None:
-	U = typevar('U')
-
 	# TODO: make this one a bit more complicated to test the nested decorators. Or add another class
 	print("\x1b[94mValidating G\x1b[0m")
 
@@ -315,20 +348,21 @@ def test1() -> None:
 	
 	#checktype(A.__annotations__['a'], 42)
 	def test(key: str, val: Any, good: bool) -> None:
-		t = TypeInfo(A.__annotations__[key])
-		success = True
-		try:
-			v = checktype(t, val, permit_extra_values=False)
-			msg = "ACCEPT: " + str(v)
-		except WrongType as e:
-			msg = "REJECT: " + str(e)
-			success = False
-			if good:
-				print("\x1b[91m" + f"{key}:{t} = {val}  ---  {msg}" + "\x1b[0m")
-				raise
-
-		color = "\x1b[91m" if (success != good) else "\x1b[92m"
-		print(f"{color}{key}:{t} = {val}  ---  {msg}" + "\x1b[0m")
+		pass # TODO: adjust to use new approach
+		#t = A.__annotations__[key]
+		#success = True
+		#try:
+		#	v = checktype(t, val, permit_extra_values=False)
+		#	msg = "ACCEPT: " + str(v)
+		#except WrongType as e:
+		#	msg = "REJECT: " + str(e)
+		#	success = False
+		#	if good:
+		#		print("\x1b[91m" + f"{key}:{t} = {val}  ---  {msg}" + "\x1b[0m")
+		#		raise
+		#
+		#color = "\x1b[91m" if (success != good) else "\x1b[92m"
+		#print(f"{color}{key}:{t} = {val}  ---  {msg}" + "\x1b[0m")
 
 	print("\x1b[94m# TESTS\x1b[0m")
 	test('a', 42, True)
@@ -404,14 +438,13 @@ def test1() -> None:
 		#print(str(e))
 	assert failed
 
-def test2():
+def test2() -> None:
 	#def dump(obj: object) -> None:
 	#	print("\x1b[94m" + f"dump({obj})" + "\x1b[0m")
 	#	for k in dir(obj):
 	#		print(f"{k}: {getattr(obj, k)}")
 
 	U = TypeVar('U')
-
 
 	@validate
 	class B(Generic[T]): # str
@@ -426,6 +459,8 @@ def test2():
 		a: int
 		b: T
 		c: B[U] | None
+	
+	E = Enum('E', ['A','B','C'])
 
 	@validate
 	class G(Generic[T,U]): # str, float
@@ -434,6 +469,8 @@ def test2():
 		c: A[U,str] # NOTE that A uses TypeVar T for this.
 		d: B[B[T]]
 		e: int|None # don't put this in the dict. Make sure it's still accepted.
+		f: C
+		g: E # TODO: need to add enum support
 
 	data = {
 		'a': 'G_a_str',
@@ -452,7 +489,10 @@ def test2():
 			'a': {
 				'a': 'B_B_a_str'
 			}
-		}
+		},
+		# 'e' deliberately missing. optional
+		'f': { 'a': 42 },
+		'g': 'A'
 	}
 	g = G[str,float](data)
 	#print(G[str,float].__args__)
@@ -476,14 +516,15 @@ def test2():
 			'a': {
 				'a': 'b_b_a_str'
 			}
-		}
+		},
+		'g': 'bogus_enum'
 	}
 
 	print("# INVALID 0")
 	try:
 		g = G[str,float](data_invalid)
 		print(g)
-	except TypeError as e:
+	except TypeError:
 		pass
 	
 	data_completely_wrong = {
@@ -500,8 +541,9 @@ def test2():
 			}
 		},
 		'd': {
-			'a': 99 # TOOD: not caught
+			'a': 99
 		}
+		# g: missing enum
 	}
 	
 	print("# INVALID 1")
