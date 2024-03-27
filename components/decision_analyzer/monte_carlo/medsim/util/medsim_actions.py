@@ -10,7 +10,7 @@ def supply_location_match(action: MedsimAction):
         return action.location != Locations.UNSPECIFIED.value
     if action.supply in [Supplies.TOURNIQUET.value, Supplies.SPLINT.value]:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.TOURNIQUET.value]:
-            return False
+            return False  # This is actually correct, its an except..
         return True
     if action.supply == Supplies.DECOMPRESSION_NEEDLE.value:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.DECOMPRESSION_NEEDLE.value]:
@@ -22,7 +22,10 @@ def supply_location_match(action: MedsimAction):
         return False
     if action.supply == Supplies.VENTED_CHEST_SEAL.value:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.VENTED_CHEST_SEAL.value]:
-
+            return True
+        return False
+    if action.supply == Supplies.SPLINT.value:
+        if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.SPLINT.value]:
             return True
         return False
     return True
