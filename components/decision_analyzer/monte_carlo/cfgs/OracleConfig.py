@@ -3,6 +3,8 @@ from enum import Enum
 
 
 class Medical:
+    HEALING_ITEMS = [Supplies.BLOOD.value, Supplies.NASOPHARYNGEAL_AIRWAY.value,
+                     Supplies.IV_BAG.value, Supplies.PAIN_MEDICATIONS.value]
     FAILURE_CHANCE = {
         Supplies.PRESSURE_BANDAGE.value: .01,
         Supplies.HEMOSTATIC_GAUZE.value: .05,
@@ -193,4 +195,5 @@ DAMAGE_PER_SECOND = {
     BodySystemEffect.CRITICAL.value: 50.0,
     BodySystemEffect.FATAL.value: 9001.0
 }
+
 

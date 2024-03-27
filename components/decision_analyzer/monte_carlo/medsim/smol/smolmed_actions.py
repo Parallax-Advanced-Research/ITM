@@ -3,7 +3,8 @@ import random
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import (find_casualty, supply_injury_match,
                                                                                  supply_location_match)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Supplies, Actions, Injury
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Supplies, Actions, Injury, \
+    Affector, HealingItem
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import update_smol_injury
 import typing
 
@@ -31,6 +32,13 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
 def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int],
                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c = find_casualty(action, casualties)
+    if action.supply in SmolMedicalOracle.HEALING_ITEMS:
+        healer = HealingItem(action.supply, action.location, severity=0)
+        cas_id = action.casualty_id
+        for cas_possible in casualties:
+            if cas_possible.id == cas_id:
+                cas_possible.injuries.append(healer)
+            break  # We add the healer to the patients injuries/affects, then run as normal
     time_taken = apply_generic_treatment(c, supplies, action, rng)
     supply_dict = {supply.name:supply.amount for supply in supplies}
     if action.supply in supply_dict.keys():
@@ -41,7 +49,7 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
     for c2 in casualties:
         if c.id == c2.id:
             continue  # already updated, casualty of action
-        casualty_injuries: list[Injury] = c2.injuries
+        casualty_injuries: list[Affector] = c2.injuries
         for ci in casualty_injuries:
             update_smol_injury(ci, time_taken)
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
@@ -57,7 +65,7 @@ def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int]
         for c in casualties:
             action.casualty_id = c.id
             retlist.extend(apply_singlecaualty_action(casualties, supplies, action, rng, start_time))
-            casualty_injuries: list[Injury] = c.injuries
+            casualty_injuries: list[Affector] = c.injuries
             for ci in casualty_injuries:
                 update_smol_injury(ci, time_taken)
         action.casualty_id = None
@@ -72,7 +80,7 @@ def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int
     time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.action])
     c1.tag = action.tag
     for c in casualties:
-        casualty_injuries: list[Injury] = c.injuries
+        casualty_injuries: list[Affector] = c.injuries
         for ci in casualty_injuries:
                 update_smol_injury(ci, time_taken)
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
@@ -83,7 +91,7 @@ def end_scenario_action(casualties: list[Casualty], supplies: dict[str, int], st
                         aid_delay: float) -> list[MedsimState]:
     time_taken = aid_delay
     for c in casualties:
-        casualty_injuries: list[Injury] = c.injuries
+        casualty_injuries: list[Affector] = c.injuries
         for ci in casualty_injuries:
             update_smol_injury(ci, time_taken)
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
@@ -94,7 +102,7 @@ def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, i
                                action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.action])
     for c in casualties:
-        casualty_injuries: list[Injury] = c.injuries
+        casualty_injuries: list[Affector] = c.injuries
         for ci in casualty_injuries:
             update_smol_injury(ci, time_taken)
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)

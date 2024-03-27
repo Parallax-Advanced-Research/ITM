@@ -1,6 +1,7 @@
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, Casualty, Locations, Supply
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, \
+    Casualty, Locations, Supply, Affector
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (INJURY_UPDATE, INITIAL_SEVERITIES,
                                                                         BodySystemEffect)
@@ -27,7 +28,7 @@ def _reverse_convert_vitals(internal_vitals: Vitals) -> TA_VIT:
                   breathing=internal_vitals.breathing, heart_rate=internal_vitals.hrpmin)
 
 
-def _convert_injury(ta_injury: TA_INJ) -> list[Injury]:
+def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
     if ta_injury.severity is None:
         severe = INITIAL_SEVERITIES[ta_injury.name] if ta_injury.name in INITIAL_SEVERITIES.keys() else 0.7
     else:
@@ -59,7 +60,7 @@ def _convert_injury(ta_injury: TA_INJ) -> list[Injury]:
     return injuries
 
 
-def _reverse_convert_injury(internal_injury: Injury) -> TA_INJ:
+def _reverse_convert_injury(internal_injury: Affector) -> TA_INJ:
     return TA_INJ(location=internal_injury.location, name=internal_injury.name,
                   severity=internal_injury.severity, treated=internal_injury.treated)
 

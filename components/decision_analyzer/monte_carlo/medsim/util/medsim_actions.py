@@ -1,6 +1,6 @@
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Casualty, Locations, \
-    Actions, Tags, Injury, Supply
+    Actions, Tags, Injury, Supply, Affector
 from domain.internal import Decision
 from util import logger
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle
@@ -285,7 +285,7 @@ def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) 
     casualties: list[Casualty] = state.casualties
     acceptable_actions: list[MedsimAction] = always_acceptable_treatments(casualties)
     for casualty in casualties:
-        casualty_injuries: list[Injury] = casualty.injuries
+        casualty_injuries: list[Affector] = casualty.injuries
         for injury in casualty_injuries:
             for supply in [s for s in Supplies]:
                 if supply == Supplies.PAIN_MEDICATIONS.value:

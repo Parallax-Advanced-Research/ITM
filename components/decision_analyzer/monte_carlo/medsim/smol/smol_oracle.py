@@ -1,12 +1,12 @@
 import math
 
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Injuries, Injury, Casualty)
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Injuries, Injury, Casualty, Affector)
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (INJURY_UPDATE, SmolSystems,
                                                                         InjuryUpdate, DAMAGE_PER_SECOND, Medical)
 from util.logger import logger
 
 
-def update_smol_injury(injury: Injury, time_taken: float, treated=False):
+def update_smol_injury(injury: Affector, time_taken: float, treated=False):
     injury_str: str = injury.name
     if injury_str not in [i.value for i in Injuries]:
         logger.critical("%s not found in Injuries class. Assigning to %s." % (injury_str, Injuries.FOREHEAD_SCRAPE.value))
@@ -218,7 +218,7 @@ def calc_TRISS_deathP(cas: Casualty):
     return (surv_blunt + surv_pen) / 2
 
 
-def update_bleed_breath(inj: Injury, effect: InjuryUpdate, time_elapsed: float,
+def update_bleed_breath(inj: Affector, effect: InjuryUpdate, time_elapsed: float,
                         reference_oracle: dict[str, float], treated=False):
     effect_dict: dict[str, str] = effect.as_dict()
     for effect_key in list(effect_dict.keys()):
@@ -241,5 +241,5 @@ def update_bleed_breath(inj: Injury, effect: InjuryUpdate, time_elapsed: float,
         inj.damage_per_second = 0.0
 
 
-def calculate_injury_severity(inj: Injury) -> float:
+def calculate_injury_severity(inj: Affector) -> float:
     return inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost

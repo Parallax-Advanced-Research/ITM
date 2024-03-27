@@ -23,8 +23,7 @@ class BodySystemEffect(Enum):
     FATAL = 'FATAL'
 
 
-class Injury:
-
+class Affector:
     def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
                  bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
         self.name = name
@@ -42,7 +41,7 @@ class Injury:
         self.burning_effect = burning_effect
         self.damage_per_second = 0.0
 
-    def __eq__(self, other: 'Injury'):
+    def __eq__(self, other: 'Affector'):
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
                 self.time_elapsed == other.time_elapsed and self.treated == other.treated and
                 self.blood_lost_ml == other.blood_lost_ml and self.breathing_hp_lost == other.breathing_hp_lost and
@@ -56,6 +55,21 @@ class Injury:
                                                                                             self.blood_lost_ml, self.bleeding_effect,
                                                                                             self.breathing_hp_lost, self.breathing_effect,
                                                                                                            self.burn_hp_lost, self.burning_effect)
+
+
+class Injury(Affector):
+    def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
+        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn)
+
+
+class HealingItem(Affector):
+    def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
+        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn)
+
+
+
 
 
 class Vitals:
@@ -73,12 +87,12 @@ class Vitals:
 class Casualty:
 
     def __init__(self, id: str, unstructured: str, name: str, demographics: Demographics,
-                 injuries: list[Injury], vitals: Vitals, complete_vitals: Vitals, assessed: bool, tag: str):
+                 injuries: list[Affector], vitals: Vitals, complete_vitals: Vitals, assessed: bool, tag: str):
         self.id: str = id
         self.unstructured: str = unstructured
         self.name: str = name
         self.demographics: Demographics = demographics
-        self.injuries: list[Injury] = injuries
+        self.injuries: list[Affector] = injuries
         self.vitals: Vitals = vitals
         self.complete_vitals: Vitals = complete_vitals
         self.assessed: bool = assessed
