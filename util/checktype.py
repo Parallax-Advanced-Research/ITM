@@ -1,7 +1,8 @@
 import inspect
-import typing, types, json
-from typing import TypeVar, Any, Optional, Generic
+import typing, types, json, copy
+from typing import TypeVar, Any, Optional, Generic, Union
 from enum import Enum
+import sys
 
 # Python doesn't really have generics. Its "generics" are actually just normal
 # classes that inherit from typing.Generic. That, in turn, is a kind of *array*
@@ -95,7 +96,7 @@ def is_union(cls: type[Any]) -> bool:
 	return r
 
 def is_generic_or_union(cls: type[Any]) -> bool:
-	return hasattr(cls, '__parameters__')
+	return hasattr(cls, '__parameters__') or hasattr(cls, '__args__')
 
 def is_enum(cls: type[Any]) -> bool:
 	return inspect.isclass(cls) and issubclass(cls, Enum)
@@ -152,8 +153,47 @@ def construct_object(val: Any, expected_type: type[Any], print_errors: bool, typ
 			raise WrongType(val, expected_type)
 		return expected_type.__members__[val]
 
+	# generics (includes things like list[int])
+	if is_generic_or_union(expected_type):
+		assert not is_union(expected_type)
+
+		origin = typing.get_origin(expected_type)
+		if not isinstance(val, origin):
+			raise WrongType(val, expected_type)
+
+		if isinstance(origin, list):
+			args = typing.get_args(expected_type)
+			assert 1 == len(args)
+			elements = [ construct_object(a, args[0], print_errors, typevar_assignments) for a in val ]
+			return expected_type(elements)
+
+		if isinstance(origin, dict):
+			args = typing.get_args(expected_type)
+			assert 2 == len(args)
+			elements = { 
+				construct_object(k, args[0], print_errors, typevar_assignments):
+				construct_object(v, args[1], print_errors, typevar_assignments)
+				for k,v in val.items()
+			}
+			return expected_type(elements)
+			
+		# TODO: assert that we don't have validated classes by this point. I think handled earlier.
+	
+
+		if not isinstance(val, origin):
+			raise WrongType(val, expected_type)
+		return expected_type(val)
+
+
 	# primitive or class with the right constructor
 	# TODO: warn if not a primitive? Since classes inside a validated class should probably also be validated.
+
+
+	# What is the point of making these classes instead of primitives if int isn't a subtype of
+	# float? Is inefficiency just a goal in of itself for python?
+	if (issubclass(expected_type, float)) and isinstance(val, int):
+		return expected_type(val)
+
 	if not isinstance(val, expected_type):
 		raise WrongType(val, expected_type)
 	return expected_type(val)
@@ -462,41 +502,186 @@ def test2() -> None:
 	
 	E = Enum('E', ['A','B','C'])
 
+	class Unvalidated_Generic(Generic[T]):
+		def __init__(self, data: dict[str, T]) -> None:
+			self.a = data['a']
+	
+	class Unvalidated:
+		def __init__(self, data: dict[str, int]) -> None:
+			self.a = data['a']
+
 	@validate
 	class G(Generic[T,U]): # str, float
-		a: T
-		b: int
-		c: A[U,str] # NOTE that A uses TypeVar T for this.
-		d: B[B[T]]
-		e: int|None # don't put this in the dict. Make sure it's still accepted.
-		f: C
-		g: E # TODO: need to add enum support
+		opt_int0: Optional[int]
+		opt_int1: int | None
+		opt_int2: Union[int,None]
+		dict_si: dict[str,int]
+		dict_sloi: dict[str, list[int | None]]
+		gen_str: T
+		n: int
+		a_fs: A[U,str] # NOTE that A uses TypeVar T for this.
+		bbs: B[B[T]]
+		c: C
+		f: float
+		li: list[int]
+		e: E
+	#	uc: Unvalidated # TODO: DO I want to permit unvalidated classes that have a ctor that takes dict?
+	#	ugc: Unvalidated_Generic
+
+	class Missing:
+		def __str__(self) -> str:
+			return "[MISSING]"
+
+	MISSING = Missing()
+	def modify(data: Any, dotted_path: str, val: Any) -> Any:
+		def aux(data: dict[str, Any], parts: list[str]) -> None:
+			assert isinstance(data, dict)
+			if 1 == len(parts):
+				if val is MISSING:
+					del data[parts[0]]
+				else:
+					data[parts[0]] = val
+			else:
+				aux(data.get(parts[0]), parts[1:])
+
+		def f(data: dict[str, Any], parts: list[str]) -> Any:
+			if 0 == len(parts):
+				return val
+			else:
+				assert isinstance(data, dict)
+				r = {}
+				for k,v in data.items():
+					if k == parts[0]:
+						a = f(data.get(parts[0]), parts[1:])
+						if a is not MISSING:
+							r[k] = a
+					else:
+						r[k] = v
+
+				return r
+		
+		if dotted_path == "":
+			return data
+		return f(data, dotted_path.split('.'))
 
 	data = {
-		'a': 'G_a_str',
-		'b': 98,
-		'c': {
-			'a': 97,
-			'b': 98.98,
-			'c': {
-				'a': 'B_a_str'
-			},
-			'd': {
-				'a': 97
-			}
-		},
-		'd': {
-			'a': {
-				'a': 'B_B_a_str'
-			}
-		},
-		# 'e' deliberately missing. optional
-		'f': { 'a': 42 },
-		'g': 'A'
+		'opt_int0': 2, # the next three can also be none
+		'opt_int1': 4,
+		'opt_int2': 8,
+		'dict_si': { 'foo': 42, 'bar': 6*9 },
+		'dict_sloi': { 'baz': [ 10, 20, 30 ], 'quix': [ 40, None, 50 ] },
+		'gen_str': 'quux',
+		'n': 42,
+		'a_fs': { 'a': 100, 'b': 2.71828, 'c': { 'a': 'A.B.a_str' } }, # c can also be None
+		'bbs': { 'a': { 'a': 'B[B[string]]' } },
+		'c': { 'a': 1000 },
+		'f': 2.71828,
+		'li': [ 100, 200, 300, 400 ],
+		'e': 'A' # also test with other valid enum vals
 	}
-	g = G[str,float](data)
-	#print(G[str,float].__args__)
-	print(g)
+	
+	# TODO: have tests that verify that modify does what it's supposed to
+	# Easiest way is probably to verify that the changed value is what it should be, then
+	# change it *back* and do a deep equality test with the original.
+	#print(data)
+	#print(invalid0)
+	#print(modify(data, "d.a", None))
+	#print(modify(data, "d.a", MISSING))
+	#print(modify(data, "g", "BOGUS"))
+
+
+
+	VERBOSE = True
+	n_errors = 0
+	def test(dotted_path: str, newval: Any, valid: bool) -> None:
+		nonlocal n_errors
+
+		def color(s: str, code: int) -> str:
+			esc = "\x1b"
+			return f"{esc}[{code}m{s}{esc}[0m"
+
+		values = modify(data, dotted_path, newval)
+		failed = False
+		try:
+			g = G[str,float](values, print_errors=valid)
+		except TypeError as e:
+			failed = True
+		except Exception as e:
+			assert False, f"Unexpected exception type:\n\tType: {type(e)}\n\tMessage: {str(e)}"
+
+		if "" == dotted_path:
+			fieldname = "(unchanged)"
+		else:
+			fieldname = f"{dotted_path} = {newval}"
+
+		if failed != valid:
+			if VERBOSE:
+				success_msg = [ "worked", "raised an exception" ]
+				print(color(f"CORRECT: Test {fieldname} {success_msg[not valid]}", 92))
+		else:
+			err_msg = [ "failed to raise an exception", "raised an unexpected exception" ]
+			print(color(f"ERROR: Test {fieldname} {err_msg[valid]}", 91))
+			n_errors += 1
+
+	# Valid variations
+	test("", None, True)
+	# make sure the optional fields work for normal value, None, and (missing)
+	for field in [ "opt_int0", "opt_int1", "opt_int2", "a_fs.c" ]:
+		test(field, None, True)
+		test(field, MISSING, True)
+	test("e", "B", True)
+	test("e", "C", True)
+	test("n", 0, True) # make sure 0 not handled specially (since false)
+	test("n", -42, True)
+	test("f", 42, True) # int is valid float, but not vice versa
+
+	# Missing/None values
+	for field in [ "n", "dict_si", "dict_sloi.quix", "a_fs.a", "a_fs.c.a", "bbs", "c", "f", "li", "e" ]:
+		test(field, None, False)
+		test(field, MISSING, False)
+
+	# Wrong type
+	test("opt_int0", 'BOGUS', False)
+	test("opt_int0", 3.14159265, False)
+	test("dict_si", ['a', 'b'], False)
+	test("dict_si", [ 10, 20 ], False)
+	test("n", 'BOGUS', False)
+	test("n", 3.14159265, False)
+	test("gen_str", 99, False)
+	test("gen_str", 3.14159265, False)
+	test("a_fs.a", 3.14159265, False)
+	test("a_fs.a", 'BOGUS', False)
+	test("a_fs.b", 'BOGUS', False)
+	test("a_fs.c.a", 99, False)
+	test("a_fs.c.a", 3.14159265, False)
+	test("f", 'BOGUS', False)
+	test("li", 99, False)
+	test("li", 3.14159265, False)
+	test("li", [ 10, 20, 42.3, 30 ], False)
+	test("li", [ 10, 20, 30, 'BOGUS' ], False)
+	test("li", [ None, 10, 20, 30 ], False)
+	test("li", 'BOGUS', False)
+	test("e", "D", False) # Wrong enum
+
+	# dictionaries - wrong key
+	test("dict_si", { 'a': 10, 99: 20 }, False)
+	test("dict_si", { 3.14159265: 10, 'a': 20, 'b': 30 }, False)
+	
+	# dictionaries - wrong val
+	test("dict_si", { 'a': 3.14159265, 'b': 20 }, False)
+	test("dict_si", { 'a': 10, 'b': 'bogus' }, False)
+	test("dict_si", { 'a': 10, 'b': [ 10, 20, 30 ] }, False)
+	test("dict_si", { 'a': 10, 'b': { 'c': 20 } }, False)
+	
+	# dictionaries - wrong everything
+	test("dict_si", { 'a': 3.14159265, 'b': { 'c': 20 } }, False)
+	test("dict_si", { 10: 'a', 20: 'b' }, False)
+
+	assert 0 == n_errors
+
+	# TODO: list of class, list of union, list of generic. dict of all those (as value, at least).
+
+	return
 
 
 	data_invalid = {
