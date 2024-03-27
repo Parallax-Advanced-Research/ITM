@@ -161,13 +161,13 @@ def construct_object(val: Any, expected_type: type[Any], print_errors: bool, typ
 		if not isinstance(val, origin):
 			raise WrongType(val, expected_type)
 
-		if isinstance(origin, list):
+		if issubclass(origin, list):
 			args = typing.get_args(expected_type)
 			assert 1 == len(args)
 			elements = [ construct_object(a, args[0], print_errors, typevar_assignments) for a in val ]
 			return expected_type(elements)
 
-		if isinstance(origin, dict):
+		if issubclass(origin, dict):
 			args = typing.get_args(expected_type)
 			assert 2 == len(args)
 			elements = { 
@@ -621,6 +621,7 @@ def test2() -> None:
 		else:
 			err_msg = [ "failed to raise an exception", "raised an unexpected exception" ]
 			print(color(f"ERROR: Test {fieldname} {err_msg[valid]}", 91))
+			print(values)
 			n_errors += 1
 
 	# Valid variations
@@ -634,26 +635,38 @@ def test2() -> None:
 	test("n", 0, True) # make sure 0 not handled specially (since false)
 	test("n", -42, True)
 	test("f", 42, True) # int is valid float, but not vice versa
+	test("li", [], True)
+	test("dict_sloi", {}, True)
+	test("dict_sloi", { 'a': [] }, True)
 
 	# Missing/None values
-	for field in [ "n", "dict_si", "dict_sloi.quix", "a_fs.a", "a_fs.c.a", "bbs", "c", "f", "li", "e" ]:
+	for field in [ "n", "dict_si", "a_fs.a", "a_fs.c.a", "bbs", "bbs.a", "bbs.a.a", "c", "f", "li", "e" ]:
 		test(field, None, False)
 		test(field, MISSING, False)
 
 	# Wrong type
 	test("opt_int0", 'BOGUS', False)
 	test("opt_int0", 3.14159265, False)
+	test("opt_int1", 'BOGUS', False)
+	test("opt_int1", 3.14159265, False)
+	test("opt_int2", 'BOGUS', False)
+	test("opt_int2", 3.14159265, False)
 	test("dict_si", ['a', 'b'], False)
 	test("dict_si", [ 10, 20 ], False)
-	test("n", 'BOGUS', False)
-	test("n", 3.14159265, False)
+	test("dict_sloi", 'BOGUS', False)
 	test("gen_str", 99, False)
 	test("gen_str", 3.14159265, False)
+	test("n", 'BOGUS', False)
+	test("n", 3.14159265, False)
 	test("a_fs.a", 3.14159265, False)
 	test("a_fs.a", 'BOGUS', False)
 	test("a_fs.b", 'BOGUS', False)
 	test("a_fs.c.a", 99, False)
 	test("a_fs.c.a", 3.14159265, False)
+	test("bbs.a.a", 99, False)
+	test("bbs.a", 'bogus', False)
+	test("c", 'bogus', False)
+	test("c.a", 'bogus', False)
 	test("f", 'BOGUS', False)
 	test("li", 99, False)
 	test("li", 3.14159265, False)
@@ -666,16 +679,21 @@ def test2() -> None:
 	# dictionaries - wrong key
 	test("dict_si", { 'a': 10, 99: 20 }, False)
 	test("dict_si", { 3.14159265: 10, 'a': 20, 'b': 30 }, False)
+	test('dict_sloi', { 42: [ 10, 20, 30 ], 'quix': [ 40, None, 50 ] }, False)
+	test('dict_sloi', { 'baz': [ 10, 20, 30 ], 3.141592653: [ 40, None, 50 ] }, False)
 	
 	# dictionaries - wrong val
 	test("dict_si", { 'a': 3.14159265, 'b': 20 }, False)
 	test("dict_si", { 'a': 10, 'b': 'bogus' }, False)
 	test("dict_si", { 'a': 10, 'b': [ 10, 20, 30 ] }, False)
 	test("dict_si", { 'a': 10, 'b': { 'c': 20 } }, False)
+	test('dict_sloi', { 'baz': [ 10, 20.2, 30 ], 'quix': [ 40, None, 50 ] }, False)
+	test('dict_sloi', { 'baz': [ 10, 20.2, 30 ], 'quix': None }, False)
 	
 	# dictionaries - wrong everything
 	test("dict_si", { 'a': 3.14159265, 'b': { 'c': 20 } }, False)
 	test("dict_si", { 10: 'a', 20: 'b' }, False)
+	test('dict_sloi', { 10: [ 10.1, 20, 30 ], 'quix': [ 40, None, 50 ] }, False)
 
 	assert 0 == n_errors
 
