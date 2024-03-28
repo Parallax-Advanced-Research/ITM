@@ -479,7 +479,18 @@ def test2() -> None:
 		values = modify(data, dotted_path, newval)
 		failed = False
 		try:
-			G[str,float](values, print_errors=valid) # TODO: mypy needs to become aware of the constructor that @validate adds.
+			G[str,float](values, print_errors=valid) 
+			# TODO: mypy needs to become aware of the constructor that @validate adds. Looks like I need to add a mypy plugin. Look at how it does the dataclass one. See how it adds its __init__.
+			# add_method_to_class is mentioned in the plugin code.
+			# https://stackoverflow.com/questions/77756723/type-hints-for-class-decorator may have simpler example
+			#
+			# Failing that, I can just require that the classes have
+			#    def __init__(self, data: dict[str, Any]):
+			#        pass
+			# as a ctor. @validate can then verify that it exists. Could even let the user put extra stuff in it, and store a pointer to it that gets called
+			# at the end of the _validate_init function. Might want to do that part either way (in that case, it would need to take *no* arguments. Or some arguments, which are passed *after* the data one)).
+			# A better approach for the latter would be to pass a function as an argument to @validate, and call *that*. Less voodoo.
+			# TODO: Another function to pass to @validator is a preprocessor that acts on the dict. Useful if I need to rename things, since it lets me do it per-class instead of all at once.
 		except TypeError:
 			failed = True
 		except Exception as e:
