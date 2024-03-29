@@ -13,7 +13,7 @@ if osp.abspath('.') not in sys.path:
 import domain
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
                                                                                Casualty, Supply)
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import INJURY_UPDATE, DAMAGE_PER_SECOND
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import AFFECCTOR_UPDATE, DAMAGE_PER_SECOND
 from components.probe_dumper.probe_dumper import DUMP_PATH
 
 
@@ -271,7 +271,7 @@ def htmlify_casualty(casualty: Casualty):
         return '|%s| None | N/A | N/A| N/A | N/A| N/A |\n' % casualty.id
     lines = ''
     for injury in casualty.injuries:
-        injury_effect = INJURY_UPDATE[injury.name]
+        injury_effect = AFFECCTOR_UPDATE[injury.name]
         bleed = f'{injury_effect.bleeding_effect} ({DAMAGE_PER_SECOND[injury_effect.bleeding_effect]})'
         breath = f'{injury_effect.breathing_effect} ({DAMAGE_PER_SECOND[injury_effect.breathing_effect]})'
         burn = f'{injury_effect.burning_effect} ({DAMAGE_PER_SECOND[injury_effect.burning_effect]})'

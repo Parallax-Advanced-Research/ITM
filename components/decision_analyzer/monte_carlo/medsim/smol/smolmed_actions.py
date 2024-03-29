@@ -9,12 +9,16 @@ from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import upd
 import typing
 
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle
+from util.logger import logger
 
 
 def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
                             action: MedsimAction, rng: random.Random) -> float:
     fail = rng.random() < SmolMedicalOracle.FAILURE_CHANCE[action.supply]
     time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.supply])
+    if action.supply in [Supplies.BLOOD.value, Supplies.IV_BAG.value,
+                         Supplies.NASOPHARYNGEAL_AIRWAY.value]:
+        logger.debug('wakka')
     supply_location_logical = supply_location_match(action)
     supply_dict = {supply.name:supply.amount for supply in supplies}
     if action.supply not in supply_dict.keys() or supply_dict[action.supply] <= 0:
@@ -33,7 +37,7 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c = find_casualty(action, casualties)
     if action.supply in SmolMedicalOracle.HEALING_ITEMS:
-        healer = HealingItem(action.supply, action.location, severity=0)
+        healer = HealingItem(Affector.PREFIX + action.supply, action.location, severity=0)
         cas_id = action.casualty_id
         for cas_possible in casualties:
             if cas_possible.id == cas_id:

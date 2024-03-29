@@ -3,7 +3,7 @@ from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, V
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, \
     Casualty, Locations, Supply, Affector
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
-from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (INJURY_UPDATE, INITIAL_SEVERITIES,
+from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTOR_UPDATE, INITIAL_SEVERITIES,
                                                                         BodySystemEffect)
 from domain.external import Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
@@ -34,14 +34,14 @@ def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
     else:
         severe = ta_injury.severity
     injuries = []
-    effect = INJURY_UPDATE[ta_injury.name]
+    effect = AFFECCTOR_UPDATE[ta_injury.name]
     if ta_injury.name == Injuries.BURN.value and ta_injury.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
                                                                         Locations.LEFT_NECK.value, Locations.RIGHT_NECK.value,
                                                                         Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]:
 
         burn_suffocation_injury = Injury(name=Injuries.BURN_SUFFOCATION.value, location=Locations.LEFT_FACE.value,
                                          severity=ta_injury.severity,
-                                         breathing_effect=INJURY_UPDATE[Injuries.BURN_SUFFOCATION.value].breathing_effect,
+                                         breathing_effect=AFFECCTOR_UPDATE[Injuries.BURN_SUFFOCATION.value].breathing_effect,
                                          bleeding_effect=BodySystemEffect.NONE.value,
                                          burning_effect=BodySystemEffect.NONE.value)
         injuries.append(burn_suffocation_injury)
@@ -52,7 +52,7 @@ def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
                                                                                Locations.RIGHT_CHEST.value]:
         chest_collapse_injury = Injury(name=Injuries.CHEST_COLLAPSE.value, location=ta_injury.location,
                                        severity=ta_injury.severity, treated=ta_injury.treated,
-                                       breathing_effect=INJURY_UPDATE[Injuries.CHEST_COLLAPSE.value].breathing_effect,
+                                       breathing_effect=AFFECCTOR_UPDATE[Injuries.CHEST_COLLAPSE.value].breathing_effect,
                                        bleeding_effect=BodySystemEffect.NONE.value,
                                        burning_effect=BodySystemEffect.NONE.value)
         injuries.append(chest_collapse_injury)

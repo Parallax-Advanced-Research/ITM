@@ -1,10 +1,16 @@
 import math
 
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Injuries, Injury, Casualty, Affector)
-from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (INJURY_UPDATE, SmolSystems,
+from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTOR_UPDATE, SmolSystems,
                                                                         InjuryUpdate, DAMAGE_PER_SECOND, Medical)
 from util.logger import logger
 
+
+def unstack_overshield(injury):
+    injury.blood_lost_ml = max(0, injury.blood_lost_ml)
+    injury.breathing_hp_lost = max(0, injury.breathing_hp_lost)
+    injury.burn_hp_lost = max(0, injury.burn_hp_lost)
+    return injury
 
 def update_smol_injury(injury: Affector, time_taken: float, treated=False):
     injury_str: str = injury.name
@@ -12,7 +18,7 @@ def update_smol_injury(injury: Affector, time_taken: float, treated=False):
         logger.critical("%s not found in Injuries class. Assigning to %s." % (injury_str, Injuries.FOREHEAD_SCRAPE.value))
         injury_str = Injuries.FOREHEAD_SCRAPE.value
         injury.name = injury_str
-    injury_effect: InjuryUpdate = INJURY_UPDATE[injury_str]
+    injury_effect: InjuryUpdate = AFFECCTOR_UPDATE[injury_str]
     update_bleed_breath(injury, injury_effect, time_taken, reference_oracle=DAMAGE_PER_SECOND, treated=treated)
 
 
@@ -234,6 +240,7 @@ def update_bleed_breath(inj: Affector, effect: InjuryUpdate, time_elapsed: float
         if effect_key == SmolSystems.BURNING.value:
             inj.burn_hp_lost += (effect_value * time_elapsed) if not inj.treated else 0.0
             inj.burning_effect = effect_dict[effect_key]
+    inj = unstack_overshield(inj)
     inj.severity = inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost
     inj.damage_per_second = (inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost) / time_elapsed if time_elapsed else 0.0
     if treated:

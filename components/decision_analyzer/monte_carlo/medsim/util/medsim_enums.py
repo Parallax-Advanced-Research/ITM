@@ -24,6 +24,8 @@ class BodySystemEffect(Enum):
 
 
 class Affector:
+    PREFIX = 'ACTIVE '
+
     def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
                  bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
         self.name = name
@@ -259,6 +261,10 @@ class Injuries(Enum):
     EYE_TRAUMA = 'Eye_Trauma'
     BROKEN_BONE = 'Broken Bone'
     INTERNAL = 'Internal'
+    ACTIVE_PAIN_MEDS = 'ACTIVE Pain Medications'
+    ACTIVE_NASO = 'ACTIVE Nasopharyngeal airway'
+    ACTIVE_BAG = 'ACTIVE IV Bag'
+    ACTIVE_BLOOD = 'ACTIVE Blood'
 
 
 class Metric(Enum):
