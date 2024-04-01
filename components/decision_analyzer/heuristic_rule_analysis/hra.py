@@ -1137,18 +1137,28 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         treatment_idx = list(data['treatment'])
 
         # update input arg to hold the search path of each strategy
-        search_tree = {'take-the-best': '', 'exhaustive': '', 'tallying': '', 'satisfactory': '', 'one-bounce': ''}
+        #search_tree = {'take-the-best': '', 'exhaustive': '', 'tallying': '', 'satisfactory': '', 'one-bounce': ''}
 
         # create a dict for each treatment to hold corresponding HRA strategies
         decision_hra = dict()
+        search_tree = dict()
         for treatment in treatment_idx:
             decision_hra[treatment] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
                                        'one-bounce': 0}
+            search_tree[treatment] = {'take-the-best': "", 'exhaustive': "", 'tallying': "", 'satisfactory': "",
+                           'one-bounce': ""}
+
         decision_hra["no preference"] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
                                          'one-bounce': 0}
 
         decision_hra["END_SCENARIO"] = {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
                                         'one-bounce': 0}
+
+        search_tree["no preference"] = {'take-the-best': "", 'exhaustive': "", 'tallying': "", 'satisfactory': "",
+                                         'one-bounce': ""}
+
+        search_tree["END_SCENARIO"] = {'take-the-best': "", 'exhaustive': "", 'tallying': "", 'satisfactory': "",
+                                        'one-bounce': ""}
 
         # call each HRA strategy and store the result with the matching decision list
         take_the_best_result = self.take_the_best(new_file, search_path=search_path, data=data)
@@ -1167,18 +1177,18 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         one_bounce_result = self.one_bounce(new_file, m, k, search_path=search_path, data=data)
         decision_hra[one_bounce_result[0]]['one-bounce'] += 1
 
-        search_tree['take-the-best'] = take_the_best_result[2]
-        search_tree['exhaustive'] = exhaustive_result[2]
-        search_tree['tallying'] = tallying_result[2]
-        search_tree['satisfactory'] = satisfactory_result[2]
-        search_tree['one-bounce'] = one_bounce_result[2]
+        search_tree[take_the_best_result[0]]['take-the-best'] = take_the_best_result[2]
+        search_tree[exhaustive_result[0]]['exhaustive'] = exhaustive_result[2]
+        search_tree[tallying_result[0]]['tallying'] = tallying_result[2]
+        search_tree[satisfactory_result[0]]['satisfactory'] = satisfactory_result[2]
+        search_tree[one_bounce_result[0]]['one-bounce'] = one_bounce_result[2]
 
         # return all hra decision analysis elements
         return {
             "decision_hra_dict": decision_hra,
             # "learned_kdma_set": {'mission': mission, 'denial': denial},
             # "learned_predictors": predictors,
-            # "decision_comparison_order": search_tree
+            "decision_comparison_order": search_tree
         }
 
     '''Parent class function that calls hra_decision_analytics
@@ -1284,9 +1294,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                         decision = ele
                         break
             hra_strategy = {}
+            search_tree = {} # TODO
             for ele in casualty_analytics:
                 ele_key = list(ele.keys())[0]
                 ele_val = list(ele.values())[0]
+                #seq_val = list(ele.values())[1] #TODO
+
                 if not (ele_key in str(decision_complete.value)): continue
 
                 ele_key = str(decision_complete.value)
@@ -1300,25 +1313,43 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
                 hra_strategy[ele_key] = {vp: {'take-the-best': 0, 'exhaustive': 0, 'tallying': 0, 'satisfactory': 0,
                                               'one-bounce': 0} for vp in ele_val}
+                search_tree[ele_key] = {vp: {'take-the-best': "", 'exhaustive': "", 'tallying': "", 'satisfactory': "",
+                                              'one-bounce': ""} for vp in ele_val}# test code
                 for val_predictor in ele_val:
                     hra_strategy[ele_key][val_predictor]['take-the-best'] = \
                     ele_val[val_predictor]['decision_hra_dict'][decision]['take-the-best']
+                    search_tree[ele_key][val_predictor]['take-the-best'] = \
+                    ele_val[val_predictor]['decision_comparison_order'][decision]['take-the-best']
+
                     hra_strategy[ele_key][val_predictor]['exhaustive'] = \
                     ele_val[val_predictor]['decision_hra_dict'][decision]['exhaustive']
+                    search_tree[ele_key][val_predictor]['exhaustive'] = \
+                    ele_val[val_predictor]['decision_comparison_order'][decision]['exhaustive']
+
                     hra_strategy[ele_key][val_predictor]['tallying'] = \
                     ele_val[val_predictor]['decision_hra_dict'][decision]['tallying']
+                    search_tree[ele_key][val_predictor]['tallying'] = \
+                    ele_val[val_predictor]['decision_comparison_order'][decision]['tallying']
+
                     hra_strategy[ele_key][val_predictor]['satisfactory'] = \
                     ele_val[val_predictor]['decision_hra_dict'][decision]['satisfactory']
+                    search_tree[ele_key][val_predictor]['satisfactory'] = \
+                    ele_val[val_predictor]['decision_comparison_order'][decision]['satisfactory']
+
                     hra_strategy[ele_key][val_predictor]['one-bounce'] = \
                     ele_val[val_predictor]['decision_hra_dict'][decision]['one-bounce']
+                    search_tree[ele_key][val_predictor]['one-bounce'] = \
+                    ele_val[val_predictor]['decision_comparison_order'][decision]['one-bounce']
 
             match len(hra_strategy.values()):
                 case 0:
                     # No result
                     ret = {}
+                    seq = {}
                 case 1:
                     # standard?
                     ret = list(hra_strategy.values())[0]
+                    seq = list(search_tree.values())[0]
                 case _:
                     # How?
                     breakpoint()
@@ -1330,6 +1361,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                                  value={'-'.join(key + '(' + str(val) + ')' for key, val in
                                                                  data['kdma'].items()): all_predictors}), \
                 "HRA Strategy": DecisionMetric(name="HRA Strategy", description="Applicable hra strategies", value=ret), \
+                "HRA Search Sequence": DecisionMetric(name="HRA Search Sequence", description="Sequence of compared treatments with treatment scores",
+                                               value=seq), \
                 "Take-The-Best Priority": DecisionMetric(name="Take-The-Best Priority",
                                                          description="Priority for take-the-best strategy",
                                                          value=str(list(priority_take_the_best.keys())[0]) in str(
