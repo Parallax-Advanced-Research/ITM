@@ -1,6 +1,7 @@
 import math
 
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Injuries, Injury, Casualty, Affector)
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Injuries, Injury, Casualty, Affector,
+                                                                               HealingItem)
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTOR_UPDATE, SmolSystems,
                                                                         InjuryUpdate, DAMAGE_PER_SECOND, Medical)
 from util.logger import logger
@@ -19,7 +20,15 @@ def update_smol_injury(injury: Affector, time_taken: float, treated=False):
         injury_str = Injuries.FOREHEAD_SCRAPE.value
         injury.name = injury_str
     injury_effect: InjuryUpdate = AFFECCTOR_UPDATE[injury_str]
-    update_bleed_breath(injury, injury_effect, time_taken, reference_oracle=DAMAGE_PER_SECOND, treated=treated)
+    if injury.damage_set:  # Healing item with damage set
+        pass
+        # effect_dict = {SmolSystems.BURNING.value: injury.burn_hp_lost,
+        #                SmolSystems.BLEEDING.value: injury.blood_lost_ml,
+        #                SmolSystems.BREATHING.value: injury.breathing_hp_lost}
+        # update_bleed_breath_valnotstr(injury, effect_dict, time_taken)
+
+    else:
+        update_bleed_breath(injury, injury_effect, time_taken, reference_oracle=DAMAGE_PER_SECOND, treated=treated)
 
 
 def update_morbidity_calculations(cas: Casualty):
@@ -28,6 +37,9 @@ def update_morbidity_calculations(cas: Casualty):
     cas.prob_burndeath = calc_prob_burndeath(cas)
     cas.prob_death = calc_prob_death(cas)
     cas.prob_triss_death = calc_TRISS_deathP(cas)
+
+    # Need a fn to get effective healing of affector (HI) given casualty
+
 
 
 def calc_prob_bleedout(cas: Casualty) -> float:
@@ -231,21 +243,49 @@ def update_bleed_breath(inj: Affector, effect: InjuryUpdate, time_elapsed: float
         level = effect_dict[effect_key]
         effect_value = reference_oracle[level]
         effect_value /= 4.0 if treated else 1.0  # They only lost 1/4 hp if they're getting treated
+        # healing = isinstance(inj, HealingItem)
+        # if healing:
+        #     logger.debug('wajja')
         if effect_key == SmolSystems.BREATHING.value:
             inj.breathing_hp_lost += (effect_value * time_elapsed) if not inj.treated else 0.0
+            # inj.breathing_hp_lost = max(inj.breathing_hp_lost, 0)
             inj.breathing_effect = effect_dict[effect_key]
         if effect_key == SmolSystems.BLEEDING.value:
             inj.blood_lost_ml += (effect_value * time_elapsed) if not inj.treated else 0.0
+            # inj.blood_lost_ml = max(inj.blood_lost_ml, 0)
             inj.bleeding_effect = effect_dict[effect_key]
         if effect_key == SmolSystems.BURNING.value:
             inj.burn_hp_lost += (effect_value * time_elapsed) if not inj.treated else 0.0
+            # inj.burn_hp_lost = max(inj.burn_hp_lost, 0)
             inj.burning_effect = effect_dict[effect_key]
-    inj = unstack_overshield(inj)
+    # inj = unstack_overshield(inj)
     inj.severity = inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost
-    inj.damage_per_second = (inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost) / time_elapsed if time_elapsed else 0.0
+    inj.damage_per_second = max(0.0, (inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost) / time_elapsed if time_elapsed else 0.0)
     if treated:
         inj.treated = True
         inj.damage_per_second = 0.0
+
+def update_bleed_breath_valnotstr(inj: Affector, effect: dict[str, float], time_elapsed: float):
+    inj.breathing_hp_lost += (effect[SmolSystems.BREATHING.value] * time_elapsed)
+    inj.burn_hp_lost += (effect[SmolSystems.BURNING.value] * time_elapsed)
+    inj.blood_lost_ml += (effect[SmolSystems.BLEEDING.value] * time_elapsed)
+    inj.severity = inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost
+    inj.damage_per_second = max(0.0, (inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost) / time_elapsed if time_elapsed else 0.0)
+
+
+def heal(inj: Affector, effect_raw, time_taken):
+    inj.burn_hp_lost += min(0, effect_raw[SmolSystems.BURNING.value])
+    inj.blood_lost_ml += min(0, effect_raw[SmolSystems.BLEEDING.value])
+    inj.breathing_hp_lost += min(0, effect_raw[SmolSystems.BREATHING.value])  # min so no double damage
+    inj.burn_hp_lost = max(0, inj.burn_hp_lost)
+    inj.blood_lost_ml = max(0, inj.blood_lost_ml)
+    inj.breathing_hp_lost = max(0, inj.breathing_hp_lost)  # 0 is minimum for vitals (no overshields)
+    inj.severity = inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost
+    if inj.severity < 0:
+        pass
+    inj.damage_per_second = max(0.0, (inj.blood_lost_ml + inj.breathing_hp_lost + inj.burn_hp_lost) / time_taken if time_taken else 0.0)
+    if True:
+        pass
 
 
 def calculate_injury_severity(inj: Affector) -> float:

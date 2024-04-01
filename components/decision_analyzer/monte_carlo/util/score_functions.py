@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, HealingItem
 from components.decision_analyzer.monte_carlo.mc_sim import MCState
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import ScoreT
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
@@ -88,6 +88,7 @@ def prob_death_after_minute(state: MCState) -> ScoreT:
         update_morbidity_calculations(cas)
     return med_prob_death(notreal_state)
 
+
 def prob_death_standard_time(state: MCState) -> ScoreT:
     this_state = deepcopy(state)
     time_remaining = max(0, Metric.STANDARD_TIME.value - this_state.time)
@@ -95,4 +96,7 @@ def prob_death_standard_time(state: MCState) -> ScoreT:
         for injury in casualty.injuries:
             update_smol_injury(injury, time_remaining, injury.treated)
         update_morbidity_calculations(casualty)
-    return tiny_med_severity_score(this_state) + this_state.time
+    stand_time_severity = tiny_med_severity_score(this_state) + this_state.time
+    if stand_time_severity < 0:
+        pass
+    return stand_time_severity

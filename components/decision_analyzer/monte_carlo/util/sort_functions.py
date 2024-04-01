@@ -64,4 +64,4 @@ def sort_decisions(decision_list: list[Decision[Action]]) -> list[Decision[Actio
 def injury_to_dps(inj: Affector) -> float:
     dps_hash = DAMAGE_PER_SECOND
     dps = dps_hash[inj.breathing_effect] + dps_hash[inj.bleeding_effect] + dps_hash[inj.burning_effect] if not inj.treated else 0.0
-    return dps
+    return dps  # max(0.0, dps)

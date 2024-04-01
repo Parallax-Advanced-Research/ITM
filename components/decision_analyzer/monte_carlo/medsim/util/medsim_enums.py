@@ -42,6 +42,7 @@ class Affector:
         self.bleeding_effect = bleeding_effect
         self.burning_effect = burning_effect
         self.damage_per_second = 0.0
+        self.damage_set = False
 
     def __eq__(self, other: 'Affector'):
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
