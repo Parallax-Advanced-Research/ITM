@@ -1,18 +1,16 @@
-import sys
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric
 
 from components.decision_analyzer.monte_carlo.mc_sim.decision_justification import DecisionJustifier
 from components.decision_analyzer.monte_carlo.util.mca_funcs import (decision_to_actstr, train_mc_tree,
                                                                      extract_medsim_state,get_simulated_states_from_dnl,
                                                                      process_probe_decisions,
-                                                                     generate_decision_justifications)
+                                                                     generate_decision_justifications, get_v2)
 
 from components import DecisionAnalyzer
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 import util.logger
 from domain import Scenario
 from domain.internal import TADProbe, DecisionMetrics
-import pickle
-import os.path as osp
 
 logger = util.logger
 
@@ -40,4 +38,10 @@ class MonteCarloAnalyzer(DecisionAnalyzer):
             decision.justifications = decision_justifications
             decision_str = decision_to_actstr(decision)
             analysis[decision_str]['justifications'] = decision_justifications
+            analysis[decision_str][Metric.SMOL_MEDICAL_SOUNDNESS_V2.value] = get_v2(decision_justifications)
+            decision.metrics[Metric.SMOL_MEDICAL_SOUNDNESS_V2.value] = analysis[decision_str][Metric.SMOL_MEDICAL_SOUNDNESS_V2.value]
+            sms_v2_justification = {Metric.DECISION_JUSTIFICATION_ENGLISH.value: "%s is a Scaled, Ranked ordering of %s" % (Metric.SMOL_MEDICAL_SOUNDNESS_V2.value, Metric.STANDARD_TIME_SEVERITY.value),
+                                    Metric.DECISION_JUSTIFICATION_VALUES.value: {}}
+            decision.justifications.append(sms_v2_justification)
+            # analysis[decision_str]['justifications'].append(sms_v2_justification)
         return analysis

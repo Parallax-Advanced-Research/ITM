@@ -2,7 +2,8 @@ import json
 import pickle
 import argparse
 import dataclasses
-import os, sys
+import os
+import sys
 import uuid
 from pydantic.tools import parse_obj_as
 from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
@@ -31,7 +32,7 @@ def check_for_servers(args):
     if args.training and args.session_type == 'adept':
         check_adept = True
     if args.training and args.session_type == 'soartech':
-        check_adept = True
+        check_soartech = True
         
     if check_adept:
         adept_port = util.find_environment("ADEPT_PORT", 8081)
