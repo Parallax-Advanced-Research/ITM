@@ -187,7 +187,7 @@ def decision_to_medsimaction(decision: Decision) -> MedsimAction:
 
 
 def supply_dict_to_list(supplies: list[Supply]) -> list[str]:
-    nonzero_supplies = [x for x in supplies if x.amount != 0]
+    nonzero_supplies = [x for x in supplies if x.amount > 0]
     keylist = [x.name for x in nonzero_supplies]
     return list(set(keylist))   # Set removes non  uniques
 
@@ -282,13 +282,14 @@ def always_acceptable_treatments(casualties: list[Casualty]) -> list[MedsimActio
 
 
 def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) -> list[MedsimAction]:
+    supply_avaliable = [x.name for x in state.supplies if x.amount > 0]
     casualties: list[Casualty] = state.casualties
-    acceptable_actions: list[MedsimAction] = always_acceptable_treatments(casualties)
+    acceptable_actions: list[MedsimAction] = []  # always_acceptable_treatments(casualties)
     for casualty in casualties:
         casualty_injuries: list[Affector] = casualty.injuries
         for injury in casualty_injuries:
             for supply in [s for s in Supplies]:
-                if supply == Supplies.PAIN_MEDICATIONS.value:
+                if supply.value not in supply_avaliable:
                     continue
                 acceptable_action = MedsimAction(Actions.APPLY_TREATMENT.value, casualty.id,
                                                  supply.value, injury.location)
