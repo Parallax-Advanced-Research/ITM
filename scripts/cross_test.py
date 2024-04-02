@@ -118,8 +118,16 @@ def get_score_sequence_record_from_history(fname):
     target_id = None
     target_kdma = None
     target_value = None
+    adm_name = None
+    session_type = None
+    alignment = None
+    aggregate_value = None
     responses = []
     for record in records:
+        if record['command'] == 'Start Session':
+            session_type = record['parameters'].get('session_type', None)
+        if record['command'] == 'Start Scenario':
+            adm_name = record['parameters'].get('adm_name', None)
         if record['command'] in ['TA1 Alignment Target Data', 'Alignment Target']:
             scenario = record['parameters']['scenario_id']
             target_id = record['response']['id']
@@ -176,7 +184,9 @@ def get_score_sequence_record_from_history(fname):
             "score_sequence": score_seq,
             "average": find_scores_average(score_seq, target_kdma),
             "alignment": alignment,
-            "aggregate": aggregate_value
+            "aggregate": aggregate_value,
+            "adm_name": adm_name,
+            "session_type": session_type
            }
            
 def compare_histories(args: argparse.Namespace):
@@ -196,6 +206,8 @@ def compare_histories(args: argparse.Namespace):
         result["alignment"] = ssr["alignment"]
         result["aggregate"] = ssr["aggregate"]
         result["variant"] = args.variant
+        result["adm_name"] = ssr["adm_name"]
+        result["session_type"] = ssr["session_type"]
         results.append(result)
         write_case_base("eval-comparisons.csv", results)
         print(f"Reported: {ssr['id']}, target: {ssr['target']}: {ssr['score_sequence']}")
