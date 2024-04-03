@@ -12,7 +12,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import Me
 from components.decision_analyzer.monte_carlo.util.sort_functions import injury_to_dps
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
                                                                                MetricSet, SimulatorName, Actions,
-                                                                               Supplies)
+                                                                               Supplies, HealingItem)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calc_prob_death, calculate_injury_severity
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import MetricResultsT
@@ -294,6 +294,7 @@ def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode
         dec_str = tinymedact_to_actstr(decision)
         if not len(decision.children):
             continue
+
         simulated_state_metrics[dec_str] = get_future_and_change_metrics(medsim_state, decision)
         for cas in list(decision.score[Metric.CASUALTY_P_DEATH.value].keys()):
             cas_p_death = decision.score[Metric.CASUALTY_P_DEATH.value][cas]
@@ -311,6 +312,17 @@ def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode
         logger.debug('mismatch list size')
     return simulated_state_metrics
 
+
+def get_healing_items(decision_node_list: list[mcnode.MCDecisionNode]) -> list[dict[str, list[HealingItem]]]:
+    healing_items: list[dict[str, HealingItem]] = list()
+    for decision in decision_node_list:
+        state_cas = decision.children[0].state.casualties
+        decision_healingitems: dict[str, list[HealingItem]] = dict()
+        for cas in state_cas:
+            present_healing: list[HealingItem] = [x for x in cas.injuries if isinstance(x, HealingItem)]
+            decision_healingitems[cas.id] = present_healing
+        healing_items.append(decision_healingitems)
+    return healing_items
 
 def get_weighted_score_element(action: str) -> int:
     item_val = Metric.STOCK_ITEM.value
