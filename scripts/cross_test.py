@@ -118,17 +118,35 @@ def get_score_sequence_record_from_history(fname):
     target_id = None
     target_kdma = None
     target_value = None
+    adm_name = None
+    session_type = None
+    alignment = None
+    aggregate_value = None
     responses = []
     for record in records:
+        if record['command'] == 'Start Session':
+            session_type = record['parameters'].get('session_type', None)
+        if record['command'] == 'Start Scenario':
+            adm_name = record['parameters'].get('adm_name', None)
         if record['command'] in ['TA1 Alignment Target Data', 'Alignment Target']:
             scenario = record['parameters']['scenario_id']
             target_id = record['response']['id']
+            print(f"scenario_id: {scenario} target: {target_id}")
             if 'kdmas' in record['response']:
                 target_kdma = record['response']['kdmas'][0]['kdma']
                 target_value = record['response']['kdmas'][0]['value']
             else:
                 target_kdma = record['response']['kdma_values'][0]['kdma']
                 target_value = record['response']['kdma_values'][0]['value']
+        if record['command'] == 'Take Action':
+            params = []
+            params.append(record['parameters'].get('character', None))
+            params.append(record['parameters'].get('category', None))
+            params.append(record['parameters'].get('treatment', None))
+            params.append(record['parameters'].get('location', None))
+            params = [p for p in params if p is not None]
+            action_str = record['parameters']['action_type'] + '(' + ','.join(params) + ')'
+            print(action_str)
         if record['command'] == 'TA1 Probe Response Alignment':
             assert(scenario is not None)
             assert(record['parameters']['scenario_id'] == scenario)
@@ -166,13 +184,17 @@ def get_score_sequence_record_from_history(fname):
             "score_sequence": score_seq,
             "average": find_scores_average(score_seq, target_kdma),
             "alignment": alignment,
-            "aggregate": aggregate_value
+            "aggregate": aggregate_value,
+            "adm_name": adm_name,
+            "session_type": session_type
            }
            
-def compare_histories(variant: str):
-    ssl = read_score_sequence_list("eval_score_sequence_list.json")
+def compare_histories(args: argparse.Namespace):
+    ssl = read_score_sequence_list(args.ssl_file)
     results = []
-    for fname in glob.glob(".deprepos/itm-evaluation-server/itm_history_output/*.json"):
+    if args.history_files is None:
+        args.history_files = ".deprepos/itm-evaluation-server/itm_history_output/*.json"
+    for fname in glob.glob(args.history_files):
         ssr = get_score_sequence_record_from_history(fname)
         if ssr is None:
             continue
@@ -183,11 +205,13 @@ def compare_histories(variant: str):
         result = record_comparison(old_ssrs[0], fname, ssr["score_sequence"])
         result["alignment"] = ssr["alignment"]
         result["aggregate"] = ssr["aggregate"]
-        result["variant"] = variant
+        result["variant"] = args.variant
+        result["adm_name"] = ssr["adm_name"]
+        result["session_type"] = ssr["session_type"]
         results.append(result)
         write_case_base("eval-comparisons.csv", results)
-        print(f"New: {ssr['id']}: {ssr['score_sequence']}")
-        print(f"Old: {old_ssrs[0]['id']}: {old_ssrs[0]['score_sequence']}")
+        print(f"Reported: {ssr['id']}, target: {ssr['target']}: {ssr['score_sequence']}")
+        print(f"Optimal:  {old_ssrs[0]['id']}, target: {ssr['target']}: {old_ssrs[0]['score_sequence']}")
 
         
 def main():
@@ -196,14 +220,15 @@ def main():
     parser.add_argument('--casebase_dir', type=str, help="Directory where case bases are found", default="local/casebases-20240310")
     parser.add_argument('--source_count', type=int, help="How many source files to use", default=1)
     parser.add_argument('--compare_histories', action=argparse.BooleanOptionalAction, help="Checks histories from TA3 server instead of running scenarios", default=False)
+    parser.add_argument('--history_files', type=str, help="Checks histories from TA3 server instead of running scenarios", default=None)
     args = parser.parse_args()
     
     if args.compare_histories:
-        compare_histories(args.variant)
+        compare_histories(args)
     else:
         cross_test_training_data(args)
         
-def cross_test_training_data(args):
+def cross_test_training_data(args: argparse.Namespace):
     ssl = read_score_sequence_list(args.ssl_file)
     args.session_type = 'eval'
     validate_args(args)
