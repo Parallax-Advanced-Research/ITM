@@ -7,7 +7,7 @@ import xgboost
 from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.datasets import fetch_california_housing
 def drop_columns_by_patterns(df, keys={}, lable=""):
-    patterns = ['index', 'hash', 'feedback', 'action-len', 'justification', 'unnamed', 'nondeterminism', 'action', 'hint', 'maximization', 'moraldesert']
+    patterns = ['index', 'hash', 'feedback', 'action-len', 'justification', 'unnamed', 'nondeterminism', 'action', 'hint', 'maximization', 'moraldesert', '.stdev']
     if keys != {}:
         patterns = [keys[x] for x in patterns]
         columns_to_drop = [col for col in df.columns if col in patterns and col != lable]
@@ -59,7 +59,7 @@ def xgboost_weights(case_base, output_label, c):
     for col in x.columns:
         if col in c:
             x[col] = x[col].astype('category')
-    print(f"Extracting XGBoost Weights for {output_label} || {len(x.columns)}..")
+    #print(f"Extracting XGBoost Weights for {output_label} || {len(x.columns)}..")
     xgb = XGBClassifier(enable_categorical=True)
     unique = sorted(list(set(y)))
     transfer = {k: v for k, v in enumerate(unique)}
@@ -79,6 +79,24 @@ def xgboost_weights(case_base, output_label, c):
 def save_weights(weights, columns, accuracy=-1, score_key="weights"):
     weights_file = f'weights/{score_key}/{len(weights)}-{round(accuracy, 4)}/weights_accuracy={accuracy}.csv'
     weights_json = f'weights/{score_key}/{len(weights)}-{round(accuracy, 4)}/weights_accuracy={accuracy}.json'
+    os.makedirs(os.path.dirname(weights_file), exist_ok=True)
+    weights_dict = {columns[i]: float(weights[i]) for i in range(len(columns)) if weights[i] > 0.0}
+    list_weights = weights.tolist()
+    with open(weights_json, 'w') as f:
+        json.dump(weights_dict, f, indent=4)
+    with open(weights_file, 'w') as f:
+        csv_writer = csv.writer(f)
+        csv_writer.writerow(columns)
+        csv_writer.writerows([list_weights])
+    print(f"Saved weights to {weights_file}")
+    shutil.copy("cleaned_data.csv", os.path.dirname(weights_file) + "/cleaned_data.csv")
+    shutil.copy("kdma_cases.csv", os.path.dirname(weights_file) + "/kdma_cases.csv")
+
+
+def save_partial_weights(f, weights, columns, accuracy=-1, score_key="weights"):
+    weights_file = f'{f}/weights/{score_key}/{len(weights)}-{round(accuracy, 4)}/weights_accuracy={accuracy}.csv'
+    weights_json = f'{f}weights/{score_key}/{len(weights)}-{round(accuracy, 4)}/weights_accuracy={accuracy}.json'
+    print(weights_file)
     os.makedirs(os.path.dirname(weights_file), exist_ok=True)
     weights_dict = {columns[i]: float(weights[i]) for i in range(len(columns)) if weights[i] > 0.0}
     list_weights = weights.tolist()
