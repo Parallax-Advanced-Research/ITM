@@ -93,8 +93,6 @@ def trim_healing_item(c, healer):
     healer.breathing_hp_lost = effective_healing[SmolSystems.BREATHING.value]
     healer.burn_hp_lost = effective_healing[SmolSystems.BURNING.value]
     healer.damage_set = True
-    if healer.name != 'ACTIVE Pain Medications':
-        logger.debug('wakka')
 
 
 def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int],

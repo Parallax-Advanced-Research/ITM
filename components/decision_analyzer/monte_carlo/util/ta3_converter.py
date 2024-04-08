@@ -1,7 +1,7 @@
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, \
-    Casualty, Locations, Supply, Affector
+    Casualty, Locations, Supply, Affector, Ta3Vitals
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTOR_UPDATE, INITIAL_SEVERITIES,
                                                                         BodySystemEffect)
@@ -19,8 +19,8 @@ def _reverse_convert_demographic(internal_demographic: Demographics) -> TA_DEM:
 
 
 def _convert_vitals(ta_vitals: TA_VIT) -> Vitals:
-    return Vitals(conscious=ta_vitals.conscious, mental_status=ta_vitals.mental_status,
-                  breathing=ta_vitals.breathing, hrpmin=ta_vitals.hrpmin)
+    return Vitals(conscious=ta_vitals.conscious, avpu=ta_vitals.avpu, mental_status=ta_vitals.mental_status, breathing=ta_vitals.breathing,
+                  hrpmin=ta_vitals.hrpmin, ambulatory=ta_vitals.ambulatory, spo2=ta_vitals.spo2)
 
 
 def _reverse_convert_vitals(internal_vitals: Vitals) -> TA_VIT:
@@ -72,7 +72,14 @@ def _convert_casualty(ta_casualty: TA_CAS) -> Casualty:
     for inj in ta_casualty.injuries:
         injuries.extend(_convert_injury(inj))
     vit = _convert_vitals(ta_casualty.vitals)
-
+    if vit.breathing not in Ta3Vitals.BREATHING:
+        pass
+    if vit.hrpmin not in Ta3Vitals.HRPMIN:
+        pass
+    if vit.avpu not in Ta3Vitals.AVPU:
+        pass
+    if vit.mental_status not in Ta3Vitals.MENTAL_STATUS:
+        pass
     return Casualty(id=ta_casualty.id, unstructured=ta_casualty.unstructured, name=ta_casualty.name,
                     demographics=dem,injuries=injuries, vitals=vit, complete_vitals=vit,
                     assessed=ta_casualty.assessed, tag=ta_casualty.tag)

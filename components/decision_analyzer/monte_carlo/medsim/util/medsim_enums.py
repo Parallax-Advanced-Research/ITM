@@ -72,15 +72,16 @@ class HealingItem(Affector):
         super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn)
 
 
-
-
-
 class Vitals:
-    def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int):
+    def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int, ambulatory: str, avpu: str,
+                 spo2: float):
         self.conscious: bool = conscious
         self.mental_status: str = mental_status
         self.breathing: str = breathing
         self.hrpmin: int = hrpmin
+        self.ambulatory: str = ambulatory
+        self.avpu: str = avpu
+        self.spo2: float = spo2
 
     def __eq__(self, other: 'Vitals'):
         return (self.conscious == other.conscious and self.mental_status == other.mental_status and
@@ -212,6 +213,26 @@ class Supplies(Enum):
     SPLINT = 'Splint'
     IV_BAG = 'IV Bag'
     BURN_DRESSING = 'Burn Dressing'
+
+
+class Ta3Vitals(Enum):
+
+    SLOW = 'SLOW'
+    FAST = 'FAST'
+    NORMAL = 'NORMAL'
+    FAINT = 'FAINT'
+    VOICE = 'VOICE'
+    UNRESPONSIVE = 'UNRESPONSIVE'
+    PAIN = 'PAIN'
+    ALERT = 'ALERT'
+    CONFUSED = 'CONFUSED'
+    AGONY = 'AGONY'
+    CALM = 'CALM'
+
+    BREATHING = [None, SLOW, FAST, NORMAL]
+    HRPMIN = [None, FAST, FAINT, NORMAL]
+    AVPU = [None, VOICE, UNRESPONSIVE, PAIN, ALERT]
+    MENTAL_STATUS = [None, CONFUSED, UNRESPONSIVE, AGONY, CALM]
 
 
 class Locations(Enum):
