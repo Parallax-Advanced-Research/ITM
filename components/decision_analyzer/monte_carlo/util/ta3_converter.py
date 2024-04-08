@@ -1,7 +1,7 @@
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, \
-    Casualty, Locations, Supply, Affector, Ta3Vitals
+    Casualty, Locations, Supply, Affector, InjuryAssumptuions, InferredInjury
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTOR_UPDATE, INITIAL_SEVERITIES,
                                                                         BodySystemEffect)
@@ -28,16 +28,9 @@ def _reverse_convert_vitals(internal_vitals: Vitals) -> TA_VIT:
                   breathing=internal_vitals.breathing, heart_rate=internal_vitals.hrpmin)
 
 
-def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
-    if ta_injury.severity is None:
-        severe = INITIAL_SEVERITIES[ta_injury.name] if ta_injury.name in INITIAL_SEVERITIES.keys() else 0.7
-    else:
-        severe = ta_injury.severity
-    injuries = []
-    effect = AFFECCTOR_UPDATE[ta_injury.name]
-    if ta_injury.name == Injuries.BURN.value and ta_injury.location in [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
-                                                                        Locations.LEFT_NECK.value, Locations.RIGHT_NECK.value,
-                                                                        Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]:
+def get_inferred_injuries(ta_injury: TA_INJ) -> list[InferredInjury]:
+    injuries: list[InferredInjury] = []
+    if ta_injury.name == Injuries.BURN.value and ta_injury.location in InjuryAssumptuions.BURN_SUFFOCATE_LOCATIONS:
 
         burn_suffocation_injury = Injury(name=Injuries.BURN_SUFFOCATION.value, location=Locations.LEFT_FACE.value,
                                          severity=ta_injury.severity,
@@ -45,18 +38,36 @@ def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
                                          bleeding_effect=BodySystemEffect.NONE.value,
                                          burning_effect=BodySystemEffect.NONE.value)
         injuries.append(burn_suffocation_injury)
-    burn_tissue_injury = Injury(name=ta_injury.name, location=ta_injury.location, severity=severe,
-                                burning_effect=effect.burning_effect, bleeding_effect=effect.bleeding_effect,
-                                breathing_effect=effect.breathing_effect)
-    if ta_injury.name == Injuries.BROKEN_BONE.value and ta_injury.location in [Locations.LEFT_CHEST.value,
-                                                                               Locations.RIGHT_CHEST.value]:
+    if ta_injury.name == Injuries.BROKEN_BONE.value and ta_injury.location in InjuryAssumptuions.LUNG_PUNCTURES:
         chest_collapse_injury = Injury(name=Injuries.CHEST_COLLAPSE.value, location=ta_injury.location,
                                        severity=ta_injury.severity, treated=ta_injury.treated,
                                        breathing_effect=AFFECCTOR_UPDATE[Injuries.CHEST_COLLAPSE.value].breathing_effect,
                                        bleeding_effect=BodySystemEffect.NONE.value,
                                        burning_effect=BodySystemEffect.NONE.value)
         injuries.append(chest_collapse_injury)
-    injuries.append(burn_tissue_injury)
+    return injuries
+
+
+def get_vital_injuries(ta_injury: TA_INJ) -> list[InferredInjury]:
+    injuries: list[InferredInjury] = []
+
+    return injuries
+
+def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
+    if ta_injury.severity is None:
+        severe = INITIAL_SEVERITIES[ta_injury.name] if ta_injury.name in INITIAL_SEVERITIES.keys() else 0.7
+    else:
+        severe = ta_injury.severity
+    injuries = []
+    effect = AFFECCTOR_UPDATE[ta_injury.name]
+    injury = Injury(name=ta_injury.name, location=ta_injury.location, severity=severe,
+                    burning_effect=effect.burning_effect, bleeding_effect=effect.bleeding_effect,
+                    breathing_effect=effect.breathing_effect)
+    injuries.append(injury)
+
+    inferred_injuries = get_inferred_injuries(ta_injury)
+    vital_injuries = get_vital_injuries(ta_injury)
+    injuries.extend(inferred_injuries)
     return injuries
 
 
@@ -72,14 +83,7 @@ def _convert_casualty(ta_casualty: TA_CAS) -> Casualty:
     for inj in ta_casualty.injuries:
         injuries.extend(_convert_injury(inj))
     vit = _convert_vitals(ta_casualty.vitals)
-    if vit.breathing not in Ta3Vitals.BREATHING:
-        pass
-    if vit.hrpmin not in Ta3Vitals.HRPMIN:
-        pass
-    if vit.avpu not in Ta3Vitals.AVPU:
-        pass
-    if vit.mental_status not in Ta3Vitals.MENTAL_STATUS:
-        pass
+
     return Casualty(id=ta_casualty.id, unstructured=ta_casualty.unstructured, name=ta_casualty.name,
                     demographics=dem,injuries=injuries, vitals=vit, complete_vitals=vit,
                     assessed=ta_casualty.assessed, tag=ta_casualty.tag)

@@ -72,6 +72,16 @@ class HealingItem(Affector):
         super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn)
 
 
+class InferredInjury(Affector):
+    def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
+        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn)
+        self.source = None
+
+    def set_source(self, source: str) -> None:
+        self.source = source
+
+
 class Vitals:
     def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int, ambulatory: str, avpu: str,
                  spo2: float):
@@ -261,6 +271,12 @@ class Locations(Enum):
     UNSPECIFIED = "unspecified"
     INTERNAL = "internal"
 
+
+class InjuryAssumptuions(Enum):
+    BURN_SUFFOCATE_LOCATIONS = [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.LEFT_NECK.value,
+                                Locations.RIGHT_NECK.value, Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]
+    LUNG_PUNCTURES = [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
+                      Locations.LEFT_SIDE, Locations.RIGHT_SIDE]
 
 class Tags(Enum):
     MINIMAL = "MINIMAL"

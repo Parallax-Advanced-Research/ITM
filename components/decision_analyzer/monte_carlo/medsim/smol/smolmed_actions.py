@@ -77,6 +77,7 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
 
+
 def trim_healing_item(c, healer):
     max_heal = {SmolSystems.BLEEDING.value: -1 * healer.blood_lost_ml,
                 SmolSystems.BREATHING.value: -1 * healer.breathing_hp_lost,
