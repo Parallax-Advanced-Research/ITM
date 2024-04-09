@@ -1,7 +1,7 @@
 import math
 
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Injuries, Injury, Casualty, Affector,
-                                                                               HealingItem)
+                                                                               HealingItem, VitalsEffect)
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTOR_UPDATE, SmolSystems,
                                                                         InjuryUpdate, DAMAGE_PER_SECOND, Medical)
 from util.logger import logger
@@ -13,9 +13,10 @@ def unstack_overshield(injury):
     injury.burn_hp_lost = max(0, injury.burn_hp_lost)
     return injury
 
+
 def update_smol_injury(injury: Affector, time_taken: float, treated=False):
     injury_str: str = injury.name
-    if injury_str not in [i.value for i in Injuries]:
+    if injury_str not in [i.value for i in Injuries] and injury_str not in [i.value for i in VitalsEffect]:
         logger.critical("%s not found in Injuries class. Assigning to %s." % (injury_str, Injuries.FOREHEAD_SCRAPE.value))
         injury_str = Injuries.FOREHEAD_SCRAPE.value
         injury.name = injury_str

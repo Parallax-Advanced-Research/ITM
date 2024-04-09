@@ -272,11 +272,29 @@ class Locations(Enum):
     INTERNAL = "internal"
 
 
-class InjuryAssumptuions(Enum):
+class InjuryAssumptuions:
     BURN_SUFFOCATE_LOCATIONS = [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.LEFT_NECK.value,
                                 Locations.RIGHT_NECK.value, Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]
     LUNG_PUNCTURES = [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
                       Locations.LEFT_SIDE, Locations.RIGHT_SIDE]
+
+
+class VitalsEffect(Enum):
+    SPEAKING = 'Character can Speak'
+    AVPU_UNRESPONSIVE = 'Loss of Responsiveness'
+    AVPU_PAIN = 'Character in Pain'
+    ALERT = 'Character is Alert'
+    SLOW_BREATHING = 'Slowed Breathing'
+    NORMAL_BREATHING = 'Normal Breathing'
+    FAST_BREATHING = 'Fast Breathing'
+    FAST_HR = 'Fast Heartrate'
+    NORMAL_HR = 'Normal Heartrate'
+    FAINT_HR = 'Faint Heartrate'
+    CONFUSED = 'Character is Confused'
+    MENTAL_UNRESPONSIVE = 'Mentally Unresponsive'
+    AGONY = 'Character is in agony'
+    CALM = 'Character is calm'
+
 
 class Tags(Enum):
     MINIMAL = "MINIMAL"

@@ -1,4 +1,4 @@
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations, VitalsEffect
 from enum import Enum
 
 
@@ -170,7 +170,35 @@ AFFECCTOR_UPDATE = {
                                                  breath=BodySystemEffect.NASO_HEAL.value),
         Injuries.ACTIVE_BAG.value: InjuryUpdate(bleed=BodySystemEffect.IV_HEAL_MINOR.value,
                                                 breath=BodySystemEffect.IV_HEAL_MINOR.value,
-                                                burn=BodySystemEffect.IV_HEAL_BURN.value)
+                                                burn=BodySystemEffect.IV_HEAL_BURN.value),
+        VitalsEffect.SPEAKING.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                            breath=BodySystemEffect.NONE.value),
+        VitalsEffect.AVPU_UNRESPONSIVE.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                     breath=BodySystemEffect.NONE.value),
+        VitalsEffect.AVPU_PAIN.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                             breath=BodySystemEffect.NONE.value),
+        VitalsEffect.ALERT.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                         breath=BodySystemEffect.NONE.value),
+        VitalsEffect.SLOW_BREATHING.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                  breath=BodySystemEffect.NONE.value),
+        VitalsEffect.NORMAL_BREATHING.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                    breath=BodySystemEffect.NONE.value),
+        VitalsEffect.FAST_BREATHING.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                  breath=BodySystemEffect.NONE.value),
+    VitalsEffect.FAST_HR.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                              breath=BodySystemEffect.NONE.value),
+    VitalsEffect.NORMAL_HR.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.FAINT_HR.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.CONFUSED.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.AGONY.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.CALM.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.MENTAL_UNRESPONSIVE.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
 }
 
 INITIAL_SEVERITIES = {Injuries.FOREHEAD_SCRAPE.value: 0.1, Injuries.PUNCTURE.value: .3, Injuries.SHRAPNEL.value: .4,

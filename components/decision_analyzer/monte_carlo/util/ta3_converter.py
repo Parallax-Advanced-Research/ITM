@@ -1,7 +1,7 @@
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, \
-    Casualty, Locations, Supply, Affector, InjuryAssumptuions, InferredInjury
+    Casualty, Locations, Supply, Affector, InjuryAssumptuions, InferredInjury, Ta3Vitals
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTOR_UPDATE, INITIAL_SEVERITIES,
                                                                         BodySystemEffect)
@@ -48,10 +48,66 @@ def get_inferred_injuries(ta_injury: TA_INJ) -> list[InferredInjury]:
     return injuries
 
 
-def get_vital_injuries(ta_injury: TA_INJ) -> list[InferredInjury]:
+def get_vital_injuries(ta_cas: TA_CAS) -> list[InferredInjury]:
     injuries: list[InferredInjury] = []
-
+    if ta_cas.vitals.avpu == Ta3Vitals.VOICE.value:
+        ii = InferredInjury('Character can Speak', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Voice in AVPU")
+        injuries.append(ii)
+    if ta_cas.vitals.avpu == Ta3Vitals.UNRESPONSIVE.value:
+        ii = InferredInjury('Loss of Responsiveness', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Unresponsive in AVPU")
+        injuries.append(ii)
+    if ta_cas.vitals.avpu == Ta3Vitals.PAIN.value:
+        ii = InferredInjury('Character in Pain', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Pain in AVPU")
+        injuries.append(ii)
+    if ta_cas.vitals.avpu == Ta3Vitals.ALERT.value:
+        ii = InferredInjury('Character is Alert', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Alert in AVPU")
+        injuries.append(ii)
+    if ta_cas.vitals.breathing == Ta3Vitals.SLOW.value:
+        ii = InferredInjury('Slowed Breathing', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Slow breathing in vitals")
+        injuries.append(ii)
+    if ta_cas.vitals.breathing == Ta3Vitals.NORMAL.value:
+        ii = InferredInjury('Normal Breathing', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Normal breathing in vitals")
+        injuries.append(ii)
+    if ta_cas.vitals.breathing == Ta3Vitals.FAST.value:
+        ii = InferredInjury('Fast Breathing', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Fast breathing in vitals")
+        injuries.append(ii)
+    if ta_cas.vitals.hrpmin == Ta3Vitals.FAST.value:
+        ii = InferredInjury('Fast Heartrate', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Fast Heartrate in vitals")
+        injuries.append(ii)
+    if ta_cas.vitals.hrpmin == Ta3Vitals.FAINT.value:
+        ii = InferredInjury('Faint Heartrate', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Faint Heartrate in vitals")
+        injuries.append(ii)
+    if ta_cas.vitals.hrpmin == Ta3Vitals.NORMAL.value:
+        ii = InferredInjury('Normal Heartrate', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Normal Heartrate in vitals")
+        injuries.append(ii)
+    if ta_cas.vitals.mental_status == Ta3Vitals.CONFUSED.value:
+        ii = InferredInjury('Character is Confused', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Confusion in mental status")
+        injuries.append(ii)
+    if ta_cas.vitals.mental_status == Ta3Vitals.UNRESPONSIVE.value:
+        ii = InferredInjury('Mentally Unresponsive', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("Unresponsive in mental status")
+        injuries.append(ii)
+    if ta_cas.vitals.mental_status == Ta3Vitals.AGONY.value:
+        ii = InferredInjury('Character is in agony', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("agony in mental status")
+        injuries.append(ii)
+    if ta_cas.vitals.mental_status == Ta3Vitals.CALM.value:
+        ii = InferredInjury('Character is calm', Locations.UNSPECIFIED.value, 1.0)
+        ii.set_source("calm in mental status")
+        injuries.append(ii)
     return injuries
+
 
 def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
     if ta_injury.severity is None:
@@ -66,7 +122,6 @@ def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
     injuries.append(injury)
 
     inferred_injuries = get_inferred_injuries(ta_injury)
-    vital_injuries = get_vital_injuries(ta_injury)
     injuries.extend(inferred_injuries)
     return injuries
 
@@ -83,7 +138,8 @@ def _convert_casualty(ta_casualty: TA_CAS) -> Casualty:
     for inj in ta_casualty.injuries:
         injuries.extend(_convert_injury(inj))
     vit = _convert_vitals(ta_casualty.vitals)
-
+    vital_injuries = get_vital_injuries(ta_casualty)
+    injuries.extend(vital_injuries)
     return Casualty(id=ta_casualty.id, unstructured=ta_casualty.unstructured, name=ta_casualty.name,
                     demographics=dem,injuries=injuries, vitals=vit, complete_vitals=vit,
                     assessed=ta_casualty.assessed, tag=ta_casualty.tag)
