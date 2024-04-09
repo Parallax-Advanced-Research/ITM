@@ -32,18 +32,20 @@ def get_inferred_injuries(ta_injury: TA_INJ) -> list[InferredInjury]:
     injuries: list[InferredInjury] = []
     if ta_injury.name == Injuries.BURN.value and ta_injury.location in InjuryAssumptuions.BURN_SUFFOCATE_LOCATIONS:
 
-        burn_suffocation_injury = Injury(name=Injuries.BURN_SUFFOCATION.value, location=Locations.LEFT_FACE.value,
+        burn_suffocation_injury = InferredInjury(name=Injuries.BURN_SUFFOCATION.value, location=Locations.LEFT_FACE.value,
                                          severity=ta_injury.severity,
                                          breathing_effect=AFFECCTOR_UPDATE[Injuries.BURN_SUFFOCATION.value].breathing_effect,
                                          bleeding_effect=BodySystemEffect.NONE.value,
                                          burning_effect=BodySystemEffect.NONE.value)
+        burn_suffocation_injury.set_source("Burns present neat characters airway will cause difficulty breathing")
         injuries.append(burn_suffocation_injury)
     if ta_injury.name == Injuries.BROKEN_BONE.value and ta_injury.location in InjuryAssumptuions.LUNG_PUNCTURES:
-        chest_collapse_injury = Injury(name=Injuries.CHEST_COLLAPSE.value, location=ta_injury.location,
+        chest_collapse_injury = InferredInjury(name=Injuries.CHEST_COLLAPSE.value, location=ta_injury.location,
                                        severity=ta_injury.severity, treated=ta_injury.treated,
                                        breathing_effect=AFFECCTOR_UPDATE[Injuries.CHEST_COLLAPSE.value].breathing_effect,
                                        bleeding_effect=BodySystemEffect.NONE.value,
                                        burning_effect=BodySystemEffect.NONE.value)
+        chest_collapse_injury.set_source("Broken ribs near the lungs cause punctures/chest collapses")
         injuries.append(chest_collapse_injury)
     return injuries
 
