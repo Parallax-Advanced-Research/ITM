@@ -17,14 +17,15 @@ import util.logger
 from typing import Optional
 import random
 
-from domain.internal import Decision
+from components.elaborator.default import TA3Elaborator
+from domain.internal import Decision, TADProbe
 
 logger = util.logger
 
 
 class MedicalSimulator(MCSim):
     def __init__(self, init_state: MedsimState, seed: Optional[float] = None,
-                 simulator_name: str = SimulatorName.TINY.value, probe_constraints: list[Decision] | None = None):
+                 simulator_name: str = SimulatorName.TINY.value, probe: TADProbe | None = None):
         self._rand: random.Random = random.Random(seed)
         self._init_state = deepcopy(init_state)
         self._init_supplies = deepcopy(init_state.supplies)
@@ -33,6 +34,11 @@ class MedicalSimulator(MCSim):
         self.current_supplies: list[Supply] = self._init_state.supplies
         self.action_map = tiny_action_map
         self.simulator_name = simulator_name
+        # Elaborator code here
+        new_probe = deepcopy(probe)
+        elab = TA3Elaborator()
+        probe_constraints = elab.elaborate(scenario=None, probe=new_probe)
+        # Ends here
         self.probe_constraints = probe_constraints
         self.has_constraints = True if self.probe_constraints is not None else False
         if simulator_name == SimulatorName.SMOL.value:

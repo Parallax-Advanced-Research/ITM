@@ -262,7 +262,7 @@ def extract_medsim_state(probe: TADProbe) -> MedsimState:
     return medsim_state
 
 
-def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, probe_decisions: list[Decision]) -> mcsim.MonteCarloTree:
+def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, probe: TADProbe) -> mcsim.MonteCarloTree:
     score_functions = {Metric.SEVERITY.value: tiny_med_severity_score, Metric.SUPPLIES_REMAINING.value: tiny_med_resources_remaining,
                        Metric.AVERAGE_TIME_USED.value: tiny_med_time_score, Metric.CASUALTY_SEVERITY.value: tiny_med_casualty_severity,
                        Metric.DAMAGE_PER_SECOND.value: med_simulator_dps, Metric.CASUALTY_DAMAGE_PER_SECOND.value: med_casualty_dps,
@@ -270,7 +270,7 @@ def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, 
                        Metric.P_DEATH_ONEMINLATER.value: prob_death_after_minute,
                        Metric.STANDARD_TIME_SEVERITY.value: prob_death_standard_time}
 
-    sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe_constraints=probe_decisions)
+    sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe=probe)
     root = mcsim.MCStateNode(medsim_state)
     tree = mcsim.MonteCarloTree(sim, score_functions, [root], node_selector=select_unselected_node_then_random)
 
