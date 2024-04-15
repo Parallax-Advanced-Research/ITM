@@ -11,7 +11,8 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
                                                                                  create_medsim_actions,
                                                                                  trim_medsim_actions,
                                                                                  remove_non_injuries,
-                                                                                 create_moraldesert_options)
+                                                                                 create_moraldesert_options,
+                                                                                 trim_invalid_medsim_actions)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import decision_to_medsimaction
 import util.logger
 from typing import Optional
@@ -82,6 +83,7 @@ class MedicalSimulator(MCSim):
         actions: list[tuple] = get_possible_actions(casualties, supplies, state.aid_delay)
         tinymed_actions: list[MedsimAction] = create_medsim_actions(actions)
         tinymed_actions_trimmed: list[MedsimAction] = trim_medsim_actions(tinymed_actions)
+        tinymed_actions_trimmed: list[MedsimAction] = trim_invalid_medsim_actions(tinymed_actions_trimmed, casualties)
         tinymed_actions_trimmed = remove_non_injuries(state, tinymed_actions_trimmed)
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENARIO.value))
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENE.value))
