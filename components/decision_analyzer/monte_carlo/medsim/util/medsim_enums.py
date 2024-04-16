@@ -118,6 +118,12 @@ class Casualty:
         self.prob_shock: float = 0.0
         self.prob_death: float = 0.0
         self.prob_triss_death: float = 0.0
+        self.blood_loss_ml: float = 0.0
+        self.lung_loss_hp:  float = 0.0
+        self.burn_loss_hp:  float = 0.0
+        self.blood_dps: float = 0.0
+        self.lung_dps: float = 0.0
+        self.burn_dps: float = 0.0
 
         self.max_blood_ml = 5700 if demographics.sex == 'M' else 4300
         if demographics.rank == 'Marine':

@@ -68,7 +68,7 @@ class MedicalSimulator(MCSim):
         for new_s in new_state:
             new_state_casualties = new_s.casualties
             for nsc in new_state_casualties:
-                update_morbidity_calculations(nsc)
+                update_morbidity_calculations(nsc, new_s.time)
             outcome = SimResult(action=action, outcome=new_s)
             outcomes.append(outcome)
         return outcomes

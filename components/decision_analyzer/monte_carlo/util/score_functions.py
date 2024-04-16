@@ -43,8 +43,9 @@ def tiny_med_casualty_severity(state: MCState) -> ScoreT:
 def med_simulator_dps(state: MCState) -> ScoreT:
     dps: float = 0.0
     for casualty in state.casualties:
-        for injury in casualty.injuries:
-            dps += injury_to_dps(injury)
+        dps += (casualty.lung_dps + casualty.blood_dps + casualty.burn_dps)
+        # for injury in casualty.injuries:
+        #     dps += injury_to_dps(injury)
     return dps
 
 
@@ -53,13 +54,14 @@ def med_casualty_dps(state: MCState) -> ScoreT:
         raise RuntimeError('Only MedsimState States for MedsimState dps')
     injury_scores: dict[str, float] = {}
     for casualty in state.casualties:
-        this_guys_dps = 0.0
-        for injury in casualty.injuries:
-            this_guys_dps += injury.damage_per_second
-        try:
-            injury_scores[casualty.id] = injury_to_dps(injury)
-        except UnboundLocalError:
-            injury_scores[casualty.id] = 0.0
+        injury_scores[casualty.id] = casualty.burn_dps + casualty.lung_dps + casualty.blood_dps
+        # this_guys_dps = 0.0
+        # for injury in casualty.injuries:
+        #     this_guys_dps += injury.damage_per_second
+        # try:
+        #     injury_scores[casualty.id] = injury_to_dps(injury)
+        # except UnboundLocalError:
+        #     injury_scores[casualty.id] = 0.0
     return injury_scores
 
 
@@ -81,11 +83,12 @@ def med_casualty_prob_death(state: MCState) -> ScoreT:
 
 
 def prob_death_after_minute(state: MCState) -> ScoreT:
+    SECONDS_IN_MINUTE = 60
     notreal_state = deepcopy(state)
     for cas in notreal_state.casualties:
         for injury in cas.injuries:
-            update_smol_injury(injury, 60, injury.treated)
-        update_morbidity_calculations(cas)
+            update_smol_injury(injury, SECONDS_IN_MINUTE, injury.treated)
+        update_morbidity_calculations(cas, time_elapsed=SECONDS_IN_MINUTE)
     return med_prob_death(notreal_state)
 
 
@@ -95,7 +98,7 @@ def prob_death_standard_time(state: MCState) -> ScoreT:
     for casualty in this_state.casualties:
         for injury in casualty.injuries:
             update_smol_injury(injury, time_remaining, injury.treated)
-        update_morbidity_calculations(casualty)
+        update_morbidity_calculations(casualty, this_state.time)
     stand_time_severity = tiny_med_severity_score(this_state) + this_state.time
     if stand_time_severity < 0:
         pass

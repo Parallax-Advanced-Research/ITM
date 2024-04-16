@@ -71,7 +71,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
             dps += injury_to_dps(injury)
             casualty_dps[cas.id] += dps
 
-        casualty_p_death[cas.id] = calc_prob_death(cas)
+        casualty_p_death[cas.id] = calc_prob_death(cas, state.time)
         casualty_severities[cas.id] = cas_severity
     for supply in state.supplies:
         resource_score += supply.amount
@@ -375,12 +375,13 @@ def get_doctor_number(pdeath, dps, pdeath_60):
     pdeath_60_scaled = pdeath_60 * 10.
     pdeath_scaled = pdeath * 50.
     dps_scaled = dps * 1.
+    if pdeath_scaled < 0 or dps_scaled < 0:
+        pass
     return int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled]))
     # return max(0, min(100, int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled, pdeath_60_scaled]))))
 
 
 def get_nextgen_stats(all_decision_metrics: dict[str, list], ordered_treatmenmts: list[str]) -> dict[str, int]:
-    logger.debug('wakka')
     weighted_resource = [get_weighted_score_element(x) for x in ordered_treatmenmts] #get_weighted_resource_score(ordered_treatmenmts)
     pdeath = all_decision_metrics[Metric.P_DEATH.value]
     dps = all_decision_metrics[Metric.DAMAGE_PER_SECOND.value]
