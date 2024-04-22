@@ -1,4 +1,4 @@
-import argparse, sys
+import argparse, sys, util
 
 def validate_args(args: argparse.Namespace) -> None:
 
@@ -38,6 +38,12 @@ def validate_args(args: argparse.Namespace) -> None:
     if args.session_type == 'eval' and args.training:
         sys.stderr.write("\x1b[93mCannot perform training in evaluation mode.\x1b[0m\n")
         sys.exit(1)
+        
+    if args.seed is not None:
+        util.set_global_random_seed(args.seed)
+    else:
+        args.seed = util.get_global_random_seed()
+
     
     #args.keds = ('keds' == args.selector)
     #args.kedsd = ('kedsd' == args.selector)
