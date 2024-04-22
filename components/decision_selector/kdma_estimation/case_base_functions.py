@@ -21,7 +21,7 @@ def read_case_base(csv_filename: str):
 
     return case_base
 
-def write_case_base(fname: str, cb: list[dict[str, Any]]):
+def write_case_base(fname: str, cb: list[dict[str, Any]], params: dict[str, Any] = {}):
     index : int = 0
     keys : list[str] = list(cb[0].keys())
     keyset : set[str] = set(keys)
@@ -33,6 +33,8 @@ def write_case_base(fname: str, cb: list[dict[str, Any]]):
     if "index" in keys:
         keys.remove("index")
     csv_file = open(fname, "w")
+    for (param, value) in params.items():
+        csv_file.write(f"#Param {param}: {value}\n")
     csv_file.write("index," + ",".join(keys))
     csv_file.write("\n")
     for case in cb:
