@@ -116,7 +116,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.print_neighbors:
             util.logger.info(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
         
-        fname = "temp/live_cases" + str(self.index) + ".csv"
+        fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
         write_case_base(fname, new_cases)
         
         return (minDecision, minDist)
