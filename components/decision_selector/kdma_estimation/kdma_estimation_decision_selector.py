@@ -50,10 +50,13 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             try:
                 with open(weight_filename, "r") as weight_file:
                     self.weight_settings = json.loads(weight_file.read())
+                    if "default" not in self.weight_settings and "standard_weights" not in self.weight_settings:
+                        self.weight_settings = {"default": 0, "standard_weights": self.weight_settings}
             except:
                 util.logger.warn(
                     f"Could not read from weight file: {weight_filename}; using default weights.")
                 self.weight_settings = {}
+
         
         
 
