@@ -26,6 +26,10 @@ def main():
     args.verbose = False
     args.dump = False
     
+    if args.seed is not None:
+        util.set_global_random_seed(args.seed)
+    else:
+        args.seed = util.get_global_random_seed()
 
     if args.restart_pid is not None:
         prior_results = f"local/online_results-{args.restart_pid}.csv"
