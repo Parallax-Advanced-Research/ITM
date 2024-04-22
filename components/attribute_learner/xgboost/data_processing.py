@@ -98,6 +98,7 @@ def clean_data(d):
                 if d[key][key2] == "None":
                     continue
                 if d[key][key2] is None:
+                    d[key][key2] = "None"
                     continue
                 if "," in d[key][key2]:
                     d[key][key2] = d[key][key2].replace(",", "")
@@ -106,8 +107,10 @@ def clean_data(d):
         for key2 in d[key]:
             if key2 not in categories and key2 not in mins: 
                 categories.add(key2)
-            if d[key][key2] == "None":
+            if d[key][key2] == "None" or d[key][key2] is None:
                 if key2 not in categories and key2 in mins:
+                    if mins[key2] == maxs[key2]:
+                        maxs[key2] += 1
                     d[key][key2] = 2*mins[key2] - maxs[key2]
     return d, categories
 
@@ -129,7 +132,6 @@ def trim_weights_to_one(df, weights, output_label):
 def trim_one_weight(df, weights, output_label):
     df = drop_one_column_by_weight(df, weights, output_label)
     return df
-
 
 def test_accuracy_t(df, weights, output_label, f=None):
     if len(df) < 2:
@@ -167,6 +169,32 @@ def test_accuracy_t(df, weights, output_label, f=None):
         save_partial_weights(f, weights, attributes, accuracy, output_label)
     print(f"\rAccuracy from thread {len(weights)}:", accuracy)
     return accuracy
+    
+def test_error(df, weights, output_label, f=None):
+    if len(df) < 2:
+        return 0
+    loo = LeaveOneOut()
+    gt = []  # ground truth
+    y = np.array(df[output_label].tolist())
+    X = df.drop(output_label, axis=1)  # removes the decision column
+    attributes = X.columns
+    results_label = []
+    i = 0
+    x = loo.split(X)
+    l = sum(1 for _ in x)
+    current_progress = -1
+    for train_index, test_index in loo.split(X):
+        i += 1
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        y_pred = prediction(X_test, y_test, X_train, y_train, weights, attributes, k=1, threshold=10)
+        results_label.append(y_pred)
+        gt.append(y_test)
+    results_label = np.array(results_label)
+    error = [abs(results_label[i] - y[i]) for i in range(len(results_label))]
+    error = sum(error) / len(error)
+    print(f"\rError for weight count={len(weights)}:", error)
+    return error
 
 
 def test_accuracy(df, weights, output_label):
