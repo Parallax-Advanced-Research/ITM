@@ -92,7 +92,7 @@ def get_classification_feature_importance(case_base, output_label, c):
     for col in x.columns:
         if col in c:
             x[col] = x[col].astype('category')
-    xgb = XGBClassifier(enable_categorical=True)
+    xgb = XGBClassifier(enable_categorical=True, n_jobs=1)
     unique = sorted(list(set(y)))
     transfer = {k: v for k, v in enumerate(unique)}
     y = np.array([list(transfer.keys())[list(transfer.values()).index(x)] for x in y])
