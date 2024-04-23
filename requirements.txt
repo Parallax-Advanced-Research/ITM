@@ -35,4 +35,4 @@ pytest
 mypy
 pyflakes
 pylint
-xgboost
+xgboost==2.0.3
