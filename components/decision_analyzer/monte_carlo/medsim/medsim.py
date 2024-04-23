@@ -26,7 +26,7 @@ logger = util.logger
 
 class MedicalSimulator(MCSim):
     def __init__(self, init_state: MedsimState, seed: Optional[float] = None,
-                 simulator_name: str = SimulatorName.TINY.value, probe: TADProbe | None = None):
+                 simulator_name: str = SimulatorName.SMOL.value, probe: TADProbe | None = None):
         self._rand: random.Random = random.Random(seed)
         self._init_state = deepcopy(init_state)
         self._init_supplies = deepcopy(init_state.supplies)
