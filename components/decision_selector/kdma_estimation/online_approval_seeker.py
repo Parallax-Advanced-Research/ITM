@@ -53,7 +53,6 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                         Critic("Chad", 0, self.arg_name)]
         if args.critic is not None:
             self.critics = [c for c in self.critics if c.name == args.critic]
-        self.current_critic = util.get_global_random_generator().choice(self.critics)
         self.train_weights = args.train_weights
         self.error = 10000
         self.selection_style = args.selection_style
@@ -62,10 +61,11 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         # This sub random will be unaffected by other calls to the global, but still based on the 
         # same global random seed, and therefore repeatable.
         self.critic_random = random.Random(util.get_global_random_generator().random())
+        self.current_critic = self.critic_random.choice(self.critics)
     
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         if len(self.experiences) == 0 and self.is_training:
-            self.current_critic = util.get_global_random_generator().choice(self.critics)
+            self.current_critic = self.critic_random.choice(self.critics)
         
         if self.selection_style == 'xgboost' and self.best_model is not None:
             vals = [[self.get_xgboost_prediction(self.make_case(probe, d)), d] for d in probe.decisions]
