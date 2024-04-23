@@ -120,9 +120,6 @@ def api_test(args, driver = None):
     else:
         logger.setLevel(LogLevel.INFO)
     
-    if args.seed is not None:
-        util.set_global_random_seed(args.seed)
-    
     if driver is None:
         driver = TA3Driver(args)
     client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario)
