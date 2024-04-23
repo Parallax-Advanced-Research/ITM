@@ -5,6 +5,8 @@ from domain.internal import AlignmentFeedback, Scenario, TADProbe, KDMA, KDMAs, 
 from typing import Any, Sequence, Callable
 import util
 import os
+import time
+import random
 
 from components.attribute_learner.xgboost import xgboost_train, data_processing
 import pandas, numpy
@@ -57,6 +59,9 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.selection_style = args.selection_style
         self.learning_style = args.learning_style
         self.best_model = None
+        # This sub random will be unaffected by other calls to the global, but still based on the 
+        # same global random seed, and therefore repeatable.
+        self.critic_random = random.Random(util.get_global_random_generator().random())
     
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         if len(self.experiences) == 0 and self.is_training:
@@ -168,16 +173,22 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             
         
     def collect_weights(self, table, category_labels):
+        find_weights_time = time.time()
         if self.learning_style == 'regression':
             weights, error, model = xgboost_train.get_regression_feature_importance(table, KDMA_NAME, category_labels)
         else:
             weights, error, model = xgboost_train.get_classification_feature_importance(table, KDMA_NAME, category_labels)
+        print(f"find_weights_time: {time.time() - find_weights_time}")
         cols = list(table.columns)
         cols.remove(KDMA_NAME)
         wt_array = numpy.array([weights.get(col,0.0) for col in cols])
+        find_error_time = time.time()
+        case_base_error = data_processing.test_error(table, wt_array, KDMA_NAME)
+        print(f"find_error_time: {time.time() - find_error_time}")
+        
         return (len(weights), 
                 wt_array,
-                data_processing.test_error(table, wt_array, KDMA_NAME), 
+                case_base_error,
                 weights,
                 error,
                 model)
