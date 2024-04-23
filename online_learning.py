@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--selection_style', type=str, help="xgboost/case-based", default="case-based", choices=["case-based", "xgboost"])
     parser.add_argument('--restart_entries', type=int, help="How many examples from the prior case base to use.", default=None)
     parser.add_argument('--restart_pid', type=int, help="PID to restart work from", default=None)
+    parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
     args = parser.parse_args()
     args.training = True
     args.keds = False

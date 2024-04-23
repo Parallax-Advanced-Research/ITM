@@ -24,6 +24,7 @@ class Critic:
         self.name = name
         self.target = target
         self.arg_name = arg_name
+        self.kdma_obj = KDMAs([KDMA(id_=KDMA_NAME, value=target)])
         
     def approval(self, probe: TADProbe, decision: Decision) -> (int, Decision):
         chosen_dist = get_ddist(decision, self.arg_name, self.target)
@@ -62,18 +63,32 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         # same global random seed, and therefore repeatable.
         self.critic_random = random.Random(util.get_global_random_generator().random())
         self.current_critic = self.critic_random.choice(self.critics)
+        self.reveal_kdma = args.reveal_kdma
     
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         if len(self.experiences) == 0 and self.is_training:
             self.current_critic = self.critic_random.choice(self.critics)
         
         if self.selection_style == 'xgboost' and self.best_model is not None:
-            vals = [[self.get_xgboost_prediction(self.make_case(probe, d)), d] for d in probe.decisions]
-            best_pred = max(vals)
-            dist = abs(1 - best_pred[0])
-            decision = best_pred[1]
+            decision = None
+            best_pred = 10000
+            best_dist = 10000
+            if self.reveal_kdma:
+                target = self.current_critic.target
+            else:
+                target = 1
+            for d in probe.decisions:
+                pred = self.get_xgboost_prediction(self.make_case(probe, d))
+                dist = abs(target - pred)
+                if dist < best_dist:
+                    best_pred = pred
+                    best_dist = dist
+                    decision = d
         else:
-            (decision, dist) = super().select(scenario, probe, self.kdma_obj)
+            if self.reveal_kdma:
+                (decision, dist) = super().select(scenario, probe, self.current_critic.kdma_obj)
+            else:
+                (decision, dist) = super().select(scenario, probe, self.kdma_obj)
 
         if self.is_training:
             self.experiences.append(self.make_case(probe, decision))
@@ -84,6 +99,9 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.last_approval = approval
         self.last_kdma_value = decision.kdmas.kdma_map[self.arg_name]
 
+        if self.reveal_kdma:
+            approval = self.last_kdma_value
+
         if self.is_training:
             self.approval_experiences.append(self.experiences[-1])
             for i in range(1,len(self.experiences)+1):
@@ -91,7 +109,10 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                 approval = approval * 0.99
             if best_decision is not None:
                 self.experiences.append(self.make_case(probe, best_decision))
-                self.experiences[-1][KDMA_NAME] = 1
+                if self.reveal_kdma:
+                    self.experiences[-1][KDMA_NAME] = best_decision.kdmas.kdma_map[self.arg_name]
+                else:
+                    self.experiences[-1][KDMA_NAME] = 1
                 self.approval_experiences.append(self.experiences[-1])
 
             for memory in self.experiences:
