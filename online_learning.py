@@ -26,6 +26,7 @@ def main():
     args.keds = False
     args.verbose = False
     args.dump = False
+    args.uniformweight = True
     
     if args.seed is not None:
         util.set_global_random_seed(args.seed)
@@ -57,6 +58,12 @@ def main():
         if args.session_type in ["soartech", "eval"] and not util.is_port_open(soartech_port):
             print("Soartech server not listening. Shutting down.")
             sys.exit(-1)
+    print(f"PID = {os.getpid()}")
+    print(f"TA3_PORT = {ta3_port}")
+    print(f"ADEPT_PORT = {adept_port}")
+    print(f"SOARTECH_PORT = {soartech_port}")
+    for (key, value) in vars(args).items():
+        print(f"Argument {key} = {value}")
         
         
         
@@ -82,35 +89,49 @@ def main():
     # if args.restart_entries is not None:
         # train_scenario_ids = train_scenario_ids[len(seeker.approval_experiences):]
     
+    args.ta3_port = ta3_port
+    args.pid = os.getpid()
 
     results = []
+    do_output(args, [{},{}])
     examples = 0
     driver = TA3Driver(args)
     driver.trainer = seeker
+    seeker.start_testing()
+    do_testing(test_scenario_ids, args, driver, seeker, results, examples)
     for train_id in train_scenario_ids:
         seeker.start_training()
         args.scenario = train_id
-        start = time.process_time()
-        tad.api_test(args, driver)
-        execution_time = time.process_time() - start
-        driver.actions_performed = []
-        driver.treatments = {}
+        execution_time = run_tad(args, driver)
         examples += 1
         start = time.process_time()
         seeker.start_testing()
         weight_training_time = time.process_time() - start
         results.append(make_row("training", train_id, examples, seeker, execution_time, weight_training_time))
-        for test_id in test_scenario_ids:
-            args.scenario = test_id
-            for critic in seeker.critics:
-                seeker.set_critic(critic)
-                start = time.process_time()
-                tad.api_test(args, driver)
-                execution_time = time.process_time() - start
-                driver.actions_performed = []
-                driver.treatments = {}
-                results.append(make_row("testing", test_id, examples, seeker, execution_time, 0))
-            write_case_base(f"local/online_results-{os.getpid()}.csv", results, params=vars(args))
+        do_output(args, results)
+        do_testing(test_scenario_ids, args, driver, seeker, results, examples)
+    do_output(args, results)
+
+def do_output(args, results):
+    write_case_base(f"local/online_results-{args.pid}.csv", results, vars(args))
+
+def do_testing(test_scenario_ids, args, driver, seeker, results, examples):
+    for test_id in test_scenario_ids:
+        args.scenario = test_id
+        for critic in seeker.critics:
+            seeker.set_critic(critic)
+            execution_time = run_tad(args, driver)
+            results.append(make_row("testing", test_id, examples, seeker, execution_time, 0))
+
+
+def run_tad(args, driver):
+    driver.actions_performed = []
+    driver.treatments = {}
+    start = time.process_time()
+    tad.api_test(args, driver)
+    execution_time = time.process_time() - start
+    return execution_time
+
 
 def make_row(mode, id, examples, seeker, execution_time, weight_training_time):
     row =  {
@@ -124,7 +145,7 @@ def make_row(mode, id, examples, seeker, execution_time, weight_training_time):
             "approval_experience_length": len(seeker.approval_experiences),
             "exec": execution_time,
             "weight_training": weight_training_time,
-            "weights": str(seeker.weight_settings["standard_weights"]).replace(",", ";")
+            "weights": str(seeker.weight_settings.get("standard_weights", "Uniform")).replace(",", ";")
            }
     # row = row | seeker.last_feedbacks[0]["kdmas"]
     # for feedback in seeker.last_feedbacks:
