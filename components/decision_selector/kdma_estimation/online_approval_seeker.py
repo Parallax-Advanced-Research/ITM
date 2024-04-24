@@ -64,6 +64,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.critic_random = random.Random(util.get_global_random_generator().random())
         self.current_critic = self.critic_random.choice(self.critics)
         self.reveal_kdma = args.reveal_kdma
+        self.dir_name = "local/" + args.exp_name 
     
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         if len(self.experiences) == 0 and self.is_training:
@@ -118,7 +119,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             for memory in self.experiences:
                 memory["index"] = len(self.cb)
                 self.cb.append(memory)
-            write_case_base(f"local/online-experiences-{os.getpid()}.csv", self.cb)
+            write_case_base(f"{self.dir_name}/online_experiences-{os.getpid()}.csv", self.cb)
 
         self.experiences = []
         self.last_feedbacks = []

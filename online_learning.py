@@ -21,6 +21,7 @@ def main():
     parser.add_argument('--restart_entries', type=int, help="How many examples from the prior case base to use.", default=None)
     parser.add_argument('--restart_pid', type=int, help="PID to restart work from", default=None)
     parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
+    parser.add_argument('--exp_name', type=str, default="default", help="Name for experiment.")
     args = parser.parse_args()
     args.training = True
     args.keds = False
@@ -34,7 +35,7 @@ def main():
         args.seed = util.get_global_random_seed()
 
     if args.restart_pid is not None:
-        prior_results = f"local/online_results-{args.restart_pid}.csv"
+        prior_results = f"local/{args.exp_name}/online_results-{args.restart_pid}.csv"
         args = read_args(args, prior_results)
         args.casefile = f"online-experiences-{args.restart_pid}.csv"
 
@@ -65,6 +66,9 @@ def main():
     for (key, value) in vars(args).items():
         print(f"Argument {key} = {value}")
         
+    dir = f"local/{args.exp_name}"
+    if not os.path.exists(dir):
+        os.makedirs(dir)
         
         
         
@@ -113,7 +117,7 @@ def main():
     do_output(args, results)
 
 def do_output(args, results):
-    write_case_base(f"local/online_results-{args.pid}.csv", results, vars(args))
+    write_case_base(f"local/{args.exp_name}/online_results-{args.pid}.csv", results, vars(args))
 
 def do_testing(test_scenario_ids, args, driver, seeker, results, examples):
     for test_id in test_scenario_ids:
