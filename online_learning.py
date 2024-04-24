@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--critic', type=str, help="Critic to learn on", default=None, choices=["Alex", "Brie", "Chad"])
     parser.add_argument('--train_weights', action=argparse.BooleanOptionalAction, default=False, help="Train weights online.")
     parser.add_argument('--learning_style', type=str, help="Classification/regression/...", default="classification", choices=["classification", "regression"])
-    parser.add_argument('--selection_style', type=str, help="xgboost/case-based", default="case-based", choices=["case-based", "xgboost"])
+    parser.add_argument('--selection_style', type=str, help="xgboost/case-based", default="case-based", choices=["case-based", "xgboost", "random"])
     parser.add_argument('--restart_entries', type=int, help="How many examples from the prior case base to use.", default=None)
     parser.add_argument('--restart_pid', type=int, help="PID to restart work from", default=None)
     parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
@@ -147,6 +147,7 @@ def make_row(mode, id, examples, seeker, execution_time, weight_training_time):
             "kdma": seeker.last_kdma_value,
             "error": seeker.error,
             "approval_experience_length": len(seeker.approval_experiences),
+            "case_base_size": len(seeker.cb),
             "exec": execution_time,
             "weight_training": weight_training_time,
             "weights": str(seeker.weight_settings.get("standard_weights", "Uniform")).replace(",", ";")

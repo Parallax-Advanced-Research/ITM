@@ -85,20 +85,25 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                     best_pred = pred
                     best_dist = dist
                     decision = d
-        else:
+        elif self.selection_style == 'case-based':
             if self.reveal_kdma:
                 (decision, dist) = super().select(scenario, probe, self.current_critic.kdma_obj)
             else:
                 (decision, dist) = super().select(scenario, probe, self.kdma_obj)
-
-        if self.is_training:
-            self.experiences.append(self.make_case(probe, decision))
+        else:
+            (decision, dist) = (util.get_global_random_generator().choice(probe.decisions), 1)
 
         if decision.kdmas is None or decision.kdmas.kdma_map is None:
             return (decision, dist)
         (approval, best_decision) = self.current_critic.approval(probe, decision)
         self.last_approval = approval
         self.last_kdma_value = decision.kdmas.kdma_map[self.arg_name]
+
+        if self.selection_style == 'random':
+            return (decision, dist)
+
+        if self.is_training:
+            self.experiences.append(self.make_case(probe, decision))
 
         if self.reveal_kdma:
             approval = self.last_kdma_value
