@@ -30,10 +30,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             
         self.cb = read_case_base(args.casefile)
         self.variant: str = args.variant
-        self.analyzers: list[DecisionAnalyzer] = get_analyzers()
         self.print_neighbors = args.decision_verbose
         self.index = 0
-        self.kdma_totals = {}
         if args.weightfile is None:
             global _default_weight_file
             if self.use_drexel_format:
@@ -344,11 +342,4 @@ def make_case_drexel(probe: TADProbe, d: Decision) -> dict[str, Any]:
     return case
     
 
-
-def get_analyzers():
-    return [
-        HeuristicRuleAnalyzer(),
-        MonteCarloAnalyzer(max_rollouts=10000),
-        BayesNetDiagnosisAnalyzer()
-    ]
 
