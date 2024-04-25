@@ -95,7 +95,7 @@ def get_classification_feature_importance(case_base, output_label, c):
     xgb = XGBClassifier(enable_categorical=True, n_jobs=1)
     unique = sorted(list(set(y)))
     transfer = {k: v for k, v in enumerate(unique)}
-    y = np.array([list(transfer.keys())[list(transfer.values()).index(x)] for x in y])
+    y = np.array([list(transfer.keys())[list(transfer.values()).index(v)] for v in y])
     xgb.fit(x, y)
     return xgb.get_booster().get_score(importance_type='gain'), mean_squared_error(y, xgb.predict(x)), xgb
 
