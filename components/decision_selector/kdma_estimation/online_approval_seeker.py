@@ -206,13 +206,16 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             weights, error, model = xgboost_train.get_regression_feature_importance(table, KDMA_NAME, category_labels)
         else:
             weights, error, model = xgboost_train.get_classification_feature_importance(table, KDMA_NAME, category_labels)
-        print(f"find_weights_time: {time.time() - find_weights_time}")
+        # print(f"find_weights_time: {time.time() - find_weights_time}")
         cols = list(table.columns)
         cols.remove(KDMA_NAME)
         wt_array = numpy.array([weights.get(col,0.0) for col in cols])
         find_error_time = time.time()
-        case_base_error = data_processing.test_error(table, wt_array, KDMA_NAME)
-        print(f"find_error_time: {time.time() - find_error_time}")
+        case_base_error = self.find_leave_one_out_error(weights, KDMA_NAME, cases = self.approval_experiences)
+        # old_find_error_time = time.time()
+        # old_error = data_processing.test_error(table, wt_array, KDMA_NAME)
+        # print(f"Internal error: {case_base_error} xgboost error: {old_error}")
+        # print(f"find_error_time: Old: {time.time() - old_find_error_time} New: {old_find_error_time - find_error_time}")
         
         return (len(weights), 
                 wt_array,
@@ -228,17 +231,21 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                 case[col] = None
         return self.best_model.predict(make_approval_data_frame([case], cols=columns)[0])[0]
         
-def test_weight_train(cb_fname: str, entries = None) -> float:
+def get_test_seeker(cb_fname: str, entries = None) -> float:
     args = parse_default_arguments()
     args.critic = None
     args.train_weights = True
+    args.selection_style = "case-based"
+    args.learning_style = "classification"
+    args.reveal_kdma = False
+    args.exp_name = "default"
     args.kdmas = ["MoralDesert=1"]
     seeker = OnlineApprovalSeeker(args)
     seeker.cb = read_case_base(cb_fname)
     seeker.approval_experiences = [case for case in seeker.cb if integerish(case["approval"])]
     if entries is not None:
         seeker.approval_experiences = seeker.approval_experiences[:entries]
-    return seeker.weight_train()
+    return seeker
     
         
 def test_file_error(cb_fname: str, weights_dict: dict[str, float], drop_discounts = False, entries = None) -> float:
