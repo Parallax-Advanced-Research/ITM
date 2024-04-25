@@ -82,7 +82,7 @@ def get_regression_feature_importance(case_base, output_label, c):
     for col in x.columns:
         if col in c:
             x[col] = x[col].astype('category')
-    xgb = xgboost.XGBRegressor(enable_categorical=True)
+    xgb = xgboost.XGBRegressor(enable_categorical=True, n_jobs=1)
     xgb.fit(x, y)
     return xgb.get_booster().get_score(importance_type='gain'), mean_squared_error(y, xgb.predict(x)), xgb
 
