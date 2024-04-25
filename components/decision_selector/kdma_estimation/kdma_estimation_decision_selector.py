@@ -124,13 +124,17 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             cases = self.cb
         new_case_list = [case for case in cases]
         error_total = 0
+        case_count = 0
         for case in cases:
             new_case_list.remove(case)
             estimate = self.estimate_KDMA(dict(case), weights, kdma, cases = new_case_list)
+            if estimate is None:
+                continue
             error = case[kdma] - estimate
+            case_count += 1
             error_total += error
             new_case_list.append(case)
-        return error_total / len(cases)
+        return error_total / case_count
 
     def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> float:
         if cases is None:
