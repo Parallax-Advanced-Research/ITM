@@ -118,12 +118,26 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         write_case_base(fname, new_cases)
         
         return (minDecision, minDist)
-                
+        
+    def find_leave_one_out_error(self, weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> float:
+        if cases is None:
+            cases = self.cb
+        new_case_list = [case for case in cases]
+        error_total = 0
+        for case in cases:
+            new_case_list.remove(case)
+            estimate = self.estimate_KDMA(dict(case), weights, kdma, cases = new_case_list)
+            error = case[kdma] - estimate
+            error_total += error
+            new_case_list.append(case)
+        return error_total / len(cases)
 
-    def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str) -> float:
+    def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> float:
+        if cases is None:
+            cases = self.cb
         if self.use_drexel_format:
             kdma = kdma + "-Ave"
-        topk = self.top_K(cur_case, weights, kdma)
+        topk = self.top_K(cur_case, weights, kdma, cases)
         if len(topk) == 0:
             return None
         total = sum([max(dist, 0.01) for (dist, case) in topk])
@@ -144,10 +158,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             util.logger.info(f"kdma_val: {kdma_val}")
         return kdma_val
         
-    def top_K(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str) -> list[dict[str, Any]]:
+    def top_K(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> list[dict[str, Any]]:
+        if cases is None:
+            cases = self.cb
         lst = []
         max_distance = 10000
-        for pcase in self.cb:
+        for pcase in cases:
             if kdma not in pcase or pcase[kdma] is None:
                 continue
             if cur_case['treating'] and not pcase['treating']:
