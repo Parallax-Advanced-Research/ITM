@@ -93,6 +93,9 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         else:
             (decision, dist) = (util.get_global_random_generator().choice(probe.decisions), 1)
 
+        if self.is_training and self.selection_style != 'random':
+            self.experiences.append(self.make_case(probe, decision))
+
         if decision.kdmas is None or decision.kdmas.kdma_map is None:
             return (decision, dist)
         (approval, best_decision) = self.current_critic.approval(probe, decision)
@@ -102,8 +105,6 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         if self.selection_style == 'random':
             return (decision, dist)
 
-        if self.is_training:
-            self.experiences.append(self.make_case(probe, decision))
 
         if self.reveal_kdma:
             approval = self.last_kdma_value
