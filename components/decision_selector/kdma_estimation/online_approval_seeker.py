@@ -196,7 +196,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             self.best_model = weights_array[best_error_index][5]
             print(f"Chosen weight count: {len(chosen_weights)}")
             for key in chosen_weights:
-                print(f"{key}: {chosen_weights[key]}")
+                print(f"   {key}: {chosen_weights[key]:.2f}")
         return weights_array
             
         
@@ -206,16 +206,19 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             weights, error, model = xgboost_train.get_regression_feature_importance(table, KDMA_NAME, category_labels)
         else:
             weights, error, model = xgboost_train.get_classification_feature_importance(table, KDMA_NAME, category_labels)
+        print(f"Weights, count {len(weights)}:")
+        for (k,v) in weights.items():
+            print(f"   {k}: {v:.2f}")
         # print(f"find_weights_time: {time.time() - find_weights_time}")
         cols = list(table.columns)
         cols.remove(KDMA_NAME)
         wt_array = numpy.array([weights.get(col,0.0) for col in cols])
         find_error_time = time.time()
         case_base_error = self.find_leave_one_out_error(weights, KDMA_NAME, cases = self.approval_experiences)
-        # old_find_error_time = time.time()
-        # old_error = data_processing.test_error(table, wt_array, KDMA_NAME)
-        # print(f"Internal error: {case_base_error} xgboost error: {old_error}")
-        # print(f"find_error_time: Old: {time.time() - old_find_error_time} New: {old_find_error_time - find_error_time}")
+        old_find_error_time = time.time()
+        old_error = data_processing.test_error(table, wt_array, KDMA_NAME)
+        print(f"Internal error: {case_base_error} xgboost error: {old_error}")
+        print(f"find_error_time: Old: {time.time() - old_find_error_time} New: {old_find_error_time - find_error_time}")
         
         return (len(weights), 
                 wt_array,

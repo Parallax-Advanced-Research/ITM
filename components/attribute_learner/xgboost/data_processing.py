@@ -193,7 +193,7 @@ def test_error(df, weights, output_label, f=None):
     results_label = np.array(results_label)
     error = [abs(results_label[i] - y[i]) for i in range(len(results_label))]
     error = sum(error) / len(error)
-    print(f"\rError for weight count={len(weights)}:", error)
+    # print(f"\rError for weight count={len(weights)}:", error)
     return error
 
 
