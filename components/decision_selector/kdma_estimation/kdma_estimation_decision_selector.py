@@ -134,6 +134,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             case_count += 1
             error_total += error
             new_case_list.append(case)
+        if case_count == 0:
+            return math.inf
         return error_total / case_count
 
     def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> float:
