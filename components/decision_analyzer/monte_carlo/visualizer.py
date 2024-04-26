@@ -82,7 +82,7 @@ def _extract_labels(vmap: dict) -> []:
             lbl += f"<br>Count (times visited): {node.count}"
             for cas in node.state.casualties:
                 complete_vitals = f'Breathing: {cas.complete_vitals.breathing} Conscious: {cas.complete_vitals.conscious}'
-                lbl += f'<br>{cas.id} is {complete_vitals}. Is alive: {not cas.dead}'
+                lbl += f'<br>{cas.id} is {complete_vitals}.'
                 for inj in cas.injuries:
                     lbl += f'<br>Injury: {inj.name} at {inj.location} with severity {inj.severity}. Time elapsed: {inj.time_elapsed} Treated: {inj.treated}'
 
