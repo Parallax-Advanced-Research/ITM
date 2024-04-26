@@ -299,9 +299,8 @@ def process_data(c):
         p.join()
 
 
-def analyze_partial_data():
+def analyze_partial_data(n=.95):
     #accept smallest number of weights that is atleast n% of the max accuracy
-    n = 0.95
     data_folder = "partial_data"
     json_file_template = "weights/{label}/{weight_num}-{accuracy_score}/"
     chosen_weights = {}
@@ -325,11 +324,14 @@ def analyze_partial_data():
                                 os.remove('/'.join([data_folder, data_base, cbsize, i, "weights", metric, weights, file]))
                             else:
                                 data[int(num_weights)]["weights"] = file
-                    max_accuracy = max([data[i]["acc"] for i in data])
-                    min_allowable_accuracy = n * max_accuracy
-                    min_allowable_weights = min([int(i) for i in data if data[i]['acc'] >= min_allowable_accuracy])
-                    chosen_weights[data_base][cbsize][i][metric] = (min_allowable_weights, data[min_allowable_weights]["acc"],
-                                                                    '/'.join([data_folder, data_base, cbsize, i, "weights", metric, str(min_allowable_weights) + "-" + str(data[min_allowable_weights]["acc"]), data[min_allowable_weights]["weights"]]))
+                    if n>=0:
+                        max_accuracy = max([data[i]["acc"] for i in data])
+                        min_allowable_accuracy = n * max_accuracy
+                        min_allowable_weights = min([int(i) for i in data if data[i]['acc'] >= min_allowable_accuracy])
+                        chosen_weights[data_base][cbsize][i][metric] = (min_allowable_weights, data[min_allowable_weights]["acc"],
+                                                                        '/'.join([data_folder, data_base, cbsize, i, "weights", metric, str(min_allowable_weights) + "-" + str(data[min_allowable_weights]["acc"]), data[min_allowable_weights]["weights"]]))
+                    else:
+                        pass
     return chosen_weights
 
 
@@ -458,6 +460,14 @@ def run_single_data():
 if __name__ == "__main__":
     multiprocessing.freeze_support()
    #run_partial_data()
-    cw = analyze_partial_data()
-    with open("partial_data.json", 'w') as f:
-        json.dump(cw, f, indent=4)
+    cw_95 = analyze_partial_data(.95)
+    cw_1 = analyze_partial_data(1)
+    cw_max = analyze_partial_data(-1)
+    with open("partial_data_95.json", 'w') as f:
+        json.dump(cw_95, f, indent=4)
+    with open("partial_data_1.json", 'w') as f:
+        json.dump(cw_1, f, indent=4)
+    with open("partial_data_max.json", 'w') as f:
+        json.dump(cw_max, f, indent=4)
+
+#SPARQL

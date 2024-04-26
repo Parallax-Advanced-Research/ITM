@@ -261,6 +261,13 @@ def read_case_base(csv_filename: str):
 
     return case_base
 
+def read_relational_case_base(json_filename: str):
+    """ Convert the csv into a list of dictionaries """
+    case_base: list[dict] = []
+    with open(json_filename, "r") as f:
+        case_base = json.load(f)
+    return case_base
+
 def relevant_fields(case: dict[str, Any], weights: dict[str, Any], kdma: str):
     fields = [key for (key, val) in weights.items() if val != 0] + [kdma, "index"]
     return {key: val for (key, val) in case.items() if key in fields}
@@ -455,6 +462,63 @@ def make_case(probe: TADProbe, d: Decision) -> dict[str, Any]:
             for (inner_key, inner_value) in flatten(dm.name, dm.value).items():
                 case[inner_key] = inner_value
     return case
+
+def make_relational_case(probe: TADProbe, d: Decision) -> dict[str, Any]:
+    case = {}
+    s: State = probe.state
+    c: list[Casualty] = [co for co in s.casualties if co.id == d.value.params.get("casualty", None)]
+    if c == []:
+        case['unvisited_count'] = len([co for co in s.casualties if not co.assessed])
+        case['injured_count'] = len([co for co in s.casualties if len(co.injuries) > 0])
+        case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0
+                                                       for co in s.casualties])
+    else:
+        c = c[0]
+        i = 0
+        for co in s.casualties:
+            sub_case = {}
+            sub_case["decision"] = co.id == c.id
+            sub_case['age'] = co.demographics.age
+            sub_case['tagged'] = co.tag is not None
+            sub_case['visited'] = co.assessed
+            sub_case['relationship'] = co.relationship
+            sub_case['rank'] = co.demographics.rank
+            sub_case['conscious'] = co.vitals.conscious
+            sub_case['mental_status'] = co.vitals.mental_status
+            sub_case['breathing'] = co.vitals.breathing
+            sub_case['hrpmin'] = co.vitals.hrpmin
+            sub_case['avpu'] = co.vitals.avpu
+            sub_case['intent'] = co.intent
+            sub_case['directness_of_causality'] = co.directness_of_causality
+            sub_case['unvisited_count'] = len([cas for cas in s.casualties if not cas.assessed
+                                                                        and not cas.id == co.id])
+            sub_case['injured_count'] = len([cas for cas in s.casualties if len(cas.injuries) > 0
+                                                                      and not cas.id == co.id])
+            sub_case['others_tagged_or_uninjured'] = len([cas.tag is not None or len(cas.injuries) == 0
+                                                           for cas in s.casualties if not cas.id == co.id])
+            case[i] = sub_case
+            i += 1
+    case['aid_available'] = \
+        (probe.environment['decision_environment']['aid_delay'] is not None
+         and len(probe.environment['decision_environment']['aid_delay']) > 0)
+    case['environment_type'] = probe.environment['sim_environment']['type']
+    a: Action = d.value
+    case['questioning'] = a.name in ["SITREP"]
+    case['assessing'] = a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION"]
+    case['treating'] = a.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]
+    case['tagging'] = a.name == "TAG_CHARACTER"
+    case['leaving'] = a.name == "END_SCENE"
+    if a.name == "APPLY_TREATMENT":
+        case['treatment'] = a.params.get("treatment", None)
+    if a.name == "TAG_CHARACTER":
+        case['category'] = a.params.get("category", None)
+    for dm in d.metrics.values():
+        if type(dm.value) is not dict:
+            case[dm.name] = dm.value
+        else:
+            for (inner_key, inner_value) in flatten(dm.name, dm.value).items():
+                case[inner_key] = inner_value
+    return case
     
 def flatten(name, valueDict: dict[str, Any]):
     ret = {}
@@ -504,7 +568,7 @@ def make_case_drexel(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['hrpmin'] = c.vitals.hrpmin
         case['unvisited_count'] = len([co for co in s.casualties if not co.assessed and not co.id == c.id])
         case['injured_count'] = len([co for co in s.casualties if len(co.injuries) > 0 and not co.id == c.id])
-        case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
+        case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0
                                                        for co in s.casualties if not co.id == c.id])
 
     a: Action = d.value
@@ -1097,7 +1161,21 @@ def write_case_base(fname: str, cb: list[dict[str, Any]]):
             line += value
         csv_file.write(line + "\n")
     csv_file.close()
-        
+
+def write_relational_case_base(fname: str, cb: list[dict[str, Any]]):
+    index : int = 0
+    keys : list[str] = list(cb[0].keys())
+    keyset : set[str] = set(keys)
+    for case in cb:
+        new_keys = set(case.keys()) - keyset
+        if len(new_keys) > 0:
+            keys += list(new_keys)
+            keyset = keyset.union(new_keys)
+    if "index" in keys:
+        keys.remove("index")
+    with open(fname, "w") as out_file:
+        json.dump(cb, out_file)
+
         
 def first(seq : Sequence):
     return seq[0]
