@@ -35,10 +35,7 @@ class MedicalSimulator(MCSim):
         self.current_supplies: list[Supply] = self._init_state.supplies
         self.action_map = tiny_action_map
         self.simulator_name = simulator_name
-        # Elaborator code here
-        new_probe = deepcopy(probe)
-        elab = TA3Elaborator()
-        probe_constraints = elab.elaborate(scenario=None, probe=new_probe)
+        probe_constraints = probe.decisions
         # Ends here
         self.probe_constraints = probe_constraints
         self.has_constraints = True if self.probe_constraints is not None else False
@@ -78,6 +75,8 @@ class MedicalSimulator(MCSim):
             constrained_list = self.probe_constraints
             constrained_actions = [decision_to_medsimaction(x) for x in constrained_list]
             return constrained_actions
+
+        # should only be used for scenes created by knexus for testing
         casualties: list[Casualty] = state.casualties
         supplies: list[str] = supply_dict_to_list(state.supplies)
         actions: list[tuple] = get_possible_actions(casualties, supplies, state.aid_delay)
