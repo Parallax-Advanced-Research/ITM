@@ -64,6 +64,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.critic_random = random.Random(util.get_global_random_generator().random())
         self.current_critic = self.critic_random.choice(self.critics)
         self.reveal_kdma = args.reveal_kdma
+        self.estimate_with_discount = args.estimate_with_discount
         self.dir_name = "local/" + args.exp_name 
     
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
@@ -81,10 +82,12 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             for d in probe.decisions:
                 pred = self.get_xgboost_prediction(self.make_case(probe, d))
                 dist = abs(target - pred)
+                print(f"Decision: {d.value} Prediction: {pred} Distance: {dist}")
                 if dist < best_dist:
                     best_pred = pred
                     best_dist = dist
                     decision = d
+            print(f"Chosen Decision: {decision.value} Prediction: {best_pred}")
         elif self.selection_style == 'case-based':
             if self.reveal_kdma:
                 (decision, dist) = super().select(scenario, probe, self.current_critic.kdma_obj)
@@ -157,7 +160,12 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             error_col = 4
         else:
             error_col = 2
-        data = [dict(case) for case in self.approval_experiences]
+            
+        print (f"selection_style: {self.selection_style} error_col: {error_col}")
+        if self.estimate_with_discount:
+            data = [dict(case) for case in self.cb]
+        else:
+            data = [dict(case) for case in self.approval_experiences]
         experience_table, category_labels = make_approval_data_frame(data)
         experience_table = xgboost_train.drop_columns_by_patterns(experience_table, label=KDMA_NAME)
         experience_table = xgboost_train.drop_columns_if_all_unique(experience_table)
@@ -197,6 +205,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             print(f"Chosen weight count: {len(chosen_weights)}")
             for key in chosen_weights:
                 print(f"   {key}: {chosen_weights[key]:.2f}")
+        print(f"Observed error: {self.error:.3f}")
         return weights_array
             
         
@@ -217,7 +226,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         case_base_error = self.find_leave_one_out_error(weights, KDMA_NAME, cases = self.approval_experiences)
         old_find_error_time = time.time()
         old_error = data_processing.test_error(table, wt_array, KDMA_NAME)
-        print(f"Internal error: {case_base_error} xgboost error: {old_error}")
+        print(f"Internal error: {case_base_error:.3f} xgboost leave one out: {old_error:.3f} xgboost MSE: {error:.3f}")
         print(f"find_error_time: Old: {time.time() - old_find_error_time} New: {old_find_error_time - find_error_time}")
         
         return (len(weights), 
@@ -243,9 +252,10 @@ def get_test_seeker(cb_fname: str, entries = None) -> float:
     args.reveal_kdma = False
     args.exp_name = "default"
     args.kdmas = ["MoralDesert=1"]
+    args.estimate_with_discount = False
     seeker = OnlineApprovalSeeker(args)
     seeker.cb = read_case_base(cb_fname)
-    seeker.approval_experiences = [case for case in seeker.cb if integerish(case["approval"])]
+    seeker.approval_experiences = [case for case in seeker.cb if integerish(10 * case["approval"])]
     if entries is not None:
         seeker.approval_experiences = seeker.approval_experiences[:entries]
     return seeker
@@ -259,7 +269,7 @@ def test_file_error(cb_fname: str, weights_dict: dict[str, float], drop_discount
 
 def make_approval_data_frame(cb: list[dict[str, Any]], cols=None, drop_discounts = False, entries = None) -> (pandas.DataFrame, list[str]):
     if drop_discounts:
-        cb = [case for case in cb if integerish(case["approval"])]
+        cb = [case for case in cb if integerish(10 * case["approval"])]
     if entries is not None:
         cb = cb[:entries]
     cleaned_experiences, category_labels = data_processing.clean_data(dict(zip(range(len(cb)), cb)))
