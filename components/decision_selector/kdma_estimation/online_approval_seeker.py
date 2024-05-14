@@ -292,7 +292,8 @@ def test_frame_error_for_weights(table: pandas.DataFrame, weights_dict: dict[str
     assert(len(mod_table.columns) - len(weights_list) == 1)
     weights_arr = numpy.array(weights_list)
     return (len(weights_arr), weights_arr, 
-            data_processing.test_error(mod_table, weights_arr, KDMA_NAME),
+            # data_processing.test_error(mod_table, weights_arr, KDMA_NAME),
+            self.find_leave_one_out_error(weights_dict, KDMA_NAME, cases = self.approval_experiences),
             weights_dict)
     
 def integerish(value: float) -> bool:
