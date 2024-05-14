@@ -21,6 +21,7 @@ def main():
     parser.add_argument('--restart_entries', type=int, help="How many examples from the prior case base to use.", default=None)
     parser.add_argument('--restart_pid', type=int, help="PID to restart work from", default=None)
     parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
+    parser.add_argument('--estimate_with_discount', action=argparse.BooleanOptionalAction, default=False, help="Attempt to estimate discounted feedback as well as direct.")
     parser.add_argument('--exp_name', type=str, default="default", help="Name for experiment.")
     args = parser.parse_args()
     args.training = True
