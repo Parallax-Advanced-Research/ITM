@@ -180,7 +180,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         old_weights = self.weight_settings.get("standard_weights", None)
         if old_weights is not None and len(old_weights) > 0:
             weights_count, weights_arr, best_error, weights_dict = \
-                test_frame_error_for_weights(experience_table, old_weights)
+                self.find_weight_error(experience_table, old_weights)
             weights_array.append((weights_count, weights_arr, best_error, weights_dict, self.error, self.best_model))
             index = 1
             best_error_index = 1
@@ -210,7 +210,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             
         
     def collect_weights(self, table, category_labels):
-        find_weights_time = time.time()
+        # find_weights_time = time.time()
         if self.learning_style == 'regression':
             weights, error, model = xgboost_train.get_regression_feature_importance(table, KDMA_NAME, category_labels)
         else:
@@ -222,12 +222,13 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         cols = list(table.columns)
         cols.remove(KDMA_NAME)
         wt_array = numpy.array([weights.get(col,0.0) for col in cols])
-        find_error_time = time.time()
+        # find_error_time = time.time()
         case_base_error = self.find_leave_one_out_error(weights, KDMA_NAME, cases = self.approval_experiences)
-        old_find_error_time = time.time()
-        old_error = data_processing.test_error(table, wt_array, KDMA_NAME)
-        print(f"Internal error: {case_base_error:.3f} xgboost leave one out: {old_error:.3f} xgboost MSE: {error:.3f}")
-        print(f"find_error_time: Old: {time.time() - old_find_error_time} New: {old_find_error_time - find_error_time}")
+        # old_find_error_time = time.time()
+        # old_error = data_processing.test_error(table, wt_array, KDMA_NAME)
+        print(f"Internal error: {case_base_error:.3f} xgboost MSE: {error:.3f}")
+        # print(f"Internal error: {case_base_error:.3f} xgboost leave one out: {old_error:.3f} xgboost MSE: {error:.3f}")
+        # print(f"find_error_time: Old: {time.time() - old_find_error_time} New: {old_find_error_time - find_error_time}")
         
         return (len(weights), 
                 wt_array,
@@ -242,6 +243,21 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             if col not in case:
                 case[col] = None
         return self.best_model.predict(make_approval_data_frame([case], cols=columns)[0])[0]
+
+    def find_weight_error(self, table: pandas.DataFrame, weights_dict: dict[str, float]) -> float:
+        dropped_cols = [col for col in table.columns if col not in weights_dict]
+        dropped_cols.remove(KDMA_NAME)
+        mod_table = table.drop(columns=dropped_cols)
+        weights_list = [weights_dict.get(col, None) for col in mod_table.columns]
+        weights_list.remove(None) # Approval should not be in the dictionary.
+        assert(len(mod_table.columns) - len(weights_list) == 1)
+        weights_arr = numpy.array(weights_list)
+        return (len(weights_arr), weights_arr, 
+                # data_processing.test_error(mod_table, weights_arr, KDMA_NAME),
+                self.find_leave_one_out_error(weights_dict, KDMA_NAME, cases = self.approval_experiences),
+                weights_dict)
+    
+
         
 def get_test_seeker(cb_fname: str, entries = None) -> float:
     args = parse_default_arguments()
@@ -262,9 +278,9 @@ def get_test_seeker(cb_fname: str, entries = None) -> float:
     
         
 def test_file_error(cb_fname: str, weights_dict: dict[str, float], drop_discounts = False, entries = None) -> float:
-    cb = read_case_base(cb_fname)
-    table, _ = make_approval_data_frame(cb, drop_discounts=drop_discounts, entries=entries)
-    return test_frame_error_for_weights(table, weights_dict)
+    seeker = get_test_seeker(cb_fname)
+    table, _ = make_approval_data_frame(seeker.cb, drop_discounts=drop_discounts, entries=entries)
+    return seeker.find_weight_error(table, weights_dict)
 
 
 def make_approval_data_frame(cb: list[dict[str, Any]], cols=None, drop_discounts = False, entries = None) -> (pandas.DataFrame, list[str]):
@@ -283,19 +299,6 @@ def make_approval_data_frame(cb: list[dict[str, Any]], cols=None, drop_discounts
     return table, category_labels
 
 
-def test_frame_error_for_weights(table: pandas.DataFrame, weights_dict: dict[str, float]) -> float:
-    dropped_cols = [col for col in table.columns if col not in weights_dict]
-    dropped_cols.remove(KDMA_NAME)
-    mod_table = table.drop(columns=dropped_cols)
-    weights_list = [weights_dict.get(col, None) for col in mod_table.columns]
-    weights_list.remove(None) # Approval should not be in the dictionary.
-    assert(len(mod_table.columns) - len(weights_list) == 1)
-    weights_arr = numpy.array(weights_list)
-    return (len(weights_arr), weights_arr, 
-            # data_processing.test_error(mod_table, weights_arr, KDMA_NAME),
-            self.find_leave_one_out_error(weights_dict, KDMA_NAME, cases = self.approval_experiences),
-            weights_dict)
-    
 def integerish(value: float) -> bool:
     return -0.0001 < round(value) - value < 0.0001
         
