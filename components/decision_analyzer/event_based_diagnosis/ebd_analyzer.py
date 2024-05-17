@@ -1,3 +1,4 @@
+import tempfile
 import cl4py
 from cl4py import Symbol
 from cl4py import List as lst
@@ -20,13 +21,16 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
 
         #load hems and retain reference.
         self._hems = self._lisp.find_package("HEMS")
-        self.train(None)
+        self.load_model()
 
+    def load_model(self):
+        self._hems.load_eltm_from_file("components/decision_analyzer/event_based_diagnosis/eltm.txt")
+        
     def analyze(self, _: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
         analysis = {}
 
         for decision in probe.decisions:
-            cue = self.make_observation(probe.state, decision.value)
+            cue = self.make_observation_from_state (probe.state, decision.value)
             if cue is None:
                 continue
             (recollection, _) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, temporalp=False)
@@ -46,8 +50,28 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
         return analysis
-            
-    def make_observation(self, state: State, a: Action):
+    
+    def estimate_injuries(self, cue_bn):
+        (recollection, _) = self._hems.remember(self._hems.get_eltm(), cue_bn, Symbol('+', 'HEMS'), 1, True, temporalp=False)
+        injuries = dict()
+        for cpd in recollection:
+            if self._hems.rule_based_cpd_singleton_p(cpd) == True and self._hems.get_hash(0, self._hems.rule_based_cpd_concept_ids(cpd))[0] == "INJURY":
+                injury_name = self._hems.rule_based_cpd_dependent_var(cpd)
+                injury_id = self._hems.rule_based_cpd_dependent_id(cpd)
+                vvbm = self._hems.get_hash(0, self._hems.rule_based_cpd_var_value_block_map(cpd))[0]
+                if injury_name not in injuries:
+                    injuries[injury_name] = dict()
+                for rule in self._hems.rule_based_cpd_rules(cpd):
+                    injury_val_idx = self._hems.get_hash(injury_id, self._hems.rule_conditions(rule))[0]
+                    injury_val = self._hems._car(self._hems._car(vvbm[injury_val_idx]))
+                    injuries[injury_name][injury_val] = self._hems.rule_probability(rule)
+        return injuries
+
+    def make_observation(self, character):
+        with tempfile.NamedTemporaryFile() as fp:
+            return self._hems.compile_program_from_file(fp.name)
+    
+    def make_observation_from_state(self, state: State, a: Action):
         patient = a.params.get('casualty', None)
         if patient is None:
             return None
@@ -70,11 +94,10 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         # TODO: Needs to make use of new stuff the server gives us. q.v. bn_analyzer:make_observation()
         
         cue = self.get_cue_string(data)
-        
-        text_file = open("temp/cue.hems", "w")
-        text_file.write(cue)
-        text_file.close()
-        return self._hems.compile_program_from_file("temp/cue.hems")
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(bytes(cue, 'utf-8'))
+            fp.seek(0)
+            return self._hems.compile_program_from_file(fp.name)
         
     def get_hrpmin(self, c: Casualty) -> str | None:
         val = c.vitals.hrpmin
@@ -134,14 +157,3 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             if cas.id == name:
                 return cas
         return None
-    
-    def train(self, data):
-        bn1 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog1.hems", args=lst())
-        bn2 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog2.hems", args=lst())
-        bn3 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog3.hems", args=lst())
-        bn4 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog4.hems", args=lst())
-        bn5 = self._hems.compile_program_from_file("components/decision_analyzer/event_based_diagnosis/prog5.hems", args=lst())
-
-        for bn in [bn1, bn2, bn3, bn4, bn5]:
-            self._hems.py_push_to_ep_buffer(observation=bn, insertp=True, temporalp=False)
-
