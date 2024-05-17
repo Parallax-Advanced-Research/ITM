@@ -20,7 +20,20 @@ _default_drexel_case_file = os.path.join("data", "sept", "extended_case_base.csv
 
 class KDMAEstimationDecisionSelector(DecisionSelector):
     K = 4
-    def __init__(self, args):
+    
+    
+    def __init__(self, args = None):
+        self.use_drexel_format = False
+        self.cb = []
+        self.variant = "baseline"
+        self.index = 0
+        self.print_neighbors = True
+        self.weight_settings = {}
+        if args is not None:
+            self.initialize_with_args(args)
+        
+
+    def initialize_with_args(self, args):
         self.use_drexel_format = args.selector == 'kedsd'
         if args.casefile is None:
             if self.use_drexel_format:
@@ -40,19 +53,29 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 weight_filename = _default_weight_file
         else:
             weight_filename = args.weightfile
-
         if args.uniformweight or args.variant == 'baseline':
             self.weight_settings = {}
         else:
-            try:
-                with open(weight_filename, "r") as weight_file:
-                    self.weight_settings = json.loads(weight_file.read())
-            except:
-                util.logger.warn(
-                    f"Could not read from weight file: {weight_filename}; using default weights.")
-                self.weight_settings = {}
-        
-        
+            initialize_weights(weight_filename)
+
+
+    def initialize_weights(self, weight_filename):
+        try:
+            with open(weight_filename, "r") as weight_file:
+                self.weight_settings = json.loads(weight_file.read())
+        except:
+            util.logger.warn(
+                f"Could not read from weight file: {weight_filename}; using default weights.")
+            self.weight_settings = {}
+
+    def copy_from(self, other_selector):
+        self.use_drexel_format = other_selector.use_drexel_format
+        self.cb = other_selector.cb
+        self.variant = other_selector.variant
+        self.index = other_selector.index
+        self.print_neighbors = other_selector.print_neighbors
+        self.weight_settings = other_selector.weight_settings
+
 
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         if target is None:
@@ -73,9 +96,15 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             sqDist: float = 0.0
             
             default_weight = self.weight_settings.get("default", 1)
-            weights = {key: default_weight for key in cur_case.keys()}
-            weights = weights | self.weight_settings.get("standard_weights", {})
-            for act in {"treating", "tagging", "leaving", "questioning", "assessing"}:
+            if self.weight_settings.get("standard_weights", {}) == "basic":
+                weights = dict(BASIC_WEIGHTS)
+            elif self.weight_settings.get("standard_weights", {}) == "uniform": 
+                weights = {key: default_weight for key in cur_case.keys()}
+            else:
+                weights = {key: default_weight for key in cur_case.keys()}
+                weights = weights | self.weight_settings.get("standard_weights", {})
+            
+            for act in BASIC_TRIAGE_CASE_TYPES:
                 if cur_case[act]:
                     weights = weights | self.weight_settings.get("activity_weights", {}).get(act, {})
             if self.print_neighbors:
@@ -83,7 +112,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             for kdma in target.kdmas:
                 kdma_name = kdma.id_.lower()
                 weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
-                estimate = self.estimate_KDMA(cur_case, weights, kdma_name)
+                estimate = self.estimate_KDMA(cur_case, weights, kdma_name, print_neighbors = self.print_neighbors)
                 if estimate is None:
                     sqDist += 100
                     continue
@@ -138,12 +167,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             return math.inf
         return error_total / case_count
 
-    def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> float:
+    def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None, print_neighbors: bool = False) -> float:
         if cases is None:
             cases = self.cb
         if self.use_drexel_format:
             kdma = kdma + "-Ave"
-        topk = self.top_K(cur_case, weights, kdma, cases)
+        topk = self.top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors)
         if len(topk) == 0:
             return None
         total = sum([max(dist, 0.01) for (dist, case) in topk])
@@ -160,11 +189,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             divisor += total/max(dist, 0.01)
             cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
         kdma_val = kdma_total / divisor
-        if self.print_neighbors:
+        if print_neighbors:
             util.logger.info(f"kdma_val: {kdma_val}")
         return kdma_val
         
-    def top_K(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> list[dict[str, Any]]:
+    def top_K(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None, print_neighbors: bool = False) -> list[dict[str, Any]]:
         if cases is None:
             cases = self.cb
         lst = []
@@ -210,7 +239,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                                                                    local_compare))
             lst = [(calculate_distance(item, cur_case, weights, local_compare), item) for item in lst]
             
-        if self.print_neighbors:
+        if print_neighbors:
             util.logger.info(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
             util.logger.info(f"kdma: {kdma} weights: { {key:val for (key, val) in weights.items() if val != 0} }")
             for i in range(0, len(lst)):
@@ -246,7 +275,15 @@ def local_compare(val1: Any, val2: Any, feature: str):
     return compare(val1, val2, feature) 
 
 
-    
+BASIC_TRIAGE_CASE_FEATURES = [
+    "unvisited_count", "injured_count", "others_tagged_or_uninjured", "age", "tagged", "visited", 
+    "relationship", "rank", "conscious", "mental_status", "breathing", "hrpmin", "avpu", "intent",
+    "directness_of_causality", "aid_available", "environment_type"
+]
+
+BASIC_TRIAGE_CASE_TYPES = ["treating", "tagging", "leaving", "questioning", "assessing"]
+
+BASIC_WEIGHTS = {feature:1 for feature in BASIC_TRIAGE_CASE_FEATURES}
     
 def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     case = {}
