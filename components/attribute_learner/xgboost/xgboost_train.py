@@ -97,7 +97,24 @@ def get_classification_feature_importance(case_base, output_label, c):
     transfer = {k: v for k, v in enumerate(unique)}
     y = np.array([list(transfer.keys())[list(transfer.values()).index(v)] for v in y])
     xgb.fit(x, y)
+    xgb.predict_right = lambda X: numpy.dot(unique, xgb.predict_proba(X)[0])
     return xgb.get_booster().get_score(importance_type='gain'), mean_squared_error(y, xgb.predict(x)), xgb
+
+
+def get_mean_squared_error(xgb, weights_dict, case_base, output_label, c):
+    y = np.array(case_base[output_label].tolist())
+    unused = []
+    for col in case_base.columns:
+        if col not in weights_dict:
+            unused.append(col)
+    x = case_base.drop(columns = unused)
+    for col in x.columns:
+        if col in c:
+            x[col] = x[col].astype('category')
+    unique = sorted(list(set(y)))
+    transfer = {k: v for k, v in enumerate(unique)}
+    y = np.array([list(transfer.keys())[list(transfer.values()).index(v)] for v in y])
+    return mean_squared_error(y, xgb.predict(x))
 
 
 def save_weights(weights, columns, accuracy=-1, score_key="weights"):
