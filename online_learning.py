@@ -151,6 +151,8 @@ def make_row(mode, id, examples, seeker, execution_time, weight_training_time):
             "case_base_size": len(seeker.cb),
             "exec": execution_time,
             "weight_training": weight_training_time,
+            "uniform_error": seeker.uniform_error,
+            "basic_error": seeker.basic_error,
             "weights": str(seeker.weight_settings.get("standard_weights", "Uniform")).replace(",", ";")
            }
     # row = row | seeker.last_feedbacks[0]["kdmas"]
