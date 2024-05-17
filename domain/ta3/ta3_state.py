@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from domain.internal import State, Action
-
 # TODO: Needed to comment this out *twice*, because `type` is a built-in, and
 # specifically, `type: str` as a comment is the old way of declaring a type.
 # Was confusing mypy. Need to rename that.
@@ -124,6 +123,7 @@ class TA3State(State):
         stime = data['time'] if 'time' in data else 0
         cdatas = data['characters'] if 'characters' in data else []
         sdatas = data['supplies'] if 'supplies' in data else []
+        
         for c in cdatas:
             for ci in c['injuries']:
                 if 'treated' not in ci.keys():
@@ -134,7 +134,7 @@ class TA3State(State):
             actions_performed = data['actions_performed']
         if 'treatments' in data.keys():
             treatments = data['treatments']
-
+        
         casualties = [Casualty.from_ta3(c) for c in cdatas]
         supplies = [Supply(**s) for s in sdatas]
         ta3s = TA3State(unstr, stime, casualties, supplies, actions_performed, treatments)
