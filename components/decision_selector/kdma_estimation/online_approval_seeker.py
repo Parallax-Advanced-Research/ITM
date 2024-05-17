@@ -275,7 +275,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
 
 
         # Lots of columns are useless at first, drop them all
-        zero_columns = [k for (k, v) in weight_error_hist[-1]["weights"]].items() if v == 0]
+        zero_columns = [k for (k, v) in weight_error_hist[-1]["weights"].items() if v == 0]
         experience_table = experience_table.drop(columns=zero_columns)
         
         if len(experience_table.columns) <= 1 or KDMA_NAME not in experience_table.columns:

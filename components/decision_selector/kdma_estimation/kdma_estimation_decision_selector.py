@@ -56,7 +56,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if args.uniformweight or args.variant == 'baseline':
             self.weight_settings = {}
         else:
-            initialize_weights(weight_filename)
+            self.initialize_weights(weight_filename)
 
 
     def initialize_weights(self, weight_filename):
