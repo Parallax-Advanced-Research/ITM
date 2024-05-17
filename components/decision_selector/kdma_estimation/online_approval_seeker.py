@@ -1,4 +1,4 @@
-from .kdma_estimation_decision_selector import KDMAEstimationDecisionSelector
+from .kdma_estimation_decision_selector import KDMAEstimationDecisionSelector, BASIC_WEIGHTS
 from .case_base_functions import write_case_base, read_case_base
 from components import AlignmentTrainer
 from domain.internal import AlignmentFeedback, Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State
@@ -7,11 +7,13 @@ import util
 import os
 import time
 import random
+import math
 
 from components.attribute_learner.xgboost import xgboost_train, data_processing
 import pandas, numpy
 
 from scripts.shared import parse_default_arguments
+import argparse
 
 KDMA_NAME = "approval"
 
@@ -38,34 +40,108 @@ class Critic:
         else:
             return -2, best_action
 
+
+class WeightQueue:
+    feature_dict: dict[str, dict]
+    
+    def __init__(self, weight_dict: dict[str, float]):
+        self.feature_dict = {k: {"weight": v, "removals": 0, "size_removed": 10000} for (k, v) in weight_dict.items()}
+    
+    def reinforce_feature(self, feature: str):
+        self.feature_dict[feature]["removals"] += 1
+        self.feature_dict[feature]["size_removed"] = len(self.feature_dict)
+    
+    def remove_feature(self, feature: str):
+        self.feature_dict.pop(feature)
+    
+    def top_feature(self):
+        cur_size = len(self.feature_dict)
+        min_removals = 10000
+        min_weight = 10000
+        best_feature = None
+        for (feature, info) in self.feature_dict.items():
+            if info["size_removed"] == cur_size:
+                continue
+            if info["removals"] > min_removals:
+                continue
+            if info["removals"] < min_removals:
+                best_feature = feature
+                min_removals = info["removals"]
+                min_weight = info["weight"]
+            elif info["weight"] < min_weight:
+                best_feature = feature
+                min_weight = info["weight"]
+        return best_feature
+
+
 class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
-    def __init__(self, args):
+    def __init__(self, args = None):
         super().__init__(args)
         self.kdma_obj: KDMAs = KDMAs([KDMA(id_=KDMA_NAME, value=1)])
         self.cb = []
         self.experiences: list[dict] = []
         self.approval_experiences: list[dict] = []
         self.last_feedbacks = []
-        if len(args.kdmas) != 1:
-            raise Error("Expected exactly one KDMA.")
-        self.arg_name = args.kdmas[0].replace("-", "=").split("=")[0]
-        self.critics = [Critic("Alex", 1, self.arg_name), 
-                        Critic("Brie", 0.5, self.arg_name), 
-                        Critic("Chad", 0, self.arg_name)]
-        if args.critic is not None:
-            self.critics = [c for c in self.critics if c.name == args.critic]
-        self.train_weights = args.train_weights
         self.error = 10000
-        self.selection_style = args.selection_style
-        self.learning_style = args.learning_style
+        self.uniform_error = 10000
+        self.basic_error = 10000
         self.best_model = None
         # This sub random will be unaffected by other calls to the global, but still based on the 
         # same global random seed, and therefore repeatable.
         self.critic_random = random.Random(util.get_global_random_generator().random())
-        self.current_critic = self.critic_random.choice(self.critics)
+        self.train_weights = True
+        self.selection_style = "case-based"
+        self.learning_style = "classification"
+        self.reveal_kdma = False
+        self.estimate_with_discount = False
+        self.dir_name = "local/default"
+        self.arg_name = ""
+        if args is not None: 
+            self.init_with_args(args)
+        else:
+            self.initialize_critics()
+        
+    def init_with_args(self, args):
+        if len(args.kdmas) != 1:
+            raise Error("Expected exactly one KDMA.")
+        self.arg_name = args.kdmas[0].replace("-", "=").split("=")[0]
+        self.initialize_critics()
+        if args.critic is not None:
+            self.critics = [c for c in self.critics if c.name == args.critic]
+        self.train_weights = args.train_weights
+        self.selection_style = args.selection_style
+        self.learning_style = args.learning_style
         self.reveal_kdma = args.reveal_kdma
         self.estimate_with_discount = args.estimate_with_discount
         self.dir_name = "local/" + args.exp_name 
+        
+    def initialize_critics(self):
+        self.critics = [Critic("Alex", 1, self.arg_name), 
+                        Critic("Brie", 0.5, self.arg_name), 
+                        Critic("Chad", 0, self.arg_name)]
+        self.current_critic = self.critic_random.choice(self.critics)
+    
+    def copy_from(self, other_seeker):
+        super().copy_from(other_seeker)
+        self.cb = other_seeker.cb
+        self.experiences = other_seeker.experiences
+        self.approval_experiences = other_seeker.approval_experiences
+        self.last_feedbacks = other_seeker.last_feedbacks
+        self.arg_name = other_seeker.arg_name
+        self.critics = other_seeker.critics
+        self.train_weights = other_seeker.train_weights
+        self.error = other_seeker.error
+        self.uniform_error = other_seeker.uniform_error
+        self.basic_error = other_seeker.basic_error
+        self.selection_style = other_seeker.selection_style
+        self.learning_style = other_seeker.learning_style
+        self.best_model = other_seeker.best_model
+        self.critic_random = other_seeker.critic_random
+        self.current_critic = other_seeker.current_critic
+        self.reveal_kdma = other_seeker.reveal_kdma
+        self.estimate_with_discount = other_seeker.estimate_with_discount
+        self.dir_name = other_seeker.dir_name
+    
     
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
         if len(self.experiences) == 0 and self.is_training:
@@ -88,6 +164,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                     best_dist = dist
                     decision = d
             print(f"Chosen Decision: {decision.value} Prediction: {best_pred}")
+            breakpoint()
         elif self.selection_style == 'case-based':
             if self.reveal_kdma:
                 (decision, dist) = super().select(scenario, probe, self.current_critic.kdma_obj)
@@ -156,61 +233,148 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.current_critic = critic
     
     def weight_train(self):
-        if self.selection_style == 'xgboost':
-            error_col = 4
-        else:
-            error_col = 2
-            
-        print (f"selection_style: {self.selection_style} error_col: {error_col}")
         if self.estimate_with_discount:
             data = [dict(case) for case in self.cb]
         else:
             data = [dict(case) for case in self.approval_experiences]
+
         experience_table, category_labels = make_approval_data_frame(data)
+        
+        # create weight_error_hist with uniform weights
+        weight_error_hist = [self.make_weight_error_record({feature: 1 for feature in experience_table.columns}, data)]
+        best_error, best_error_index = self.update_error(weight_error_hist, None, 0)
+        weight_error_hist[-1]["weights"] = "uniform" # simplified reporting
+        self.uniform_error = weight_error_hist[-1]["kdma_estimation_error"]
+
+        # add basic (non-analytics) weights to weight_error_hist
+        weight_error_hist.append(self.make_weight_error_record(BASIC_WEIGHTS, data))
+        best_error, best_error_index = self.update_error(weight_error_hist, best_error, best_error_index)
+        weight_error_hist[-1]["weights"] = "basic" # simplified reporting
+        self.basic_error = weight_error_hist[-1]["kdma_estimation_error"]
+
+        # add last weights tried to weight_error_hist
+        weights_dict = self.weight_settings.get("standard_weights", None)
+        if weights_dict is not None and type(weights_dict) != str and len(weights_dict) > 0:
+            weight_error_hist.append(self.make_weight_error_record(weights_dict, data))
+            if self.best_model is not None:
+                weight_error_hist[-1]["model"] = self.best_model
+                weight_error_hist[-1]["xgboost_mse"] = xgboost_train.get_mean_squared_error(self.best_model, weights_dict, experience_table, KDMA_NAME, category_labels)
+            best_error, best_error_index = self.update_error(weight_error_hist, best_error, best_error_index)
+
+        # drop columns from table that we don't use, and those that are uninformative (all data the same)
         experience_table = xgboost_train.drop_columns_by_patterns(experience_table, label=KDMA_NAME)
         experience_table = xgboost_train.drop_columns_if_all_unique(experience_table)
         if len(experience_table.columns) <= 1 or KDMA_NAME not in experience_table.columns:
             print("Insufficient data to train weights.")
-            return
-        weights_array = []
-        weights_array.append(self.collect_weights(experience_table, category_labels))
-        best_error_index = 0
-        best_error = 10000
-        index = 0
-        old_weights = self.weight_settings.get("standard_weights", None)
-        if old_weights is not None and len(old_weights) > 0:
-            weights_count, weights_arr, best_error, weights_dict = \
-                self.find_weight_error(experience_table, old_weights)
-            weights_array.append((weights_count, weights_arr, best_error, weights_dict, self.error, self.best_model))
-            index = 1
-            best_error_index = 1
-        experience_table = xgboost_train.drop_zero_weights(experience_table, weights_array[0][1], KDMA_NAME)
-        while len(experience_table.columns) > 1:
-            index = index + 1
-            weights_array.append(self.collect_weights(experience_table, category_labels))
-            experience_table = data_processing.trim_one_weight(experience_table, weights_array[index][1], KDMA_NAME)
-            if weights_array[index][error_col] < best_error:
-                best_error = weights_array[index][error_col]
-                best_error_index = index
-            elif weights_array[index][error_col] < best_error * 1.01 \
-                 and weights_array[index][0] < weights_array[best_error_index][0]:
-                best_error_index = index
-        self.error = weights_array[best_error_index][error_col]
-        if best_error_index > 0:
-            self.weight_settings = {"standard_weights": weights_array[best_error_index][3], 
-                                    "default": 0
-                                   }
-            chosen_weights = weights_array[best_error_index][3]
-            self.best_model = weights_array[best_error_index][5]
+            return self.finish_weight_training(weight_error_hist, best_error, best_error_index)
+
+
+        # If the table is useful, get the first set of importance weights, collect its error
+        weight_error_hist.append(self.collect_table_weight_error(experience_table, category_labels))
+        best_error, best_error_index = self.update_error(weight_error_hist, best_error, best_error_index)
+
+
+        # Lots of columns are useless at first, drop them all
+        zero_columns = [k for (k, v) in weight_error_hist[-1]["weights"]].items() if v == 0]
+        experience_table = experience_table.drop(columns=zero_columns)
+        
+        if len(experience_table.columns) <= 1 or KDMA_NAME not in experience_table.columns:
+            print("Insufficient data to train weights.")
+            return self.finish_weight_training(weight_error_hist, best_error, best_error_index)
+
+        weight_error_hist.append(self.collect_table_weight_error(experience_table, category_labels))
+        best_error, best_error_index = self.update_error(weight_error_hist, best_error, best_error_index)
+        
+        queue = WeightQueue(weight_error_hist[-1]["weights"])
+        feature_to_remove = queue.top_feature()
+        last_error = self.get_last_error(weight_error_hist)
+        
+        # Iteratively collect error data and drop another column, until the class column is all that's left.
+        while feature_to_remove is not None:
+            new_experience_table = experience_table.drop(columns=[feature_to_remove])
+            print(f"Testing removal of feature {feature_to_remove}.")
+
+            # Record error and weights for modified feature set
+            weight_error_hist.append(self.collect_table_weight_error(new_experience_table, category_labels))
+            best_error, best_error_index = self.update_error(weight_error_hist, best_error, best_error_index)
+
+            if self.weight_search_regressing(weight_error_hist, last_error):
+                # Make this feature harder to remove
+                queue.reinforce_feature(feature_to_remove)
+                print(f"Weights regressed, {feature_to_remove} stays.")
+            else:
+                last_error = self.get_last_error(weight_error_hist)
+                # Permanently remove the feature
+                experience_table = new_experience_table
+                queue.remove_feature(feature_to_remove)
+                print(f"Permanently removing {feature_to_remove}.")
+
+            # Pick a feature to try removing
+            feature_to_remove = queue.top_feature()
+
+        return self.finish_weight_training(weight_error_hist, best_error, best_error_index)
+        
+    def finish_weight_training(self, weight_error_hist, best_error, best_error_index):
+        # Modify the weights to use in future calls to select
+        self.weight_settings = {"standard_weights": weight_error_hist[best_error_index]["weights"], 
+                                "default": 0
+                               }
+
+        # Record the best model found for calls to select in xgboost mode
+        self.best_model = weight_error_hist[best_error_index].get("model", None)
+
+        # Report out the error for the selected weights
+        self.error = best_error
+
+        # Print out the weights and observed error found
+        chosen_weights = weight_error_hist[best_error_index]["weights"]
+        if type(chosen_weights) == str:
+            print(f"Chosen weights: {chosen_weights}")
+        else:
             print(f"Chosen weight count: {len(chosen_weights)}")
             for key in chosen_weights:
                 print(f"   {key}: {chosen_weights[key]:.2f}")
         print(f"Observed error: {self.error:.3f}")
-        return weights_array
-            
+        return weight_error_hist
+    
         
-    def collect_weights(self, table, category_labels):
-        # find_weights_time = time.time()
+    def weight_search_regressing(self, weight_error_hist, prior_error):
+        last_error = self.get_last_error(weight_error_hist)
+        if last_error > prior_error * 1.01:
+            return True
+        return False
+        
+
+    def get_error_type(self):
+        if self.selection_style == 'xgboost':
+            return "xgboost_mse"
+        else:
+            return "kdma_estimation_error"
+        
+    def get_last_error(self, weight_error_hist):
+        return weight_error_hist[-1].get(self.get_error_type(), None)
+    
+
+    def make_weight_error_record(self, weights_dict, cases):
+        return {"kdma_estimation_error": 
+                    self.find_leave_one_out_error(weights_dict, KDMA_NAME, cases = cases), 
+                "weights": weights_dict}
+            
+            
+    def update_error(self, weight_error_hist, best_error, best_error_index):
+        new_error = self.get_last_error(weight_error_hist)
+        new_index = len(weight_error_hist) - 1
+        if best_error is None or math.isnan(best_error):
+            return new_error, new_index
+        if new_error < best_error:
+            return new_error, new_index
+        if new_error < best_error * 1.01 \
+             and len(weight_error_hist[-1]["weights"]) < len(weight_error_hist[best_error_index]["weights"]):
+            return best_error, new_index
+        return best_error, best_error_index
+    
+        
+    def collect_table_weight_error(self, table, category_labels):
         if self.learning_style == 'regression':
             weights, error, model = xgboost_train.get_regression_feature_importance(table, KDMA_NAME, category_labels)
         else:
@@ -218,45 +382,21 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         print(f"Weights, count {len(weights)}:")
         for (k,v) in weights.items():
             print(f"   {k}: {v:.2f}")
-        # print(f"find_weights_time: {time.time() - find_weights_time}")
-        cols = list(table.columns)
-        cols.remove(KDMA_NAME)
-        wt_array = numpy.array([weights.get(col,0.0) for col in cols])
-        # find_error_time = time.time()
         case_base_error = self.find_leave_one_out_error(weights, KDMA_NAME, cases = self.approval_experiences)
-        # old_find_error_time = time.time()
-        # old_error = data_processing.test_error(table, wt_array, KDMA_NAME)
         print(f"Internal error: {case_base_error:.3f} xgboost MSE: {error:.3f}")
-        # print(f"Internal error: {case_base_error:.3f} xgboost leave one out: {old_error:.3f} xgboost MSE: {error:.3f}")
-        # print(f"find_error_time: Old: {time.time() - old_find_error_time} New: {old_find_error_time - find_error_time}")
         
-        return (len(weights), 
-                wt_array,
-                case_base_error,
-                weights,
-                error,
-                model)
-                
+        return {"kdma_estimation_error": case_base_error,
+                "weights": weights,
+                "xgboost_mse": error,
+                "model": model}
+    
     def get_xgboost_prediction(self, case: dict[str, Any]):
         columns = self.best_model.get_booster().feature_names
         for col in columns:
             if col not in case:
                 case[col] = None
-        return self.best_model.predict(make_approval_data_frame([case], cols=columns)[0])[0]
+        return self.best_model.predict_right(make_approval_data_frame([case], cols=columns)[0])
 
-    def find_weight_error(self, table: pandas.DataFrame, weights_dict: dict[str, float]) -> float:
-        dropped_cols = [col for col in table.columns if col not in weights_dict]
-        dropped_cols.remove(KDMA_NAME)
-        mod_table = table.drop(columns=dropped_cols)
-        weights_list = [weights_dict.get(col, None) for col in mod_table.columns]
-        weights_list.remove(None) # Approval should not be in the dictionary.
-        assert(len(mod_table.columns) - len(weights_list) == 1)
-        weights_arr = numpy.array(weights_list)
-        return (len(weights_arr), weights_arr, 
-                # data_processing.test_error(mod_table, weights_arr, KDMA_NAME),
-                self.find_leave_one_out_error(weights_dict, KDMA_NAME, cases = self.approval_experiences),
-                weights_dict)
-    
 
         
 def get_test_seeker(cb_fname: str, entries = None) -> float:
@@ -276,6 +416,10 @@ def get_test_seeker(cb_fname: str, entries = None) -> float:
         seeker.approval_experiences = seeker.approval_experiences[:entries]
     return seeker
     
+def copy_seeker(old_seeker: OnlineApprovalSeeker) -> float:
+    seeker = OnlineApprovalSeeker()
+    seeker.copy_from(old_seeker)
+    return seeker
         
 def test_file_error(cb_fname: str, weights_dict: dict[str, float], drop_discounts = False, entries = None) -> float:
     seeker = get_test_seeker(cb_fname)
