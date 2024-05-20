@@ -328,7 +328,7 @@ class XGBEstimator(ErrorEstimator):
         self.experience_data = experience_table.drop(columns=[KDMA_NAME])
         if learning_style == 'classification':
             self.unique_values = sorted(list(set(self.response_array)))
-            self.category_array = numpy.array([unique_values.index(val) for val in self.response_array])
+            self.category_array = numpy.array([self.unique_values.index(val) for val in self.response_array])
 
     def estimate(self, weights: dict[str, float]) -> dict[str, Any]:
         if self.experience_data is None:
@@ -402,11 +402,14 @@ class WeightTrainer:
         estimate_dict = xgb_estimator.estimate(uniform_weights)
 
         # Lots of columns are useless at first, drop them all
-        last_weights = {k:v for (k, v) in estimate_dict["weights"].items() if v != 0}
+        if len(estimate_dict["weights"]) > 0:
+            last_weights = {k:v for (k, v) in estimate_dict["weights"].items() if v != 0}
+        else:
+            last_weights = uniform_weights
         
-        if len(last_weights) == 0:
-            print("Insufficient data to train weights.")
-            return
+        # if len(last_weights) == 0:
+            # print("Insufficient data to train weights.")
+            # return
 
         self.add_to_history(self.error_estimator.estimate(last_weights))
         
