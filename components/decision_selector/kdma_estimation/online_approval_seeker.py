@@ -225,7 +225,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.is_training = True
         
     def start_testing(self):
-        if self.train_weights:
+        if self.train_weights and len(self.approval_experiences) > 0:
             self.weight_train()
         self.is_training = False
         
@@ -302,6 +302,8 @@ class XGBEstimator(ErrorEstimator):
     unique_values: list
     
     def __init__(self, cases: list[dict[str, Any]], learning_style = 'classification'):
+        if len(cases) == 0:
+            raise Error("Cannot create estimator without cases.")
         experience_table = make_approval_data_frame(cases)
         self.response_array = numpy.array(experience_table[KDMA_NAME].tolist())
 
