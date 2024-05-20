@@ -225,7 +225,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.is_training = True
         
     def start_testing(self):
-        if self.train_weights and len(self.approval_experiences) > 0:
+        if self.train_weights:
             self.weight_train()
         self.is_training = False
         
@@ -237,6 +237,10 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             cases = [dict(case) for case in self.cb]
         else:
             cases = [dict(case) for case in self.approval_experiences]
+        
+        # Can't estimate error with less than two examples, don't bother.
+        if len(cases) < 2:
+            return
         
         if self.selection_style == 'xgboost':
             error_estimator = XGBEstimator(cases, self.learning_style)
