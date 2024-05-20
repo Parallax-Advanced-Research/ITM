@@ -76,41 +76,19 @@ def xgboost_weights(case_base, output_label, c):
     weights = np.array(weights)
     return weights
 
-def get_regression_feature_importance(case_base, output_label, c):
-    y = np.array(case_base[output_label].tolist())
-    x = case_base.drop(output_label, axis=1)
-    for col in x.columns:
-        if col in c:
-            x[col] = x[col].astype('category')
+def get_regression_feature_importance(x, y):
     xgb = xgboost.XGBRegressor(enable_categorical=True, n_jobs=1)
     xgb.fit(x, y)
     return xgb.get_booster().get_score(importance_type='gain'), mean_squared_error(y, xgb.predict(x)), xgb
 
-def get_classification_feature_importance(case_base, output_label, c):
-    y = np.array(case_base[output_label].tolist())
-    x = case_base.drop(output_label, axis=1)
-    for col in x.columns:
-        if col in c:
-            x[col] = x[col].astype('category')
+def get_classification_feature_importance(x, y):
     xgb = XGBClassifier(enable_categorical=True, n_jobs=1)
-    unique = sorted(list(set(y)))
-    transfer = {k: v for k, v in enumerate(unique)}
-    y = np.array([list(transfer.keys())[list(transfer.values()).index(v)] for v in y])
     xgb.fit(x, y)
-    xgb.predict_right = lambda X: numpy.dot(unique, xgb.predict_proba(X)[0])
     return xgb.get_booster().get_score(importance_type='gain'), mean_squared_error(y, xgb.predict(x)), xgb
 
 
-def get_mean_squared_error(xgb, weights_dict, case_base, output_label, c):
+def get_mean_squared_error(xgb, weights_dict, case_base, output_label):
     y = np.array(case_base[output_label].tolist())
-    unused = []
-    for col in case_base.columns:
-        if col not in weights_dict:
-            unused.append(col)
-    x = case_base.drop(columns = unused)
-    for col in x.columns:
-        if col in c:
-            x[col] = x[col].astype('category')
     unique = sorted(list(set(y)))
     transfer = {k: v for k, v in enumerate(unique)}
     y = np.array([list(transfer.keys())[list(transfer.values()).index(v)] for v in y])
