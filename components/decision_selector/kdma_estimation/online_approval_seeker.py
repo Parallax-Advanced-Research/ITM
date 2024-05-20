@@ -299,28 +299,36 @@ class XGBEstimator(ErrorEstimator):
     response_array: numpy.array
     category_array: numpy.array
     learning_style: str
+    all_columns: list
     unique_values: list
     
     def __init__(self, cases: list[dict[str, Any]], learning_style = 'classification'):
         if len(cases) == 0:
             raise Error("Cannot create estimator without cases.")
+        self.learning_style = learning_style
         experience_table = make_approval_data_frame(cases)
         self.response_array = numpy.array(experience_table[KDMA_NAME].tolist())
+        self.all_columns = [col for col in experience_table.columns]
+        self.all_columns.remove(KDMA_NAME)
 
         # drop columns from table that we don't use, and those that are uninformative (all data the same)
         experience_table = xgboost_train.drop_columns_by_patterns(experience_table, label=KDMA_NAME)
         experience_table = xgboost_train.drop_columns_if_all_unique(experience_table)
         if len(experience_table.columns) <= 1 or KDMA_NAME not in experience_table.columns:
             print("Insufficient data to train weights.")
+            self.experience_data = None
+            self.category_array = None
+            self.unique_values = []
             return
 
         self.experience_data = experience_table.drop(columns=[KDMA_NAME])
-        self.learning_style = learning_style
         if learning_style == 'classification':
             self.unique_values = sorted(list(set(self.response_array)))
             self.category_array = numpy.array([unique_values.index(val) for val in self.response_array])
 
     def estimate(self, weights: dict[str, float]) -> dict[str, Any]:
+        if self.experience_data is None:
+            return {"weights": {}, "error": 10000}
         X = self.get_subtable(weights)
         if self.learning_style == 'regression':
             weights, error, model = xgboost_train.get_regression_feature_importance(X, self.response_array)
@@ -372,7 +380,7 @@ class WeightTrainer:
         self.weight_error_hist = []
         
         xgb_estimator = XGBEstimator(data)
-        uniform_weights = {feature: 1 for feature in xgb_estimator.experience_data.columns}
+        uniform_weights = {feature: 1 for feature in xgb_estimator.all_columns}
         
         # create weight_error_hist with uniform weights
         self.add_to_history(self.error_estimator.estimate(uniform_weights))
