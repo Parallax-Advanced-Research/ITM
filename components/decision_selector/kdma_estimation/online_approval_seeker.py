@@ -507,12 +507,13 @@ def test_file_error(cb_fname: str, weights_dict: dict[str, float], drop_discount
     return seeker.find_weight_error(table, weights_dict)
 
 
-def make_approval_data_frame(cb: list[dict[str, Any]], cols=None, drop_discounts = False, entries = None) -> pandas.DataFrame:
+def make_approval_data_frame(cases: list[dict[str, Any]], cols=None, drop_discounts = False, entries = None) -> pandas.DataFrame:
+    cases = [dict(case) for case in cases]
     if drop_discounts:
-        cb = [case for case in cb if integerish(10 * case["approval"])]
+        cases = [case for case in cases if integerish(10 * case["approval"])]
     if entries is not None:
-        cb = cb[:entries]
-    cleaned_experiences, category_labels = data_processing.clean_data(dict(zip(range(len(cb)), cb)))
+        cases = cases[:entries]
+    cleaned_experiences, category_labels = data_processing.clean_data(dict(zip(range(len(cases)), cases)))
     table = pandas.DataFrame.from_dict(cleaned_experiences, orient='index')
     if cols is not None:
         table = pandas.DataFrame(data=table, columns=cols)
