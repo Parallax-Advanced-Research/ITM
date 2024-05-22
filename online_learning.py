@@ -85,20 +85,21 @@ def main():
             # seeker.cb = [case for case in seeker.cb if case["index"] < last_index]
     args.selector_object = seeker
 
-    fnames = glob.glob(f".deprepos/itm-evaluation-server/swagger_server/itm/data/online/scenarios/online-{args.session_type}*.yaml")
-    if len(fnames) == 0:
-        print("No online scenarios found.")
-        sys.exit(-1)
-    scenario_ids = [f"{args.session_type}-{i}" for i in range(1, len(fnames) + 1)]
     test_scenario_ids = None
     if args.exp_file is not None:
         props = {}
         with open(args.exp_file, "r") as expfile:
             props = json.loads(expfile.read())
-        train_scenario_ids = util.get_global_random_generator().shuffle(props["train"])
+        train_scenario_ids = props["train"]
         test_scenario_ids = props["test"]
+        util.get_global_random_generator().shuffle(train_scenario_ids)
     
     if test_scenario_ids is None:
+        fnames = glob.glob(f".deprepos/itm-evaluation-server/swagger_server/itm/data/online/scenarios/online-{args.session_type}*.yaml")
+        if len(fnames) == 0:
+            print("No online scenarios found.")
+            sys.exit(-1)
+        scenario_ids = [f"{args.session_type}-{i}" for i in range(1, len(fnames) + 1)]
         util.get_global_random_generator().shuffle(scenario_ids)
         test_scenario_ids = scenario_ids[:10]
         train_scenario_ids = scenario_ids[10:]
