@@ -11,6 +11,7 @@ import util
 import os
 import sys
 import time
+import json
 
 def main():
     parser = get_default_parser()
@@ -23,6 +24,7 @@ def main():
     parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
     parser.add_argument('--estimate_with_discount', action=argparse.BooleanOptionalAction, default=False, help="Attempt to estimate discounted feedback as well as direct.")
     parser.add_argument('--exp_name', type=str, default="default", help="Name for experiment.")
+    parser.add_argument('--exp_file', type=str, default="default", help="File detailing training, testing scenarios.")
     args = parser.parse_args()
     args.training = True
     args.keds = False
@@ -88,9 +90,20 @@ def main():
         print("No online scenarios found.")
         sys.exit(-1)
     scenario_ids = [f"{args.session_type}-{i}" for i in range(1, len(fnames) + 1)]
-    util.get_global_random_generator().shuffle(scenario_ids)
-    test_scenario_ids = scenario_ids[:10]
-    train_scenario_ids = scenario_ids[10:]
+    test_scenario_ids = None
+    if args.exp_file is not None:
+        props = {}
+        with open(args.exp_file, "r") as expfile:
+            props = json.loads(expfile.read())
+        train_scenario_ids = util.get_global_random_generator().shuffle(props["train"])
+        test_scenario_ids = props["test"]
+    
+    if test_scenario_ids is None:
+        util.get_global_random_generator().shuffle(scenario_ids)
+        test_scenario_ids = scenario_ids[:10]
+        train_scenario_ids = scenario_ids[10:]
+
+        
     # if args.restart_entries is not None:
         # train_scenario_ids = train_scenario_ids[len(seeker.approval_experiences):]
     
@@ -118,7 +131,7 @@ def main():
     do_output(args, results)
 
 def do_output(args, results):
-    write_case_base(f"local/{args.exp_name}/online_results-{args.pid}.csv", results, vars(args))
+    write_case_base(f"local/{args.exp_name}/online_results-{args.seed}.csv", results, vars(args))
 
 def do_testing(test_scenario_ids, args, driver, seeker, results, examples):
     for test_id in test_scenario_ids:
