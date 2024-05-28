@@ -397,6 +397,13 @@ class XGBModeller(CaseModeller):
 
     def refresh_model(self, fields: set[str]):
         X = self.get_subtable(fields)
+        if len(X.columns) < 1:
+            self.last_error = 10000
+            self.last_weights = {}
+            self.last_model = None
+            self.last_fields = set()
+            return
+            
         if self.learning_style == 'regression':
             self.last_weights, self.last_error, self.last_model = \
                 xgboost_train.get_regression_feature_importance(X, self.response_array)
