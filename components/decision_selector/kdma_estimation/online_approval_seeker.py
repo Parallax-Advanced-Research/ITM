@@ -295,7 +295,7 @@ class CaseModeller:
     def __init__(self):
         pass
         
-    def get_all_fields() -> list[str]:
+    def get_all_fields(self) -> list[str]:
         raise Error()
 
     def adjust(self, weights: dict[str, float]):
@@ -311,12 +311,16 @@ class CaseModeller:
 class KEDSModeller(CaseModeller):
     keds: KDMAEstimationDecisionSelector
     cases: list[dict[str, Any]]
+    last_error: float
+    last_weights: dict[str, float]
 
     def __init__(self, keds: KDMAEstimationDecisionSelector, cases: list[dict[str, Any]]):
         self.keds = keds
         self.cases = cases
+        self.last_error = None
+        self.last_weights = None
 
-    def get_all_fields() -> list[str]:
+    def get_all_fields(self) -> list[str]:
         return list(self.cases[0].keys())
         
     def adjust(self, weights: dict[str, float]):
@@ -325,7 +329,7 @@ class KEDSModeller(CaseModeller):
 
     def estimate_error(self) -> float:
         if self.last_error is None:
-            self.last_error = self.keds.find_leave_one_out_error(weights, KDMA_NAME, cases = self.cases)
+            self.last_error = self.keds.find_leave_one_out_error(self.last_weights, KDMA_NAME, cases = self.cases)
         return self.last_error
     
     def get_state(self) -> dict[str, Any]:
@@ -371,7 +375,7 @@ class XGBModeller(CaseModeller):
             self.unique_values = sorted(list(set(self.response_array)))
             self.category_array = numpy.array([self.unique_values.index(val) for val in self.response_array])
 
-    def get_all_fields() -> list[str]:
+    def get_all_fields(self) -> list[str]:
         return list(self.all_columns)
 
     def adjust(self, weights: dict[str, float]):
@@ -381,7 +385,7 @@ class XGBModeller(CaseModeller):
             self.last_model = None
             self.last_fields = set()
         fields = set(weights.keys())
-        if set_not_equal(fields, self.last_fields):
+        if fields != self.last_fields:
             self.refresh_model(fields)
         
     def estimate_error(self) -> float:
@@ -398,7 +402,7 @@ class XGBModeller(CaseModeller):
         else:
             self.last_weights, self.last_error, self.last_model = \
                 xgboost_train.get_classification_feature_importance(X, self.category_array)
-            model.predict_right = lambda X: numpy.dot(self.unique_values, model.predict_proba(X)[0])
+            self.last_model.predict_right = lambda X: numpy.dot(self.unique_values, model.predict_proba(X)[0])
         self.last_fields = set(fields)
     
     def get_subtable(self, fields: set[str]):
@@ -414,14 +418,14 @@ class KEDSWithXGBModeller(CaseModeller):
 
     def __init__(self, keds: KDMAEstimationDecisionSelector, cases: list[dict[str, Any]], learning_style = 'classification'):
         self.kedsM = KEDSModeller(keds, cases)
-        self.xgb = XGBModeller(cases, learning_style)
+        self.xgbM = XGBModeller(cases, learning_style)
 
-    def get_all_fields() -> list[str]:
+    def get_all_fields(self) -> list[str]:
         return self.xgbM.get_all_fields()
         
     def adjust(self, weights: dict[str, float]):
         self.xgbM.adjust(weights)
-        self.kedsM.adjust(xgbM.last_weights)
+        self.kedsM.adjust(self.xgbM.last_weights)
 
     def estimate_error(self) -> float:
         return self.kedsM.estimate_error()
@@ -473,11 +477,11 @@ class WeightTrainer:
         self.weight_error_hist[-1]["weights"] = "basic" # simplified reporting
         
         # create weight_error_hist with uniform weights
-        uniform_weights = {feature: 1 for feature in modeller.get_all_fields()}
+        uniform_weights = {feature: 1 for feature in self.modeller.get_all_fields()}
         self.add_to_history(uniform_weights)
         self.weight_error_hist[-1]["weights"] = "uniform" # simplified reporting
 
-        last_weights = self.get_last_weights()
+        last_weights = self.modeller.get_state()["weights"]
         queue = WeightQueue(last_weights)
         feature_to_remove = queue.top_feature()
         last_error = self.get_last_error()
@@ -531,7 +535,7 @@ class WeightTrainer:
 
     def add_to_history(self, weights: dict[str, float]):
         self.modeller.adjust(weights)
-        self.weight_error_hist.append(modeller.get_state())
+        self.weight_error_hist.append(self.modeller.get_state())
         self.update_error()
             
     def update_error(self):
