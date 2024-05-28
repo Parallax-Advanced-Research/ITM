@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
     parser.add_argument('--estimate_with_discount', action=argparse.BooleanOptionalAction, default=False, help="Attempt to estimate discounted feedback as well as direct.")
     parser.add_argument('--exp_name', type=str, default="default", help="Name for experiment.")
-    parser.add_argument('--exp_file', type=str, default="default", help="File detailing training, testing scenarios.")
+    parser.add_argument('--exp_file', type=str, default=None, help="File detailing training, testing scenarios.")
     args = parser.parse_args()
     args.training = True
     args.keds = False
