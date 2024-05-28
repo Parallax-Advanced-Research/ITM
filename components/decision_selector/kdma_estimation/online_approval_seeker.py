@@ -53,6 +53,14 @@ class WeightQueue:
     
     def remove_feature(self, feature: str):
         self.feature_dict.pop(feature)
+        
+    def update_queue(self, weight_dict: dict[str, float]):
+        new_dict = {}
+        for k, v in self.feature_dict.items():
+            if k in weight_dict:
+                new_dict[k] = v
+                v["weight"] = weight_dict[k]
+        self.feature_dict = new_dict
     
     def top_feature(self):
         cur_size = len(self.feature_dict)
@@ -205,7 +213,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             for memory in self.experiences:
                 memory["index"] = len(self.cb)
                 self.cb.append(memory)
-            write_case_base(f"{self.dir_name}/online_experiences-{os.getpid()}.csv", self.cb)
+            write_case_base(f"{self.dir_name}/online_experiences-{util.get_global_random_seed()}.csv", self.cb)
 
         self.experiences = []
         self.last_feedbacks = []
@@ -243,26 +251,27 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             return
         
         if self.selection_style == 'xgboost':
-            error_estimator = XGBEstimator(cases, self.learning_style)
+            modeller = XGBModeller(cases, self.learning_style)
         else:
-            error_estimator = KEDSEstimator(self, cases)
+            modeller = KEDSWithXGBModeller(self, cases, self.learning_style)
         
-        trainer = WeightTrainer(error_estimator)
+        trainer = WeightTrainer(modeller)
         trainer.weight_train(cases, self.weight_settings.get("standard_weights", None))
 
         # Modify the weights to use in future calls to select
         best_weights = trainer.get_best_weights()
-        self.weight_settings = {"standard_weights": best_weights, 
-                                "default": 0
-                               }
+        if len(best_weights) > 0:
+            self.weight_settings = {"standard_weights": best_weights, 
+                                    "default": 0
+                                   }
 
-        # Record the best model found for calls to select in xgboost mode
-        self.best_model = trainer.get_best_model()
+            # Record the best model found for calls to select in xgboost mode
+            self.best_model = trainer.get_best_model()
 
-        # Report out the error for the selected weights
-        self.error = trainer.get_best_error()
-        self.basic_error = trainer.get_basic_error()
-        self.uniform_error = trainer.get_uniform_error()
+            # Report out the error for the selected weights
+            self.error = trainer.get_best_error()
+            self.basic_error = trainer.get_basic_error()
+            self.uniform_error = trainer.get_uniform_error()
 
         # Print out the weights and observed error found
         if type(best_weights) == str:
@@ -279,14 +288,27 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         for col in columns:
             if col not in case:
                 case[col] = None
-        return self.best_model.predict_right(make_approval_data_frame([case], cols=columns)[0])
+        return self.best_model.predict_right(make_approval_data_frame([case], cols=columns))
         
         
-class ErrorEstimator:
-    def estimate(self, weights: dict[str, float]) -> dict[str, Any]:
-        return {}
+class CaseModeller:
+    def __init__(self):
+        pass
+        
+    def get_all_fields() -> list[str]:
+        raise Error()
 
-class KEDSEstimator(ErrorEstimator):
+    def adjust(self, weights: dict[str, float]):
+        raise Error()
+
+    def estimate_error(self) -> float:
+        raise Error()
+    
+    def get_state(self) -> dict[str, Any]:
+        raise Error()
+
+
+class KEDSModeller(CaseModeller):
     keds: KDMAEstimationDecisionSelector
     cases: list[dict[str, Any]]
 
@@ -294,26 +316,45 @@ class KEDSEstimator(ErrorEstimator):
         self.keds = keds
         self.cases = cases
 
-    def estimate(self, weights: dict[str, float]) -> dict[str, Any]:
-        error = self.keds.find_leave_one_out_error(weights, KDMA_NAME, cases = self.cases)
-        return {"weights": weights, "error": error}
+    def get_all_fields() -> list[str]:
+        return list(self.cases[0].keys())
+        
+    def adjust(self, weights: dict[str, float]):
+        self.last_weights = weights
+        self.last_error = None
 
-class XGBEstimator(ErrorEstimator):
+    def estimate_error(self) -> float:
+        if self.last_error is None:
+            self.last_error = self.keds.find_leave_one_out_error(weights, KDMA_NAME, cases = self.cases)
+        return self.last_error
+    
+    def get_state(self) -> dict[str, Any]:
+        return {"weights": self.last_weights, "error": self.estimate_error()}
+
+class XGBModeller(CaseModeller):
     experience_data: pandas.DataFrame
     response_array: numpy.array
     category_array: numpy.array
     learning_style: str
     all_columns: list
     unique_values: list
+    last_fields: set[str]
+    last_weights: dict[str, float]
+    last_error: float
     
     def __init__(self, cases: list[dict[str, Any]], learning_style = 'classification'):
         if len(cases) == 0:
-            raise Error("Cannot create estimator without cases.")
+            raise Error("Cannot create modeller without cases.")
         self.learning_style = learning_style
         experience_table = make_approval_data_frame(cases)
+        experience_table = experience_table.drop(columns=["index"])
         self.response_array = numpy.array(experience_table[KDMA_NAME].tolist())
         self.all_columns = [col for col in experience_table.columns]
         self.all_columns.remove(KDMA_NAME)
+        self.last_fields = set()
+        self.last_weights = dict()
+        self.last_error = math.nan
+        self.last_model = None
 
         # drop columns from table that we don't use, and those that are uninformative (all data the same)
         experience_table = xgboost_train.drop_columns_by_patterns(experience_table, label=KDMA_NAME)
@@ -330,37 +371,77 @@ class XGBEstimator(ErrorEstimator):
             self.unique_values = sorted(list(set(self.response_array)))
             self.category_array = numpy.array([self.unique_values.index(val) for val in self.response_array])
 
-    def estimate(self, weights: dict[str, float]) -> dict[str, Any]:
-        if self.experience_data is None:
-            return {"weights": {}, "error": 10000}
-        X = self.get_subtable(weights)
-        if self.learning_style == 'regression':
-            weights, error, model = xgboost_train.get_regression_feature_importance(X, self.response_array)
-        else:
-            weights, error, model = xgboost_train.get_classification_feature_importance(X, self.category_array)
-            model.predict_right = lambda X: numpy.dot(self.unique_values, xgb.predict_proba(X)[0])
-        self.last_model = model
-        return {"weights": weights, "error": error, "model": model}
+    def get_all_fields() -> list[str]:
+        return list(self.all_columns)
 
-    def get_subtable(self, weights: dict[str, Any]):
+    def adjust(self, weights: dict[str, float]):
+        if self.experience_data is None or len(weights) == 0:
+            self.last_error = 10000
+            self.last_weights = {}
+            self.last_model = None
+            self.last_fields = set()
+        fields = set(weights.keys())
+        if set_not_equal(fields, self.last_fields):
+            self.refresh_model(fields)
+        
+    def estimate_error(self) -> float:
+        return self.last_error
+
+    def get_state(self) -> dict[str, Any]:
+        return {"weights": self.last_weights, "error": self.last_error, "model": self.last_model}
+
+    def refresh_model(self, fields: set[str]):
+        X = self.get_subtable(fields)
+        if self.learning_style == 'regression':
+            self.last_weights, self.last_error, self.last_model = \
+                xgboost_train.get_regression_feature_importance(X, self.response_array)
+        else:
+            self.last_weights, self.last_error, self.last_model = \
+                xgboost_train.get_classification_feature_importance(X, self.category_array)
+            model.predict_right = lambda X: numpy.dot(self.unique_values, model.predict_proba(X)[0])
+        self.last_fields = set(fields)
+    
+    def get_subtable(self, fields: set[str]):
         unused = []
         for col in self.experience_data.columns:
-            if col not in weights:
+            if col not in fields:
                 unused.append(col)
         return self.experience_data.drop(columns = unused)
+
+class KEDSWithXGBModeller(CaseModeller):
+    kedsM: KEDSModeller
+    xgbM: XGBModeller
+
+    def __init__(self, keds: KDMAEstimationDecisionSelector, cases: list[dict[str, Any]], learning_style = 'classification'):
+        self.kedsM = KEDSModeller(keds, cases)
+        self.xgb = XGBModeller(cases, learning_style)
+
+    def get_all_fields() -> list[str]:
+        return self.xgbM.get_all_fields()
+        
+    def adjust(self, weights: dict[str, float]):
+        self.xgbM.adjust(weights)
+        self.kedsM.adjust(xgbM.last_weights)
+
+    def estimate_error(self) -> float:
+        return self.kedsM.estimate_error()
+    
+    def get_state(self) -> dict[str, Any]:
+        return self.kedsM.get_state()
+        
         
 class WeightTrainer:
     weight_error_hist: list[dict[str, Any]]
     best_error_index: int
     best_error: float
-    error_estimator: Callable[[list[dict[str, Any]]], float]
+    modeller: CaseModeller
     
     
-    def __init__(self, error_estimator):
+    def __init__(self, modeller):
         self.weight_error_hist = []
         self.best_error_index = None
         self.best_error = None
-        self.error_estimator = error_estimator
+        self.modeller = modeller
 
     def get_history(self):
         return self.weight_error_hist
@@ -383,36 +464,20 @@ class WeightTrainer:
     def weight_train(self, data: list[dict[str, Any]], last_weights: dict[str, float]):
         self.weight_error_hist = []
         
-        xgb_estimator = XGBEstimator(data)
-        uniform_weights = {feature: 1 for feature in xgb_estimator.all_columns}
-        
-        # create weight_error_hist with uniform weights
-        self.add_to_history(self.error_estimator.estimate(uniform_weights))
-        self.weight_error_hist[-1]["weights"] = "uniform" # simplified reporting
-
-        # add basic (non-analytics) weights to weight_error_hist
-        self.add_to_history(self.error_estimator.estimate(BASIC_WEIGHTS))
-        self.weight_error_hist[-1]["weights"] = "basic" # simplified reporting
-
         # add last weights tried to weight_error_hist
         if last_weights is not None and type(last_weights) != str and len(last_weights) > 0:
-            self.add_to_history(self.error_estimator.estimate(last_weights))
+            self.add_to_history(last_weights)
 
-        # If the table is useful, get the first set of importance weights, collect its error
-        estimate_dict = xgb_estimator.estimate(uniform_weights)
-
-        # Lots of columns are useless at first, drop them all
-        if len(estimate_dict["weights"]) > 0:
-            last_weights = {k:v for (k, v) in estimate_dict["weights"].items() if v != 0}
-        else:
-            last_weights = uniform_weights
+        # add basic (non-analytics) weights to weight_error_hist
+        self.add_to_history(BASIC_WEIGHTS)
+        self.weight_error_hist[-1]["weights"] = "basic" # simplified reporting
         
-        # if len(last_weights) == 0:
-            # print("Insufficient data to train weights.")
-            # return
+        # create weight_error_hist with uniform weights
+        uniform_weights = {feature: 1 for feature in modeller.get_all_fields()}
+        self.add_to_history(uniform_weights)
+        self.weight_error_hist[-1]["weights"] = "uniform" # simplified reporting
 
-        self.add_to_history(self.error_estimator.estimate(last_weights))
-        
+        last_weights = self.get_last_weights()
         queue = WeightQueue(last_weights)
         feature_to_remove = queue.top_feature()
         last_error = self.get_last_error()
@@ -422,11 +487,15 @@ class WeightTrainer:
             new_weights = dict(last_weights)
             new_weights.pop(feature_to_remove)
             print(f"Testing removal of feature {feature_to_remove}.")
+            weights_modified = False
 
             # Record error and weights for modified feature set
-            self.add_to_history(self.error_estimator.estimate(new_weights))
+            self.add_to_history(new_weights)
+            if new_weights != self.get_last_weights():
+                weights_modified = True
+                new_weights = self.get_last_weights()
 
-            print(f"Last error: {last_error:0.2f} New error: {self.get_last_error():0.2f}")
+            print(f"Last error: {last_error:0.2f} New error: {self.get_last_error():0.2f} New weight count: {len(new_weights)}")
             
             if self.weight_search_regressing(last_error):
                 # Make this feature harder to remove
@@ -436,8 +505,12 @@ class WeightTrainer:
                 last_error = self.get_last_error()
                 # Permanently remove the feature
                 last_weights = new_weights
-                queue.remove_feature(feature_to_remove)
                 print(f"Permanently removing {feature_to_remove}.")
+                if weights_modified:
+                    queue.update_queue(new_weights)
+                else:
+                    queue.remove_feature(feature_to_remove)
+                    #TODO Try re-weighting
 
             # Pick a feature to try removing
             feature_to_remove = queue.top_feature()
@@ -456,8 +529,9 @@ class WeightTrainer:
     def get_last_weights(self):
         return self.weight_error_hist[-1].get("weights", None)
 
-    def add_to_history(self, entry: dict[str, Any]):
-        self.weight_error_hist.append(entry)
+    def add_to_history(self, weights: dict[str, float]):
+        self.modeller.adjust(weights)
+        self.weight_error_hist.append(modeller.get_state())
         self.update_error()
             
     def update_error(self):
