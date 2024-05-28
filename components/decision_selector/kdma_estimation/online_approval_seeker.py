@@ -384,6 +384,7 @@ class XGBModeller(CaseModeller):
             self.last_weights = {}
             self.last_model = None
             self.last_fields = set()
+            return
         fields = set(weights.keys())
         if fields != self.last_fields:
             self.refresh_model(fields)
