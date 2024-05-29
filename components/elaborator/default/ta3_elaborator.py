@@ -1,3 +1,5 @@
+import json
+
 from domain.ta3 import TA3State, Casualty, TagCategory, Supply
 from domain.internal import Decision, Action, Scenario, TADProbe
 from components import Elaborator
@@ -5,6 +7,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Actions
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from typing import Any
+import os
 
 from domain.enum import ActionTypeEnum, SupplyTypeEnum, InjuryTypeEnum, InjuryLocationEnum, \
                         InjuryStatusEnum, ParamEnum, MentalStatusEnum, BreathingLevelEnum, \
@@ -14,6 +17,9 @@ from domain.enum import ActionTypeEnum, SupplyTypeEnum, InjuryTypeEnum, InjuryLo
 SPECIAL_SUPPLIES = [SupplyTypeEnum.IV_BAG, SupplyTypeEnum.BLOOD, SupplyTypeEnum.PAIN_MEDICATIONS]
 
 class TA3Elaborator(Elaborator):
+
+    def __init__(self, elab_to_json: bool):
+        self.elab_to_json = elab_to_json
 
     def elaborate(self, scenario: Scenario, probe: TADProbe) -> list[Decision[Action]]:
         d: Decision[Action]
@@ -78,9 +84,29 @@ class TA3Elaborator(Elaborator):
             breakpoint()
         final_list = remove_too_frequent_actions(probe, final_list)
         probe.decisions = final_list
+        if self.elab_to_json:
+            self._export_elab_to_json(final_list, scenario.id_)
         return final_list
 
-        
+    def _export_elab_to_json(self, final_list, scen_name):
+        file_name = os.path.join('data', 'elab_output', f'{scen_name}.json')
+        if os.path.exists(file_name):
+            # doing this check as elaborator is called many times per scene, this way the first time ran is the only
+            #  one saved
+            return
+        action_dict = []
+        for decision in final_list:
+            action = decision.value.name
+            casualty = decision.value.params.get('casualty', None)
+            location = decision.value.params.get('location', None)
+            supply = decision.value.params.get('treatment', None)
+            act_json = {'action': action, 'casualty': casualty, 'treatment': supply, 'location': location}
+            action_dict.append(act_json)
+
+        total_dict = {'Actions': action_dict}
+
+        with open(file_name, 'w') as out:
+            json.dump(total_dict, out)
 
     def _add_evac_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
         if probe.environment['decision_environment']['aid_delay'] == None:
