@@ -17,8 +17,9 @@ def main():
     parser = get_default_parser()
     parser.add_argument('--critic', type=str, help="Critic to learn on", default=None, choices=["Alex", "Brie", "Chad"])
     parser.add_argument('--train_weights', action=argparse.BooleanOptionalAction, default=False, help="Train weights online.")
-    parser.add_argument('--learning_style', type=str, help="Classification/regression/...", default="classification", choices=["classification", "regression"])
     parser.add_argument('--selection_style', type=str, help="xgboost/case-based", default="case-based", choices=["case-based", "xgboost", "random"])
+    parser.add_argument('--search_style', type=str, help="Choices are xgboost/greedy/drop_only; applies if selection_style == case-based only", default="xgboost", choices=["greedy", "xgboost", "drop_only"])
+    parser.add_argument('--learning_style', type=str, help="Choices are classification and regression; applies if selection_style == xgboost or search_style == xgboost", default="classification", choices=["classification", "regression"])
     parser.add_argument('--restart_entries', type=int, help="How many examples from the prior case base to use.", default=None)
     parser.add_argument('--restart_pid', type=int, help="PID to restart work from", default=None)
     parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
@@ -167,6 +168,7 @@ def make_row(mode, id, examples, seeker, execution_time, weight_training_time):
             "weight_training": weight_training_time,
             "uniform_error": seeker.uniform_error,
             "basic_error": seeker.basic_error,
+            "weight_source": seeker.weight_source,
             "weights": str(seeker.weight_settings.get("standard_weights", "Uniform")).replace(",", ";")
            }
     # row = row | seeker.last_feedbacks[0]["kdmas"]

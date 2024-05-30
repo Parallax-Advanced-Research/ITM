@@ -1,4 +1,4 @@
-from .kdma_estimation_decision_selector import KDMAEstimationDecisionSelector, BASIC_WEIGHTS
+from .kdma_estimation_decision_selector import KDMAEstimationDecisionSelector, BASIC_WEIGHTS, BASIC_TRIAGE_CASE_TYPES
 from .case_base_functions import write_case_base, read_case_base
 from components import AlignmentTrainer
 from domain.internal import AlignmentFeedback, Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State
@@ -94,16 +94,20 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.uniform_error = 10000
         self.basic_error = 10000
         self.best_model = None
+        self.weight_source = None
         # This sub random will be unaffected by other calls to the global, but still based on the 
         # same global random seed, and therefore repeatable.
         self.critic_random = random.Random(util.get_global_random_generator().random())
         self.train_weights = True
         self.selection_style = "case-based"
         self.learning_style = "classification"
+        self.search_style = "xgboost"
         self.reveal_kdma = False
         self.estimate_with_discount = False
         self.dir_name = "local/default"
         self.arg_name = ""
+        self.all_fields = set()
+
         if args is not None: 
             self.init_with_args(args)
         else:
@@ -119,6 +123,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.train_weights = args.train_weights
         self.selection_style = args.selection_style
         self.learning_style = args.learning_style
+        self.search_style = args.search_style
         self.reveal_kdma = args.reveal_kdma
         self.estimate_with_discount = args.estimate_with_discount
         self.dir_name = "local/" + args.exp_name 
@@ -143,12 +148,14 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.basic_error = other_seeker.basic_error
         self.selection_style = other_seeker.selection_style
         self.learning_style = other_seeker.learning_style
+        self.search_style = other_seeker.search_style
         self.best_model = other_seeker.best_model
         self.critic_random = other_seeker.critic_random
         self.current_critic = other_seeker.current_critic
         self.reveal_kdma = other_seeker.reveal_kdma
         self.estimate_with_discount = other_seeker.estimate_with_discount
         self.dir_name = other_seeker.dir_name
+        self.all_fields = all_fields
     
     
     def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
@@ -182,7 +189,9 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             (decision, dist) = (util.get_global_random_generator().choice(probe.decisions), 1)
 
         if self.is_training and self.selection_style != 'random':
-            self.experiences.append(self.make_case(probe, decision))
+            cur_case = self.make_case(probe, decision)
+            self.experiences.append(cur_case)
+            self.add_fields(cur_case.keys())
 
         if decision.kdmas is None or decision.kdmas.kdma_map is None:
             return (decision, dist)
@@ -218,6 +227,12 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.experiences = []
         self.last_feedbacks = []
         return decision, dist
+        
+    def add_fields(self, case_fields: list[str]):
+        self.all_fields = self.all_fields | set(case_fields) - set(BASIC_TRIAGE_CASE_TYPES)
+        self.all_fields = self.all_fields - {"index", KDMA_NAME}
+        self.all_fields = {field for field in self.all_fields if not field.startswith("NOND")}
+        
 
     def make_case(self, probe: TADProbe, d: Decision) -> dict[str, Any]:
         case = super().make_case(probe, d)
@@ -249,13 +264,17 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         # Can't estimate error with less than two examples, don't bother.
         if len(cases) < 2:
             return
+            
         
         if self.selection_style == 'xgboost':
-            modeller = XGBModeller(cases, self.learning_style)
-        else:
-            modeller = KEDSWithXGBModeller(self, cases, self.learning_style)
+            trainer = WeightTrainer(XGBModeller(cases, self.learning_style), self.all_fields)
+        elif self.search_style == 'xgboost':
+            trainer = WeightTrainer(KEDSWithXGBModeller(self, cases, self.learning_style), self.all_fields)
+        elif self.search_style == 'drop_only':
+            trainer = WeightTrainer(KEDSModeller(self, cases), self.all_fields)
+        elif self.search_style == 'greedy':
+            trainer = SimpleWeightTrainer(KEDSModeller(self, cases), self.all_fields)
         
-        trainer = WeightTrainer(modeller)
         trainer.weight_train(cases, self.weight_settings.get("standard_weights", None))
 
         # Modify the weights to use in future calls to select
@@ -272,6 +291,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             self.error = trainer.get_best_error()
             self.basic_error = trainer.get_basic_error()
             self.uniform_error = trainer.get_uniform_error()
+            self.weight_source = trainer.get_best_source()
 
         # Print out the weights and observed error found
         if type(best_weights) == str:
@@ -295,9 +315,6 @@ class CaseModeller:
     def __init__(self):
         pass
         
-    def get_all_fields(self) -> list[str]:
-        raise Error()
-
     def adjust(self, weights: dict[str, float]):
         raise Error()
 
@@ -320,9 +337,6 @@ class KEDSModeller(CaseModeller):
         self.last_error = None
         self.last_weights = None
 
-    def get_all_fields(self) -> list[str]:
-        return list(self.cases[0].keys())
-        
     def adjust(self, weights: dict[str, float]):
         self.last_weights = weights
         self.last_error = None
@@ -375,9 +389,6 @@ class XGBModeller(CaseModeller):
             self.unique_values = sorted(list(set(self.response_array)))
             self.category_array = numpy.array([self.unique_values.index(val) for val in self.response_array])
 
-    def get_all_fields(self) -> list[str]:
-        return list(self.all_columns)
-
     def adjust(self, weights: dict[str, float]):
         if self.experience_data is None or len(weights) == 0:
             self.last_error = 10000
@@ -428,9 +439,6 @@ class KEDSWithXGBModeller(CaseModeller):
         self.kedsM = KEDSModeller(keds, cases)
         self.xgbM = XGBModeller(cases, learning_style)
 
-    def get_all_fields(self) -> list[str]:
-        return self.xgbM.get_all_fields()
-        
     def adjust(self, weights: dict[str, float]):
         self.xgbM.adjust(weights)
         self.kedsM.adjust(self.xgbM.last_weights)
@@ -449,45 +457,54 @@ class WeightTrainer:
     modeller: CaseModeller
     
     
-    def __init__(self, modeller):
+    def __init__(self, modeller, fields):
         self.weight_error_hist = []
         self.best_error_index = None
         self.best_error = None
         self.modeller = modeller
+        self.fields = fields
 
     def get_history(self):
         return self.weight_error_hist
         
     def get_best_weights(self):
-        return self.weight_error_hist[self.best_error_index]["weights"]
+        best_record = self.weight_error_hist[self.best_error_index]
+        return best_record.get("name", best_record["weights"])
     
+    def get_best_source(self):
+        return self.weight_error_hist[self.best_error_index]["source"]
+
     def get_best_model(self):
         return self.weight_error_hist[self.best_error_index].get("model", None)
 
     def get_best_error(self):
         return self.weight_error_hist[self.best_error_index]["error"]
         
+    def find_error(self, name: str):
+        for record in self.weight_error_hist:
+            if record.get("name", None) == name:
+                return record["error"]
+        raise Exception()
+        
     def get_uniform_error(self): 
-        return self.weight_error_hist[0]["error"]
+        return self.find_error("uniform")
 
     def get_basic_error(self): 
-        return self.weight_error_hist[1]["error"]
+        return self.find_error("basic")
 
     def weight_train(self, data: list[dict[str, Any]], last_weights: dict[str, float]):
         self.weight_error_hist = []
         
         # add last weights tried to weight_error_hist
         if last_weights is not None and type(last_weights) != str and len(last_weights) > 0:
-            self.add_to_history(last_weights)
+            self.add_to_history(last_weights, source = "last")
 
         # add basic (non-analytics) weights to weight_error_hist
-        self.add_to_history(BASIC_WEIGHTS)
-        self.weight_error_hist[-1]["weights"] = "basic" # simplified reporting
+        self.add_to_history(BASIC_WEIGHTS, name = "basic", source = "standard")
         
         # create weight_error_hist with uniform weights
-        uniform_weights = {feature: 1 for feature in self.modeller.get_all_fields()}
-        self.add_to_history(uniform_weights)
-        self.weight_error_hist[-1]["weights"] = "uniform" # simplified reporting
+        uniform_weights = {feature: 1 for feature in self.fields}
+        self.add_to_history(uniform_weights, name = "uniform", source = "standard") # simplified reporting
 
         last_weights = self.modeller.get_state()["weights"]
         queue = WeightQueue(last_weights)
@@ -502,7 +519,7 @@ class WeightTrainer:
             weights_modified = False
 
             # Record error and weights for modified feature set
-            self.add_to_history(new_weights)
+            self.add_to_history(new_weights, source = "feature drop search")
             if new_weights != self.get_last_weights():
                 weights_modified = True
                 new_weights = self.get_last_weights()
@@ -541,9 +558,12 @@ class WeightTrainer:
     def get_last_weights(self):
         return self.weight_error_hist[-1].get("weights", None)
 
-    def add_to_history(self, weights: dict[str, float]):
+    def add_to_history(self, weights: dict[str, float], name: str = None, source: str = ""):
         self.modeller.adjust(weights)
         self.weight_error_hist.append(self.modeller.get_state())
+        if name is not None:
+            self.weight_error_hist[-1]["name"] = name
+        self.weight_error_hist[-1]["source"] = source
         self.update_error()
             
     def update_error(self):
@@ -564,6 +584,44 @@ class WeightTrainer:
         return (error + .000001) * 1.01
 
 
+class SimpleWeightTrainer(WeightTrainer):
+    fields: list[str]
+    
+    def __init__(self, modeller, fields):
+        super().__init__(modeller, fields)
+    
+    def weight_train(self, data: list[dict[str, Any]], last_weights: dict[str, float]):
+        self.weight_error_hist = []
+        
+        self.add_to_history(BASIC_WEIGHTS, name = "basic", source = "standard")
+        uniform_weights = {feature: 1 for feature in self.fields}
+        self.add_to_history(uniform_weights, name = "uniform", source = "standard")
+
+        if last_weights is not None and type(last_weights) != str and len(last_weights) > 0 and len(last_weights) < 20:
+            self.add_to_history(last_weights, source = "last")
+            for i in range(10):
+                self.add_to_history(
+                    greedy_weight_space_search_prob(
+                        last_weights, self.modeller, self.fields)["weights"], 
+                    source = "derived last")
+
+        xgbM = XGBModeller(data)
+        xgbM.adjust(uniform_weights)
+        xgbW = xgbM.get_state()["weights"]
+        self.add_to_history(xgbW, source = "xgboost uniform")
+        if len(xgbW) < 20:
+            for i in range(10):
+                record = greedy_weight_space_search_prob(xgbW, self.modeller, self.fields)
+                self.add_to_history(record["weights"], source = "derived xgboost uniform")
+
+        for i in range(10):
+            record = greedy_weight_space_search_prob(BASIC_WEIGHTS, self.modeller, self.fields)
+            self.add_to_history(record["weights"], source = "derived basic")
+
+        for i in range(10):
+            record = greedy_weight_space_search_prob({}, self.modeller, self.fields)
+            self.add_to_history(record["weights"], source = "derived empty")
+            
         
 def get_test_seeker(cb_fname: str, entries = None) -> float:
     args = parse_default_arguments()
@@ -571,12 +629,15 @@ def get_test_seeker(cb_fname: str, entries = None) -> float:
     args.train_weights = True
     args.selection_style = "case-based"
     args.learning_style = "classification"
+    args.search_style = "xgboost"
     args.reveal_kdma = False
     args.exp_name = "default"
     args.kdmas = ["MoralDesert=1"]
     args.estimate_with_discount = False
     seeker = OnlineApprovalSeeker(args)
     seeker.cb = read_case_base(cb_fname)
+    for case in seeker.cb:
+        seeker.add_fields(case.keys())
     seeker.approval_experiences = [case for case in seeker.cb if integerish(10 * case["approval"])]
     if entries is not None:
         seeker.approval_experiences = seeker.approval_experiences[:entries]
@@ -617,4 +678,149 @@ def get_ddist(decision: Decision, arg_name: str, target: float) -> float:
     if decision.kdmas is None or decision.kdmas.kdma_map is None:
         return 10000
     return abs(target - list(decision.kdmas.kdma_map.values())[0])
+    
+def weight_space_extend(weight_dict: dict[str, float], fields: list[str] = []) -> list[dict[str, float]]:
+    node_list = []
+    for (feature, weight) in weight_dict.items():
+        node_list.append(dict(weight_dict))
+        node_list[-1][feature] = weight * 2
+        node_list[-1]["change"] = "doubled"
+        node_list[-1]["feature"] = feature
+        node_list.append(dict(weight_dict))
+        node_list[-1][feature] = weight * 0.5
+        node_list[-1]["change"] = "halved"
+        node_list[-1]["feature"] = feature
+        node_list.append(dict(weight_dict))
+        node_list[-1].pop(feature)
+        node_list[-1]["change"] = "removed"
+        node_list[-1]["feature"] = feature
+    for field in fields:
+        if field not in weight_dict:
+            node_list.append(dict(weight_dict))
+            node_list[-1][field] = 1
+            node_list[-1]["change"] = "added"
+            node_list[-1]["feature"] = field
+            
+        
+    return node_list
+
+def greedy_weight_space_search(weight_dict: dict[str, float], estimate_error: Callable[[dict[str, float]], float]) -> dict[str, float]:
+    best_weights = weight_dict
+    best_error = estimate_error(best_weights)
+    error_has_improved = True
+    while error_has_improved:
+        choices = []
+        error_has_improved = False
+        node_list = weight_space_extend(best_weights)
+        start = time.process_time()
+        for node in node_list:
+            change = node.pop("change")
+            feature_changed = node.pop("feature")
+            new_error = estimate_error(node)
+            if new_error < best_error:
+                error_has_improved = True
+                best_error = new_error
+                best_weights = node
+            choices.append((new_error, change + " " + feature_changed))
+        duration = time.process_time() - start
+        choices.sort()
+        print("Choices:")
+        for n in range(5):
+            print(choices[n])
+        print(f"New best error: {best_error:.3f}, {len(best_weights)} weights, {duration:.4f} secs")
+    return best_weights, best_error
+
+
+def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: CaseModeller, fields = []) -> dict[str, float]:
+    return greedy_weight_space_search_prob_c(
+        weight_dict, 
+        lambda w: modeller.adjust(w) or modeller.estimate_error(),
+        fields
+    )
+
+
+def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_error: Callable[[dict[str, float]], float], fields = []) -> dict[str, float]:
+    fields = list(fields)
+    prior_weights = weight_dict
+    prior_error = estimate_error(prior_weights)
+    if math.isnan(prior_error) or math.isinf(prior_error):
+        prior_error = 1
+    prior_choice = "Beginning"
+    total_wheel = 1
+    past_choices = []
+    while total_wheel > .0001:
+        total_wheel = 0
+        choices = []
+        error_has_improved = False
+        node_list = weight_space_extend(prior_weights, fields)
+        start = time.process_time()
+        for node in node_list:
+            change = node.pop("change")
+            feature_changed = node.pop("feature")
+            new_error = estimate_error(node)
+            if change == "added" and new_error < prior_error * .95:
+                improvement = ((prior_error * .95) - new_error) / (prior_error * .95)
+            elif change == "removed" and new_error * .95 < prior_error:
+                improvement = (prior_error - (new_error * .95)) / prior_error
+            if new_error < prior_error:
+                improvement = (prior_error - new_error) / prior_error
+            else:
+                continue
+            choices.append((improvement, new_error, change + " " + feature_changed, node, 
+                            feature_changed if change == "removed" else False))
+            total_wheel += improvement
+        duration = time.process_time() - start
+        
+        if total_wheel == 0:
+            break
+            
+        spinner = util.get_global_random_generator().uniform(0, total_wheel)
+        print(f"Spinner: {spinner} Wheel: {total_wheel}")
+        choices.sort()
+        new_total = 0
+        print("Choices:")
+        for choice in choices:
+            print(f"New error: {choice[1]:.3f} Change: {choice[2]} Prob: {(choice[0]/total_wheel):.2f}")
+            if new_total < spinner:
+                chosen = choice
+            new_total += choice[0]
+        prior_choice = chosen[2]
+        past_choices.append(f"{prior_choice}\nNew error: {chosen[1]:.3f}, % change: {((prior_error - chosen[1]) / prior_error):.4f}, {duration:.4f} secs")
+        prior_weights = chosen[3]
+        prior_error = chosen[1]
+        if chosen[4]:
+            fields.remove(chosen[4])
+        print(f"Change selected: {prior_choice} New error: {prior_error:.3f}, {len(prior_weights)} weights, {duration:.4f} secs, rand = {spinner/total_wheel:.2f}")
+
+    for past_choice in past_choices:
+        print(past_choice)
+    
+    return {"weights": prior_weights, "error": prior_error}
+
+def shrink_weight_space(weight_dict: dict[str, float], estimate_error: Callable[[dict[str, float]], float]) -> dict[str, float]:
+    choices = []
+    last_error = estimate_error(weight_dict)
+    last_weights = weight_dict
+    while True:
+        choices = []
+        for (feature, weight) in last_weights.items():
+            weights_without = dict(last_weights)
+            weights_without.pop(feature)
+            new_error = estimate_error(weights_without)
+            if new_error < last_error:
+                choices.append((new_error, feature))
+        choices.sort()
+        new_weight_dict = dict(last_weights)
+        for i in range(len(choices)):
+            print(f"Feature dropped: {choices[i][1]} New error: {(choices[i][0]):.3f}")
+            new_weight_dict.pop(choices[i][1])
+        new_error = estimate_error(new_weight_dict)
+        print(f"Last error: {last_error:.3f} New error: {new_error:.3f} Last length: {len(last_weights)} New length: {len(new_weight_dict)}")
+        if new_error > last_error or len(choices) == 0:
+            return last_weights
+        last_error = new_error
+        last_weights = new_weight_dict
+        
+
+        
     
