@@ -23,7 +23,7 @@ class TA3Driver(Driver):
         self.actions_performed: list[Action] = []
         self.treatments: dict[str, list[str]] = {}
 
-        elaborator = TA3Elaborator()
+        elaborator = TA3Elaborator(elab_to_json=args.elab_output)
 
         if args.variant.lower() == "severity-baseline":
             super().__init__(elaborator, SeverityDecisionSelector(), 
@@ -50,7 +50,7 @@ class TA3Driver(Driver):
             else:
                 assert False, "Can't happen. Default --selector arg should have been set"
         
-        elaborator = TA3Elaborator()
+        elaborator = TA3Elaborator(elab_to_json=args.elab_output)
 
         if args.dump:
             dump_config = DEFAULT_DUMP
