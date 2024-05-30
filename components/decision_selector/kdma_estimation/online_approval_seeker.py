@@ -421,7 +421,7 @@ class XGBModeller(CaseModeller):
         else:
             self.last_weights, self.last_error, self.last_model = \
                 xgboost_train.get_classification_feature_importance(X, self.category_array)
-            self.last_model.predict_right = lambda X: numpy.dot(self.unique_values, model.predict_proba(X)[0])
+            self.last_model.predict_right = lambda X: numpy.dot(self.unique_values, self.last_model.predict_proba(X)[0])
         self.last_fields = set(fields)
     
     def get_subtable(self, fields: set[str]):
