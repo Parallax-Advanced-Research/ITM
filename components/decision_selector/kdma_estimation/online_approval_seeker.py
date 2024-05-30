@@ -179,7 +179,6 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                     best_dist = dist
                     decision = d
             print(f"Chosen Decision: {decision.value} Prediction: {best_pred}")
-            breakpoint()
         elif self.selection_style == 'case-based':
             if self.reveal_kdma:
                 (decision, dist) = super().select(scenario, probe, self.current_critic.kdma_obj)
