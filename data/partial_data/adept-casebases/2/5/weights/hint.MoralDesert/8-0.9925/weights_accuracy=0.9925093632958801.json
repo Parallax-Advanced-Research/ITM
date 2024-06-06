@@ -1,0 +1,10 @@
+{
+    "intent": 0.47791212797164917,
+    "treating": 0.49419328570365906,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.009079108946025372,
+    "HRA Strategy.time-resources-system.one-bounce": 0.014565509743988514,
+    "SEVERITY": 0.0001920551003422588,
+    "DAMAGE_PER_SECOND": 0.003580536460503936,
+    "SEVERITY_CHANGE": 0.00017066541477106512,
+    "treatment": 0.00030670312116853893
+}

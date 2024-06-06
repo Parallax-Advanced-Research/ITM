@@ -1,0 +1,12 @@
+{
+    "tagged": 0.012337557971477509,
+    "conscious": 0.0157919954508543,
+    "intent": 0.20295856893062592,
+    "directness_of_causality": 0.19177128374576569,
+    "injured_count": 0.2143166959285736,
+    "treating": 0.3229137361049652,
+    "HRA Strategy.time-resources.take-the-best": 0.010207651183009148,
+    "HRA Strategy.resources-system.take-the-best": 0.020750759169459343,
+    "AVERAGE_TIME_USED": 0.0033075432293117046,
+    "treatment": 0.0056442441418766975
+}

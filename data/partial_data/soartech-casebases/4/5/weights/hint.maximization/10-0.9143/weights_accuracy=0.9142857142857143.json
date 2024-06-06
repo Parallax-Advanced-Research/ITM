@@ -1,0 +1,12 @@
+{
+    "age": 0.007754415273666382,
+    "environment_type": 0.030428649857640266,
+    "questioning": 0.2534915804862976,
+    "assessing": 0.4191756546497345,
+    "treating": 0.007939738221466541,
+    "category": 0.08268841356039047,
+    "HRA Strategy.time-resources.take-the-best": 0.0752989873290062,
+    "SEVERITY": 0.02769380435347557,
+    "DAMAGE_PER_SECOND": 0.023350128903985023,
+    "INFORMATION_GAINED": 0.07217860221862793
+}

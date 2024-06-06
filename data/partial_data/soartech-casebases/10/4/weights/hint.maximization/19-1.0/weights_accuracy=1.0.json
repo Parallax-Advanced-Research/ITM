@@ -1,0 +1,21 @@
+{
+    "age": 0.05513521283864975,
+    "tagged": 0.15094967186450958,
+    "conscious": 0.02920406684279442,
+    "hrpmin": 0.009361802600324154,
+    "environment_type": 0.010171743109822273,
+    "questioning": 0.20710651576519012,
+    "assessing": 0.18826331198215485,
+    "category": 0.034583885222673416,
+    "HRA Strategy.time-resources.take-the-best": 0.029491612687706947,
+    "HRA Strategy.time-system.one-bounce": 0.01460289116948843,
+    "Satisfactory Priority": 0.0034645674750208855,
+    "pDeath": 0.06344262510538101,
+    "entropy": 0.0025344814639538527,
+    "entropyDeath": 0.018761923536658287,
+    "SEVERITY": 0.0216688122600317,
+    "AVERAGE_TIME_USED": 0.03474070504307747,
+    "DAMAGE_PER_SECOND": 0.006570822559297085,
+    "INFORMATION_GAINED": 0.02991759032011032,
+    "treatment": 0.09002771973609924
+}

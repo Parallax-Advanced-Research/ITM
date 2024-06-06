@@ -1,0 +1,16 @@
+{
+    "tagged": 0.02230413258075714,
+    "conscious": 0.07185199856758118,
+    "environment_type": 0.03921065852046013,
+    "questioning": 0.15587970614433289,
+    "assessing": 0.15030276775360107,
+    "tagging": 0.2693214416503906,
+    "leaving": 0.18069888651371002,
+    "category": 0.015451282262802124,
+    "HRA Strategy.resources-risk_reward_ratio.one-bounce": 0.012813371606171131,
+    "pInternalBleeding": 0.011712361127138138,
+    "SEVERITY": 0.012764034792780876,
+    "SUPPLIES_REMAINING": 0.009503721259534359,
+    "MEDSIM_P_DEATH": 0.014094882644712925,
+    "treatment": 0.03409070521593094
+}

@@ -1,0 +1,17 @@
+{
+    "tagged": 0.026865795254707336,
+    "mental_status": 0.008331166580319405,
+    "intent": 0.054978761821985245,
+    "directness_of_causality": 0.08020384609699249,
+    "aid_available": 0.04923949018120766,
+    "treating": 0.18809738755226135,
+    "HRA Strategy.time-resources.take-the-best": 0.017138807103037834,
+    "HRA Strategy.resources-system.take-the-best": 0.05590083450078964,
+    "pPain": 0.0073545826599001884,
+    "SEVERITY": 0.07660423964262009,
+    "AVERAGE_TIME_USED": 0.02195163443684578,
+    "DAMAGE_PER_SECOND": 0.03715042397379875,
+    "SUPPLIES_USED": 0.21340802311897278,
+    "SMOL_MEDICAL_SOUNDNESS": 0.12017280608415604,
+    "treatment": 0.04260218143463135
+}

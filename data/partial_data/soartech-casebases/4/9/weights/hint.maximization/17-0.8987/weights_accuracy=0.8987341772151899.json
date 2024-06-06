@@ -1,0 +1,19 @@
+{
+    "age": 0.05337229371070862,
+    "tagged": 0.009681597352027893,
+    "visited": 0.020251842215657234,
+    "assessing": 0.20405711233615875,
+    "tagging": 0.39454856514930725,
+    "treatment": 0.08677281439304352,
+    "HRA Strategy.time-resources.take-the-best": 0.003289829008281231,
+    "HRA Strategy.time-system.tallying": 0.0031836703419685364,
+    "Satisfactory Priority": 0.05475600063800812,
+    "One-Bounce Priority": 0.01891997642815113,
+    "pAirwayBlocked": 0.011667106300592422,
+    "entropy": 0.003086490323767066,
+    "SEVERITY": 0.005044227000325918,
+    "SUPPLIES_REMAINING": 0.020534442737698555,
+    "AVERAGE_TIME_USED": 0.0622258260846138,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.02371513843536377,
+    "category": 0.024893149733543396
+}

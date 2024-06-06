@@ -1,0 +1,12 @@
+{
+    "intent": 0.028119027614593506,
+    "directness_of_causality": 0.21501821279525757,
+    "aid_available": 0.1895563155412674,
+    "treating": 0.29452505707740784,
+    "HRA Strategy.time-risk_reward_ratio.one-bounce": 0.0007006301893852651,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0007783283363096416,
+    "Satisfactory Priority": 0.0006129054236225784,
+    "SUPPLIES_REMAINING": 0.0009640330681577325,
+    "AVERAGE_TIME_USED": 0.005753207486122847,
+    "SUPPLIES_USED": 0.26397231221199036
+}

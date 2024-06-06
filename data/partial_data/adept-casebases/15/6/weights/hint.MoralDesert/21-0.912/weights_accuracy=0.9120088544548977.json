@@ -1,0 +1,23 @@
+{
+    "mental_status": 0.010134751908481121,
+    "breathing": 0.0004650765040423721,
+    "intent": 0.05826674401760101,
+    "directness_of_causality": 0.1493985801935196,
+    "aid_available": 0.12710680067539215,
+    "treating": 0.20174485445022583,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.001661407295614481,
+    "HRA Strategy.resources-risk_reward_ratio-system.one-bounce": 0.0011230569798499346,
+    "HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce": 0.0006803284049965441,
+    "Take-The-Best Priority": 0.0005633083055727184,
+    "pDeath": 0.000557751685846597,
+    "pPain": 0.0004088346613571048,
+    "pExternalBleeding": 0.002376386895775795,
+    "SEVERITY": 0.006849206052720547,
+    "SUPPLIES_REMAINING": 0.0019894465804100037,
+    "AVERAGE_TIME_USED": 0.0207352414727211,
+    "MEDSIM_P_DEATH": 0.0042599961161613464,
+    "SUPPLIES_USED": 0.21976856887340546,
+    "WEIGHTED_RESOURCE_SCORE": 0.0008426556596532464,
+    "SMOL_MEDICAL_SOUNDNESS": 0.16627201437950134,
+    "treatment": 0.024794984608888626
+}

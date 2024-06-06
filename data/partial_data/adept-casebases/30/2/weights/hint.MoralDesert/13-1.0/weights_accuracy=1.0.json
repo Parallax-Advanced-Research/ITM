@@ -1,0 +1,15 @@
+{
+    "tagged": 0.004917871672660112,
+    "breathing": 0.0011133375810459256,
+    "intent": 0.004770309664309025,
+    "directness_of_causality": 0.12529119849205017,
+    "injured_count": 0.0011891602771356702,
+    "aid_available": 0.16931429505348206,
+    "treating": 0.3402961790561676,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.001326880999840796,
+    "SEVERITY": 0.004918090999126434,
+    "AVERAGE_TIME_USED": 0.005058391951024532,
+    "SUPPLIES_USED": 0.24261976778507233,
+    "SMOL_MEDICAL_SOUNDNESS": 0.06689386069774628,
+    "treatment": 0.03229052200913429
+}

@@ -1,0 +1,16 @@
+{
+    "age": 0.03717773035168648,
+    "tagged": 0.5123382210731506,
+    "conscious": 0.11280232667922974,
+    "breathing": 0.055337317287921906,
+    "avpu": 0.01193106546998024,
+    "category": 0.024502892047166824,
+    "HRA Strategy.time-resources.take-the-best": 0.04312356561422348,
+    "HRA Strategy.time-system.exhaustive": 0.040878161787986755,
+    "pDeath": 0.05365446209907532,
+    "entropyDeath": 0.010853923857212067,
+    "SEVERITY": 0.014861873351037502,
+    "SUPPLIES_REMAINING": 0.01648600958287716,
+    "DAMAGE_PER_SECOND": 0.024198194965720177,
+    "treatment": 0.04185428097844124
+}

@@ -1,0 +1,17 @@
+{
+    "age": 0.010378078557550907,
+    "tagged": 0.3188484311103821,
+    "hrpmin": 0.13397085666656494,
+    "injured_count": 0.04618539288640022,
+    "environment_type": 0.03057410940527916,
+    "category": 0.029305381700396538,
+    "HRA Strategy.time-resources.take-the-best": 0.009593170136213303,
+    "One-Bounce Priority": 0.07084215432405472,
+    "pDeath": 0.01047913171350956,
+    "pInternalBleeding": 0.019237946718931198,
+    "pExternalBleeding": 0.05275070667266846,
+    "entropy": 0.030723700299859047,
+    "AVERAGE_TIME_USED": 0.10639555007219315,
+    "SMOL_MEDICAL_SOUNDNESS": 0.010170920751988888,
+    "treatment": 0.12054443359375
+}

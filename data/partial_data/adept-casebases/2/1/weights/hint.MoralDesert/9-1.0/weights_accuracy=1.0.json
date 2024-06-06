@@ -1,0 +1,11 @@
+{
+    "others_tagged_or_uninjured": 0.2366112768650055,
+    "aid_available": 0.07003675401210785,
+    "treating": 0.1743776649236679,
+    "Take-The-Best Priority": 0.10977040976285934,
+    "SEVERITY": 0.04576798900961876,
+    "MEDSIM_P_DEATH": 0.05583512783050537,
+    "SMOL_MEDICAL_SOUNDNESS": 0.152950718998909,
+    "directness_of_causality": 0.1008165031671524,
+    "treatment": 0.0538334958255291
+}

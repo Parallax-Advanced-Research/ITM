@@ -1,0 +1,22 @@
+{
+    "age": 0.006618638057261705,
+    "tagged": 0.036027442663908005,
+    "conscious": 0.010694208554923534,
+    "breathing": 0.05959928035736084,
+    "hrpmin": 0.008157700300216675,
+    "unvisited_count": 0.011452321894466877,
+    "environment_type": 0.014594580046832561,
+    "questioning": 0.26318803429603577,
+    "assessing": 0.25593656301498413,
+    "tagging": 0.1825486570596695,
+    "category": 0.010084133595228195,
+    "Satisfactory Priority": 0.011388581246137619,
+    "pDeath": 0.011128858663141727,
+    "pBrainInjury": 0.009374107234179974,
+    "pInternalBleeding": 0.0072123706340789795,
+    "pExternalBleeding": 0.010301264934241772,
+    "entropyDeath": 0.021473154425621033,
+    "AVERAGE_TIME_USED": 0.0167529359459877,
+    "WEIGHTED_RESOURCE_SCORE": 0.006272351369261742,
+    "treatment": 0.047194965183734894
+}

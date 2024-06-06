@@ -1,0 +1,10 @@
+{
+    "intent": 0.20062099397182465,
+    "directness_of_causality": 0.14731748402118683,
+    "aid_available": 0.06119830161333084,
+    "treating": 0.22189053893089294,
+    "HRA Strategy.resources-risk_reward_ratio.one-bounce": 0.02727072313427925,
+    "HRA Strategy.resources-system.take-the-best": 0.023666400462388992,
+    "SUPPLIES_USED": 0.12747631967067719,
+    "SMOL_MEDICAL_SOUNDNESS": 0.1905592381954193
+}

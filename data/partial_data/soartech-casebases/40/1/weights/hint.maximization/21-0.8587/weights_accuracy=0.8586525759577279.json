@@ -1,0 +1,23 @@
+{
+    "age": 0.007213213946670294,
+    "tagged": 0.024236412718892097,
+    "breathing": 0.005004486534744501,
+    "hrpmin": 0.014181218110024929,
+    "injured_count": 0.028051093220710754,
+    "questioning": 0.14072927832603455,
+    "assessing": 0.20647822320461273,
+    "tagging": 0.12999220192432404,
+    "leaving": 0.2573704123497009,
+    "HRA Strategy.resources-system.exhaustive": 0.0033648523967713118,
+    "Satisfactory Priority": 0.007331452332437038,
+    "One-Bounce Priority": 0.046878937631845474,
+    "pDeath": 0.007475976832211018,
+    "pPain": 0.005013840273022652,
+    "pInternalBleeding": 0.005513954441994429,
+    "pExternalBleeding": 0.005593865644186735,
+    "entropy": 0.008590836077928543,
+    "AVERAGE_TIME_USED": 0.006170152220875025,
+    "INFORMATION_GAINED": 0.04088231548666954,
+    "treatment": 0.039895299822092056,
+    "category": 0.010032027028501034
+}

@@ -1,0 +1,14 @@
+{
+    "tagged": 0.3427620530128479,
+    "hrpmin": 0.1293601393699646,
+    "injured_count": 0.052814602851867676,
+    "environment_type": 0.034263234585523605,
+    "category": 0.030274128541350365,
+    "One-Bounce Priority": 0.07214746624231339,
+    "pDeath": 0.01581701636314392,
+    "pInternalBleeding": 0.012222598306834698,
+    "pExternalBleeding": 0.05025132745504379,
+    "entropy": 0.023597825318574905,
+    "AVERAGE_TIME_USED": 0.1207437589764595,
+    "treatment": 0.11574575304985046
+}

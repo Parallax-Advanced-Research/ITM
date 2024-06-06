@@ -1,0 +1,10 @@
+{
+    "tagged": 0.005108937155455351,
+    "intent": 0.15920813381671906,
+    "treating": 0.3544951379299164,
+    "treatment": 0.4519476890563965,
+    "HRA Strategy.time-resources.take-the-best": 0.00723316939547658,
+    "HRA Strategy.resources-system.take-the-best": 0.009691191837191582,
+    "SEVERITY": 0.005668813828378916,
+    "WEIGHTED_RESOURCE_SCORE": 0.00664689764380455
+}

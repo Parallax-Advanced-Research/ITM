@@ -14,7 +14,6 @@ Using the file xgboost_train.py, the weights are extracted and saved to a file i
 where score_key is the feature being tested and acc is the accuracy of the weights. The specific data used for generating the
 weights is also copied into each weights folder. 
 '''
-
 pool = concurrent.futures.ProcessPoolExecutor(max_workers=10)
 threads = []
 processes = []

@@ -1,0 +1,22 @@
+{
+    "conscious": 0.0017203633906319737,
+    "intent": 0.1570449024438858,
+    "directness_of_causality": 0.09476335346698761,
+    "aid_available": 0.1112256571650505,
+    "treating": 0.23211617767810822,
+    "treatment": 0.11240635067224503,
+    "HRA Strategy.time-resources.take-the-best": 0.0070179663598537445,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0020132409408688545,
+    "HRA Strategy.time-resources-system.one-bounce": 0.0005160105065442622,
+    "HRA Strategy.resources-risk_reward_ratio-system.one-bounce": 0.0012874188832938671,
+    "Take-The-Best Priority": 0.002176011446863413,
+    "pDeath": 0.0017124370206147432,
+    "pInternalBleeding": 0.0009193682344630361,
+    "entropy": 0.0011815932812169194,
+    "SEVERITY": 0.017266808077692986,
+    "SUPPLIES_REMAINING": 0.0027229301631450653,
+    "AVERAGE_TIME_USED": 0.020063327625393867,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.0005638456786982715,
+    "SUPPLIES_USED": 0.22126787900924683,
+    "SEVEREST_SEVERITY": 0.012014346197247505
+}

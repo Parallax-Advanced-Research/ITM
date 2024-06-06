@@ -1,0 +1,23 @@
+{
+    "age": 0.008243001997470856,
+    "tagged": 0.021335477009415627,
+    "breathing": 0.008303971961140633,
+    "unvisited_count": 0.013469979166984558,
+    "injured_count": 0.021815093234181404,
+    "questioning": 0.21747316420078278,
+    "assessing": 0.20595160126686096,
+    "tagging": 0.1206602230668068,
+    "leaving": 0.20613303780555725,
+    "treatment": 0.028019696474075317,
+    "Satisfactory Priority": 0.008312175050377846,
+    "One-Bounce Priority": 0.03690849617123604,
+    "pPain": 0.005415986757725477,
+    "pAirwayBlocked": 0.004199603106826544,
+    "pInternalBleeding": 0.0056854900903999805,
+    "pExternalBleeding": 0.00914979912340641,
+    "entropy": 0.00874729547649622,
+    "entropyDeath": 0.007870855741202831,
+    "MEDSIM_P_DEATH": 0.007158803287893534,
+    "INFORMATION_GAINED": 0.04501650854945183,
+    "category": 0.010129737667739391
+}

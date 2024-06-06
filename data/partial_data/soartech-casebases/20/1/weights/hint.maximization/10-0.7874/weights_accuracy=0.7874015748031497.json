@@ -1,0 +1,12 @@
+{
+    "age": 0.009810569696128368,
+    "visited": 0.02939048781991005,
+    "unvisited_count": 0.023381998762488365,
+    "injured_count": 0.048636917024850845,
+    "questioning": 0.2052818089723587,
+    "assessing": 0.36310482025146484,
+    "tagging": 0.15236136317253113,
+    "HRA Strategy.time-resources.take-the-best": 0.037124793976545334,
+    "One-Bounce Priority": 0.04532086104154587,
+    "treatment": 0.08558639138936996
+}

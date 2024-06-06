@@ -1,0 +1,9 @@
+{
+    "intent": 0.007866266183555126,
+    "directness_of_causality": 0.39863690733909607,
+    "treating": 0.534675657749176,
+    "HRA Strategy.time-resources.take-the-best": 0.01023063249886036,
+    "HRA Strategy.resources-system.take-the-best": 0.010107627138495445,
+    "Take-The-Best Priority": 0.009471660479903221,
+    "Satisfactory Priority": 0.029011353850364685
+}

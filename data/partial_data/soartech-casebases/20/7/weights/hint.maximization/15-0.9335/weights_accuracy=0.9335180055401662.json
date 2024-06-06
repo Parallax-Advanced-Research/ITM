@@ -1,0 +1,17 @@
+{
+    "age": 0.010660971514880657,
+    "tagged": 0.036399759352207184,
+    "hrpmin": 0.009614762850105762,
+    "injured_count": 0.08107126504182816,
+    "environment_type": 0.01143819559365511,
+    "questioning": 0.21094892919063568,
+    "assessing": 0.23258420825004578,
+    "tagging": 0.124440498650074,
+    "category": 0.014792907051742077,
+    "Satisfactory Priority": 0.03402446210384369,
+    "One-Bounce Priority": 0.04998426511883736,
+    "pAirwayBlocked": 0.010396244004368782,
+    "SMOL_MEDICAL_SOUNDNESS": 0.008457489311695099,
+    "INFORMATION_GAINED": 0.13620030879974365,
+    "treatment": 0.028985776007175446
+}

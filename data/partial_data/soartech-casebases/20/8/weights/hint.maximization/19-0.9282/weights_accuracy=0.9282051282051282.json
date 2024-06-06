@@ -1,0 +1,21 @@
+{
+    "age": 0.01135405246168375,
+    "tagged": 0.04533166438341141,
+    "conscious": 0.008506987243890762,
+    "avpu": 0.006813375744968653,
+    "unvisited_count": 0.007428032346069813,
+    "injured_count": 0.07036994397640228,
+    "environment_type": 0.006739537697285414,
+    "questioning": 0.09964347630739212,
+    "assessing": 0.15253251791000366,
+    "tagging": 0.1878361999988556,
+    "leaving": 0.23036935925483704,
+    "treatment": 0.04181993007659912,
+    "HRA Strategy.time-resources.take-the-best": 0.01075748447328806,
+    "One-Bounce Priority": 0.03326357528567314,
+    "pPain": 0.018051214516162872,
+    "pBrainInjury": 0.01459942851215601,
+    "SEVEREST_SEVERITY_CHANGE": 0.008185256272554398,
+    "INFORMATION_GAINED": 0.033226966857910156,
+    "category": 0.01317107118666172
+}

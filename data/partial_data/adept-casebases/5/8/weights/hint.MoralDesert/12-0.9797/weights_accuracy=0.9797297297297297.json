@@ -1,0 +1,14 @@
+{
+    "tagged": 0.10568536818027496,
+    "breathing": 0.031175263226032257,
+    "intent": 0.18973852694034576,
+    "directness_of_causality": 0.09138017147779465,
+    "treating": 0.20166818797588348,
+    "HRA Strategy.time-resources.take-the-best": 0.007025249768048525,
+    "pInternalBleeding": 0.006201420910656452,
+    "AVERAGE_TIME_USED": 0.17268583178520203,
+    "SUPPLIES_USED": 0.019916251301765442,
+    "SEVEREST_SEVERITY": 0.008305294439196587,
+    "category": 0.009214190766215324,
+    "treatment": 0.15700431168079376
+}

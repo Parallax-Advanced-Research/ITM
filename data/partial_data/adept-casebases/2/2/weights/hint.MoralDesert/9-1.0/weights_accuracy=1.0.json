@@ -1,0 +1,11 @@
+{
+    "tagged": 0.1655154526233673,
+    "mental_status": 0.014045939780771732,
+    "breathing": 0.022270452231168747,
+    "intent": 0.06179264560341835,
+    "directness_of_causality": 0.33436381816864014,
+    "treating": 0.016573231667280197,
+    "HRA Strategy.resources-system.take-the-best": 0.027917921543121338,
+    "SMOL_MEDICAL_SOUNDNESS": 0.339010626077652,
+    "category": 0.018509943038225174
+}

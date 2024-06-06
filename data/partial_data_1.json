@@ -1,0 +1,1594 @@
+{
+    "adept-casebases": {
+        "1": {
+            "0": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/1/0/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/1/1/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/1/4/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/1/5/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    3,
+                    1.0,
+                    "partial_data/adept-casebases/1/6/weights/hint.MoralDesert/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/1/7/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/1/8/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/1/9/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "10": {
+            "0": {
+                "hint.MoralDesert": [
+                    8,
+                    1.0,
+                    "partial_data/adept-casebases/10/0/weights/hint.MoralDesert/8-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    18,
+                    1.0,
+                    "partial_data/adept-casebases/10/1/weights/hint.MoralDesert/18-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    11,
+                    0.8988,
+                    "partial_data/adept-casebases/10/2/weights/hint.MoralDesert/11-0.8988/weights_accuracy=0.8987804878048781.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/10/3/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    7,
+                    0.9963,
+                    "partial_data/adept-casebases/10/4/weights/hint.MoralDesert/7-0.9963/weights_accuracy=0.9963459196102314.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    9,
+                    1.0,
+                    "partial_data/adept-casebases/10/5/weights/hint.MoralDesert/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    11,
+                    1.0,
+                    "partial_data/adept-casebases/10/6/weights/hint.MoralDesert/11-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    6,
+                    1.0,
+                    "partial_data/adept-casebases/10/7/weights/hint.MoralDesert/6-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    7,
+                    0.9649,
+                    "partial_data/adept-casebases/10/8/weights/hint.MoralDesert/7-0.9649/weights_accuracy=0.9649002064693737.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    6,
+                    1.0,
+                    "partial_data/adept-casebases/10/9/weights/hint.MoralDesert/6-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "15": {
+            "0": {
+                "hint.MoralDesert": [
+                    22,
+                    0.943,
+                    "partial_data/adept-casebases/15/0/weights/hint.MoralDesert/22-0.943/weights_accuracy=0.943001443001443.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    32,
+                    0.9285,
+                    "partial_data/adept-casebases/15/1/weights/hint.MoralDesert/32-0.9285/weights_accuracy=0.9285106382978724.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/15/2/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    9,
+                    0.9696,
+                    "partial_data/adept-casebases/15/3/weights/hint.MoralDesert/9-0.9696/weights_accuracy=0.9695704057279236.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    7,
+                    1.0,
+                    "partial_data/adept-casebases/15/4/weights/hint.MoralDesert/7-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    10,
+                    0.9984,
+                    "partial_data/adept-casebases/15/5/weights/hint.MoralDesert/10-0.9984/weights_accuracy=0.9984051036682615.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    4,
+                    0.9507,
+                    "partial_data/adept-casebases/15/6/weights/hint.MoralDesert/4-0.9507/weights_accuracy=0.9507470946319867.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    8,
+                    0.9682,
+                    "partial_data/adept-casebases/15/7/weights/hint.MoralDesert/8-0.9682/weights_accuracy=0.9682179341657208.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    6,
+                    0.9788,
+                    "partial_data/adept-casebases/15/8/weights/hint.MoralDesert/6-0.9788/weights_accuracy=0.9788029925187033.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/15/9/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "2": {
+            "0": {
+                "hint.MoralDesert": [
+                    3,
+                    1.0,
+                    "partial_data/adept-casebases/2/0/weights/hint.MoralDesert/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    6,
+                    1.0,
+                    "partial_data/adept-casebases/2/1/weights/hint.MoralDesert/6-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    3,
+                    1.0,
+                    "partial_data/adept-casebases/2/2/weights/hint.MoralDesert/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    7,
+                    1.0,
+                    "partial_data/adept-casebases/2/3/weights/hint.MoralDesert/7-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    3,
+                    1.0,
+                    "partial_data/adept-casebases/2/4/weights/hint.MoralDesert/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/2/5/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    3,
+                    1.0,
+                    "partial_data/adept-casebases/2/6/weights/hint.MoralDesert/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    3,
+                    1.0,
+                    "partial_data/adept-casebases/2/7/weights/hint.MoralDesert/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/2/8/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/2/9/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "20": {
+            "0": {
+                "hint.MoralDesert": [
+                    6,
+                    0.9712,
+                    "partial_data/adept-casebases/20/0/weights/hint.MoralDesert/6-0.9712/weights_accuracy=0.9712418300653595.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    10,
+                    1.0,
+                    "partial_data/adept-casebases/20/1/weights/hint.MoralDesert/10-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/20/2/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    8,
+                    0.9654,
+                    "partial_data/adept-casebases/20/3/weights/hint.MoralDesert/8-0.9654/weights_accuracy=0.9653725078698846.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    5,
+                    0.9616,
+                    "partial_data/adept-casebases/20/4/weights/hint.MoralDesert/5-0.9616/weights_accuracy=0.9615832363213038.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    11,
+                    0.9696,
+                    "partial_data/adept-casebases/20/5/weights/hint.MoralDesert/11-0.9696/weights_accuracy=0.9695833333333334.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    7,
+                    0.9544,
+                    "partial_data/adept-casebases/20/6/weights/hint.MoralDesert/7-0.9544/weights_accuracy=0.9543834640057021.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/20/7/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    28,
+                    0.9536,
+                    "partial_data/adept-casebases/20/8/weights/hint.MoralDesert/28-0.9536/weights_accuracy=0.9535918626827717.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    5,
+                    0.9796,
+                    "partial_data/adept-casebases/20/9/weights/hint.MoralDesert/5-0.9796/weights_accuracy=0.9795550210463019.json"
+                ]
+            }
+        },
+        "3": {
+            "0": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/3/0/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    6,
+                    1.0,
+                    "partial_data/adept-casebases/3/1/weights/hint.MoralDesert/6-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/3/2/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    6,
+                    1.0,
+                    "partial_data/adept-casebases/3/3/weights/hint.MoralDesert/6-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    6,
+                    0.9978,
+                    "partial_data/adept-casebases/3/4/weights/hint.MoralDesert/6-0.9978/weights_accuracy=0.9977924944812362.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/3/5/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/3/6/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    3,
+                    1.0,
+                    "partial_data/adept-casebases/3/7/weights/hint.MoralDesert/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/3/8/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/3/9/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "30": {
+            "0": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/30/0/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/30/1/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/30/2/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/30/3/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    5,
+                    0.9804,
+                    "partial_data/adept-casebases/30/4/weights/hint.MoralDesert/5-0.9804/weights_accuracy=0.9804372842347526.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    6,
+                    0.9864,
+                    "partial_data/adept-casebases/30/5/weights/hint.MoralDesert/6-0.9864/weights_accuracy=0.9863945578231292.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    4,
+                    0.9986,
+                    "partial_data/adept-casebases/30/6/weights/hint.MoralDesert/4-0.9986/weights_accuracy=0.998572957545487.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    4,
+                    0.9985,
+                    "partial_data/adept-casebases/30/7/weights/hint.MoralDesert/4-0.9985/weights_accuracy=0.9985433357611071.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    4,
+                    0.963,
+                    "partial_data/adept-casebases/30/8/weights/hint.MoralDesert/4-0.963/weights_accuracy=0.9630314232902033.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    4,
+                    0.9987,
+                    "partial_data/adept-casebases/30/9/weights/hint.MoralDesert/4-0.9987/weights_accuracy=0.9987154784842646.json"
+                ]
+            }
+        },
+        "4": {
+            "0": {
+                "hint.MoralDesert": [
+                    2,
+                    1.0,
+                    "partial_data/adept-casebases/4/0/weights/hint.MoralDesert/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    6,
+                    1.0,
+                    "partial_data/adept-casebases/4/1/weights/hint.MoralDesert/6-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/4/2/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/4/3/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    9,
+                    1.0,
+                    "partial_data/adept-casebases/4/4/weights/hint.MoralDesert/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    9,
+                    1.0,
+                    "partial_data/adept-casebases/4/5/weights/hint.MoralDesert/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/4/6/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    11,
+                    1.0,
+                    "partial_data/adept-casebases/4/7/weights/hint.MoralDesert/11-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/4/8/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    6,
+                    1.0,
+                    "partial_data/adept-casebases/4/9/weights/hint.MoralDesert/6-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "40": {
+            "0": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/40/0/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/40/1/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    4,
+                    0.9989,
+                    "partial_data/adept-casebases/40/2/weights/hint.MoralDesert/4-0.9989/weights_accuracy=0.9989327641408752.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/40/3/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/40/4/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    4,
+                    0.9989,
+                    "partial_data/adept-casebases/40/5/weights/hint.MoralDesert/4-0.9989/weights_accuracy=0.9988938053097345.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/40/6/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/40/7/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/40/8/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/40/9/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "5": {
+            "0": {
+                "hint.MoralDesert": [
+                    8,
+                    1.0,
+                    "partial_data/adept-casebases/5/0/weights/hint.MoralDesert/8-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    9,
+                    1.0,
+                    "partial_data/adept-casebases/5/1/weights/hint.MoralDesert/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    2,
+                    0.9933,
+                    "partial_data/adept-casebases/5/2/weights/hint.MoralDesert/2-0.9933/weights_accuracy=0.9932885906040269.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    9,
+                    1.0,
+                    "partial_data/adept-casebases/5/3/weights/hint.MoralDesert/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    3,
+                    1.0,
+                    "partial_data/adept-casebases/5/4/weights/hint.MoralDesert/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    14,
+                    0.9978,
+                    "partial_data/adept-casebases/5/5/weights/hint.MoralDesert/14-0.9978/weights_accuracy=0.9978354978354979.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    4,
+                    1.0,
+                    "partial_data/adept-casebases/5/6/weights/hint.MoralDesert/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    7,
+                    1.0,
+                    "partial_data/adept-casebases/5/7/weights/hint.MoralDesert/7-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    9,
+                    0.9797,
+                    "partial_data/adept-casebases/5/8/weights/hint.MoralDesert/9-0.9797/weights_accuracy=0.9797297297297297.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    9,
+                    1.0,
+                    "partial_data/adept-casebases/5/9/weights/hint.MoralDesert/9-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "50": {
+            "0": {
+                "hint.MoralDesert": [
+                    4,
+                    0.999,
+                    "partial_data/adept-casebases/50/0/weights/hint.MoralDesert/4-0.999/weights_accuracy=0.9990123456790123.json"
+                ]
+            },
+            "1": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/50/1/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/50/2/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.MoralDesert": [
+                    4,
+                    0.999,
+                    "partial_data/adept-casebases/50/3/weights/hint.MoralDesert/4-0.999/weights_accuracy=0.9990246281394781.json"
+                ]
+            },
+            "4": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/50/4/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/50/5/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "6": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/50/6/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/50/7/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/50/8/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/50/9/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "52": {
+            "0": {
+                "hint.MoralDesert": [
+                    5,
+                    1.0,
+                    "partial_data/adept-casebases/52/0/weights/hint.MoralDesert/5-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        }
+    },
+    "soartech-casebases": {
+        "1": {
+            "0": {
+                "hint.maximization": [
+                    2,
+                    1.0,
+                    "partial_data/soartech-casebases/1/0/weights/hint.maximization/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    2,
+                    0.875,
+                    "partial_data/soartech-casebases/1/1/weights/hint.maximization/2-0.875/weights_accuracy=0.875.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    4,
+                    1.0,
+                    "partial_data/soartech-casebases/1/2/weights/hint.maximization/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    2,
+                    1.0,
+                    "partial_data/soartech-casebases/1/3/weights/hint.maximization/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    1,
+                    1.0,
+                    "partial_data/soartech-casebases/1/4/weights/hint.maximization/1-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    4,
+                    1.0,
+                    "partial_data/soartech-casebases/1/5/weights/hint.maximization/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    5,
+                    1.0,
+                    "partial_data/soartech-casebases/1/6/weights/hint.maximization/5-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    2,
+                    1.0,
+                    "partial_data/soartech-casebases/1/7/weights/hint.maximization/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    1,
+                    1.0,
+                    "partial_data/soartech-casebases/1/8/weights/hint.maximization/1-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    4,
+                    1.0,
+                    "partial_data/soartech-casebases/1/9/weights/hint.maximization/4-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "10": {
+            "0": {
+                "hint.maximization": [
+                    15,
+                    1.0,
+                    "partial_data/soartech-casebases/10/0/weights/hint.maximization/15-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    10,
+                    0.9219,
+                    "partial_data/soartech-casebases/10/1/weights/hint.maximization/10-0.9219/weights_accuracy=0.921875.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    7,
+                    1.0,
+                    "partial_data/soartech-casebases/10/2/weights/hint.maximization/7-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    21,
+                    0.9681,
+                    "partial_data/soartech-casebases/10/3/weights/hint.maximization/21-0.9681/weights_accuracy=0.9680851063829787.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    15,
+                    1.0,
+                    "partial_data/soartech-casebases/10/4/weights/hint.maximization/15-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    8,
+                    0.9279,
+                    "partial_data/soartech-casebases/10/5/weights/hint.maximization/8-0.9279/weights_accuracy=0.9279279279279279.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    11,
+                    0.9471,
+                    "partial_data/soartech-casebases/10/6/weights/hint.maximization/11-0.9471/weights_accuracy=0.9470899470899471.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    15,
+                    0.9949,
+                    "partial_data/soartech-casebases/10/7/weights/hint.maximization/15-0.9949/weights_accuracy=0.9948979591836735.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    12,
+                    1.0,
+                    "partial_data/soartech-casebases/10/8/weights/hint.maximization/12-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    14,
+                    1.0,
+                    "partial_data/soartech-casebases/10/9/weights/hint.maximization/14-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "15": {
+            "0": {
+                "hint.maximization": [
+                    11,
+                    0.9366,
+                    "partial_data/soartech-casebases/15/0/weights/hint.maximization/11-0.9366/weights_accuracy=0.9365671641791045.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    15,
+                    0.9088,
+                    "partial_data/soartech-casebases/15/1/weights/hint.maximization/15-0.9088/weights_accuracy=0.9088050314465409.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    9,
+                    0.9724,
+                    "partial_data/soartech-casebases/15/2/weights/hint.maximization/9-0.9724/weights_accuracy=0.9723502304147466.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    13,
+                    0.9218,
+                    "partial_data/soartech-casebases/15/3/weights/hint.maximization/13-0.9218/weights_accuracy=0.9218241042345277.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    18,
+                    0.9743,
+                    "partial_data/soartech-casebases/15/4/weights/hint.maximization/18-0.9743/weights_accuracy=0.9742765273311897.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    10,
+                    0.9964,
+                    "partial_data/soartech-casebases/15/5/weights/hint.maximization/10-0.9964/weights_accuracy=0.9963636363636363.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    16,
+                    0.9748,
+                    "partial_data/soartech-casebases/15/6/weights/hint.maximization/16-0.9748/weights_accuracy=0.9747634069400631.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    16,
+                    0.876,
+                    "partial_data/soartech-casebases/15/7/weights/hint.maximization/16-0.876/weights_accuracy=0.8760330578512396.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    16,
+                    1.0,
+                    "partial_data/soartech-casebases/15/8/weights/hint.maximization/16-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    27,
+                    0.9908,
+                    "partial_data/soartech-casebases/15/9/weights/hint.maximization/27-0.9908/weights_accuracy=0.9908256880733946.json"
+                ]
+            }
+        },
+        "2": {
+            "0": {
+                "hint.maximization": [
+                    3,
+                    1.0,
+                    "partial_data/soartech-casebases/2/0/weights/hint.maximization/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    4,
+                    1.0,
+                    "partial_data/soartech-casebases/2/1/weights/hint.maximization/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    3,
+                    1.0,
+                    "partial_data/soartech-casebases/2/2/weights/hint.maximization/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    2,
+                    1.0,
+                    "partial_data/soartech-casebases/2/3/weights/hint.maximization/2-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    6,
+                    1.0,
+                    "partial_data/soartech-casebases/2/4/weights/hint.maximization/6-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    4,
+                    1.0,
+                    "partial_data/soartech-casebases/2/5/weights/hint.maximization/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    4,
+                    1.0,
+                    "partial_data/soartech-casebases/2/6/weights/hint.maximization/4-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    8,
+                    1.0,
+                    "partial_data/soartech-casebases/2/7/weights/hint.maximization/8-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    3,
+                    1.0,
+                    "partial_data/soartech-casebases/2/8/weights/hint.maximization/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    2,
+                    1.0,
+                    "partial_data/soartech-casebases/2/9/weights/hint.maximization/2-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "20": {
+            "0": {
+                "hint.maximization": [
+                    19,
+                    0.9632,
+                    "partial_data/soartech-casebases/20/0/weights/hint.maximization/19-0.9632/weights_accuracy=0.9631728045325779.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    19,
+                    0.9685,
+                    "partial_data/soartech-casebases/20/1/weights/hint.maximization/19-0.9685/weights_accuracy=0.968503937007874.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    24,
+                    0.9259,
+                    "partial_data/soartech-casebases/20/2/weights/hint.maximization/24-0.9259/weights_accuracy=0.9259259259259259.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    29,
+                    0.9183,
+                    "partial_data/soartech-casebases/20/3/weights/hint.maximization/29-0.9183/weights_accuracy=0.9183168316831684.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    18,
+                    0.945,
+                    "partial_data/soartech-casebases/20/4/weights/hint.maximization/18-0.945/weights_accuracy=0.944954128440367.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    18,
+                    0.9288,
+                    "partial_data/soartech-casebases/20/5/weights/hint.maximization/18-0.9288/weights_accuracy=0.9287531806615776.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    26,
+                    0.9538,
+                    "partial_data/soartech-casebases/20/6/weights/hint.maximization/26-0.9538/weights_accuracy=0.9538043478260869.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    12,
+                    0.9335,
+                    "partial_data/soartech-casebases/20/7/weights/hint.maximization/12-0.9335/weights_accuracy=0.9335180055401662.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    24,
+                    0.9308,
+                    "partial_data/soartech-casebases/20/8/weights/hint.maximization/24-0.9308/weights_accuracy=0.9307692307692308.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    23,
+                    0.9657,
+                    "partial_data/soartech-casebases/20/9/weights/hint.maximization/23-0.9657/weights_accuracy=0.9656992084432717.json"
+                ]
+            }
+        },
+        "3": {
+            "0": {
+                "hint.maximization": [
+                    7,
+                    1.0,
+                    "partial_data/soartech-casebases/3/0/weights/hint.maximization/7-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    4,
+                    0.9844,
+                    "partial_data/soartech-casebases/3/1/weights/hint.maximization/4-0.9844/weights_accuracy=0.984375.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    9,
+                    1.0,
+                    "partial_data/soartech-casebases/3/2/weights/hint.maximization/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    3,
+                    0.8929,
+                    "partial_data/soartech-casebases/3/3/weights/hint.maximization/3-0.8929/weights_accuracy=0.8928571428571429.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    4,
+                    0.9898,
+                    "partial_data/soartech-casebases/3/4/weights/hint.maximization/4-0.9898/weights_accuracy=0.9897959183673469.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    10,
+                    0.9891,
+                    "partial_data/soartech-casebases/3/5/weights/hint.maximization/10-0.9891/weights_accuracy=0.9891304347826086.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    7,
+                    0.9821,
+                    "partial_data/soartech-casebases/3/6/weights/hint.maximization/7-0.9821/weights_accuracy=0.9821428571428571.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    8,
+                    1.0,
+                    "partial_data/soartech-casebases/3/7/weights/hint.maximization/8-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    6,
+                    1.0,
+                    "partial_data/soartech-casebases/3/8/weights/hint.maximization/6-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    7,
+                    1.0,
+                    "partial_data/soartech-casebases/3/9/weights/hint.maximization/7-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "30": {
+            "0": {
+                "hint.maximization": [
+                    34,
+                    0.9146,
+                    "partial_data/soartech-casebases/30/0/weights/hint.maximization/34-0.9146/weights_accuracy=0.9145907473309609.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    20,
+                    0.925,
+                    "partial_data/soartech-casebases/30/1/weights/hint.maximization/20-0.925/weights_accuracy=0.925.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    18,
+                    0.9314,
+                    "partial_data/soartech-casebases/30/2/weights/hint.maximization/18-0.9314/weights_accuracy=0.9314079422382672.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    26,
+                    0.8686,
+                    "partial_data/soartech-casebases/30/3/weights/hint.maximization/26-0.8686/weights_accuracy=0.8685897435897436.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    22,
+                    0.8567,
+                    "partial_data/soartech-casebases/30/4/weights/hint.maximization/22-0.8567/weights_accuracy=0.8567026194144838.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    25,
+                    0.8967,
+                    "partial_data/soartech-casebases/30/5/weights/hint.maximization/25-0.8967/weights_accuracy=0.8967297762478486.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    23,
+                    0.88,
+                    "partial_data/soartech-casebases/30/6/weights/hint.maximization/23-0.88/weights_accuracy=0.88.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    26,
+                    0.8777,
+                    "partial_data/soartech-casebases/30/7/weights/hint.maximization/26-0.8777/weights_accuracy=0.8777089783281734.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    27,
+                    0.9316,
+                    "partial_data/soartech-casebases/30/8/weights/hint.maximization/27-0.9316/weights_accuracy=0.931640625.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    19,
+                    0.9239,
+                    "partial_data/soartech-casebases/30/9/weights/hint.maximization/19-0.9239/weights_accuracy=0.9239130434782609.json"
+                ]
+            }
+        },
+        "4": {
+            "0": {
+                "hint.maximization": [
+                    7,
+                    1.0,
+                    "partial_data/soartech-casebases/4/0/weights/hint.maximization/7-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    21,
+                    1.0,
+                    "partial_data/soartech-casebases/4/1/weights/hint.maximization/21-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    14,
+                    0.9773,
+                    "partial_data/soartech-casebases/4/2/weights/hint.maximization/14-0.9773/weights_accuracy=0.9772727272727273.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    9,
+                    1.0,
+                    "partial_data/soartech-casebases/4/3/weights/hint.maximization/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    6,
+                    1.0,
+                    "partial_data/soartech-casebases/4/4/weights/hint.maximization/6-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    7,
+                    0.9143,
+                    "partial_data/soartech-casebases/4/5/weights/hint.maximization/7-0.9143/weights_accuracy=0.9142857142857143.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    7,
+                    1.0,
+                    "partial_data/soartech-casebases/4/6/weights/hint.maximization/7-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    6,
+                    0.95,
+                    "partial_data/soartech-casebases/4/7/weights/hint.maximization/6-0.95/weights_accuracy=0.95.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    3,
+                    1.0,
+                    "partial_data/soartech-casebases/4/8/weights/hint.maximization/3-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    9,
+                    0.8987,
+                    "partial_data/soartech-casebases/4/9/weights/hint.maximization/9-0.8987/weights_accuracy=0.8987341772151899.json"
+                ]
+            }
+        },
+        "40": {
+            "0": {
+                "hint.maximization": [
+                    32,
+                    0.8638,
+                    "partial_data/soartech-casebases/40/0/weights/hint.maximization/32-0.8638/weights_accuracy=0.8638297872340426.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    31,
+                    0.8679,
+                    "partial_data/soartech-casebases/40/1/weights/hint.maximization/31-0.8679/weights_accuracy=0.8678996036988111.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    25,
+                    0.9024,
+                    "partial_data/soartech-casebases/40/2/weights/hint.maximization/25-0.9024/weights_accuracy=0.9023746701846965.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    30,
+                    0.8769,
+                    "partial_data/soartech-casebases/40/3/weights/hint.maximization/30-0.8769/weights_accuracy=0.8769017980636238.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    28,
+                    0.8555,
+                    "partial_data/soartech-casebases/40/4/weights/hint.maximization/28-0.8555/weights_accuracy=0.8554913294797688.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    29,
+                    0.8794,
+                    "partial_data/soartech-casebases/40/5/weights/hint.maximization/29-0.8794/weights_accuracy=0.8793604651162791.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    32,
+                    0.8732,
+                    "partial_data/soartech-casebases/40/6/weights/hint.maximization/32-0.8732/weights_accuracy=0.8732394366197183.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    26,
+                    0.8613,
+                    "partial_data/soartech-casebases/40/7/weights/hint.maximization/26-0.8613/weights_accuracy=0.8612862547288777.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    28,
+                    0.8685,
+                    "partial_data/soartech-casebases/40/8/weights/hint.maximization/28-0.8685/weights_accuracy=0.8684931506849315.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    32,
+                    0.8408,
+                    "partial_data/soartech-casebases/40/9/weights/hint.maximization/32-0.8408/weights_accuracy=0.8407894736842105.json"
+                ]
+            }
+        },
+        "5": {
+            "0": {
+                "hint.maximization": [
+                    12,
+                    0.883,
+                    "partial_data/soartech-casebases/5/0/weights/hint.maximization/12-0.883/weights_accuracy=0.8829787234042553.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    8,
+                    0.9774,
+                    "partial_data/soartech-casebases/5/1/weights/hint.maximization/8-0.9774/weights_accuracy=0.9774436090225563.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    7,
+                    1.0,
+                    "partial_data/soartech-casebases/5/2/weights/hint.maximization/7-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    9,
+                    0.734,
+                    "partial_data/soartech-casebases/5/3/weights/hint.maximization/9-0.734/weights_accuracy=0.7340425531914894.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    9,
+                    1.0,
+                    "partial_data/soartech-casebases/5/4/weights/hint.maximization/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    15,
+                    0.9344,
+                    "partial_data/soartech-casebases/5/5/weights/hint.maximization/15-0.9344/weights_accuracy=0.9344262295081968.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    13,
+                    1.0,
+                    "partial_data/soartech-casebases/5/6/weights/hint.maximization/13-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    9,
+                    1.0,
+                    "partial_data/soartech-casebases/5/7/weights/hint.maximization/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    9,
+                    1.0,
+                    "partial_data/soartech-casebases/5/8/weights/hint.maximization/9-1.0/weights_accuracy=1.0.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    8,
+                    1.0,
+                    "partial_data/soartech-casebases/5/9/weights/hint.maximization/8-1.0/weights_accuracy=1.0.json"
+                ]
+            }
+        },
+        "50": {
+            "0": {
+                "hint.maximization": [
+                    31,
+                    0.8305,
+                    "partial_data/soartech-casebases/50/0/weights/hint.maximization/31-0.8305/weights_accuracy=0.8304535637149028.json"
+                ]
+            },
+            "1": {
+                "hint.maximization": [
+                    38,
+                    0.8644,
+                    "partial_data/soartech-casebases/50/1/weights/hint.maximization/38-0.8644/weights_accuracy=0.8644444444444445.json"
+                ]
+            },
+            "2": {
+                "hint.maximization": [
+                    33,
+                    0.834,
+                    "partial_data/soartech-casebases/50/2/weights/hint.maximization/33-0.834/weights_accuracy=0.8340336134453782.json"
+                ]
+            },
+            "3": {
+                "hint.maximization": [
+                    33,
+                    0.8251,
+                    "partial_data/soartech-casebases/50/3/weights/hint.maximization/33-0.8251/weights_accuracy=0.8250825082508251.json"
+                ]
+            },
+            "4": {
+                "hint.maximization": [
+                    33,
+                    0.8373,
+                    "partial_data/soartech-casebases/50/4/weights/hint.maximization/33-0.8373/weights_accuracy=0.8373101952277657.json"
+                ]
+            },
+            "5": {
+                "hint.maximization": [
+                    34,
+                    0.8436,
+                    "partial_data/soartech-casebases/50/5/weights/hint.maximization/34-0.8436/weights_accuracy=0.8436482084690554.json"
+                ]
+            },
+            "6": {
+                "hint.maximization": [
+                    33,
+                    0.845,
+                    "partial_data/soartech-casebases/50/6/weights/hint.maximization/33-0.845/weights_accuracy=0.8449781659388647.json"
+                ]
+            },
+            "7": {
+                "hint.maximization": [
+                    36,
+                    0.8421,
+                    "partial_data/soartech-casebases/50/7/weights/hint.maximization/36-0.8421/weights_accuracy=0.8421052631578947.json"
+                ]
+            },
+            "8": {
+                "hint.maximization": [
+                    35,
+                    0.845,
+                    "partial_data/soartech-casebases/50/8/weights/hint.maximization/35-0.845/weights_accuracy=0.8449781659388647.json"
+                ]
+            },
+            "9": {
+                "hint.maximization": [
+                    38,
+                    0.8447,
+                    "partial_data/soartech-casebases/50/9/weights/hint.maximization/38-0.8447/weights_accuracy=0.8446808510638298.json"
+                ]
+            }
+        },
+        "52": {
+            "0": {
+                "hint.maximization": [
+                    33,
+                    0.834,
+                    "partial_data/soartech-casebases/52/0/weights/hint.maximization/33-0.834/weights_accuracy=0.8340336134453782.json"
+                ]
+            }
+        }
+    }
+}

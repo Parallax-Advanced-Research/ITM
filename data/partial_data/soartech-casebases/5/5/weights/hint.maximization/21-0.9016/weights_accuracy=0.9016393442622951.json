@@ -1,0 +1,23 @@
+{
+    "age": 0.053840283304452896,
+    "tagged": 0.05374506488442421,
+    "conscious": 0.022592319175601006,
+    "breathing": 0.07839653640985489,
+    "injured_count": 0.07424813508987427,
+    "questioning": 0.21917641162872314,
+    "category": 0.060650572180747986,
+    "HRA Strategy.time-resources.take-the-best": 0.01909804530441761,
+    "HRA Strategy.resources-risk_reward_ratio.one-bounce": 0.006000438705086708,
+    "Satisfactory Priority": 0.011154631152749062,
+    "pBrainInjury": 0.007382409647107124,
+    "pAirwayBlocked": 0.014385608956217766,
+    "pInternalBleeding": 0.1733229011297226,
+    "pExternalBleeding": 0.015798501670360565,
+    "entropy": 0.014893656596541405,
+    "entropyDeath": 0.033716414123773575,
+    "SUPPLIES_REMAINING": 0.013064569793641567,
+    "DAMAGE_PER_SECOND": 0.013109385967254639,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.028919748961925507,
+    "SMOL_MEDICAL_SOUNDNESS": 0.05709733068943024,
+    "treatment": 0.029406949877738953
+}

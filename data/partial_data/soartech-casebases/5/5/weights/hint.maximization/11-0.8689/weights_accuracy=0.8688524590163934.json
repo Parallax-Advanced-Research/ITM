@@ -1,0 +1,13 @@
+{
+    "age": 0.0682717114686966,
+    "tagged": 0.21980810165405273,
+    "breathing": 0.07746189832687378,
+    "injured_count": 0.07501526921987534,
+    "questioning": 0.29137247800827026,
+    "category": 0.0941445603966713,
+    "HRA Strategy.time-resources.take-the-best": 0.015247631818056107,
+    "pInternalBleeding": 0.05200519412755966,
+    "entropyDeath": 0.029965179041028023,
+    "SMOL_MEDICAL_SOUNDNESS": 0.02891802415251732,
+    "treatment": 0.04778992384672165
+}

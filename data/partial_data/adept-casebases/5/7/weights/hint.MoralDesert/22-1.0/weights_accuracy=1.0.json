@@ -1,0 +1,23 @@
+{
+    "tagged": 0.030754616484045982,
+    "conscious": 0.00770232081413269,
+    "mental_status": 0.0009323677513748407,
+    "breathing": 0.09006575495004654,
+    "hrpmin": 0.0032862965017557144,
+    "intent": 0.08482492715120316,
+    "directness_of_causality": 0.13798318803310394,
+    "aid_available": 0.0030624077189713717,
+    "treating": 0.03766051307320595,
+    "HRA Strategy.time-resources.take-the-best": 0.024251602590084076,
+    "HRA Strategy.resources-system.take-the-best": 0.016251394525170326,
+    "HRA Strategy.time-resources-system.one-bounce": 0.0021116104908287525,
+    "HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce": 0.0009643100784160197,
+    "entropyDeath": 0.001523093320429325,
+    "SEVERITY": 0.04251427203416824,
+    "AVERAGE_TIME_USED": 0.0365019291639328,
+    "DAMAGE_PER_SECOND": 0.0010074321180582047,
+    "SUPPLIES_USED": 0.000992391724139452,
+    "WEIGHTED_RESOURCE_SCORE": 0.0026760336477309465,
+    "SMOL_MEDICAL_SOUNDNESS": 0.2646763026714325,
+    "treatment": 0.21025724709033966
+}

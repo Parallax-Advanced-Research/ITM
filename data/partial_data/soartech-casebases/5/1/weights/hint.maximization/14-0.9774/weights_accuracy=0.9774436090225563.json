@@ -1,0 +1,16 @@
+{
+    "tagged": 0.03740464523434639,
+    "breathing": 0.017763881012797356,
+    "avpu": 0.022589266300201416,
+    "environment_type": 0.012715487740933895,
+    "assessing": 0.1478971391916275,
+    "tagging": 0.5119919180870056,
+    "HRA Strategy.time-resources.take-the-best": 0.024332227185368538,
+    "HRA Strategy.time-system.tallying": 0.05409092828631401,
+    "One-Bounce Priority": 0.008111243136227131,
+    "SEVERITY": 0.008181912824511528,
+    "SUPPLIES_REMAINING": 0.028255699202418327,
+    "AVERAGE_TIME_USED": 0.054279912263154984,
+    "DAMAGE_PER_SECOND": 0.027644233778119087,
+    "treatment": 0.044741615653038025
+}

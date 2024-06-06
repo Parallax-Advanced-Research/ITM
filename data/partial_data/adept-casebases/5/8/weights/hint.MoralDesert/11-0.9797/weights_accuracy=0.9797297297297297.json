@@ -1,0 +1,13 @@
+{
+    "tagged": 0.11946702003479004,
+    "breathing": 0.02986922673881054,
+    "intent": 0.20945526659488678,
+    "directness_of_causality": 0.09289464354515076,
+    "treating": 0.20415468513965607,
+    "HRA Strategy.time-resources.take-the-best": 0.006871274672448635,
+    "AVERAGE_TIME_USED": 0.17272493243217468,
+    "SUPPLIES_USED": 0.016706055030226707,
+    "SEVEREST_SEVERITY": 0.007768809795379639,
+    "category": 0.009573671035468578,
+    "treatment": 0.1305144876241684
+}

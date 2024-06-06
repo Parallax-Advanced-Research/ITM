@@ -1,0 +1,13 @@
+{
+    "conscious": 0.16466328501701355,
+    "intent": 0.08766912668943405,
+    "directness_of_causality": 0.1548759937286377,
+    "aid_available": 0.024542594328522682,
+    "treating": 0.30575600266456604,
+    "HRA Strategy.resources-system.take-the-best": 0.0016322712181136012,
+    "pDeath": 0.10807467997074127,
+    "entropyDeath": 0.018464239314198494,
+    "SEVERITY": 0.01626308634877205,
+    "SUPPLIES_USED": 0.04171627014875412,
+    "treatment": 0.07634249329566956
+}

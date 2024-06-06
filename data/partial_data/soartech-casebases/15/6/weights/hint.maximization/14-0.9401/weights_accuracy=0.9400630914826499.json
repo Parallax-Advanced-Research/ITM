@@ -1,0 +1,16 @@
+{
+    "age": 0.00928680133074522,
+    "tagged": 0.019356215372681618,
+    "unvisited_count": 0.024542640894651413,
+    "environment_type": 0.015595112927258015,
+    "questioning": 0.10899413377046585,
+    "assessing": 0.11488781869411469,
+    "tagging": 0.1223350316286087,
+    "leaving": 0.45192474126815796,
+    "Satisfactory Priority": 0.031927209347486496,
+    "One-Bounce Priority": 0.03466238081455231,
+    "AVERAGE_TIME_USED": 0.010929655283689499,
+    "INFORMATION_GAINED": 0.011017229408025742,
+    "treatment": 0.03361053764820099,
+    "category": 0.010930540040135384
+}

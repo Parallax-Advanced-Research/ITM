@@ -1,0 +1,13 @@
+{
+    "intent": 0.0357150137424469,
+    "directness_of_causality": 0.1961207091808319,
+    "aid_available": 0.16328075528144836,
+    "treating": 0.30335891246795654,
+    "HRA Strategy.time-resources.take-the-best": 0.010007289238274097,
+    "HRA Strategy.resources-system.take-the-best": 0.02597418613731861,
+    "pDeath": 0.05914526805281639,
+    "SEVERITY": 0.01103982049971819,
+    "SUPPLIES_REMAINING": 0.017854487523436546,
+    "AVERAGE_TIME_USED": 0.002098917728289962,
+    "SUPPLIES_USED": 0.1754046529531479
+}

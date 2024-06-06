@@ -1,0 +1,16 @@
+{
+    "conscious": 0.0007852495764382184,
+    "intent": 0.23659799993038177,
+    "directness_of_causality": 0.12745654582977295,
+    "aid_available": 0.15822455286979675,
+    "treating": 0.2533930838108063,
+    "HRA Strategy.resources-system.take-the-best": 0.0009834275115281343,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0009694409091025591,
+    "HRA Strategy.resources-risk_reward_ratio-system.one-bounce": 0.0009590237168595195,
+    "Satisfactory Priority": 0.0008766650571487844,
+    "pAirwayBlocked": 0.0006734792841598392,
+    "SUPPLIES_REMAINING": 0.0005560198915190995,
+    "AVERAGE_TIME_USED": 0.003746896982192993,
+    "SUPPLIES_USED": 0.21442197263240814,
+    "SMOL_MEDICAL_SOUNDNESS": 0.00035568003659136593
+}

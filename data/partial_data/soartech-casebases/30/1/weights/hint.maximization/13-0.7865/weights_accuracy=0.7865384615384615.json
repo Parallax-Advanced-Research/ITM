@@ -1,0 +1,15 @@
+{
+    "age": 0.016145113855600357,
+    "tagged": 0.03681967034935951,
+    "injured_count": 0.025060806423425674,
+    "questioning": 0.2208414375782013,
+    "assessing": 0.27526336908340454,
+    "tagging": 0.1720249354839325,
+    "One-Bounce Priority": 0.08625439554452896,
+    "pInternalBleeding": 0.0109499990940094,
+    "pExternalBleeding": 0.011997349560260773,
+    "AVERAGE_TIME_USED": 0.019424911588430405,
+    "INFORMATION_GAINED": 0.061713531613349915,
+    "treatment": 0.04471229389309883,
+    "category": 0.018792232498526573
+}

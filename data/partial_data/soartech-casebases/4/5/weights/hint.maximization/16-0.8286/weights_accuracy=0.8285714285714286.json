@@ -1,0 +1,18 @@
+{
+    "age": 0.006743308622390032,
+    "visited": 0.0011688547674566507,
+    "environment_type": 0.0455254390835762,
+    "questioning": 0.24267283082008362,
+    "assessing": 0.4012050926685333,
+    "treating": 0.009359854273498058,
+    "category": 0.08164907246828079,
+    "HRA Strategy.time-resources.take-the-best": 0.08850277215242386,
+    "HRA Strategy.time-system.tallying": 0.0012891602236777544,
+    "HRA Strategy.resources-risk_reward_ratio.one-bounce": 5.9586993302218616e-05,
+    "HRA Strategy.resources-system.take-the-best": 0.0005647125653922558,
+    "SEVERITY": 0.024461349472403526,
+    "SUPPLIES_REMAINING": 0.0012733243638649583,
+    "DAMAGE_PER_SECOND": 0.021592777222394943,
+    "SEVEREST_SEVERITY": 0.00016315105312969536,
+    "INFORMATION_GAINED": 0.07376863062381744
+}

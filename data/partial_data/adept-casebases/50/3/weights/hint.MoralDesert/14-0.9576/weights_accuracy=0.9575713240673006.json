@@ -1,0 +1,16 @@
+{
+    "conscious": 0.01794338785111904,
+    "breathing": 0.02037658728659153,
+    "intent": 0.02021677792072296,
+    "directness_of_causality": 0.17702917754650116,
+    "aid_available": 0.1754191666841507,
+    "treating": 0.2592777907848358,
+    "HRA Strategy.resources-risk_reward_ratio.one-bounce": 0.012969397008419037,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0007645770674571395,
+    "entropyDeath": 0.002347683534026146,
+    "SEVERITY": 0.05288522690534592,
+    "SUPPLIES_REMAINING": 0.0010359353618696332,
+    "AVERAGE_TIME_USED": 0.008080191910266876,
+    "SUPPLIES_USED": 0.2003762573003769,
+    "SEVEREST_SEVERITY": 0.05127781629562378
+}

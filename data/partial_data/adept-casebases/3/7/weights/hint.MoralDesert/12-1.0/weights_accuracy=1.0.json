@@ -1,0 +1,14 @@
+{
+    "tagged": 0.033045075833797455,
+    "intent": 0.1376010924577713,
+    "treating": 0.326158344745636,
+    "treatment": 0.46362942457199097,
+    "HRA Strategy.time-resources.take-the-best": 0.008164050988852978,
+    "HRA Strategy.time-risk_reward_ratio.one-bounce": 0.0013568041613325477,
+    "HRA Strategy.time-system.tallying": 0.0014335783198475838,
+    "HRA Strategy.resources-system.take-the-best": 0.00914002489298582,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.00494633661583066,
+    "SEVERITY": 0.007821456529200077,
+    "DAMAGE_PER_SECOND": 0.0003226987028028816,
+    "WEIGHTED_RESOURCE_SCORE": 0.006381015293300152
+}

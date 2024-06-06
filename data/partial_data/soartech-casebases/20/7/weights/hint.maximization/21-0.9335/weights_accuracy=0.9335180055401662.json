@@ -1,0 +1,23 @@
+{
+    "age": 0.011286532506346703,
+    "tagged": 0.041513606905937195,
+    "visited": 0.008721917867660522,
+    "breathing": 0.006114770192652941,
+    "hrpmin": 0.019813423976302147,
+    "injured_count": 0.09883259981870651,
+    "environment_type": 0.010236509144306183,
+    "questioning": 0.17484734952449799,
+    "assessing": 0.17969824373722076,
+    "tagging": 0.13598866760730743,
+    "category": 0.01189376786351204,
+    "HRA Strategy.time-risk_reward_ratio.take-the-best": 0.00411913963034749,
+    "Satisfactory Priority": 0.01771576702594757,
+    "One-Bounce Priority": 0.04212925210595131,
+    "pPain": 0.005559865385293961,
+    "pAirwayBlocked": 0.01290674414485693,
+    "entropy": 0.0054930588230490685,
+    "MEDSIM_P_DEATH": 0.004369485192000866,
+    "SMOL_MEDICAL_SOUNDNESS": 0.010448130778968334,
+    "INFORMATION_GAINED": 0.17438946664333344,
+    "treatment": 0.023921649903059006
+}

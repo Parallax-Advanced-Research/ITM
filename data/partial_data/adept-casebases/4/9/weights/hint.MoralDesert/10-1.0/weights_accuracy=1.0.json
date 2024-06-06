@@ -1,0 +1,12 @@
+{
+    "tagged": 0.012900270521640778,
+    "intent": 0.061501793563365936,
+    "directness_of_causality": 0.342540442943573,
+    "treating": 0.5068679451942444,
+    "HRA Strategy.time-resources.take-the-best": 0.024496549740433693,
+    "HRA Strategy.resources-system.take-the-best": 0.011793913319706917,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0014021566603332758,
+    "HRA Strategy.time-resources-system.tallying": 0.0006708781002089381,
+    "Take-The-Best Priority": 0.008119532838463783,
+    "Satisfactory Priority": 0.029706545174121857
+}

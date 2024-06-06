@@ -1,0 +1,10 @@
+{
+    "conscious": 0.03113139607012272,
+    "intent": 0.01581989973783493,
+    "directness_of_causality": 0.18724201619625092,
+    "aid_available": 0.19380661845207214,
+    "treating": 0.3290199339389801,
+    "HRA Strategy.resources-risk_reward_ratio.one-bounce": 0.012372266501188278,
+    "HRA Strategy.resources-system.take-the-best": 0.009757316671311855,
+    "SUPPLIES_USED": 0.2208506315946579
+}

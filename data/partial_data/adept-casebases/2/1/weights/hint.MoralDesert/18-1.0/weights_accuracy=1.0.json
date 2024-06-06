@@ -1,0 +1,20 @@
+{
+    "others_tagged_or_uninjured": 0.1639464795589447,
+    "aid_available": 0.13742797076702118,
+    "treating": 0.16516681015491486,
+    "Take-The-Best Priority": 0.1337011307477951,
+    "Satisfactory Priority": 0.0013201643014326692,
+    "SEVERITY": 0.04354012385010719,
+    "SUPPLIES_REMAINING": 0.0012828962644562125,
+    "MEDSIM_P_DEATH": 0.037687987089157104,
+    "SEVERITY_CHANGE": 0.005467518698424101,
+    "SMOL_MEDICAL_SOUNDNESS": 0.11303416639566422,
+    "mental_status": 0.02648007683455944,
+    "HRA Strategy.time-resources-system.one-bounce": 0.006187896244227886,
+    "HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce": 0.0018661507638171315,
+    "pPain": 0.0011338854674249887,
+    "entropyDeath": 0.0025774796959012747,
+    "directness_of_causality": 0.08894544094800949,
+    "hrpmin": 0.0019544605165719986,
+    "treatment": 0.06827937066555023
+}

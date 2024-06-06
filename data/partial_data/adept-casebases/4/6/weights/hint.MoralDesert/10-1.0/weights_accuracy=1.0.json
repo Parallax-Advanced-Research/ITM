@@ -1,0 +1,12 @@
+{
+    "mental_status": 0.045112647116184235,
+    "breathing": 0.12491150200366974,
+    "directness_of_causality": 0.24294617772102356,
+    "aid_available": 0.022049564868211746,
+    "treating": 0.38379067182540894,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.004352992400527,
+    "SEVERITY": 0.01815830171108246,
+    "AVERAGE_TIME_USED": 0.013871394097805023,
+    "SUPPLIES_USED": 0.10201309621334076,
+    "SEVEREST_SEVERITY": 0.0427936315536499
+}

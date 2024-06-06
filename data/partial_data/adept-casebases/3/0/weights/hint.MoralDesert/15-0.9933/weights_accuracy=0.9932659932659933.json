@@ -1,0 +1,17 @@
+{
+    "conscious": 0.07253149896860123,
+    "intent": 0.038064733147621155,
+    "injured_count": 0.08507616817951202,
+    "treating": 0.3190511465072632,
+    "pBrainInjury": 0.08168582618236542,
+    "SEVERITY": 0.013611502945423126,
+    "AVERAGE_TIME_USED": 0.0316900759935379,
+    "DAMAGE_PER_SECOND": 0.0006880217115394771,
+    "SUPPLIES_USED": 0.11098828911781311,
+    "SEVEREST_SEVERITY": 0.018058767542243004,
+    "WEIGHTED_RESOURCE_SCORE": 0.0010383498156443238,
+    "HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce": 0.0007362494361586869,
+    "HRA Strategy.time-system.one-bounce": 0.002528875833377242,
+    "treatment": 0.007292000111192465,
+    "HRA Strategy.time-risk_reward_ratio.one-bounce": 0.21695850789546967
+}

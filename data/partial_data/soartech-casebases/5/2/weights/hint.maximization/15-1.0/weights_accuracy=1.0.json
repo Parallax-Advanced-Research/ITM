@@ -1,0 +1,16 @@
+{
+    "age": 0.050735071301460266,
+    "environment_type": 0.08338174968957901,
+    "questioning": 0.22065883874893188,
+    "tagging": 0.16430997848510742,
+    "leaving": 0.17767482995986938,
+    "category": 0.038059789687395096,
+    "HRA Strategy.time-resources.take-the-best": 0.027458742260932922,
+    "pPain": 0.01052903477102518,
+    "pBrainInjury": 0.007973008789122105,
+    "pInternalBleeding": 0.006110093556344509,
+    "SEVERITY": 0.02518291212618351,
+    "DAMAGE_PER_SECOND": 0.04418353736400604,
+    "WEIGHTED_RESOURCE_SCORE": 0.019514502957463264,
+    "treatment": 0.12422777712345123
+}

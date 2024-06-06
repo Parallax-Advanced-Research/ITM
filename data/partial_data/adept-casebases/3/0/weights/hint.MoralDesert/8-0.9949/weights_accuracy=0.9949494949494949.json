@@ -1,0 +1,10 @@
+{
+    "conscious": 0.06986210495233536,
+    "intent": 0.05531584098935127,
+    "injured_count": 0.08512180298566818,
+    "treating": 0.35813936591148376,
+    "pBrainInjury": 0.13791441917419434,
+    "AVERAGE_TIME_USED": 0.03530016914010048,
+    "SUPPLIES_USED": 0.10008344054222107,
+    "HRA Strategy.time-risk_reward_ratio.one-bounce": 0.15826280415058136
+}

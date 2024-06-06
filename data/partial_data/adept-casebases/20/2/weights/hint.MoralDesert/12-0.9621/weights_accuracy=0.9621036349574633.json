@@ -1,0 +1,14 @@
+{
+    "conscious": 0.012262703850865364,
+    "hrpmin": 0.0030150022357702255,
+    "intent": 0.22335822880268097,
+    "directness_of_causality": 0.16193120181560516,
+    "aid_available": 0.1172705665230751,
+    "treating": 0.23563252389431,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0011365108657628298,
+    "HRA Strategy.resources-risk_reward_ratio-system.one-bounce": 0.0008307894458994269,
+    "SEVERITY": 0.002231105463579297,
+    "AVERAGE_TIME_USED": 0.014608681201934814,
+    "SUPPLIES_USED": 0.20705915987491608,
+    "SMOL_MEDICAL_SOUNDNESS": 0.020663516595959663
+}

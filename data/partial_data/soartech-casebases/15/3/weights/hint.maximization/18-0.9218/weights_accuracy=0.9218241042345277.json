@@ -1,0 +1,20 @@
+{
+    "age": 0.015958542004227638,
+    "tagged": 0.10368139296770096,
+    "visited": 0.18044422566890717,
+    "unvisited_count": 0.043002400547266006,
+    "injured_count": 0.028244398534297943,
+    "environment_type": 0.011640439741313457,
+    "assessing": 0.23645058274269104,
+    "tagging": 0.16736705601215363,
+    "category": 0.01470823772251606,
+    "HRA Strategy.time-system.tallying": 0.006661130115389824,
+    "One-Bounce Priority": 0.04313260316848755,
+    "pDeath": 0.008404001593589783,
+    "pPain": 0.023370997980237007,
+    "pInternalBleeding": 0.00805616844445467,
+    "pExternalBleeding": 0.007607409730553627,
+    "SEVERITY": 0.007814204320311546,
+    "AVERAGE_TIME_USED": 0.006878813728690147,
+    "treatment": 0.08657728135585785
+}

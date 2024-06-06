@@ -1,0 +1,15 @@
+{
+    "conscious": 0.05050019547343254,
+    "breathing": 0.08188928663730621,
+    "intent": 0.11368334293365479,
+    "treating": 0.26751580834388733,
+    "HRA Strategy.resources-risk_reward_ratio.one-bounce": 0.03359327092766762,
+    "HRA Strategy.resources-system.take-the-best": 0.17305384576320648,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.028958145529031754,
+    "HRA Strategy.time-resources-system.tallying": 0.08378372341394424,
+    "pBrainInjury": 0.015166644006967545,
+    "SEVERITY": 0.03463644161820412,
+    "AVERAGE_TIME_USED": 0.01750999130308628,
+    "SUPPLIES_USED": 0.07527170330286026,
+    "treatment": 0.024437708780169487
+}

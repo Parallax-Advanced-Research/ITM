@@ -1,0 +1,16 @@
+{
+    "age": 0.010595197789371014,
+    "tagged": 0.02954537235200405,
+    "hrpmin": 0.007954912260174751,
+    "injured_count": 0.06134572625160217,
+    "environment_type": 0.012871000915765762,
+    "questioning": 0.2206476628780365,
+    "assessing": 0.2238234281539917,
+    "tagging": 0.17643389105796814,
+    "category": 0.01529676653444767,
+    "Satisfactory Priority": 0.021767109632492065,
+    "One-Bounce Priority": 0.05348552390933037,
+    "pAirwayBlocked": 0.01150286104530096,
+    "INFORMATION_GAINED": 0.1257917433977127,
+    "treatment": 0.028938857838511467
+}

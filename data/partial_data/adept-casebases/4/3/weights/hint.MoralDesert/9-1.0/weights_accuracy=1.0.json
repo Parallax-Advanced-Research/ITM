@@ -1,0 +1,11 @@
+{
+    "aid_available": 0.04094136506319046,
+    "treating": 0.20076873898506165,
+    "SEVERITY": 0.008585949428379536,
+    "AVERAGE_TIME_USED": 0.04889917001128197,
+    "HRA Strategy.time-system.satisfactory": 0.01487567089498043,
+    "HRA Strategy.resources-system.one-bounce": 0.020902469754219055,
+    "intent": 0.5656364560127258,
+    "treatment": 0.0027969873044639826,
+    "directness_of_causality": 0.09659318625926971
+}

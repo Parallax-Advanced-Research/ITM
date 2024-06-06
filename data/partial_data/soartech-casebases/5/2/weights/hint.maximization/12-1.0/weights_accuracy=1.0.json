@@ -1,0 +1,14 @@
+{
+    "age": 0.03139687329530716,
+    "environment_type": 0.07054457813501358,
+    "questioning": 0.2324126809835434,
+    "tagging": 0.1718522161245346,
+    "leaving": 0.18574558198451996,
+    "category": 0.03623008355498314,
+    "HRA Strategy.time-resources.take-the-best": 0.022230667993426323,
+    "pBrainInjury": 0.012284839525818825,
+    "SEVERITY": 0.026036761701107025,
+    "DAMAGE_PER_SECOND": 0.04303760081529617,
+    "WEIGHTED_RESOURCE_SCORE": 0.01680269092321396,
+    "treatment": 0.15142537653446198
+}

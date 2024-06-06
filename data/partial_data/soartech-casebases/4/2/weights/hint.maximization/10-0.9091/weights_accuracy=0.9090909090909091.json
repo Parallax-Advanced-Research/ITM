@@ -1,0 +1,12 @@
+{
+    "age": 0.034563399851322174,
+    "breathing": 0.03130584955215454,
+    "assessing": 0.265493780374527,
+    "tagging": 0.39566490054130554,
+    "HRA Strategy.time-resources.take-the-best": 0.033420056104660034,
+    "HRA Strategy.time-resources.one-bounce": 0.015406559221446514,
+    "Satisfactory Priority": 0.04052719101309776,
+    "SEVERITY": 0.010999659076333046,
+    "WEIGHTED_RESOURCE_SCORE": 0.12956780195236206,
+    "treatment": 0.0430508553981781
+}

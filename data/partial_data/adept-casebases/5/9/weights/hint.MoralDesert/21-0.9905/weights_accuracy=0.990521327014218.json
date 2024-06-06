@@ -1,0 +1,23 @@
+{
+    "tagged": 0.054842159152030945,
+    "conscious": 0.11133837699890137,
+    "mental_status": 0.010168425738811493,
+    "breathing": 0.029881877824664116,
+    "intent": 0.19801467657089233,
+    "directness_of_causality": 0.1181788221001625,
+    "treating": 0.1733425408601761,
+    "HRA Strategy.time-resources.take-the-best": 0.007237407378852367,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.010130724869668484,
+    "HRA Strategy.time-resources-system.tallying": 0.002173039363697171,
+    "HRA Strategy.resources-risk_reward_ratio-system.one-bounce": 0.024196768179535866,
+    "pPain": 0.0007016805466264486,
+    "pBrainInjury": 0.006183430086821318,
+    "pAirwayBlocked": 0.004710725042968988,
+    "pInternalBleeding": 0.008426775224506855,
+    "SEVERITY": 0.04766569659113884,
+    "AVERAGE_TIME_USED": 0.08212944120168686,
+    "SUPPLIES_USED": 0.058980632573366165,
+    "SEVEREST_SEVERITY": 0.04623081535100937,
+    "category": 0.0025802499148994684,
+    "treatment": 0.0028857889119535685
+}

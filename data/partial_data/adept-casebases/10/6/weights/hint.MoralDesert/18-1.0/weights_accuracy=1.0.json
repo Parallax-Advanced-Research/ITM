@@ -1,0 +1,20 @@
+{
+    "tagged": 0.033856138586997986,
+    "conscious": 0.018760697916150093,
+    "breathing": 0.011012147180736065,
+    "intent": 0.2613106966018677,
+    "directness_of_causality": 0.07019703835248947,
+    "questioning": 0.010859938338398933,
+    "treating": 0.12525679171085358,
+    "HRA Strategy.time-resources.take-the-best": 0.025934528559446335,
+    "HRA Strategy.resources-system.take-the-best": 0.040734048932790756,
+    "HRA Strategy.time-resources-system.exhaustive": 0.0029474187176674604,
+    "Take-The-Best Priority": 0.002657162258401513,
+    "entropyDeath": 0.003516505006700754,
+    "SEVERITY": 0.045566678047180176,
+    "AVERAGE_TIME_USED": 0.03293728828430176,
+    "SEVERITY_CHANGE": 0.005824847146868706,
+    "SUPPLIES_USED": 0.08684361726045609,
+    "SMOL_MEDICAL_SOUNDNESS": 0.1458929032087326,
+    "treatment": 0.07589156180620193
+}

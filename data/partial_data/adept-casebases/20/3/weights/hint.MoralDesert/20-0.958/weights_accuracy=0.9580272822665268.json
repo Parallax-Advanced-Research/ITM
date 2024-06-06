@@ -1,0 +1,22 @@
+{
+    "mental_status": 0.004497369285672903,
+    "intent": 0.10331156849861145,
+    "directness_of_causality": 0.13472189009189606,
+    "aid_available": 0.15306594967842102,
+    "treating": 0.26302531361579895,
+    "HRA Strategy.resources-system.take-the-best": 0.0001357872533844784,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0014686987269669771,
+    "HRA Strategy.time-resources-system.one-bounce": 0.0007398700690828264,
+    "HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce": 0.0005474985227920115,
+    "Take-The-Best Priority": 0.000390545348636806,
+    "Satisfactory Priority": 0.0013902448117733002,
+    "pBrainInjury": 0.00017678477161098272,
+    "pAirwayBlocked": 0.00023560613044537604,
+    "SEVERITY": 0.010370912030339241,
+    "SUPPLIES_REMAINING": 0.0012682226952165365,
+    "AVERAGE_TIME_USED": 0.0075694299302995205,
+    "SUPPLIES_USED": 0.18788686394691467,
+    "SEVEREST_SEVERITY": 0.00035306657082401216,
+    "SMOL_MEDICAL_SOUNDNESS": 0.12760788202285767,
+    "treatment": 0.0012364983558654785
+}

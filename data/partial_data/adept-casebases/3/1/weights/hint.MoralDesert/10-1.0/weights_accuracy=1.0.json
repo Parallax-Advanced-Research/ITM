@@ -1,0 +1,12 @@
+{
+    "intent": 0.18971262872219086,
+    "treating": 0.6612583994865417,
+    "HRA Strategy.time-resources.take-the-best": 0.03491075336933136,
+    "HRA Strategy.resources-system.take-the-best": 0.04130013287067413,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0019344560569152236,
+    "HRA Strategy.time-resources-system.tallying": 0.005225765518844128,
+    "Take-The-Best Priority": 0.012196066789329052,
+    "Satisfactory Priority": 0.019608793780207634,
+    "AVERAGE_TIME_USED": 0.007435420528054237,
+    "treatment": 0.026417551562190056
+}

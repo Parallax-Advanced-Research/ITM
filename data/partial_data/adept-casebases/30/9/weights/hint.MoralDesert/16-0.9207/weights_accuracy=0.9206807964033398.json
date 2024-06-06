@@ -1,0 +1,18 @@
+{
+    "conscious": 0.0029270946979522705,
+    "mental_status": 0.0033808150328695774,
+    "breathing": 0.0005859495722688735,
+    "intent": 0.01179103460162878,
+    "directness_of_causality": 0.1739456057548523,
+    "aid_available": 0.16805881261825562,
+    "treating": 0.22805437445640564,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0013519698986783624,
+    "HRA Strategy.resources-risk_reward_ratio-system.one-bounce": 0.0009240847430191934,
+    "Satisfactory Priority": 0.0011545250890776515,
+    "SEVERITY": 0.0066790892742574215,
+    "SUPPLIES_REMAINING": 0.0010590028250589967,
+    "AVERAGE_TIME_USED": 0.007900395430624485,
+    "SUPPLIES_USED": 0.2377033233642578,
+    "SMOL_MEDICAL_SOUNDNESS": 0.15338553488254547,
+    "treatment": 0.0010985183762386441
+}

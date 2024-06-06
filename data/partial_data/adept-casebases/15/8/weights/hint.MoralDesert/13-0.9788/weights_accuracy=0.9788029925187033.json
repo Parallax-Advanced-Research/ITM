@@ -1,0 +1,15 @@
+{
+    "tagged": 0.01768265664577484,
+    "breathing": 0.020170455798506737,
+    "intent": 0.015368918888270855,
+    "directness_of_causality": 0.06608891487121582,
+    "injured_count": 0.26286518573760986,
+    "aid_available": 0.06860964745283127,
+    "treating": 0.1489437073469162,
+    "HRA Strategy.resources-system.take-the-best": 3.9683123759459704e-05,
+    "entropy": 0.013317368924617767,
+    "SEVERITY": 0.029436247423291206,
+    "AVERAGE_TIME_USED": 0.022127076983451843,
+    "SUPPLIES_USED": 0.12124822288751602,
+    "SMOL_MEDICAL_SOUNDNESS": 0.21410197019577026
+}

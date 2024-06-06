@@ -1,0 +1,14 @@
+{
+    "tagged": 0.0009663353557698429,
+    "mental_status": 0.006661297753453255,
+    "directness_of_causality": 0.21436947584152222,
+    "treating": 0.5764817595481873,
+    "HRA Strategy.resources-system.take-the-best": 0.006864810362458229,
+    "HRA Strategy.resources-system.exhaustive": 0.003866176586598158,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.006704101338982582,
+    "Satisfactory Priority": 0.004593085963279009,
+    "pInternalBleeding": 0.0032063787803053856,
+    "SUPPLIES_REMAINING": 0.0047827959060668945,
+    "WEIGHTED_RESOURCE_SCORE": 0.0022520956117659807,
+    "treatment": 0.1692516803741455
+}

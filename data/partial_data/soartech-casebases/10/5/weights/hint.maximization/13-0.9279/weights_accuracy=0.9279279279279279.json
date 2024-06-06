@@ -1,0 +1,15 @@
+{
+    "age": 0.0134105971083045,
+    "tagged": 0.043723948299884796,
+    "breathing": 0.02102961577475071,
+    "hrpmin": 0.03992215543985367,
+    "assessing": 0.22880080342292786,
+    "tagging": 0.46452319622039795,
+    "category": 0.019618138670921326,
+    "HRA Strategy.time-resources.take-the-best": 0.01333930715918541,
+    "HRA Strategy.time-system.tallying": 0.013025050051510334,
+    "pBrainInjury": 0.014157482422888279,
+    "entropyDeath": 0.056411366909742355,
+    "SEVERITY": 0.022075070068240166,
+    "treatment": 0.049963273108005524
+}

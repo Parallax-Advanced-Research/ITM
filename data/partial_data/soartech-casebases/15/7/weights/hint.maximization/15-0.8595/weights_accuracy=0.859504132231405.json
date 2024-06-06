@@ -1,0 +1,17 @@
+{
+    "age": 0.018529731780290604,
+    "tagged": 0.061639461666345596,
+    "unvisited_count": 0.021265393123030663,
+    "injured_count": 0.024306636303663254,
+    "environment_type": 0.020624203607439995,
+    "questioning": 0.1406240016222,
+    "assessing": 0.26792943477630615,
+    "tagging": 0.08741755783557892,
+    "category": 0.022803764790296555,
+    "One-Bounce Priority": 0.102940134704113,
+    "pDeath": 0.01364878099411726,
+    "pAirwayBlocked": 0.012762999162077904,
+    "WEIGHTED_RESOURCE_SCORE": 0.06106656789779663,
+    "INFORMATION_GAINED": 0.09792497009038925,
+    "treatment": 0.04651648923754692
+}

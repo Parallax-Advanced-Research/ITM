@@ -1,0 +1,12 @@
+{
+    "age": 0.0019352028612047434,
+    "assessing": 0.3786013722419739,
+    "treating": 0.003808938665315509,
+    "category": 0.08704940229654312,
+    "HRA Strategy.time-resources.take-the-best": 0.010005672462284565,
+    "HRA Strategy.time-system.exhaustive": 0.0029305012430995703,
+    "SEVERITY": 0.002807952230796218,
+    "SUPPLIES_REMAINING": 0.0007229035836644471,
+    "DAMAGE_PER_SECOND": 0.29302167892456055,
+    "treatment": 0.21911638975143433
+}

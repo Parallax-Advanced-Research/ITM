@@ -1,0 +1,18 @@
+{
+    "intent": 0.21472050249576569,
+    "aid_available": 0.002752583473920822,
+    "treating": 0.20783227682113647,
+    "HRA Strategy.time-resources.take-the-best": 0.0011204819893464446,
+    "HRA Strategy.resources-system.take-the-best": 0.0008172966772690415,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0004493780143093318,
+    "HRA Strategy.resources-risk_reward_ratio-system.one-bounce": 0.0015999452443793416,
+    "HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce": 0.0005504613509401679,
+    "entropyDeath": 0.0020300187170505524,
+    "SEVERITY": 0.07130039483308792,
+    "SUPPLIES_REMAINING": 0.001926052151247859,
+    "SEVERITY_CHANGE": 0.11236453056335449,
+    "WEIGHTED_RESOURCE_SCORE": 0.0011312655406072736,
+    "SMOL_MEDICAL_SOUNDNESS": 0.24942772090435028,
+    "category": 0.005510510876774788,
+    "treatment": 0.1264665424823761
+}

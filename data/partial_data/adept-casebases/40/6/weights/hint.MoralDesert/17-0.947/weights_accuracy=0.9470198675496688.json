@@ -1,0 +1,19 @@
+{
+    "intent": 0.041452910751104355,
+    "directness_of_causality": 0.2026655673980713,
+    "aid_available": 0.1898176223039627,
+    "treating": 0.28710660338401794,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.001755539677105844,
+    "HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce": 0.0005266762454994023,
+    "Satisfactory Priority": 0.0008201829623430967,
+    "pBrainInjury": 0.0027034017257392406,
+    "pAirwayBlocked": 0.00015635664749424905,
+    "pInternalBleeding": 0.0006406591855920851,
+    "entropyDeath": 0.0003472676908131689,
+    "SEVERITY": 0.0003512696421239525,
+    "SUPPLIES_REMAINING": 0.0024362944532185793,
+    "AVERAGE_TIME_USED": 0.01024519745260477,
+    "SUPPLIES_USED": 0.2581942677497864,
+    "WEIGHTED_RESOURCE_SCORE": 0.0003520995669532567,
+    "treatment": 0.00042821330134756863
+}

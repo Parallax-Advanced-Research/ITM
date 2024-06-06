@@ -1,0 +1,19 @@
+{
+    "age": 0.012020180933177471,
+    "tagged": 0.03184741362929344,
+    "conscious": 0.0059261745773255825,
+    "breathing": 0.023759974166750908,
+    "hrpmin": 0.04088783636689186,
+    "assessing": 0.22264201939105988,
+    "tagging": 0.42931726574897766,
+    "category": 0.018961826339364052,
+    "HRA Strategy.time-resources.take-the-best": 0.011218955740332603,
+    "HRA Strategy.time-system.tallying": 0.013414072804152966,
+    "pBrainInjury": 0.03233937919139862,
+    "pAirwayBlocked": 0.005805072374641895,
+    "entropyDeath": 0.06066466122865677,
+    "SEVERITY": 0.02397274598479271,
+    "MEDSIM_P_DEATH": 0.007607605773955584,
+    "SMOL_MEDICAL_SOUNDNESS": 0.006192497909069061,
+    "treatment": 0.05342225730419159
+}

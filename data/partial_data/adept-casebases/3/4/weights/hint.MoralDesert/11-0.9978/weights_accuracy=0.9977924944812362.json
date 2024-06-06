@@ -1,0 +1,13 @@
+{
+    "intent": 0.4576975703239441,
+    "directness_of_causality": 0.05204571783542633,
+    "injured_count": 0.13265115022659302,
+    "treating": 0.1409757286310196,
+    "HRA Strategy.time-resources.take-the-best": 0.008726616390049458,
+    "HRA Strategy.time-system.tallying": 0.00042123335879296064,
+    "HRA Strategy.resources-system.take-the-best": 0.013389596715569496,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0007150708115659654,
+    "HRA Strategy.time-resources-system.tallying": 0.0006276154308579862,
+    "AVERAGE_TIME_USED": 0.0010724327294155955,
+    "SUPPLIES_USED": 0.19167733192443848
+}

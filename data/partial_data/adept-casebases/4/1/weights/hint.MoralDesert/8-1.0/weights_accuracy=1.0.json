@@ -1,0 +1,10 @@
+{
+    "intent": 0.1223820373415947,
+    "directness_of_causality": 0.07000738382339478,
+    "aid_available": 0.0559137798845768,
+    "treating": 0.12776456773281097,
+    "HRA Strategy.time-resources.take-the-best": 0.5092147588729858,
+    "SEVERITY_CHANGE": 0.042025044560432434,
+    "SUPPLIES_USED": 0.0448942705988884,
+    "SMOL_MEDICAL_SOUNDNESS": 0.02779817022383213
+}

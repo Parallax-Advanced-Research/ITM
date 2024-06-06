@@ -1,0 +1,10 @@
+{
+    "mental_status": 0.04963281750679016,
+    "intent": 0.09143361449241638,
+    "directness_of_causality": 0.05928580462932587,
+    "treating": 0.1977587640285492,
+    "treatment": 0.09264691919088364,
+    "HRA Strategy.time-resources.take-the-best": 0.02499382197856903,
+    "SEVERITY": 0.03828300163149834,
+    "SUPPLIES_USED": 0.4459652304649353
+}

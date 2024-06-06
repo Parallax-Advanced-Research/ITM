@@ -1,0 +1,13 @@
+{
+    "conscious": 0.0005303263897076249,
+    "intent": 0.19866931438446045,
+    "directness_of_causality": 0.14169028401374817,
+    "aid_available": 0.1526828110218048,
+    "treating": 0.2777094542980194,
+    "HRA Strategy.resources-system.take-the-best": 0.0010394628625363111,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.001135745202191174,
+    "Satisfactory Priority": 0.0009796685772016644,
+    "SUPPLIES_REMAINING": 0.0008795232861302793,
+    "AVERAGE_TIME_USED": 0.003306813072413206,
+    "SUPPLIES_USED": 0.22137665748596191
+}

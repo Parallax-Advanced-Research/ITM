@@ -1,0 +1,14 @@
+{
+    "others_tagged_or_uninjured": 0.17381297051906586,
+    "aid_available": 0.08581548184156418,
+    "treating": 0.17744708061218262,
+    "Take-The-Best Priority": 0.15401726961135864,
+    "SEVERITY": 0.044989194720983505,
+    "MEDSIM_P_DEATH": 0.04564443230628967,
+    "SEVERITY_CHANGE": 0.0054145012982189655,
+    "SMOL_MEDICAL_SOUNDNESS": 0.14141592383384705,
+    "mental_status": 0.02146586775779724,
+    "HRA Strategy.time-resources-system.one-bounce": 0.004983110353350639,
+    "directness_of_causality": 0.08978558331727982,
+    "treatment": 0.05520853400230408
+}

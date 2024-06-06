@@ -1,0 +1,14 @@
+{
+    "aid_available": 0.07876604050397873,
+    "questioning": 0.029853714630007744,
+    "treating": 0.4523666203022003,
+    "Take-The-Best Priority": 0.2651667296886444,
+    "Satisfactory Priority": 0.018483448773622513,
+    "SEVERITY": 0.044322457164525986,
+    "AVERAGE_TIME_USED": 0.029726168140769005,
+    "SEVEREST_SEVERITY": 0.0006265261326916516,
+    "HRA Strategy.time-system.satisfactory": 0.06389430165290833,
+    "HRA Strategy.resources-risk_reward_ratio-system.satisfactory": 0.008150453679263592,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0031449273228645325,
+    "tagged": 0.005498705897480249
+}

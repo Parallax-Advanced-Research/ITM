@@ -1,0 +1,9 @@
+{
+    "directness_of_causality": 0.08336468786001205,
+    "others_tagged_or_uninjured": 0.08041508495807648,
+    "aid_available": 0.18226228654384613,
+    "treating": 0.276178240776062,
+    "MEDSIM_P_DEATH": 0.087566077709198,
+    "SUPPLIES_USED": 0.267696738243103,
+    "SMOL_MEDICAL_SOUNDNESS": 0.02251678891479969
+}

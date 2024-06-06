@@ -1,0 +1,19 @@
+{
+    "tagged": 0.034905750304460526,
+    "hrpmin": 0.0051944139413535595,
+    "unvisited_count": 0.005586743354797363,
+    "environment_type": 0.0035104257985949516,
+    "questioning": 0.2174784392118454,
+    "assessing": 0.18566566705703735,
+    "tagging": 0.22748124599456787,
+    "leaving": 0.2179991900920868,
+    "HRA Strategy.time-resources.take-the-best": 0.0019423296907916665,
+    "One-Bounce Priority": 0.024556752294301987,
+    "pPain": 0.003674736013635993,
+    "pExternalBleeding": 0.008833499625325203,
+    "entropy": 0.0033189330715686083,
+    "AVERAGE_TIME_USED": 0.01177588663995266,
+    "MEDSIM_P_DEATH": 0.004835825879126787,
+    "treatment": 0.03509380295872688,
+    "category": 0.008146288804709911
+}

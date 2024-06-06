@@ -1,0 +1,19 @@
+{
+    "tagged": 0.03105306252837181,
+    "breathing": 0.00542824063450098,
+    "injured_count": 0.011709450744092464,
+    "questioning": 0.23076403141021729,
+    "assessing": 0.2748343050479889,
+    "tagging": 0.190402552485466,
+    "leaving": 0.12350846081972122,
+    "One-Bounce Priority": 0.01851760409772396,
+    "pPain": 0.00525235990062356,
+    "pBrainInjury": 0.005437303334474564,
+    "pAirwayBlocked": 0.003393135964870453,
+    "pInternalBleeding": 0.011212937533855438,
+    "entropy": 0.01094058807939291,
+    "WEIGHTED_RESOURCE_SCORE": 0.008885277435183525,
+    "INFORMATION_GAINED": 0.023208973929286003,
+    "treatment": 0.037394870072603226,
+    "category": 0.008056875318288803
+}

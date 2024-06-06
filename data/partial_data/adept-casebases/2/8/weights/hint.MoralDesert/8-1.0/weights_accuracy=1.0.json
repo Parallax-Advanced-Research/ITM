@@ -1,0 +1,10 @@
+{
+    "intent": 0.2621328830718994,
+    "directness_of_causality": 0.3610874116420746,
+    "injured_count": 0.013092163018882275,
+    "treating": 0.3562552332878113,
+    "HRA Strategy.resources-system.take-the-best": 0.00292378687299788,
+    "HRA Strategy.time-resources-system.one-bounce": 0.001550368033349514,
+    "pBrainInjury": 0.0027047148905694485,
+    "AVERAGE_TIME_USED": 0.0002534173836465925
+}

@@ -1,0 +1,15 @@
+{
+    "others_tagged_or_uninjured": 0.18694055080413818,
+    "aid_available": 0.07877244055271149,
+    "treating": 0.1065460816025734,
+    "Take-The-Best Priority": 0.034553367644548416,
+    "SEVERITY": 0.01414865255355835,
+    "AVERAGE_TIME_USED": 0.05885381996631622,
+    "SUPPLIES_USED": 0.02724059298634529,
+    "SMOL_MEDICAL_SOUNDNESS": 0.038545429706573486,
+    "HRA Strategy.time-system.satisfactory": 0.012616906315088272,
+    "HRA Strategy.time-resources-risk_reward_ratio.one-bounce": 0.14366072416305542,
+    "HRA Strategy.time-resources-system.one-bounce": 0.01246765349060297,
+    "directness_of_causality": 0.13870002329349518,
+    "treatment": 0.146953746676445
+}

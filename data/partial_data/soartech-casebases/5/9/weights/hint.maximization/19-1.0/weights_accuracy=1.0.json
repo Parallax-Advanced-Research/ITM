@@ -1,0 +1,21 @@
+{
+    "age": 0.026737019419670105,
+    "tagged": 0.06927318871021271,
+    "visited": 0.027086282148957253,
+    "breathing": 0.008400844410061836,
+    "unvisited_count": 0.021387135609984398,
+    "questioning": 0.20840483903884888,
+    "assessing": 0.2505006492137909,
+    "treating": 0.004090767819434404,
+    "tagging": 0.01757131703197956,
+    "HRA Strategy.resources-system.take-the-best": 0.0027023267466574907,
+    "One-Bounce Priority": 0.0023492828477174044,
+    "pDeath": 0.003417849075049162,
+    "pExternalBleeding": 0.014801166951656342,
+    "entropyDeath": 0.004515472799539566,
+    "SEVERITY": 0.15702027082443237,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.058876510709524155,
+    "INFORMATION_GAINED": 0.012190606445074081,
+    "treatment": 0.09305829554796219,
+    "category": 0.017616234719753265
+}

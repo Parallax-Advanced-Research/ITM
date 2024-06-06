@@ -1,0 +1,17 @@
+{
+    "age": 0.012044285424053669,
+    "tagged": 0.019180074334144592,
+    "unvisited_count": 0.03126852214336395,
+    "environment_type": 0.01453595794737339,
+    "questioning": 0.11366394907236099,
+    "assessing": 0.14510928094387054,
+    "tagging": 0.2435186207294464,
+    "leaving": 0.2620263695716858,
+    "category": 0.016728095710277557,
+    "One-Bounce Priority": 0.06571739166975021,
+    "pDeath": 0.01519348006695509,
+    "pInternalBleeding": 0.012142879888415337,
+    "SEVEREST_SEVERITY_CHANGE": 0.01372974831610918,
+    "INFORMATION_GAINED": 0.007942215539515018,
+    "treatment": 0.027199076488614082
+}

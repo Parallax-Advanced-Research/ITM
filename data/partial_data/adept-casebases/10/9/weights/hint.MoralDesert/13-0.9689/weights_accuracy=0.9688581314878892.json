@@ -1,0 +1,15 @@
+{
+    "aid_available": 0.05017410218715668,
+    "treating": 0.07478246092796326,
+    "Take-The-Best Priority": 0.022784467786550522,
+    "SEVERITY": 0.0302239041775465,
+    "AVERAGE_TIME_USED": 0.06877823919057846,
+    "SUPPLIES_USED": 0.03550553321838379,
+    "SMOL_MEDICAL_SOUNDNESS": 0.4624999165534973,
+    "HRA Strategy.time-system.satisfactory": 0.02218024618923664,
+    "conscious": 0.014634228311479092,
+    "intent": 0.07384902983903885,
+    "pInternalBleeding": 0.0019764022435992956,
+    "treatment": 0.06088236719369888,
+    "directness_of_causality": 0.08172901719808578
+}

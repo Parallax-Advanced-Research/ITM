@@ -1,0 +1,18 @@
+{
+    "age": 0.04979860782623291,
+    "tagged": 0.0038101968821138144,
+    "visited": 0.0034718450624495745,
+    "breathing": 0.027823980897665024,
+    "assessing": 0.29393893480300903,
+    "tagging": 0.26487722992897034,
+    "HRA Strategy.time-resources.take-the-best": 0.022418618202209473,
+    "HRA Strategy.time-resources.one-bounce": 0.005413193255662918,
+    "HRA Strategy.time-system.tallying": 0.03501864895224571,
+    "Satisfactory Priority": 0.08150561898946762,
+    "pAirwayBlocked": 0.034746091812849045,
+    "SEVERITY": 0.008225862868130207,
+    "AVERAGE_TIME_USED": 0.004597782623022795,
+    "SEVEREST_SEVERITY": 0.021708333864808083,
+    "WEIGHTED_RESOURCE_SCORE": 0.0657302662730217,
+    "treatment": 0.07691484689712524
+}

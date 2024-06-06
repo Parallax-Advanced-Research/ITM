@@ -1,0 +1,13 @@
+{
+    "intent": 0.26195028424263,
+    "directness_of_causality": 0.3709034025669098,
+    "injured_count": 0.00849862489849329,
+    "treating": 0.3462654948234558,
+    "HRA Strategy.resources-system.take-the-best": 0.0027492432855069637,
+    "HRA Strategy.time-resources-system.one-bounce": 0.001713525620289147,
+    "pBrainInjury": 0.0020981249399483204,
+    "AVERAGE_TIME_USED": 0.0027739591896533966,
+    "DAMAGE_PER_SECOND": 0.0014030839083716273,
+    "SEVEREST_SEVERITY_CHANGE": 0.0003626752004493028,
+    "WEIGHTED_RESOURCE_SCORE": 0.0012815441004931927
+}

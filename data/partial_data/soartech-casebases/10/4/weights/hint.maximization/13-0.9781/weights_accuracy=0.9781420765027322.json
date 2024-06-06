@@ -1,0 +1,15 @@
+{
+    "age": 0.04172128438949585,
+    "tagged": 0.12695758044719696,
+    "conscious": 0.028854792937636375,
+    "questioning": 0.2769503593444824,
+    "assessing": 0.25139161944389343,
+    "category": 0.03684699535369873,
+    "HRA Strategy.time-resources.take-the-best": 0.02776411361992359,
+    "HRA Strategy.time-system.one-bounce": 0.032648660242557526,
+    "pDeath": 0.052786633372306824,
+    "entropyDeath": 0.017476730048656464,
+    "AVERAGE_TIME_USED": 0.032967016100883484,
+    "INFORMATION_GAINED": 0.026603028178215027,
+    "treatment": 0.04703129827976227
+}

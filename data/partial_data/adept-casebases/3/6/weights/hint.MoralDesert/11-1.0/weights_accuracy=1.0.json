@@ -1,0 +1,12 @@
+{
+    "mental_status": 0.0022862888872623444,
+    "directness_of_causality": 0.21640686690807343,
+    "treating": 0.5819607377052307,
+    "HRA Strategy.resources-system.take-the-best": 0.006969415117055178,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.006169493310153484,
+    "Satisfactory Priority": 0.005015585105866194,
+    "pInternalBleeding": 0.0032368525862693787,
+    "SUPPLIES_REMAINING": 0.004828252363950014,
+    "WEIGHTED_RESOURCE_SCORE": 0.002266290131956339,
+    "treatment": 0.17086026072502136
+}

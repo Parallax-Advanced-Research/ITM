@@ -1,0 +1,11 @@
+{
+    "tagged": 0.05363781750202179,
+    "intent": 0.27306994795799255,
+    "aid_available": 0.020324261859059334,
+    "treating": 0.2741537094116211,
+    "HRA Strategy.time-resources.take-the-best": 0.032927367836236954,
+    "HRA Strategy.resources-system.take-the-best": 0.03939863294363022,
+    "pPain": 0.2736045718193054,
+    "pInternalBleeding": 0.01098829135298729,
+    "SEVERITY": 0.021895354613661766
+}

@@ -1,0 +1,17 @@
+{
+    "tagged": 0.06227824464440346,
+    "visited": 0.007990092039108276,
+    "unvisited_count": 0.02479482814669609,
+    "injured_count": 0.027382496744394302,
+    "questioning": 0.26092031598091125,
+    "assessing": 0.35375383496284485,
+    "tagging": 0.02831357717514038,
+    "leaving": 0.09235557913780212,
+    "treatment": 0.04065108671784401,
+    "HRA Strategy.time-risk_reward_ratio.take-the-best": 0.007852897047996521,
+    "One-Bounce Priority": 0.028433438390493393,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.02242024801671505,
+    "SEVEREST_SEVERITY": 0.016659468412399292,
+    "INFORMATION_GAINED": 0.010437540709972382,
+    "category": 0.01575624942779541
+}

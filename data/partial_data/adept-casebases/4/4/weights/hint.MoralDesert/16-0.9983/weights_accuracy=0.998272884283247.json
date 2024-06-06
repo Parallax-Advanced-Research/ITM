@@ -1,0 +1,18 @@
+{
+    "tagged": 0.028063073754310608,
+    "breathing": 0.05666375905275345,
+    "intent": 0.17716732621192932,
+    "directness_of_causality": 0.039891317486763,
+    "injured_count": 0.3018273413181305,
+    "aid_available": 0.014359433203935623,
+    "assessing": 0.011371662840247154,
+    "treating": 0.23051023483276367,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.010860751383006573,
+    "HRA Strategy.resources-risk_reward_ratio-system.one-bounce": 0.0034585450775921345,
+    "pBrainInjury": 0.03996140882372856,
+    "SEVERITY": 0.012604077346622944,
+    "SUPPLIES_REMAINING": 0.0013808460207656026,
+    "AVERAGE_TIME_USED": 0.013017870485782623,
+    "SUPPLIES_USED": 0.05778679624199867,
+    "treatment": 0.0010755453258752823
+}

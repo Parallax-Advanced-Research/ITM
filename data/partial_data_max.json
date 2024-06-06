@@ -1,0 +1,714 @@
+{
+    "adept-casebases": {
+        "1": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "10": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "15": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "2": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "20": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "3": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "30": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "4": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "40": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "5": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "50": {
+            "0": {
+                "hint.MoralDesert": {}
+            },
+            "1": {
+                "hint.MoralDesert": {}
+            },
+            "2": {
+                "hint.MoralDesert": {}
+            },
+            "3": {
+                "hint.MoralDesert": {}
+            },
+            "4": {
+                "hint.MoralDesert": {}
+            },
+            "5": {
+                "hint.MoralDesert": {}
+            },
+            "6": {
+                "hint.MoralDesert": {}
+            },
+            "7": {
+                "hint.MoralDesert": {}
+            },
+            "8": {
+                "hint.MoralDesert": {}
+            },
+            "9": {
+                "hint.MoralDesert": {}
+            }
+        },
+        "52": {
+            "0": {
+                "hint.MoralDesert": {}
+            }
+        }
+    },
+    "soartech-casebases": {
+        "1": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "10": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "15": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "2": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "20": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "3": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "30": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "4": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "40": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "5": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "50": {
+            "0": {
+                "hint.maximization": {}
+            },
+            "1": {
+                "hint.maximization": {}
+            },
+            "2": {
+                "hint.maximization": {}
+            },
+            "3": {
+                "hint.maximization": {}
+            },
+            "4": {
+                "hint.maximization": {}
+            },
+            "5": {
+                "hint.maximization": {}
+            },
+            "6": {
+                "hint.maximization": {}
+            },
+            "7": {
+                "hint.maximization": {}
+            },
+            "8": {
+                "hint.maximization": {}
+            },
+            "9": {
+                "hint.maximization": {}
+            }
+        },
+        "52": {
+            "0": {
+                "hint.maximization": {}
+            }
+        }
+    }
+}

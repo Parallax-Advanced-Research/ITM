@@ -1,0 +1,15 @@
+{
+    "tagged": 0.03829236701130867,
+    "breathing": 0.01873447559773922,
+    "avpu": 0.020071813836693764,
+    "environment_type": 0.011922123841941357,
+    "assessing": 0.15206342935562134,
+    "tagging": 0.5263810157775879,
+    "HRA Strategy.time-resources.take-the-best": 0.025006797164678574,
+    "HRA Strategy.time-system.tallying": 0.05561468377709389,
+    "SEVERITY": 0.007961998693645,
+    "SUPPLIES_REMAINING": 0.020367586985230446,
+    "AVERAGE_TIME_USED": 0.05147974565625191,
+    "DAMAGE_PER_SECOND": 0.024668268859386444,
+    "treatment": 0.04743575677275658
+}

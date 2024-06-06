@@ -1,0 +1,16 @@
+{
+    "tagged": 0.1347578465938568,
+    "breathing": 0.0331919826567173,
+    "intent": 0.19524605572223663,
+    "directness_of_causality": 0.08849813044071198,
+    "treating": 0.20058982074260712,
+    "HRA Strategy.time-resources.take-the-best": 0.010819154791533947,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0033237780444324017,
+    "HRA Strategy.time-resources-system.exhaustive": 0.0030951888766139746,
+    "pInternalBleeding": 0.004051812458783388,
+    "AVERAGE_TIME_USED": 0.17781704664230347,
+    "SUPPLIES_USED": 0.007737342268228531,
+    "SEVEREST_SEVERITY": 0.010474743321537971,
+    "category": 0.008487023413181305,
+    "treatment": 0.12191019207239151
+}

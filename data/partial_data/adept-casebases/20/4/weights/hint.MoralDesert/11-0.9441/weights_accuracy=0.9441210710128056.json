@@ -1,0 +1,12 @@
+{
+    "conscious": 0.04622252285480499,
+    "mental_status": 0.005059811752289534,
+    "intent": 0.08417989313602448,
+    "directness_of_causality": 0.11690893024206161,
+    "aid_available": 0.17407488822937012,
+    "treating": 0.282180517911911,
+    "Take-The-Best Priority": 0.011044208891689777,
+    "SEVERITY": 0.009989052079617977,
+    "AVERAGE_TIME_USED": 0.006498431321233511,
+    "SUPPLIES_USED": 0.26384177803993225
+}

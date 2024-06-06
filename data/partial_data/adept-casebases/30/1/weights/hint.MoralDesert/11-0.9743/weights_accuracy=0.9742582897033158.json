@@ -1,0 +1,13 @@
+{
+    "breathing": 0.056085117161273956,
+    "intent": 0.03160479664802551,
+    "directness_of_causality": 0.16595406830310822,
+    "aid_available": 0.14358168840408325,
+    "treating": 0.29888221621513367,
+    "HRA Strategy.resources-risk_reward_ratio.one-bounce": 0.01923585869371891,
+    "HRA Strategy.resources-system.take-the-best": 0.026949379593133926,
+    "pDeath": 0.027753911912441254,
+    "SUPPLIES_REMAINING": 0.02336179092526436,
+    "AVERAGE_TIME_USED": 0.006846337113529444,
+    "SUPPLIES_USED": 0.19974491000175476
+}

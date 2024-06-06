@@ -1,0 +1,16 @@
+{
+    "age": 0.021624280139803886,
+    "tagged": 0.03231382369995117,
+    "environment_type": 0.01532565988600254,
+    "questioning": 0.21382465958595276,
+    "assessing": 0.28189778327941895,
+    "tagging": 0.1295716017484665,
+    "Satisfactory Priority": 0.04169008135795593,
+    "One-Bounce Priority": 0.06334254145622253,
+    "pPain": 0.016624240204691887,
+    "pInternalBleeding": 0.01453951932489872,
+    "WEIGHTED_RESOURCE_SCORE": 0.027184640988707542,
+    "INFORMATION_GAINED": 0.056632887572050095,
+    "treatment": 0.06541745364665985,
+    "category": 0.02001091092824936
+}

@@ -1,0 +1,17 @@
+{
+    "age": 0.019611088559031487,
+    "tagged": 0.03301656246185303,
+    "unvisited_count": 0.006509772967547178,
+    "environment_type": 0.014935995452105999,
+    "questioning": 0.21246065199375153,
+    "assessing": 0.2750950753688812,
+    "tagging": 0.13352781534194946,
+    "Satisfactory Priority": 0.03848559781908989,
+    "One-Bounce Priority": 0.062275953590869904,
+    "pPain": 0.016597816720604897,
+    "pInternalBleeding": 0.014630183577537537,
+    "WEIGHTED_RESOURCE_SCORE": 0.02529609575867653,
+    "INFORMATION_GAINED": 0.06379792094230652,
+    "treatment": 0.06469815969467163,
+    "category": 0.01906130462884903
+}

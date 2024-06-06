@@ -1,0 +1,20 @@
+{
+    "age": 0.050699383020401,
+    "tagged": 0.16391044855117798,
+    "visited": 0.020169541239738464,
+    "conscious": 0.0482451356947422,
+    "breathing": 0.056795939803123474,
+    "environment_type": 0.00844856072217226,
+    "questioning": 0.21162477135658264,
+    "assessing": 0.20364713668823242,
+    "tagging": 0.042465388774871826,
+    "HRA Strategy.time-resources.take-the-best": 0.015391703695058823,
+    "pPain": 0.0172651968896389,
+    "pAirwayBlocked": 0.02571907825767994,
+    "pExternalBleeding": 0.013618197292089462,
+    "entropy": 0.015514890663325787,
+    "DAMAGE_PER_SECOND": 0.009378038346767426,
+    "INFORMATION_GAINED": 0.012594440951943398,
+    "treatment": 0.05473001301288605,
+    "category": 0.02978215366601944
+}

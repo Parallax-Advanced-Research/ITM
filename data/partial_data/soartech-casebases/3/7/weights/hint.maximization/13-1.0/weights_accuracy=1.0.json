@@ -1,0 +1,15 @@
+{
+    "age": 0.050938982516527176,
+    "tagged": 0.17973735928535461,
+    "breathing": 0.01516161859035492,
+    "environment_type": 0.08529037982225418,
+    "questioning": 0.14490140974521637,
+    "tagging": 0.07423827052116394,
+    "leaving": 0.11700168997049332,
+    "category": 0.023312300443649292,
+    "HRA Strategy.time-resources.take-the-best": 0.004965674597769976,
+    "SEVERITY": 0.01814848929643631,
+    "AVERAGE_TIME_USED": 0.05673259124159813,
+    "DAMAGE_PER_SECOND": 0.12808255851268768,
+    "treatment": 0.1014886349439621
+}

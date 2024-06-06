@@ -1,0 +1,20 @@
+{
+    "conscious": 0.09112917631864548,
+    "mental_status": 0.019457053393125534,
+    "intent": 0.07905275374650955,
+    "directness_of_causality": 0.15754185616970062,
+    "aid_available": 0.020466597750782967,
+    "treating": 0.2570490837097168,
+    "HRA Strategy.time-resources.take-the-best": 0.0047417571768164635,
+    "HRA Strategy.time-resources.one-bounce": 0.013590914197266102,
+    "HRA Strategy.resources-risk_reward_ratio.one-bounce": 0.05330270156264305,
+    "HRA Strategy.resources-system.take-the-best": 0.029476700350642204,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0013900267658755183,
+    "Take-The-Best Priority": 0.0018725625704973936,
+    "pDeath": 0.09092952311038971,
+    "entropyDeath": 0.031116219237446785,
+    "SEVERITY": 0.010256695561110973,
+    "SUPPLIES_USED": 0.04710867255926132,
+    "SEVEREST_SEVERITY": 0.005240825470536947,
+    "treatment": 0.08627687394618988
+}

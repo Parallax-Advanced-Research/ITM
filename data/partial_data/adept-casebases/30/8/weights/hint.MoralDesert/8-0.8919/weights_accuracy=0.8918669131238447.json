@@ -1,0 +1,10 @@
+{
+    "breathing": 0.01600734144449234,
+    "intent": 0.3135170638561249,
+    "directness_of_causality": 0.1157914474606514,
+    "aid_available": 0.026740893721580505,
+    "treating": 0.4074467718601227,
+    "HRA Strategy.resources-system.take-the-best": 0.001090093981474638,
+    "pDeath": 0.07015157490968704,
+    "SUPPLIES_USED": 0.049254756420850754
+}

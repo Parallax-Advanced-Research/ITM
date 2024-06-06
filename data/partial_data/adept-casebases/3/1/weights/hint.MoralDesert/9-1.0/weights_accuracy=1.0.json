@@ -1,0 +1,11 @@
+{
+    "intent": 0.16994671523571014,
+    "treating": 0.6388763785362244,
+    "HRA Strategy.time-resources.take-the-best": 0.03047925792634487,
+    "HRA Strategy.resources-system.take-the-best": 0.09457122534513474,
+    "HRA Strategy.time-resources-system.tallying": 0.0026023215614259243,
+    "Take-The-Best Priority": 0.011784819886088371,
+    "Satisfactory Priority": 0.018934089690446854,
+    "AVERAGE_TIME_USED": 0.007282212842255831,
+    "treatment": 0.025522949174046516
+}

@@ -1,0 +1,20 @@
+{
+    "tagged": 0.10002928227186203,
+    "avpu": 0.030239809304475784,
+    "intent": 0.1904134750366211,
+    "aid_available": 0.13178665935993195,
+    "treating": 0.198621928691864,
+    "HRA Strategy.time-resources.take-the-best": 0.0266308281570673,
+    "HRA Strategy.time-system.tallying": 0.001533277565613389,
+    "HRA Strategy.resources-system.take-the-best": 0.035159360617399216,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.0036976707633584738,
+    "HRA Strategy.time-resources-system.tallying": 0.0033364330884069204,
+    "pPain": 0.1941339373588562,
+    "pInternalBleeding": 0.006673663388937712,
+    "SEVERITY": 0.058145370334386826,
+    "SUPPLIES_REMAINING": 0.005241508595645428,
+    "AVERAGE_TIME_USED": 0.0088271489366889,
+    "DAMAGE_PER_SECOND": 0.0018883033189922571,
+    "SUPPLIES_USED": 0.0023159876000136137,
+    "WEIGHTED_RESOURCE_SCORE": 0.0013253360521048307
+}

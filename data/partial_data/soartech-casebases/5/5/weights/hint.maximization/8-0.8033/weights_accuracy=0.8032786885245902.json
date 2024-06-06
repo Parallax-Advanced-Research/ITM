@@ -1,0 +1,10 @@
+{
+    "age": 0.06634096056222916,
+    "breathing": 0.14792336523532867,
+    "injured_count": 0.10952764004468918,
+    "questioning": 0.41420692205429077,
+    "category": 0.12588948011398315,
+    "pInternalBleeding": 0.06222188472747803,
+    "entropyDeath": 0.04542578011751175,
+    "SMOL_MEDICAL_SOUNDNESS": 0.02846393920481205
+}

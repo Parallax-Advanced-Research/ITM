@@ -1,0 +1,15 @@
+{
+    "tagged": 0.11866604536771774,
+    "avpu": 0.018931882455945015,
+    "intent": 0.22563037276268005,
+    "aid_available": 0.1327296644449234,
+    "treating": 0.23186923563480377,
+    "HRA Strategy.time-resources.take-the-best": 0.03367739915847778,
+    "HRA Strategy.resources-system.take-the-best": 0.026001015678048134,
+    "HRA Strategy.time-resources-system.tallying": 0.002839501714333892,
+    "pPain": 0.12852059304714203,
+    "pInternalBleeding": 0.003792491741478443,
+    "SEVERITY": 0.041489988565444946,
+    "SUPPLIES_REMAINING": 0.009297223761677742,
+    "AVERAGE_TIME_USED": 0.026554549112915993
+}

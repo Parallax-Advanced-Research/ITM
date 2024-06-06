@@ -1,0 +1,9 @@
+{
+    "intent": 0.13275404274463654,
+    "directness_of_causality": 0.02017822302877903,
+    "injured_count": 0.42505016922950745,
+    "aid_available": 0.07549244165420532,
+    "treating": 0.16794167459011078,
+    "SUPPLIES_USED": 0.08930161595344543,
+    "SMOL_MEDICAL_SOUNDNESS": 0.08928185701370239
+}

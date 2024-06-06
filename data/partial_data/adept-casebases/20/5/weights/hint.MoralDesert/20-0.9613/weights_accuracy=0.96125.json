@@ -1,0 +1,22 @@
+{
+    "conscious": 0.06228584051132202,
+    "avpu": 0.041143741458654404,
+    "intent": 0.014782644808292389,
+    "directness_of_causality": 0.15105746686458588,
+    "aid_available": 0.10553275048732758,
+    "treating": 0.15784257650375366,
+    "HRA Strategy.time-resources.take-the-best": 0.0014341443311423063,
+    "HRA Strategy.resources-system.take-the-best": 0.00658975588157773,
+    "HRA Strategy.risk_reward_ratio-system.one-bounce": 0.000920041638892144,
+    "HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce": 0.0004303106397856027,
+    "Take-The-Best Priority": 0.0003705211274791509,
+    "Satisfactory Priority": 0.0009333789930678904,
+    "pBrainInjury": 0.00038568192394450307,
+    "pExternalBleeding": 0.0004266236210241914,
+    "SEVERITY": 0.002601607935503125,
+    "SUPPLIES_REMAINING": 0.0008557310793548822,
+    "AVERAGE_TIME_USED": 0.025339189916849136,
+    "SUPPLIES_USED": 0.11066681891679764,
+    "SMOL_MEDICAL_SOUNDNESS": 0.2849896252155304,
+    "treatment": 0.0314115434885025
+}

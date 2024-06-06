@@ -1,0 +1,12 @@
+{
+    "others_tagged_or_uninjured": 0.2264290601015091,
+    "aid_available": 0.08216574788093567,
+    "treating": 0.12337051331996918,
+    "Take-The-Best Priority": 0.04224538058042526,
+    "SEVERITY": 0.012350866571068764,
+    "AVERAGE_TIME_USED": 0.06948402523994446,
+    "SMOL_MEDICAL_SOUNDNESS": 0.06549660861492157,
+    "HRA Strategy.time-resources-risk_reward_ratio.one-bounce": 0.07066395878791809,
+    "directness_of_causality": 0.1645868420600891,
+    "treatment": 0.14320704340934753
+}
