@@ -81,7 +81,7 @@ class TA3Driver(Driver):
             else:
                 character['treatments'] = list()
             # Do the state estimation over injuries
-            inferred_injuries = self.estimator.estimate_injuries(self.estimator.make_observation(character))
+            #inferred_injuries = self.estimator.estimate_injuries(self.estimator.make_observation(character))
         
         dict_state['actions_performed'] = self.actions_performed
         return TA3State.from_dict(dict_state)

@@ -21,6 +21,10 @@ class AlignmentTrainer:
         raise NotImplementedError
 
 
+class DecisionExplainer:
+    def explain(self, scenario: Scenario, probe: TADProbe, decision: Decision):
+        raise NotImplementedError
+
 class Elaborator:
     def elaborate(self, scenario: Scenario, probe: TADProbe) -> list[Decision]:
         raise NotImplementedError

@@ -6,7 +6,7 @@ import statistics
 import util
 from typing import Any, Sequence, Callable
 from numbers import Real
-from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State
+from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State, Explanation
 from domain.ta3 import TA3State, Casualty, Supply
 from components import DecisionSelector, DecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
@@ -126,7 +126,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
-        
+        minDecision.explanations.append({"Chosen Decision": minDecision.value, "Distance": minDist, "Estimates": best_kdmas, "Mins": min_kdmas, "Maxes": max_kdmas, "File": fname})
+         #f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}"
         return (minDecision, minDist)
                 
 
