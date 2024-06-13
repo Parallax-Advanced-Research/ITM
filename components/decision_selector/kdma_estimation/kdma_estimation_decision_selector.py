@@ -65,6 +65,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             raise Exception("KDMA Estimation Decision Selector needs an alignment target to operate correctly.")
         minDist: float = math.inf
         minDecision: Decision = None
+        minTopCases: list[dict[str, Any]] = [] 
         misalign = self.variant.lower() == "misaligned"
         new_cases: list[dict[str, Any]] = list()
         self.index += 1
@@ -118,6 +119,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 minDist = sqDist
                 minDecision = cur_decision
                 best_kdmas = cur_kdmas
+                minTopCases = self.top_K(cur_case, weights, kdma_name) #TODO: Check these are the correct neighbors.
+
             if self.print_neighbors:
                 util.logger.info(f"New dist: {sqDist} Best Dist: {minDist}")
             cur_case["distance"] = sqDist
@@ -126,8 +129,14 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
-        minDecision.explanations.append({"Chosen Decision": minDecision.value, "Distance": minDist, "Estimates": best_kdmas, "Mins": min_kdmas, "Maxes": max_kdmas, "File": fname})
-         #f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}"
+
+        # TODO Explanation() is not implemented
+        minDecision.explanations.append({"NEAREST_NEIGBORS":minTopCases})
+        minDecision.explanations.append({"WEIGHTS": weights})
+        minDecision.explanations.append({"CHOSEN_ACTION": {"NAME":minDecision.value.name, "PARAMS": minDecision.value.params, "DISTANCE": minDist}})
+        minDecision.explanations.append({"KDMA_VALUES": {"BEST": best_kdmas, "MINS": min_kdmas, "MAXES": max_kdmas}}) # 
+        minDecision.explanations.append({"NEW_CASES": {"CASES": new_cases, "FILE_NAME": fname}}) #live cases are temporary cases made from the probe responses. aka new_cases
+
         return (minDecision, minDist)
                 
 
