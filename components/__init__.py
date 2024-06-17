@@ -1,1 +1,1 @@
-from .components import DecisionSelector, DecisionAnalyzer, Elaborator, CaseGenerator, AlignmentTrainer
+from .components import DecisionSelector, DecisionAnalyzer, DecisionExplainer, Elaborator, CaseGenerator, AlignmentTrainer

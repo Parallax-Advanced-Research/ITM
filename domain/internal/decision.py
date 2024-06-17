@@ -1,8 +1,9 @@
 import typing
 from util.dict_tools import Dict_No_Overwrite
 from .decision_metric import DecisionMetrics, DecisionName, DecisionMetric
+from .decision_explanation import Explanation
 from .justification import Justification
-from .explanation import Explanation
+
 from .kdmas import KDMAs
 
 T = typing.TypeVar('T')

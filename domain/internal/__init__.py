@@ -1,7 +1,7 @@
 from .decision import Decision, Action
 from .decision_metric import DecisionMetric, DecisionName, DecisionMetrics
 from .justification import Justification
-from .explanation import Explanation
+from .decision_explanation import Explanation
 from .kdmas import KDMA, KDMAs
 from .tadprobe import TADProbe
 from .scenario import Scenario

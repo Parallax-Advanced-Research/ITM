@@ -20,9 +20,8 @@ class AlignmentTrainer:
     def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback):
         raise NotImplementedError
 
-
 class DecisionExplainer:
-    def explain(self, scenario: Scenario, probe: TADProbe, decision: Decision):
+    def explain(self, scenario: Scenario, probe: TADProbe, target: KDMAs):
         raise NotImplementedError
 
 class Elaborator:

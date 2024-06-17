@@ -1,7 +1,7 @@
 import typing
 import domain as ext
 import swagger_client as ta3
-from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer
+from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer, DecisionExplainer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
 from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
 from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback
@@ -11,7 +11,7 @@ import uuid
 
 class Driver:
 
-    def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer], trainer: AlignmentTrainer, dumper_config: DumpConfig = DEFAULT_DUMP):
+    def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer], explainers: list[DecisionExplainer], trainer: AlignmentTrainer, dumper_config: DumpConfig = DEFAULT_DUMP):
         self.session: str = ''
         self.scenario: typing.Optional[Scenario] = None
         self.alignment_tgt: KDMAs = KDMAs([])
@@ -19,6 +19,7 @@ class Driver:
         self.elaborator: Elaborator = elaborator
         self.selector: DecisionSelector = selector
         self.analyzers: list[DecisionAnalyzer] = analyzers
+        self.explainers: list[DecisionExplainer] = explainers
         self.trainer: AlignmentTrainer = trainer
         if dumper_config is None:
             self.dumper = None

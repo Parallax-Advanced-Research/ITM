@@ -35,6 +35,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.print_neighbors = args.decision_verbose
         self.index = 0
         self.kdma_totals = {}
+        self.explanations = list[Explanation]()
         if args.weightfile is None:
             global _default_weight_file
             if self.use_drexel_format:
@@ -130,12 +131,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
 
-        # TODO Explanation() is not implemented
-        minDecision.explanations.append({"NEAREST_NEIGBORS":minTopCases})
-        minDecision.explanations.append({"WEIGHTS": weights})
-        minDecision.explanations.append({"CHOSEN_ACTION": {"NAME":minDecision.value.name, "PARAMS": minDecision.value.params, "DISTANCE": minDist}})
-        minDecision.explanations.append({"KDMA_VALUES": {"BEST": best_kdmas, "MINS": min_kdmas, "MAXES": max_kdmas}}) # 
-        minDecision.explanations.append({"NEW_CASES": {"CASES": new_cases, "FILE_NAME": fname}}) #live cases are temporary cases made from the probe responses. aka new_cases
+        self.explanations.append(Explanation("KDMAEstimationDecisionSelector", {"DISTANCE": minDist, "NEAREST_NEIGBORS":minTopCases, "WEIGHTS":weights}))
+
+        #{"CHOSEN_ACTION": {"NAME":minDecision.value.name, "PARAMS": minDecision.value.params, "DISTANCE": minDist}}
+        #{"KDMA_VALUES": {"BEST": best_kdmas, "MINS": min_kdmas, "MAXES": max_kdmas}}
+        #{"NEW_CASES": {"CASES": new_cases, "FILE_NAME": fname}} #live cases are temporary cases made from the probe responses. aka new_cases
 
         return (minDecision, minDist)
                 
