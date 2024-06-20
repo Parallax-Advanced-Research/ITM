@@ -35,7 +35,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.print_neighbors = args.decision_verbose
         self.index = 0
         self.kdma_totals = {}
-        self.explanations = list[Explanation]()
+        # self.explanations = list[Explanation]()
         if args.weightfile is None:
             global _default_weight_file
             if self.use_drexel_format:
@@ -131,7 +131,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
 
-        self.explanations.append(Explanation("KDMAEstimationDecisionSelector", {"DISTANCE": minDist, "NEAREST_NEIGBORS":minTopCases, "WEIGHTS":weights}))
+        
+        minDecision.explanation_values ={"DISTANCE": minDist, "NEAREST_NEIGHBORS":minTopCases, "WEIGHTS":weights, "BEST_KDMAS": best_kdmas}
 
         #{"CHOSEN_ACTION": {"NAME":minDecision.value.name, "PARAMS": minDecision.value.params, "DISTANCE": minDist}}
         #{"KDMA_VALUES": {"BEST": best_kdmas, "MINS": min_kdmas, "MAXES": max_kdmas}}

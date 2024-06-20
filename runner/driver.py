@@ -4,7 +4,7 @@ import swagger_client as ta3
 from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer, DecisionExplainer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
 from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
-from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback
+from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback, Explanation, DecisionExplanation
 from util import logger
 import uuid
 
@@ -74,6 +74,16 @@ class Driver:
             this_analysis = analyzer.analyze(self.scenario, probe)
             analysis.update(this_analysis)
         return analysis
+    
+    def explain(self, decision: Decision, probe: TADProbe):
+        decision_explanation = DecisionExplanation(decision.id_,"An description of the explanation including some reference to the attributes")
+        for explainer in self.explainers:
+            this_explanation = explainer.explain_variant(decision, probe)
+            decision_explanation.explanations.append(this_explanation)
+        # consolidate all of the explanations that make up the decision explanations. These could
+        # include an explanation for each type of decison (e.g. kdma_decision, etc.)
+        return decision_explanation.get_formatted_explanation()
+        
 
     def select(self, probe: TADProbe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
@@ -114,8 +124,13 @@ class Driver:
 
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
+
+        # Explain the decision
+        explanation = self.explain(decision, probe)
+        
+        # Output the probe and the decision to a file
         if self.dumper is not None:
-            self.dumper.dump(probe, decision, self.session_uuid)
+            self.dumper.dump(probe, decision, explanation, self.session_uuid)
 
         # Extract external decision for response
         # url construction

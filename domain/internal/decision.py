@@ -36,13 +36,13 @@ class Action:
 class Decision(typing.Generic[T]):
     def __init__(self, id_: str, value: T,
                  justifications: list[Justification] = list(),
-                 explanations: list[Explanation] = list(),
+                 explanation_values: dict = dict(),
                  metrics: typing.Mapping[DecisionName, DecisionMetric] = None,
                  kdmas: KDMAs = None):
         self.id_: str = id_
         self.value: T = value
         self.justifications: list[Justification] = justifications
-        self.explanations: list[Explanation] = explanations
+        self.explanation_values: explanation_values
         self.metrics: DecisionMetrics = Dict_No_Overwrite()
         self.selected = False
         if metrics:

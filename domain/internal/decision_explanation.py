@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import typing
 
 from domain.internal.decision_metric import DecisionMetric, DecisionMetrics, DecisionName
@@ -12,22 +13,27 @@ class Explanation():
         self.name: str = name
         self.vals: dict[str, typing.Any] = vals
 
-class DecisionExplanation(typing.Generic[T]):
-    def __init__(self, id_: str, value: T,
-                 justifications: list[Justification] = list(),
-                 explanations: list[Explanation] = list(),
-                 metrics: typing.Mapping[DecisionName, DecisionMetric] = None,
-                 kdmas: KDMAs = None):
-        self.id_: str = id_
-        self.value: T = value
-        self.justifications: list[Justification] = justifications
-        self.explanations: list[Explanation] = explanations
-        self.metrics: DecisionMetrics = Dict_No_Overwrite()
-        self.selected = False
-        if metrics:
-            self.metrics.update(metrics)
-        self.kdmas: KDMAs | None = kdmas
+class DecisionExplanation():
+    def __init__(self, name: str, description: str):
+        # the parts of the decision that are involved in the explanation
+        # there can be multiple explanations, one for each decision type (KDMA, etc.)
+        self.name = name        
+        self.description: str = description
+        self.explanations = list[Explanation]()
+        
+              
+    def get_formatted_explanation(self):
+        return f"{self.name}: {self.description} - {self.explanations}"
 
+#class DecisionMetric(typing.Generic[T]):
+#    def __init__(self, name: str, description: str, value: T):
+#        self.name: str = name
+#        self.description: str = description
+#        self.value: T = value
 
-DecisionExplanationName = str  
-DecisionExplanations = Dict_No_Overwrite[DecisionExplanationName, DecisionExplanation[typing.Any]]
+#    def __init__(self, id_: str, value: T,                 
+#                 explanations: list[Explanation] = list(),
+#                 # justifications: list[Justification] = list(),
+#                 metrics: typing.Mapping[DecisionName, DecisionMetric] = None,
+#                 kdmas: KDMAs = None):
+
