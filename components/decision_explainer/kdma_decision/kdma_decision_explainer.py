@@ -14,7 +14,9 @@ class KDMADecisionExplainer(DecisionExplainer):
         
         # in the decision value is the :Action that was selected by the decision selector
         self.active_action : Action = decision.value # the chosen action from the the case constructed from the probe response
-        
+
+        ''' 
+        # TODO: we can do this when we display the values from the file
         similarity = explanation_values["DISTANCE"]
 
         # kdmas predicted based on the active action 
@@ -23,8 +25,8 @@ class KDMADecisionExplainer(DecisionExplainer):
         # Extract the nearest neighbor with the highest similarity from the explanation values for the example
         # Just return the first one since the distances are all 0 for now
         top_neighbor_similarity = explanation_values["NEAREST_NEIGHBORS"][0][0]
-        top_neighbor = explanation_values["NEAREST_NEIGHBORS"][0][1]
-        
+        top_neighbor = explanation_values["NEAREST_NEIGHBORS"][0][1] 
+        '''        
         self.decision_attributes.update(decision.metrics)
         # self.decision_attributes.update({"similarity": similarity, "predicted_kdmas": predicted_kdmas, "top_neighbor_similarity": top_neighbor_similarity, "top_neighbor": top_neighbor})
         
@@ -34,9 +36,10 @@ class KDMADecisionExplainer(DecisionExplainer):
         # the top x weights and their related values
         top_weights = self.process_weights(explanation_values["WEIGHTS"])
         top_properties = self.get_related_values(top_weights, probe)
-        explanation_values.update(top_properties)
-
-        explanation = Explanation(self.variant, explanation_values) # the variant could go in the baseline definition
+        explanation_values.update({"TOP_PROPERTIES":top_properties})
+        explanation_values.update({"TOP_WEIGHTS":top_weights})        
+        explanation = Explanation(self.variant,explanation_values) # the variant could go in the baseline definition
+        # you can also pass all of the nearest neighbors and their similarities to the explanation here if you need them
         return explanation
     
     # process the weights dictionary and only return the top 3 weights

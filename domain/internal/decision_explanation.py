@@ -23,17 +23,11 @@ class DecisionExplanation():
         
               
     def get_formatted_explanation(self):
-        return f"{self.name}: {self.description} - {self.explanations}"
+        # serialize the explanations so we can save them to a file
+        explanation_list = []
+        for explanation in self.explanations:
+            explanation_list.append(explanation.vals)
+        
+        return explanation_list
 
-#class DecisionMetric(typing.Generic[T]):
-#    def __init__(self, name: str, description: str, value: T):
-#        self.name: str = name
-#        self.description: str = description
-#        self.value: T = value
-
-#    def __init__(self, id_: str, value: T,                 
-#                 explanations: list[Explanation] = list(),
-#                 # justifications: list[Justification] = list(),
-#                 metrics: typing.Mapping[DecisionName, DecisionMetric] = None,
-#                 kdmas: KDMAs = None):
 

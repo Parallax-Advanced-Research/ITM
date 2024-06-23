@@ -76,13 +76,13 @@ class Driver:
         return analysis
     
     def explain(self, decision: Decision, probe: TADProbe):
-        decision_explanation = DecisionExplanation(decision.id_,"An description of the explanation including some reference to the attributes")
+        decision_explanation = DecisionExplanation(decision.id_,"A description of the explanation including some reference to the attributes")
         for explainer in self.explainers:
             this_explanation = explainer.explain_variant(decision, probe)
             decision_explanation.explanations.append(this_explanation)
         # consolidate all of the explanations that make up the decision explanations. These could
         # include an explanation for each type of decison (e.g. kdma_decision, etc.)
-        return decision_explanation.get_formatted_explanation()
+        return decision_explanation.get_formatted_explanation() # for now just return the explanation. Later we can include other elements of the decision explanation
         
 
     def select(self, probe: TADProbe) -> Decision[Action]:
@@ -126,11 +126,12 @@ class Driver:
         decision: Decision[Action] = self.select(probe)
 
         # Explain the decision
-        explanation = self.explain(decision, probe)
+        decision.explanation_values = self.explain(decision, probe) # the explanation values is a placeholder for the Explanation object describing its attributes
+        # TODO fix that we're overwriting the decision.explanation_values when we should be adding to it
         
         # Output the probe and the decision to a file
         if self.dumper is not None:
-            self.dumper.dump(probe, decision, explanation, self.session_uuid)
+            self.dumper.dump(probe, decision, self.session_uuid)
 
         # Extract external decision for response
         # url construction
