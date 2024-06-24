@@ -45,7 +45,7 @@ class Decision:
         return f'Action: {self.action}, Casualty: {self.casualty}, Supply: {self.supply}, Location: {self.location}'
 
     def __repr__(self):
-        return f'Action: {self.action}, Casualty: {self.casualty}, Supply: {self.supply}, Location: {self.location}'
+        return f'{{\"Action\": \"{self.action}\", \"Casualty\": \"{self.casualty}\", \"Supply\": \"{self.supply}\", \"Location\": \"{self.location}\"}}'
 
 
 def load_json(file):
@@ -67,6 +67,12 @@ def convert_json(json_data):
         casualty = act.get('casualty', None)
         supply = act.get('treatment', None)
         location = act.get('location', None)
+        if casualty == 'None':
+            casualty = None
+        if supply == 'None':
+            supply = None
+        if location == 'None':
+            location = None
         dec = Decision(action=action, casualty=casualty,
                        supply=supply, location=location)
         decisions.append(dec)
@@ -97,8 +103,8 @@ def compare_decisions_lists(dec_1, dec_2):
 
 
 if __name__ == '__main__':
-    file_1 = r'data/elab_output/MetricsEval.MD1-Urban.json'
-    file_2 = r'data/elab_output/Urban-llm.json'
+    file_1 = r'data/elab_output/MetricsEval.MD5-Desert-4_rbe.json'
+    file_2 = r'data/elab_output/MetricsEval.MD5-Desert-4_gemini.json'
 
     json_1 = load_json(file_1)
     json_2 = load_json(file_2)
