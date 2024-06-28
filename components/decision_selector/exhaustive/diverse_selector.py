@@ -55,6 +55,7 @@ class DiverseSelector(DecisionSelector):
             outfile.write("\n")
         
         return (cur_decision, 0.0)
+
         
     def choose_random_decision(self, probe: TADProbe) -> Decision:
         likelihood_thresholds: list[tuple[real, Decision]] = []

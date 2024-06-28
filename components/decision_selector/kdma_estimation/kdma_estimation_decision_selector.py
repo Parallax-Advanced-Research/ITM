@@ -1,4 +1,5 @@
 import os
+import random
 import csv
 import json
 import math
@@ -28,7 +29,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 args.casefile = _default_drexel_case_file
             else:
                 args.casefile = _default_kdma_case_file
-            
+
         self.cb = read_case_base(args.casefile)
         self.variant: str = args.variant
         self.analyzers: list[DecisionAnalyzer] = get_analyzers()
@@ -198,6 +199,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 util.logger.info(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
         return lst
 
+    def is_finished(self) -> bool:
+        return False
+
 def calculate_distance(case1: dict[str, Any], case2: dict[str, Any], weights: dict[str, float]) -> float:
     weighted_average: float = 0
     count = 0
@@ -263,7 +267,10 @@ def read_case_base(csv_filename: str):
 
 def read_relational_case_base(json_filename: str):
     """ Convert the csv into a list of dictionaries """
-    case_base: list[dict] = []
+    case_base: dict = {}
+    '''check if file exists'''
+    if not os.path.exists(json_filename):
+        return case_base
     with open(json_filename, "r") as f:
         case_base = json.load(f)
     return case_base
@@ -1162,19 +1169,30 @@ def write_case_base(fname: str, cb: list[dict[str, Any]]):
         csv_file.write(line + "\n")
     csv_file.close()
 
-def write_relational_case_base(fname: str, cb: list[dict[str, Any]]):
-    index : int = 0
-    keys : list[str] = list(cb[0].keys())
-    keyset : set[str] = set(keys)
-    for case in cb:
-        new_keys = set(case.keys()) - keyset
-        if len(new_keys) > 0:
-            keys += list(new_keys)
-            keyset = keyset.union(new_keys)
-    if "index" in keys:
-        keys.remove("index")
+def write_relational_case_base(fname: str, cb: list[tuple[int, dict[str, Any]]]):
+    #index : int = 0
+    #keys : list[str] = list(cb.keys())
+    #keyset : set[str] = set(keys)
+    #for case in cb:
+    #    new_keys = set(case.keys()) - keyset
+    #    if len(new_keys) > 0:
+    #        keys += list(new_keys)
+    #       keyset = keyset.union(new_keys)
+    #if "index" in keys:
+    #    keys.remove("index")
+    #test if fname exists
+    if os.path.exists(fname):
+        #if it does, read in old cases'''
+        with open(fname, "r") as in_file:
+            old_cb = json.load(in_file)
+        #add new cases'''
+        for case in old_cb:
+            if case not in cb:
+                cb[case] = old_cb[case]
+        #write out all cases
     with open(fname, "w") as out_file:
         json.dump(cb, out_file)
+
 
         
 def first(seq : Sequence):
