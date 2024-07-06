@@ -6,7 +6,7 @@ import statistics
 import util
 from typing import Any, Sequence, Callable
 from numbers import Real
-from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State, Explanation, DecisionExplanation
+from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State, Explanation
 from domain.ta3 import TA3State, Casualty, Supply
 from components import DecisionSelector, DecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
@@ -132,23 +132,23 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
 
-        # Explanation Data
-        minDecision.decision_explanation = DecisionExplanation("KDMA_ESTIMATION")        
-        minDecision.decision_explanation.explanation_values.append(Explanation("TARGET_KDMAS", kdma)) # the target KDMA
-        minDecision.decision_explanation.explanation_values.append(Explanation("ESTIMATED_KDMAS", best_kdmas)) # the value of the estimated kdma of this decision
-        minDecision.decision_explanation.explanation_values.append(Explanation("DECISION_DISTANCE", {"distance": minDist})) # distance of the chosen decisions (case) from estimated KDMA
-        minDecision.decision_explanation.explanation_values.append(Explanation("OC_VALUES", relevant_fields(minCase, weights, kdma)))
-        minDecision.decision_explanation.explanation_values.append(Explanation("WEIGHTS", {key:val for (key, val) in weights.items() if val != 0}))        
-        minDecision.decision_explanation.explanation_values.append(Explanation("NEIGHBORS", self.top_K(minCase, weights, kdma_name)))
         
+        # Explanation Data
+        explanation = Explanation("KDMA_ESTIMATION", {}) # the type of explanation
+        explanation.params.update({"TARGET_KDMAS": {kdma.id_.lower(): kdma.value for kdma in target.kdmas}}) # the target kdma values
+        explanation.params.update({"ESTIMATED_KDMAS": best_kdmas}) # the value of the estimated kdma of this decision
+        explanation.params.update({"DISTANCE_FROM_TARGET": minDist}) # distance of the estimated from the target
+        explanation.params.update({"ORIGINAL_CASE_VALUES": relevant_fields(minCase, weights, kdma)}) # the relevant values of the selected case given the weights
+        explanation.params.update({"WEIGHTS": {key:val for (key, val) in weights.items() if val != 0}}) # the weights used for the estimation
+        explanation.params.update({"NEIGHBORS" : self.top_K(minCase, weights, kdma_name)})
+        minDecision.explanations.append(explanation)
+
         """
         util.logger.info(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
         util.logger.info(f"kdma: {kdma} weights: { {key:val for (key, val) in weights.items() if val != 0} }")
         for i in range(0, len(lst)):
             util.logger.info(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
         """
-
-
         return (minDecision, minDist)
                 
 

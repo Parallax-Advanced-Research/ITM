@@ -1,7 +1,8 @@
 import typing
+from typing import Any
 from util.dict_tools import Dict_No_Overwrite
 from .decision_metric import DecisionMetrics, DecisionName, DecisionMetric
-from .explanation import Explanation, DecisionExplanation
+from .explanation import Explanation
 from .justification import Justification
 
 from .kdmas import KDMAs
@@ -36,13 +37,13 @@ class Action:
 class Decision(typing.Generic[T]):
     def __init__(self, id_: str, value: T,
                  justifications: list[Justification] = list(),
-                 decision_explanation: DecisionExplanation = None,
+                 explanations: list[Explanation] = list(),
                  metrics: typing.Mapping[DecisionName, DecisionMetric] = None,
                  kdmas: KDMAs = None):
         self.id_: str = id_
         self.value: T = value
         self.justifications: list[Justification] = justifications
-        self.decision_explanation: DecisionExplanation = decision_explanation
+        self.explanations: dict[Any] = explanations
         self.metrics: DecisionMetrics = Dict_No_Overwrite()
         self.selected = False
         if metrics:

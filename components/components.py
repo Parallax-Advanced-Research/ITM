@@ -21,7 +21,7 @@ class AlignmentTrainer:
         raise NotImplementedError
 
 class DecisionExplainer:
-    def explain_variant(self, decision: Decision):
+    def explain(self, decision: Decision):
         raise NotImplementedError
 
 class Elaborator:

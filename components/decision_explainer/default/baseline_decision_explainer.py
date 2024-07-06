@@ -7,6 +7,5 @@ class BaselineDecisionExplainer(DecisionExplainer):
         super().__init__()
         self.variant = "Baseline"
         
-    def explain(self, decision: Decision, probe: TADProbe):
-        explanation: Explanation = Explanation("Baseline Explanation", {})
-        return explanation
+    def explain(self, decision: Decision):
+        return decision.explanations

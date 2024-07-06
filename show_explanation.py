@@ -5,8 +5,12 @@ import pickle
 from tabulate import tabulate
 import ast
 import random
+from components.decision_explainer import KDMADecisionExplainer
 
 input_file = "components/probe_dumper/tmp/MetricsEval.MD1-Urban.pkl"
+
+decision_explainer = KDMADecisionExplainer()
+
 # open the pickle file in read binary mode
 with open(input_file, 'rb') as f:
     # load the data from the pickle file
@@ -15,10 +19,9 @@ with open(input_file, 'rb') as f:
     made_decisions = data.made_decisions
 
     for decision in made_decisions:
-        print(decision.decision_explanation.decision_type)
-        for explanation_value in decision.decision_explanation.explanation_values:
-            print(explanation_value.name)
-        print("\n")
+        decision_explanation = decision_explainer.explain(decision)
+        print(decision_explanation)
+            
             
     print("---")
 
