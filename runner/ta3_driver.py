@@ -66,7 +66,7 @@ class TA3Driver(Driver):
         analyzers = [ebd, br, bnd, mca]
         analyzers = [a for a in analyzers if a is not None]
 
-        kdma_explainer = KDMADecisionExplainer() if args.keds else None
+        kdma_explainer = KDMADecisionExplainer() 
 
         explainers = [kdma_explainer]
         explainers = [e for e in explainers if e is not None]

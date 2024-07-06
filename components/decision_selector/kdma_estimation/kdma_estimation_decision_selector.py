@@ -6,7 +6,7 @@ import statistics
 import util
 from typing import Any, Sequence, Callable
 from numbers import Real
-from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State, Explanation
+from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State, Explanation, DecisionExplanation
 from domain.ta3 import TA3State, Casualty, Supply
 from components import DecisionSelector, DecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
@@ -35,7 +35,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.print_neighbors = args.decision_verbose
         self.index = 0
         self.kdma_totals = {}
-        # self.explanations = list[Explanation]()
+        
         if args.weightfile is None:
             global _default_weight_file
             if self.use_drexel_format:
@@ -66,7 +66,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             raise Exception("KDMA Estimation Decision Selector needs an alignment target to operate correctly.")
         minDist: float = math.inf
         minDecision: Decision = None
-        minTopCases: list[dict[str, Any]] = [] 
+        minCase = None
         misalign = self.variant.lower() == "misaligned"
         new_cases: list[dict[str, Any]] = list()
         self.index += 1
@@ -118,9 +118,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 sqDist += diff * diff
             if sqDist < minDist:
                 minDist = sqDist
-                minDecision = cur_decision
+                minCase = cur_case
+                minDecision = cur_decision                
                 best_kdmas = cur_kdmas
-                minTopCases = self.top_K(cur_case, weights, kdma_name) #TODO: Check these are the correct neighbors.
+                
 
             if self.print_neighbors:
                 util.logger.info(f"New dist: {sqDist} Best Dist: {minDist}")
@@ -131,12 +132,22 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         fname = "temp/live_cases" + str(self.index) + ".csv"
         write_case_base(fname, new_cases)
 
+        # Explanation Data
+        minDecision.decision_explanation = DecisionExplanation("KDMA_ESTIMATION")        
+        minDecision.decision_explanation.explanation_values.append(Explanation("TARGET_KDMAS", kdma)) # the target KDMA
+        minDecision.decision_explanation.explanation_values.append(Explanation("ESTIMATED_KDMAS", best_kdmas)) # the value of the estimated kdma of this decision
+        minDecision.decision_explanation.explanation_values.append(Explanation("DECISION_DISTANCE", {"distance": minDist})) # distance of the chosen decisions (case) from estimated KDMA
+        minDecision.decision_explanation.explanation_values.append(Explanation("OC_VALUES", relevant_fields(minCase, weights, kdma)))
+        minDecision.decision_explanation.explanation_values.append(Explanation("WEIGHTS", {key:val for (key, val) in weights.items() if val != 0}))        
+        minDecision.decision_explanation.explanation_values.append(Explanation("NEIGHBORS", self.top_K(minCase, weights, kdma_name)))
         
-        minDecision.explanation_values ={"DISTANCE": minDist, "NEAREST_NEIGHBORS":minTopCases, "WEIGHTS":weights, "BEST_KDMAS": best_kdmas}
+        """
+        util.logger.info(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
+        util.logger.info(f"kdma: {kdma} weights: { {key:val for (key, val) in weights.items() if val != 0} }")
+        for i in range(0, len(lst)):
+            util.logger.info(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
+        """
 
-        #{"CHOSEN_ACTION": {"NAME":minDecision.value.name, "PARAMS": minDecision.value.params, "DISTANCE": minDist}}
-        #{"KDMA_VALUES": {"BEST": best_kdmas, "MINS": min_kdmas, "MAXES": max_kdmas}}
-        #{"NEW_CASES": {"CASES": new_cases, "FILE_NAME": fname}} #live cases are temporary cases made from the probe responses. aka new_cases
 
         return (minDecision, minDist)
                 

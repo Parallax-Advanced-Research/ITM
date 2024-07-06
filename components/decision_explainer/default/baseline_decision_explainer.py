@@ -1,5 +1,5 @@
 from components import DecisionExplainer
-from domain.internal import Scenario, TADProbe, Explanation, KDMAs
+from domain.internal import TADProbe, Explanation, Decision
 
 
 class BaselineDecisionExplainer(DecisionExplainer):
@@ -7,6 +7,6 @@ class BaselineDecisionExplainer(DecisionExplainer):
         super().__init__()
         self.variant = "Baseline"
         
-    def explain(self, _scenario: Scenario, probe: TADProbe, _target: KDMAs):
+    def explain(self, decision: Decision, probe: TADProbe):
         explanation: Explanation = Explanation("Baseline Explanation", {})
         return explanation

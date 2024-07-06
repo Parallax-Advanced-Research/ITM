@@ -75,15 +75,12 @@ class Driver:
             analysis.update(this_analysis)
         return analysis
     
-    def explain(self, decision: Decision, probe: TADProbe):
-        decision_explanation = DecisionExplanation(decision.id_,"A description of the explanation including some reference to the attributes")
+    def explain(self, decision: Decision):
+        decision_explanations = []
         for explainer in self.explainers:
-            this_explanation = explainer.explain_variant(decision, probe)
-            decision_explanation.explanations.append(this_explanation)
-        # consolidate all of the explanations that make up the decision explanations. These could
-        # include an explanation for each type of decison (e.g. kdma_decision, etc.)
-        return decision_explanation.get_formatted_explanation() # for now just return the explanation. Later we can include other elements of the decision explanation
-        
+            this_explanation = explainer.explain_variant(decision)
+            decision_explanations.append(this_explanation)    
+        return decision_explanations    
 
     def select(self, probe: TADProbe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
@@ -125,9 +122,8 @@ class Driver:
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
 
-        # Explain the decision
-        decision.explanation_values = self.explain(decision, probe) # the explanation values is a placeholder for the Explanation object describing its attributes
-        # TODO fix that we're overwriting the decision.explanation_values when we should be adding to it
+        # Explain the decision when there is more than one type of decision type
+        # explanation = self.explain(decision) # 
         
         # Output the probe and the decision to a file
         if self.dumper is not None:

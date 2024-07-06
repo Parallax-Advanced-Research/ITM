@@ -1,4 +1,4 @@
-from domain.internal import Scenario, TADProbe, Decision, KDMAs, DecisionMetrics, AlignmentFeedback, Action, DecisionExplanation
+from domain.internal import Scenario, TADProbe, Decision, KDMAs, DecisionMetrics, AlignmentFeedback, Action, Explanation
 
 
 class DecisionAnalyzer:
@@ -21,7 +21,7 @@ class AlignmentTrainer:
         raise NotImplementedError
 
 class DecisionExplainer:
-    def explain(self, decision: Decision) -> dict[str, DecisionExplanation]:
+    def explain_variant(self, decision: Decision):
         raise NotImplementedError
 
 class Elaborator:
