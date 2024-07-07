@@ -2,6 +2,7 @@
 
 
 import pickle
+import pprint
 from tabulate import tabulate
 import ast
 import random
@@ -9,7 +10,7 @@ from components.decision_explainer import KDMADecisionExplainer
 
 input_file = "components/probe_dumper/tmp/MetricsEval.MD1-Urban.pkl"
 
-decision_explainer = KDMADecisionExplainer()
+kdma_explainer = KDMADecisionExplainer()
 
 # open the pickle file in read binary mode
 with open(input_file, 'rb') as f:
@@ -17,31 +18,25 @@ with open(input_file, 'rb') as f:
     data = pickle.load(f)
     # a list of the decision made when the test was run
     made_decisions = data.made_decisions
-
-    for decision in made_decisions:
-        decision_explanation = decision_explainer.explain(decision)
-        print(decision_explanation)
-            
-            
-    print("---")
-
-
-# this is for decoding the decision explanation maybe in the DecisionExplanation class or the kdma_decison_explainer
-def get_value_from_object(self, obj, attr_name):
-        if isinstance(obj, dict):
-            for key, value in obj.items():
-                if key == attr_name:
-                    return value
-                elif isinstance(value, (dict, list)):
-                    result = self.get_value_from_object(value, attr_name)
-                    if result is not None:
-                        return result
-        elif isinstance(obj, list):
-            for item in obj:
-                result = self.get_value_from_object(item, attr_name)
-                if result is not None:
-                    return result
-        elif hasattr(obj, attr_name):
-            return getattr(obj, attr_name)
+    selected_decisions = [random.choice(made_decisions)] # choose one for now
+    for decision in selected_decisions:
+        kdma_explanation = kdma_explainer.explain(decision)
+        print("-"*60)
+        print(f"Decision Type: {kdma_explanation['DECISION_TYPE']} Target: {kdma_explanation['TARGET_KDMAS']}")
         
-        return None
+
+        """
+        print("Here are the details which can be hidden)
+        # insert linebreaks to make the output more readable
+        for key, value in kdma_explanation.items():
+            if key == "Neighbors":
+                print(f"{key}:")
+                for neighbor in value:
+                    print(f"  {neighbor['Action']}:")
+                    for attr, val in neighbor['Attributes'].items():
+                        print(f"    {attr}: {val}")
+            else:
+                print(f"{key}: {value}")
+        print("---")        
+        """            
+    print()
