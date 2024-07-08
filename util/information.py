@@ -147,7 +147,7 @@ def create_solution_class(feature, cb):
         #discretize the values using quantiles
         num_values = len(values)
         quantile_values = [values[math.floor(i * num_values * threshold)] for i in range(1, (math.floor(1/threshold)))]
-        quantile_values = [values[0]] + list(set(quantile_values)) + [values[-1]]
+        quantile_values = [values[0]] + sorted(list(set(quantile_values))) + [values[-1]]
     else:  # discrete
         quantile_values = list(set(values))
     if len(quantile_values) == 40:
