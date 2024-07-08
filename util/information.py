@@ -6,15 +6,20 @@ import copy
 
 
 def LID(Sd, p, D, C, pred):
-    if stopping_condition(Sd, C):
-        c = cases(Sd)
-        return c
-    else:
-        fd, v = select_leaf(p, Sd, C, pred)
-        D_ = add_path(pi(p, fd), D)
-        Sd_ = disciminatory_set(D_, Sd)
-        c = LID(Sd_, p, D_, C, pred)
-        return c
+    try:
+        if stopping_condition(Sd, C):
+            c = cases(Sd)
+            return c
+        else:
+            fd, v = select_leaf(p, Sd, C, pred)
+            D_ = add_path(pi(p, fd), D)
+            Sd_ = disciminatory_set(D_, Sd)
+            c = LID(Sd_, p, D_, C, pred)
+            return c
+    except Exception as e:
+        if e.args[0] == 'No matching classes found':
+            return None
+
 
 def cases(Sd):
     '''convert Sd to a list of cases in Sd'''
