@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "tad_tester.py",
             "console": "integratedTerminal",
-            "args": "--session_type adept --kdma moraldesert=.84 --scenario MetricsEval.MD1-Urban --keds --dump"
+            "args": "--session_type adept --kdma moraldesert=.84 --scenario MetricsEval.MD1-Urban --verbose --keds --dump"
         }
     ]
 }

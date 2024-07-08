@@ -67,6 +67,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         minDist: float = math.inf
         minDecision: Decision = None
         minCase = None
+        minTopNeighbors = None
         misalign = self.variant.lower() == "misaligned"
         new_cases: list[dict[str, Any]] = list()
         self.index += 1
@@ -102,7 +103,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             for kdma in target.kdmas:
                 kdma_name = kdma.id_.lower()
                 weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
-                estimate = self.estimate_KDMA(cur_case, weights, kdma_name)
+                estimate, topK = self.estimate_KDMA(cur_case, weights, kdma_name)
                 if estimate is None:
                     sqDist += 100
                     continue
@@ -118,8 +119,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 sqDist += diff * diff
             if sqDist < minDist:
                 minDist = sqDist
-                minCase = cur_case
+                minCase = cur_case                
                 minDecision = cur_decision                
+                minTopNeighbors = topK
                 best_kdmas = cur_kdmas
                 
 
@@ -135,13 +137,14 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
         # Explanation Data
         explanation = Explanation("KDMA_ESTIMATION", {}) # the type of explanation
+        explanation.params.update({"SELECTED_ACTION": minDecision.value.name}) # the selected action
         explanation.params.update({"TARGET_KDMAS": {kdma.id_.lower(): kdma.value for kdma in target.kdmas}}) # the target kdma values
         explanation.params.update({"ESTIMATED_KDMAS": best_kdmas}) # the value of the estimated kdma of this decision
         explanation.params.update({"DISTANCE_FROM_TARGET": minDist}) # distance of the estimated from the target
         explanation.params.update({"ORIGINAL_CASE_VALUES": relevant_fields(minCase, weights, kdma)}) # the relevant values of the selected case given the weights
         explanation.params.update({"WEIGHTS": {key:val for (key, val) in weights.items() if val != 0}}) # the weights used for the estimation
-        explanation.params.update({"NEIGHBORS" : self.top_K(minCase, weights, kdma_name)})
-        minDecision.explanations.append(explanation)
+        explanation.params.update({"NEIGHBORS" : minTopNeighbors}) # the neighbors used for the estimation
+        minDecision.explanations = [explanation]
 
         """
         util.logger.info(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
@@ -174,7 +177,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         kdma_val = kdma_total / divisor
         if self.print_neighbors:
             util.logger.info(f"kdma_val: {kdma_val}")
-        return kdma_val
+        return kdma_val, topk
         
     def top_K(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str) -> list[dict[str, Any]]:
         lst = []
