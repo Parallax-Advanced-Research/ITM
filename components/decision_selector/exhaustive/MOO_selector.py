@@ -221,25 +221,30 @@ class MOOSelector(DecisionSelector):
         if self.use_drexel_format:
             kdma = kdma + "-Ave"
         topK = self.top_K_LID(cur_case, kdma)
-        if len(topK) == 0:
+        if not topK:
             return None
-        total = sum([max(dist, 0.01) for (dist, case) in topK])
-        divisor = 0
-        kdma_total = 0
-        neighbor = 0
-        for (dist, case) in topK:
-            neighbor += 1
-            if kdma not in case or case[kdma] is None:
-                breakpoint()
-                raise Exception()
-            kdma_val = case[kdma]
-            kdma_total += kdma_val * total/max(dist, 0.01)
-            divisor += total/max(dist, 0.01)
-            cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
-        kdma_val = kdma_total / divisor
-        if self.print_neighbors:
-            util.logger.info(f"kdma_val: {kdma_val}")
-        return kdma_val
+        val = set([y[1] for x in topK for y in util.information.pi(x, [kdma])])
+        assert len(val) == 1
+        retval = val.pop()
+        print(retval)
+        return retval
+        # total = sum([max(dist, 0.01) for (dist, case) in topK])
+        # divisor = 0
+        # kdma_total = 0
+        # neighbor = 0
+        # for (dist, case) in topK:
+        #     neighbor += 1
+        #     if kdma not in case or case[kdma] is None:
+        #         breakpoint()
+        #         raise Exception()
+        #     kdma_val = case[kdma]
+        #     kdma_total += kdma_val * total/max(dist, 0.01)
+        #     divisor += total/max(dist, 0.01)
+        #     cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
+        # kdma_val = kdma_total / divisor
+        # if self.print_neighbors:
+        #     util.logger.info(f"kdma_val: {kdma_val}")
+        # return kdma_val
 
     def top_K_LID(self, cur_case: dict[str, Any], kdma: str) -> list[dict[str, Any]]:
         '''
@@ -249,7 +254,9 @@ class MOOSelector(DecisionSelector):
         :param kdma:
         :return:
         '''
-        return util.information.LID(self.cb, cur_case, [], create_solution_class(['pDeath'], self.cb), ['pDeath'])
+        return util.information.LID(self.cb, cur_case, [], create_solution_class([kdma], self.cb), [kdma])
+
+# return util.information.LID(self.cb, cur_case, [], create_solution_class(['pDeath'], self.cb), ['pDeath'])
 
 
     def choose_random_decision(self, probe: TADProbe) -> Decision:

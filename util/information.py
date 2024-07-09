@@ -11,14 +11,18 @@ def LID(Sd, p, D, C, pred):
             c = cases(Sd)
             return c
         else:
-            fd, v = select_leaf(p, Sd, C, pred)
+            fd, v = select_leaf(p, Sd, C, [pred] + [x[0] for x in D])
             D_ = add_path(pi(p, fd), D)
             Sd_ = disciminatory_set(D_, Sd)
-            c = LID(Sd_, p, D_, C, pred)
+            C_ = create_solution_class(pred, Sd_)
+            c = LID(Sd_, p, D_, C_, pred)
             return c
     except Exception as e:
-        if e.args[0] == 'No matching classes found':
+        if e.args and e.args[0] == 'No matching classes found':
             return None
+        else:
+            raise e
+
 
 
 def cases(Sd):
@@ -60,21 +64,21 @@ def select_leaf(p, Sd, C, avoid):
     min_distance = float('inf')
     infs = []
     min_leaf = None
-    leafs = [l for l in leafs if l[0] != avoid]
+    leafs = [l for l in leafs if l[0] not in avoid]
     for f, v in leafs:
         try:
             leaf_class = create_solution_class(f, Sd)
             distance = compute_rlm_distance(leaf_class, C)
         except AssertionError as e:
             logger.debug('leaf feture' + str(f) + ' is not found in the discriminatory set')
+            create_solution_class(f, Sd)
+            raise e
             continue
         if distance == math.inf and min_leaf is None:
             infs.append(f)
         if distance < min_distance:
             min_distance = distance
             min_leaf = f
-        else:
-            print("distance is greater than min_distance")
     if min_leaf is None and len(infs) > 0:
         min_leaf = random.choice(infs)
     elif min_leaf is None:
@@ -92,17 +96,17 @@ def pi(case, fd):
         f = fd.pop(0)
         if type(case) == dict:
             if f not in case:
-                return None, None
+                return [(None, None)]
             case = case[f]
         elif type(case) == list:
             retval = []
             for item in case:
                 retval += pi(item, [f]+fd)
-            return retval
-    return (orig_fd, case)
+            return [(orig_fd, x[1]) for x in retval]
+    return [(orig_fd, case)]
 
 def add_path(pi, D):
-    return D + [pi]
+    return D + pi
 
 def disciminatory_set(D_, Sd):
     '''
@@ -117,9 +121,11 @@ def disciminatory_set(D_, Sd):
     Sd_ = {}
     for case in Sd:
         for p in D_:
-            path = pi(case, p[0])
-            if p[1] == path[1]:
-                Sd_[case] = Sd[case]
+            paths = pi(Sd[case], p[0])
+            for p_ in paths:
+                if p[1] == p_[1]:
+                    Sd_[case] = Sd[case]
+                    break
 
     return Sd_
 
@@ -137,17 +143,23 @@ def create_solution_class(feature, cb):
     values = []
     quantile_values = []
     for case in cb:
-        val = pi(cb[case], feature)
-        if val:
-            values.append(val[1])
+        vals = pi(cb[case], feature)
+        if vals:
+            for val in vals:
+                if val:
+                    values.append(val[1])
     none_flag = False
     if None in values:
         none_flag = True
-        values = [x for x in values if x]
+        values = [x for x in values if x is not None]
     values = sorted(values)
     #identify if values are a continuous set or discrete set, by comparing unique values to total number of values
     if len(values) == 0 and none_flag:
         return {-1: {'k': [None, None], 'cases': [{x: cb[x]} for x in cb]}}
+    try:
+        set(values)
+    except:
+        vals = pi(cb[case], feature)
     if len(set(values)) / len(values) < threshold:  # continuous
         #discretize the values using quantiles
         num_values = len(values)
@@ -184,23 +196,22 @@ def create_solution_class(feature, cb):
         logger.warn("empty case base")
     for case in cb:
         retval = pi(cb[case], feature)
-        try:
-            key, val = pi(cb[case], feature)
-        except Exception as e:
-            pass
-        if val is not None:
-            try:
-                for x in [x for x in classes.keys() if x != -1]:
-                    if classes[x]['k'][0] <= val <= classes[x]['k'][1]:
-                        classes[x]['cases'].append({case: cb[case]})
-                        break
-            except Exception as e:
-                pass
-        else:
-            if none_flag:
-                classes[-1]['cases'].append({case: cb[case]})
+        for key, val in retval:
+            if val is not None:
+                try:
+                    added = False
+                    for x in [y for y in classes.keys() if y != -1]:
+                        if classes[x]['k'][0] <= val <= classes[x]['k'][1]:
+                            added = True
+                            classes[x]['cases'].append({case: cb[case]})
+                            break
+                except Exception as e:
+                    pass
             else:
-                pass #this should never happen, a none value got through the filter
+                if none_flag:
+                    classes[-1]['cases'].append({case: cb[case]})
+                else:
+                    pass #this should never happen, a none value got through the filter
     # number classes from 0 to n
     keys = [x for x in classes]
     new_classes = {}
@@ -209,7 +220,7 @@ def create_solution_class(feature, cb):
     return new_classes
 
 
-def compute_rlm_distance(partition1 : dict[Any, int], partition2: dict[Any, int]) -> float:
+def compute_rlm_distance(partition1_ : dict[Any, int], partition2_: dict[Any, int]) -> float:
     '''
 
     :param partition1: dictionary[class_num]{k: class value, cases: list[case]}
@@ -223,8 +234,8 @@ def compute_rlm_distance(partition1 : dict[Any, int], partition2: dict[Any, int]
     #partition1 = {list(a.keys())[0] : k for k, v in partition1.items() for a in v}
     #partition2 = {list(a.keys())[0] : k for k, v in partition2.items() for a in v}
     new_partition1 = {}
-    partition1 = {list(a.keys())[0]: k for k, v in partition1.items() for a in v['cases']}
-    partition2 = {list(a.keys())[0]: k for k, v in partition2.items() for a in v['cases']}
+    partition1 = {list(a.keys())[0]: k for k, v in partition1_.items() for a in v['cases']}
+    partition2 = {list(a.keys())[0]: k for k, v in partition2_.items() for a in v['cases']}
     #for key in partition1:
     #    if partition1[key] not in val_to_class1:
     #        val_to_class1[partition1[key]] = len(val_to_class1)
@@ -265,7 +276,6 @@ def compute_rlm_distance(partition1 : dict[Any, int], partition2: dict[Any, int]
             Pj[j] += slice
         except Exception as e:
             pass
-        print(i, j, Pij)
         try:
             Pij[i][j] += slice
         except Exception as e:
