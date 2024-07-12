@@ -276,6 +276,7 @@ class Locations(Enum):
     RIGHT_NECK = "right neck"
     UNSPECIFIED = "unspecified"
     INTERNAL = "internal"
+    HEAD = "head"
 
 
 class InjuryAssumptuions:

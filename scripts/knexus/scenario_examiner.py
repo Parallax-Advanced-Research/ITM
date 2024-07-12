@@ -23,9 +23,6 @@ if __name__ == '__main__':
         as_json = json.load(fname)
         inj_list = get_injuries(as_json)
         all_inj.extend(inj_list)
-        # for inj in inj_list:
-        #     print(inj)
-        # print('---\n\n\n')
     all_inj = sorted(list(set(all_inj)))
     for inj in all_inj:
         print(inj)
