@@ -170,6 +170,9 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                 target = self.current_critic.target
             else:
                 target = 1
+            print("Weights:")
+            for (k, v) in self.best_model.get_booster().get_score(importance_type='gain').items():
+                print(f"{k}: {v:.3f}")
             for d in probe.decisions:
                 pred = self.get_xgboost_prediction(self.make_case(probe, d))
                 dist = abs(target - pred)
