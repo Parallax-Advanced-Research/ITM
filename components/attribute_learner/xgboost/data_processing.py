@@ -1,4 +1,4 @@
-from xgboost_train import *
+from .xgboost_train import *
 import copy
 from sklearn.model_selection import KFold
 import time
@@ -97,13 +97,20 @@ def clean_data(d):
             except:
                 if d[key][key2] == "None":
                     continue
+                if d[key][key2] is None:
+                    d[key][key2] = "None"
+                    continue
                 if "," in d[key][key2]:
                     d[key][key2] = d[key][key2].replace(",", "")
                 categories.add(key2)
     for key in d:
         for key2 in d[key]:
-            if d[key][key2] == "None":
+            if key2 not in categories and key2 not in mins: 
+                categories.add(key2)
+            if d[key][key2] == "None" or d[key][key2] is None:
                 if key2 not in categories and key2 in mins:
+                    if mins[key2] == maxs[key2]:
+                        maxs[key2] += 1
                     d[key][key2] = 2*mins[key2] - maxs[key2]
     return d, categories
 
@@ -126,8 +133,9 @@ def trim_one_weight(df, weights, output_label):
     df = drop_one_column_by_weight(df, weights, output_label)
     return df
 
-
 def test_accuracy_t(df, weights, output_label, f=None):
+    if len(df) < 2:
+        return 0
     loo = LeaveOneOut()
     gt = []  # ground truth
     y = np.array(df[output_label].tolist())
@@ -159,9 +167,34 @@ def test_accuracy_t(df, weights, output_label, f=None):
     print("test f", f)
     if f is not None:
         save_partial_weights(f, weights, attributes, accuracy, output_label)
-    else:
-        save_weights(weights, attributes, accuracy, output_label)
     print(f"\rAccuracy from thread {len(weights)}:", accuracy)
+    return accuracy
+    
+def test_error(df, weights, output_label, f=None):
+    if len(df) < 2:
+        return 0
+    loo = LeaveOneOut()
+    gt = []  # ground truth
+    y = np.array(df[output_label].tolist())
+    X = df.drop(output_label, axis=1)  # removes the decision column
+    attributes = X.columns
+    results_label = []
+    i = 0
+    x = loo.split(X)
+    l = sum(1 for _ in x)
+    current_progress = -1
+    for train_index, test_index in loo.split(X):
+        i += 1
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        y_pred = prediction(X_test, y_test, X_train, y_train, weights, attributes, k=1, threshold=10)
+        results_label.append(y_pred)
+        gt.append(y_test)
+    results_label = np.array(results_label)
+    error = [abs(results_label[i] - y[i]) for i in range(len(results_label))]
+    error = sum(error) / len(error)
+    # print(f"\rError for weight count={len(weights)}:", error)
+    return error
 
 
 def test_accuracy(df, weights, output_label):
@@ -205,7 +238,7 @@ def generate_partial_weights(output_label, d, c):
     if output_label not in df.columns:
         return None
     # df = drop_columns_if_all_unique(df)
-    df = drop_columns_by_patterns(df, lable=output_label)
+    df = drop_columns_by_patterns(df, label=output_label)
     weights = xgboost_weights(df, output_label, c)
     df = drop_zero_weights(df, weights, output_label)
     if len(df.columns) == 1:
@@ -328,8 +361,13 @@ def analyze_partial_data():
                     max_accuracy = max([data[i]["acc"] for i in data])
                     min_allowable_accuracy = n * max_accuracy
                     min_allowable_weights = min([int(i) for i in data if data[i]['acc'] >= min_allowable_accuracy])
-                    chosen_weights[data_base][cbsize][i][metric] = (min_allowable_weights, data[min_allowable_weights]["acc"],
-                                                                    '/'.join([data_folder, data_base, cbsize, i, "weights", metric, str(min_allowable_weights) + "-" + str(data[min_allowable_weights]["acc"]), data[min_allowable_weights]["weights"]]))
+                    fname = \
+                        '/'.join([data_folder, data_base, cbsize, i, "weights", metric, 
+                                  str(min_allowable_weights) + "-" + str(data[min_allowable_weights]["acc"]), 
+                                  data[min_allowable_weights]["weights"]])
+                    chosen_weights[data_base][cbsize][i][metric] = \
+                        (min_allowable_weights, data[min_allowable_weights]["acc"], fname)
+                                                                    
     return chosen_weights
 
 

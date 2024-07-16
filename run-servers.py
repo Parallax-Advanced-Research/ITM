@@ -193,12 +193,12 @@ def which_docker_compose() -> list[str] | None:
 
     return None
 
-def start_server(dir_name: str, args: list[str], use_venv = True, extra_env = {}) -> None:
+def start_server(dir_name: str, args: list[str], port: str, use_venv = True, extra_env = {}) -> None:
     ldir = os.path.join(os.getcwd(), ".deprepos", dir_name)
     env = os.environ.copy() | extra_env
-    out_path = os.path.join(os.getcwd(), ".deprepos", dir_name + ".out")
-    err_path = os.path.join(os.getcwd(), ".deprepos", dir_name + ".err")
-    pid_path = os.path.join(os.getcwd(), ".deprepos", dir_name + ".pid")
+    out_path = os.path.join(os.getcwd(), ".deprepos", dir_name + "-" + port + ".out")
+    err_path = os.path.join(os.getcwd(), ".deprepos", dir_name + "-" + port + ".err")
+    pid_path = os.path.join(os.getcwd(), ".deprepos", dir_name + "-" + port + ".pid")
     if use_venv:
         builder = venv.EnvBuilder(with_pip=True, upgrade_deps=True)
         ctxt = builder.ensure_directories(os.path.join(ldir, "venv"))
@@ -302,7 +302,7 @@ if not adept_server_available and not soartech_server_available:
 
 
 if adept_server_available:
-    start_server("adept_server", ["openapi_server", "--port", str(adept_port)])
+    start_server("adept_server", ["openapi_server", "--port", str(adept_port)], str(adept_port))
 elif soartech_server_available:
     warning('ADEPT server is not in use. Use the arguments '
           + '"--session_type soartech" to use only the Soartech server with ta3_training.py. The '
@@ -311,6 +311,7 @@ elif soartech_server_available:
 
 if soartech_server_available:
     start_server("ta1-server-mvp", docker_compose + ["-f", "docker-compose-dev.yaml", "up"],
+                 str(soartech_port),
                  use_venv = False, extra_env={"ITM_PORT": str(soartech_port)})
 elif adept_server_available:
     warning('Soartech server is not in use. Use the arguments '
@@ -321,7 +322,7 @@ elif adept_server_available:
 if adept_server_available or soartech_server_available:
     time.sleep(30)
 
-start_server("itm-evaluation-server", ["swagger_server"])
+start_server("itm-evaluation-server", ["swagger_server"], str(ta3_port))
 
 if soartech_server_available and adept_server_available:
     color('green', "All servers in use. Both tad_tester.py and ta3_training.py should work properly.")

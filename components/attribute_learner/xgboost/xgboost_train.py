@@ -6,13 +6,13 @@ from xgboost import XGBClassifier
 import xgboost
 from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.datasets import fetch_california_housing
-def drop_columns_by_patterns(df, keys={}, lable=""):
+def drop_columns_by_patterns(df, keys={}, label=""):
     patterns = ['index', 'hash', 'feedback', 'action-len', 'justification', 'unnamed', 'nondeterminism', 'action', 'hint', 'maximization', 'moraldesert', '.stdev']
     if keys != {}:
         patterns = [keys[x] for x in patterns]
-        columns_to_drop = [col for col in df.columns if col in patterns and col != lable]
+        columns_to_drop = [col for col in df.columns if col in patterns and col != label]
     else:
-        columns_to_drop = [col for col in df.columns if any(string in col.lower() for string in patterns) and col != lable]
+        columns_to_drop = [col for col in df.columns if any(string in col.lower() for string in patterns) and col != label]
     df = df.drop(columns=columns_to_drop)
     return df
 def drop_columns_if_all_unique(df):
@@ -76,6 +76,25 @@ def xgboost_weights(case_base, output_label, c):
     weights = np.array(weights)
     return weights
 
+def get_regression_feature_importance(x, y):
+    xgb = xgboost.XGBRegressor(enable_categorical=True, n_jobs=1)
+    xgb.fit(x, y)
+    return xgb.get_booster().get_score(importance_type='gain'), mean_squared_error(y, xgb.predict(x)), xgb
+
+def get_classification_feature_importance(x, y):
+    xgb = XGBClassifier(enable_categorical=True, n_jobs=1)
+    xgb.fit(x, y)
+    return xgb.get_booster().get_score(importance_type='gain'), mean_squared_error(y, xgb.predict(x)), xgb
+
+
+def get_mean_squared_error(xgb, weights_dict, case_base, output_label):
+    y = np.array(case_base[output_label].tolist())
+    unique = sorted(list(set(y)))
+    transfer = {k: v for k, v in enumerate(unique)}
+    y = np.array([list(transfer.keys())[list(transfer.values()).index(v)] for v in y])
+    return mean_squared_error(y, xgb.predict(x))
+
+
 def save_weights(weights, columns, accuracy=-1, score_key="weights"):
     weights_file = f'weights/{score_key}/{len(weights)}-{round(accuracy, 4)}/weights_accuracy={accuracy}.csv'
     weights_json = f'weights/{score_key}/{len(weights)}-{round(accuracy, 4)}/weights_accuracy={accuracy}.json'
@@ -120,7 +139,10 @@ def local_similarity(new_case, candidate_case, feature_type):
             else:
                 local_sim.append(0)
         else:
-            temp = 1 - (abs(new_case_f - candidate_case_f) / feature_type[i][1])
+            if feature_type[i][1] < .00001:
+                temp = 0
+            else:
+                temp = 1 - (abs(new_case_f - candidate_case_f) / feature_type[i][1])
             local_sim.append(temp)
         i += 1
     return local_sim
@@ -129,11 +151,12 @@ def retrieval(X_test, y_test, X_train, y_train, weights, attributes, k=1, thresh
     feature_type = []
     for col in X_train.columns:
         unique_values = X_train[col].unique()
-        t = {type(x) for x in unique_values if not (isinstance(x, float) and math.isnan(x))}
+        t = {type(x) for x in unique_values if not (isinstance(x, float) and math.isnan(x)) and x is not None}
         if len(t) == 1 and str in t or bool in t or np.bool_ in t:
             feature_type.append(["Categorical"])
         elif len(t) == 1 and (int in t or float in t or np.int64 in t or np.float64 in t):
             feature_type.append(["Numerical", X_train[col].max() - X_train[col].min()])
+            #print(f"Numeric feature: {col} Max: {X_train[col].max()} Min: {X_train[col].min()}")
         else:
             raise ValueError(f"Column {col} has mixed types {t}")
         #if len(unique_values) <= threshold:
@@ -157,6 +180,50 @@ def retrieval(X_test, y_test, X_train, y_train, weights, attributes, k=1, thresh
     #else:
     #    dec = 0
     return y_pred, x_pred
+
+def prediction(X_test, y_test, X_train, y_train, weights, attributes, k=1, threshold=10):
+    feature_type = []
+    for col in X_train.columns:
+        unique_values = X_train[col].unique()
+        t = {type(x) for x in unique_values if not (isinstance(x, float) and math.isnan(x)) and x is not None}
+        if len(t) == 1 and str in t or bool in t or np.bool_ in t:
+            feature_type.append(["Categorical"])
+        elif len(t) == 1 and (int in t or float in t or np.int64 in t or np.float64 in t):
+            feature_type.append(["Numerical", X_train[col].max() - X_train[col].min()])
+            #print(f"Numeric feature: {col} Max: {X_train[col].max()} Min: {X_train[col].min()}")
+        else:
+            raise ValueError(f"Column {col} has mixed types {t}")
+        #if len(unique_values) <= threshold:
+        #    feature_type.append(["Categorical"])
+        #else:
+        #    feature_type.append(["Numerical", X_train[col].max() - X_train[col].min()])
+    global_sim = []
+    X_train_df = X_train.copy()
+    X_train = X_train.values
+    X_test = X_test.values[0]
+    for i, cc in enumerate(X_train):
+        local_sim = local_similarity(X_test, cc, feature_type)
+        global_sim_val = sum(weights * local_sim)
+        global_sim.append((global_sim_val, i))
+
+    global_sim.sort(reverse=True)
+    y_pred = 0
+    for i in range(k):
+        y_pred += y_train[global_sim[i][1]] * global_sim[i][0]
+
+    total = sum([tuple[0] for tuple in global_sim[:k]])
+    if total != 0:
+        y_pred = y_pred / total
+
+    # y_pred = y_train[global_sim.index(max(global_sim))]
+    # x_pred = X_train_df.iloc[global_sim.index(max(global_sim))]
+
+    #if y_pred == y_test:
+    #    dec = 1
+    #else:
+    #    dec = 0
+    return y_pred
+
 
 if __name__ == "__main__":
     X, y = fetch_california_housing(return_X_y=True)

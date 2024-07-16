@@ -3,6 +3,7 @@ import json
 import random
 import copy
 import numbers
+import os
 from domain.internal import TADProbe, Scenario, Decision, DecisionMetrics, DecisionMetric
 from components import DecisionAnalyzer
 from typing import List, Tuple, Union, Dict, Any, Optional
@@ -1062,7 +1063,7 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                                "Chest Collapse", "Amputation", "Burn"]
 
         json_object = json.dumps(file, indent=2)
-        new_file = "temp/newfile.json"
+        new_file = f"temp/newfile-{os.getpid()}.json"
         with open(new_file, "w") as outfile:
             outfile.write(json_object)
 

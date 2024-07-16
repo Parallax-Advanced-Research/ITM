@@ -3,15 +3,37 @@ import os
 import glob
 import signal
 import subprocess
+import argparse
+import util
 
-pid_files = glob.glob(os.path.join(".deprepos", "*.pid"))
+ta3_port = util.find_environment("TA3_PORT", 8080)
+adept_port = util.find_environment("ADEPT_PORT", 8081)
+soartech_port = util.find_environment("SOARTECH_PORT", 8084)
+
+parser = argparse.ArgumentParser(description="Runs an experiment attempting to learn about an " \
+                                             "environment by learning a subset of actions by " \
+                                             "themselves first.")
+parser.add_argument("--all", action=argparse.BooleanOptionalAction, default=False,
+                    help="Stop all servers, not just the ones on the known ports.")
+parser.add_argument("--port", type=str, default=None,
+                    help="Stop servers at a given port.")
+args = parser.parse_args()
+
+if args.all:
+    pid_files = glob.glob(os.path.join(".deprepos", "*.pid"))
+elif args.port is not None:
+    pid_files = glob.glob(os.path.join(".deprepos", f"*-{args.port}.pid"))
+else:
+    soartech_file = os.path.join(".deprepos", f"ta1-server-mvp-{soartech_port}.pid")
+    if os.path.exists(soartech_file):
+        p = subprocess.run(["docker", "compose", "-f", "docker-compose-dev.yaml", "down"],
+                             cwd=os.path.join(".deprepos", "ta1-server-mvp"))
+    pid_files = [soartech_file]
+    pid_files.append(os.path.join(".deprepos", f"itm-evaluation-server-{ta3_port}.pid"))
+    pid_files.append(os.path.join(".deprepos", f"adept_server-{adept_port}.pid"))
+
 if len(pid_files) == 0:
     print("No known running servers.")
-
-if os.path.exists(os.path.join(".deprepos", "ta1-server-mvp.pid")):
-    p = subprocess.run(["docker", "compose", "-f", "docker-compose-dev.yaml", "down"],
-                         cwd=os.path.join(".deprepos", "ta1-server-mvp"))
-
 
 for fname in pid_files:
     f = None

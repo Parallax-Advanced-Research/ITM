@@ -3,7 +3,8 @@ import os
 import random
 from components import DecisionSelector
 from domain.internal import Scenario, TADProbe, Action, KDMAs, Decision
-from components.decision_selector.kdma_estimation import make_case, write_case_base, read_case_base
+from components.decision_selector.kdma_estimation import write_case_base, read_case_base
+from components.decision_selector.kdma_estimation.kdma_estimation_decision_selector import make_case_triage
 from typing import Any
 
 CASE_FILE: str = "temp/pretraining_cases.json"
@@ -35,7 +36,7 @@ class DiverseSelector(DecisionSelector):
         
         cur_decision = self.choose_random_decision(probe)
 
-        new_case = make_case(probe, cur_decision)
+        new_case = make_case_triage(probe, cur_decision)
         chash = hash_case(new_case)
         new_case["index"] = self.case_index
         if cur_decision.kdmas is not None and cur_decision.kdmas.kdma_map is not None:
@@ -63,7 +64,7 @@ class DiverseSelector(DecisionSelector):
             for i in cas.injuries:
                 print(str(i))
         current_bar = 0
-        chash = hash_case(make_case(probe, probe.decisions[0]))
+        chash = hash_case(make_case_triage(probe, probe.decisions[0]))
         hash_cases = self.cases.get(chash, [])
         
         patient_choices_with_kdma = \

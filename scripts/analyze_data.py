@@ -7,15 +7,23 @@ from typing import Any
 from domain.enum import ParamEnum
 import statistics
 import argparse
+import os
+import glob
+import random
+
+RANDOM_KEYS : str = ["SMOL_MEDICAL_SOUNDNESS", "MEDSIM_P_DEATH", "entropy", "entropyDeath", 
+                     'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding', 
+                     'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER']
+
 
 def read_training_data(case_file: str = exhaustive_selector.CASE_FILE, 
                        feedback_file: str = kdma_case_base_retainer.FEEDBACK_FILE
                       ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    return read_pre_cases(case_file), read_feedback(feedback_file)
+
+def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[str, Any]]:
     with open(case_file, "r") as infile:
         cases = [json.loads(line) for line in infile]
-    with open(feedback_file, "r") as infile:
-        training_data = [json.loads(line) for line in infile]
-    training_data = [d for d in training_data if len(d["feedback"]["kdmas"]) > 0 and d["final"]]
     for case in cases:
         case["action-string"] = stringify_action_list(case["actions"])
         case["pre-action-string"] = stringify_action_list(case["actions"][:-1])
@@ -25,15 +33,13 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
         case["state-hash"] = case_state_hash(case)
     last_action_len : int = 1
     last_hints : dict[str, float] = {}
+    last_pre_action_string = ""
     for i in range(1,len(cases)+1):
         cur_case = cases[-i]
-        if last_action_len == 1:
-            if cur_case["action-len"] < 1:
-                breakpoint()
+        if cur_case["action-string"] != last_pre_action_string:
             last_hints = {}
-        else:
-            assert(cur_case["action-len"] + 1 == last_action_len)
-        last_action_len = cur_case["action-len"]
+            assert("hint" in cur_case)
+        last_pre_action_string = cur_case["pre-action-string"]
         new_hints = cur_case.get("hint", None)
         if new_hints is not None:
             for (key, val) in cur_case["hint"].items():
@@ -43,6 +49,12 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
                 last_hints[key] = val * .99
         cur_case["dhint"] = dict(last_hints)
         
+    return cases
+
+def read_feedback(feedback_file: str = kdma_case_base_retainer.FEEDBACK_FILE) -> list[dict[str, Any]]:
+    with open(feedback_file, "r") as infile:
+        training_data = [json.loads(line) for line in infile]
+    training_data = [d for d in training_data if len(d["feedback"]["kdmas"]) > 0 and d["final"]]
     for datum in training_data:
         datum["action-string"] = stringify_action_list(datum["actions"])
         datum["action-len"] = len(datum["actions"])
@@ -50,7 +62,10 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
         while index < len(datum["actions"]):
             datum["actions"][index]["hash"] = hash(stringify_action_list(datum["actions"][:index+1]))
             index = index + 1
-    return cases, training_data
+    return training_data
+
+
+
 
 def stringify_action_list(actions: list[dict[str, Any]]) -> str:
     return ";".join([stringify_action(a) for a in actions])
@@ -156,14 +171,10 @@ def flatten(name, valueDict: dict[str, Any]):
     return ret
 
 def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_data: list[dict[str, Any]], scenario: str = None, target: str = None):
-    if scenario is None:
-        scenario = training_data[0]["scenario_id"]
-    if target is None:
-        target = training_data[0]["feedback"]["target"]
-        
-    training_data = [datum for datum in training_data \
-                            if datum["scenario_id"] == scenario \
-                               and datum["feedback"]["target"] == target]
+    write_case_base(fname, make_kdma_cases(cases, training_data, scenario, target))
+
+
+def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, Any]], scenario: str = None, target: str = None):
     ret_cases = []
     index = 1
     distinct_cases = {stringify_action_list(case["actions"]):case for case in cases}.values()
@@ -182,6 +193,14 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
         new_case["index"] = index
         new_case["action"] = new_case["actions"][-1]
         if training_data is not None:
+            if scenario is None:
+                scenario = training_data[0]["scenario_id"]
+            if target is None:
+                target = training_data[0]["feedback"]["target"]
+                
+            training_data = [datum for datum in training_data \
+                                    if datum["scenario_id"] == scenario \
+                                       and datum["feedback"]["target"] == target]
             feedbacks = []
             before_feedbacks = []
             tested_befores = []
@@ -234,6 +253,7 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
                     hint_val = (hint_val + 1.0) / 2
                 new_case[key.lower()] = hint_val
                 new_case.pop("dhint")
+        
         new_case.pop("hash")
         new_case.pop("action-string")
         new_case.pop("pre-action-string")
@@ -242,17 +262,111 @@ def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_da
         new_case.pop("pre-action-hash")
         new_case.pop("action-len")
         new_case.pop("state-hash")
-        keys = [key for key in new_case.keys() if not key.startswith('p') and not key.startswith("NONDETERMINISM")]
-        keys.remove("index")
-        for key in keys:
-            vals = set([str(case.get(key, None)) for case in case_list])
-            if len(vals) > 1:
-                print(f"Multiple values for key {key}: {vals}")
+        new_case.pop("run_index")
+        
+        if len(case_list) > 1:
+            # Handle averaging different real values across combined cases
+            for key in RANDOM_KEYS:
+                if key not in new_case:
+                    continue
+                vals = [case.get(key, None) for case in case_list]
+                if None in vals:
+                    print(f"Key {key} undefined for some combined cases.")
+                    breakpoint()
+                new_case[key] = statistics.mean(vals)
+                new_case[key + ".stdev"] = statistics.stdev(vals)
+
+            keys = [key for key in new_case.keys() if key not in RANDOM_KEYS]
+            keys = [key for key in keys if not key.startswith("NONDETERMINISM")]
+            keys.remove("index")
+
+            
+            for key in keys:
+                vals = set([str(case.get(key, None)) for case in case_list])
+                if len(vals) > 1:
+                    print(f"Multiple values for key {key}: {vals}")
+                    breakpoint()
         ret_cases.append(new_case)
         index = index + 1
         
-            
-    write_case_base(fname, ret_cases)
+    return ret_cases
+    
+def create_experiment_case_bases():
+    for state_count in [1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50]:
+        create_random_sub_case_bases(
+            ["local/casebases-20240315/*-1/pretraining_cases_is*.json"], 
+            state_count, 
+            "local/soartech-casebases")
+        create_random_sub_case_bases(
+            ["local/casebases-20240315/MD*/pretraining_cases_is*.json"], 
+            state_count, 
+            "local/adept-casebases")
+    create_random_sub_case_bases(
+        ["local/casebases-20240315/MD*/pretraining_cases_is*.json"], 
+        52, 
+        "local/adept-casebases", 
+        count = 1)
+    create_random_sub_case_bases(
+        ["local/casebases-20240315/*-1/pretraining_cases_is*.json"], 
+        52, 
+        "local/soartech-casebases", 
+        count = 1)
+    
+def create_random_sub_case_bases(case_files: list[str], state_count: int, dir_name: str, count: int = 10):
+    case_file_names = []
+    for case_file in case_files:
+        case_file_names += glob.glob(case_file)
+    sub_cb_index = 0
+    previous_choices = []
+    while sub_cb_index < count:
+        new_fname = os.path.join(dir_name, f"kdma_cases-size{state_count}-{sub_cb_index}.csv")
+        chosen_files = []
+        remaining_files = case_file_names.copy()
+        while len(chosen_files) < state_count:
+            new_file = random.choice(remaining_files)
+            remaining_files.remove(new_file)
+            chosen_files.append(new_file)
+        chosen_files.sort()
+        chosen_file_str = "\n".join(chosen_files)
+        print(f"Index: {sub_cb_index} Dest file: {new_fname}\n{chosen_file_str}")
+        if chosen_file_str in previous_choices:
+            continue
+        previous_choices.append(chosen_file_str)
+        cases = []
+        for case_file_name in chosen_files:
+            cases += read_pre_cases(case_file_name)
+        write_kdma_cases_to_csv(new_fname, cases, None)
+        sub_cb_index += 1
+
+    
+def separate_pre_cases(case_file: str):
+    with open(case_file, "r") as infile:
+        cases = [json.loads(line) for line in infile]
+    ret_case_sets = [[]]
+    initial_state_index = 0
+    run_index = 0
+    index = 0
+        
+    for case in cases:
+        index += 1
+        if len(case["actions"]) == 1:
+            run_index += 1
+            initial_state_index = 0
+        new_case = case.copy()
+        new_case["index"] = index
+        new_case["run_index"] = run_index
+        ret_case_sets[initial_state_index].append(new_case)
+        if "hint" in case and len(case["hint"].keys()) > 0:
+            initial_state_index += 1
+            if run_index == 1:
+                ret_case_sets.append([])
+    
+    for state_num in range(0, len(ret_case_sets)):
+        fname = case_file.replace(".json", "_is" + str(state_num) + ".json")
+        with open(fname, "w") as outfile:
+            for ret_case in ret_case_sets[state_num]:
+                json.dump(ret_case, outfile)
+                outfile.write("\n")
     
 def write_alignment_target_cases_to_csv(fname: str, training_data: list[dict[str, Any]]):
     score_cases = []
@@ -276,8 +390,66 @@ def case_state_hash(case: dict[str, Any]) -> int:
                 'others_tagged_or_uninjured', 'assessing', 'treating', 'tagging', 'leaving', 
                 'category', 'intent', 'directness_of_causality', 'SEVERITY', 'SEVERITY_CHANGE', 
                 'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE', 'AVERAGE_TIME_USED', 
-                'SUPPLIES_REMAINING']:
+                'SUPPLIES_REMAINING', 'aid_available', 'environment_type',
+                'Take-The-Best Priority', 'Exhaustive Priority', 'Tallying Priority', 
+                'Satisfactory Priority', 'One-Bounce Priority',
+                'HRA Strategy.time-resources.take-the-best', 
+                'HRA Strategy.time-resources.exhaustive', 
+                'HRA Strategy.time-resources.tallying', 
+                'HRA Strategy.time-resources.satisfactory', 
+                'HRA Strategy.time-resources.one-bounce', 
+                'HRA Strategy.time-risk_reward_ratio.take-the-best', 
+                'HRA Strategy.time-risk_reward_ratio.exhaustive', 
+                'HRA Strategy.time-risk_reward_ratio.tallying', 
+                'HRA Strategy.time-risk_reward_ratio.satisfactory', 
+                'HRA Strategy.time-risk_reward_ratio.one-bounce', 
+                'HRA Strategy.time-system.take-the-best', 
+                'HRA Strategy.time-system.exhaustive', 
+                'HRA Strategy.time-system.tallying', 
+                'HRA Strategy.time-system.satisfactory', 
+                'HRA Strategy.time-system.one-bounce', 
+                'HRA Strategy.resources-risk_reward_ratio.take-the-best', 
+                'HRA Strategy.resources-risk_reward_ratio.exhaustive', 
+                'HRA Strategy.resources-risk_reward_ratio.tallying', 
+                'HRA Strategy.resources-risk_reward_ratio.satisfactory', 
+                'HRA Strategy.resources-risk_reward_ratio.one-bounce', 
+                'HRA Strategy.resources-system.take-the-best', 
+                'HRA Strategy.resources-system.exhaustive', 
+                'HRA Strategy.resources-system.tallying', 
+                'HRA Strategy.resources-system.satisfactory', 
+                'HRA Strategy.resources-system.one-bounce', 
+                'HRA Strategy.risk_reward_ratio-system.take-the-best', 
+                'HRA Strategy.risk_reward_ratio-system.exhaustive', 
+                'HRA Strategy.risk_reward_ratio-system.tallying', 
+                'HRA Strategy.risk_reward_ratio-system.satisfactory', 
+                'HRA Strategy.risk_reward_ratio-system.one-bounce', 
+                'HRA Strategy.time-resources-risk_reward_ratio.take-the-best', 
+                'HRA Strategy.time-resources-risk_reward_ratio.exhaustive', 
+                'HRA Strategy.time-resources-risk_reward_ratio.tallying', 
+                'HRA Strategy.time-resources-risk_reward_ratio.satisfactory', 
+                'HRA Strategy.time-resources-risk_reward_ratio.one-bounce', 
+                'HRA Strategy.time-resources-system.take-the-best', 
+                'HRA Strategy.time-resources-system.exhaustive', 
+                'HRA Strategy.time-resources-system.tallying', 
+                'HRA Strategy.time-resources-system.satisfactory', 
+                'HRA Strategy.time-resources-system.one-bounce', 
+                'HRA Strategy.time-risk_reward_ratio-system.take-the-best', 
+                'HRA Strategy.time-risk_reward_ratio-system.exhaustive', 
+                'HRA Strategy.time-risk_reward_ratio-system.tallying', 
+                'HRA Strategy.time-risk_reward_ratio-system.satisfactory', 
+                'HRA Strategy.time-risk_reward_ratio-system.one-bounce', 
+                'HRA Strategy.resources-risk_reward_ratio-system.take-the-best', 
+                'HRA Strategy.resources-risk_reward_ratio-system.exhaustive', 
+                'HRA Strategy.resources-risk_reward_ratio-system.tallying', 
+                'HRA Strategy.resources-risk_reward_ratio-system.satisfactory', 
+                'HRA Strategy.resources-risk_reward_ratio-system.one-bounce', 
+                'HRA Strategy.time-resources-risk_reward_ratio-system.take-the-best', 
+                'HRA Strategy.time-resources-risk_reward_ratio-system.exhaustive', 
+                'HRA Strategy.time-resources-risk_reward_ratio-system.tallying', 
+                'HRA Strategy.time-resources-risk_reward_ratio-system.satisfactory', 
+                'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce']:
         val_list.append(case.get(key, None))
+    val_list.append(str(case.get("hint", None)))
     return hash(tuple(val_list))
 
 def main():
