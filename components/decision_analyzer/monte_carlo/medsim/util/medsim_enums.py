@@ -286,6 +286,13 @@ class InjuryAssumptuions:
                       Locations.LEFT_SIDE, Locations.RIGHT_SIDE]
 
 
+class SeverityEnums(Enum):
+    MODERATE = 'moderate'
+    SUBSTANTIAL = 'substantial'
+    MAJOR = 'major'
+    EXTREME = 'extreme'
+
+
 class VitalsEffect(Enum):
     SPEAKING = 'Character can Speak'
     AVPU_UNRESPONSIVE = 'Loss of Responsiveness'

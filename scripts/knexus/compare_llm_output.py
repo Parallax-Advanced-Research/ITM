@@ -45,7 +45,7 @@ class Decision:
         return f'Action: {self.action}, Casualty: {self.casualty}, Supply: {self.supply}, Location: {self.location}'
 
     def __repr__(self):
-        return f'{{\"Action\": \"{self.action}\", \"Casualty\": \"{self.casualty}\", \"Supply\": \"{self.supply}\", \"Location\": \"{self.location}\"}}'
+        return f'\n    {{\n        \"Action\": \"{self.action}\", \n        \"Casualty\": \"{self.casualty}\", \n        \"Supply\": \"{self.supply}\", \n        \"Location\": \"{self.location}\"\n    }}'
 
 
 def load_json(file):
@@ -79,7 +79,34 @@ def convert_json(json_data):
     return decisions
 
 
-def compare_decisions_lists(dec_1, dec_2):
+def make_md_compare_file(matches, only_1, only_2, file_name):
+    total_string = """# comapre rbe vs llm
+
+## both have this
+``` json
+"""
+    total_string += str(matches)
+    total_string += """
+```
+## RBE only
+``` json
+"""
+    total_string += str(only_1)
+    total_string += """
+```
+
+## LLM only
+``` json
+"""
+    total_string += str(only_2)
+    total_string += """
+```"""
+
+    with open(file_name, 'w') as out_file:
+        out_file.write(total_string)
+
+
+def compare_decisions_lists(dec_1, dec_2, file_name):
     if len(dec_1) != len(dec_2):
         print_yellow(f'Different number of actions input 1 has {len(dec_1)} and input 2 has {len(dec_2)}')
     else:
@@ -90,6 +117,8 @@ def compare_decisions_lists(dec_1, dec_2):
     set_2 = set(dec_2)
     if set_1 == set_2:
         print_yellow('The 2 elaborators have the same output')
+        with open(file_name, 'w') as out_file:
+            out_file.write('output was the same')
     else:
         matches = set_1 & set_2
         print_purple('the following is what is the same')
@@ -100,11 +129,13 @@ def compare_decisions_lists(dec_1, dec_2):
         print_blue(str(only_1))
         print_red('only in file 2')
         print_red(str(only_2))
+        make_md_compare_file(matches, only_1, only_2, file_name)
 
 
 if __name__ == '__main__':
-    file_1 = r'data/elab_output/MetricsEval.MD5-Desert-4_rbe.json'
-    file_2 = r'data/elab_output/MetricsEval.MD5-Desert-4_gemini.json'
+    file_1 = r'data/elab_output/MetricsEval.MD6-Submarine-6_rbe.json'
+    file_2 = r'data/elab_output/MetricsEval.MD6-Submarine-6_gemini.json'
+    file_name = r'data/elab_output/sub-6.md'
 
     json_1 = load_json(file_1)
     json_2 = load_json(file_2)
@@ -113,4 +144,4 @@ if __name__ == '__main__':
     decisions_1 = convert_json(json_1)
     decisions_2 = convert_json(json_2)
 
-    compare_decisions_lists(decisions_1, decisions_2)
+    compare_decisions_lists(decisions_1, decisions_2, file_name)
