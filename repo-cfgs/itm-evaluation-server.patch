@@ -1,16 +1,19 @@
+diff --git a/swagger_server/__main__.py b/swagger_server/__main__.py
+index f9fd1c4..9209b52 100644
+--- a/swagger_server/__main__.py
++++ b/swagger_server/__main__.py
+@@ -14,6 +14,7 @@ def main():
+     app.app.json_encoder = encoder.JSONEncoder
+     app.add_api('swagger.yaml', arguments={'title': 'ITM TA3 API'}, pythonic_params=True)
+     app.run(port=PORT)
++    print("Listening on {PORT}.")
+ 
+ 
+ if __name__ == '__main__':
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index ce0b030..5455a6e 100644
+index ce0b030..ba5a249 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -23,7 +23,7 @@ class ITMSession:
-     Class for representing and manipulating a simulation scenario session.
-     """
-     # Class variables
--    EVALUATION_TYPE = 'metrics'
-+    EVALUATION_TYPE = 'online'
-     local_alignment_targets = {} # alignment_targets baked into server, for use when not connecting to TA1
-     alignment_data = {} # maps ta1_name to list alignment_targets, used whether connecting to TA1 or not
-     ta1_controllers = {} # map of ta1_names to lists of ta1_controllers
 @@ -397,7 +397,7 @@ class ITMSession:
          ta1_names = []
          if self.session_type == 'eval':
