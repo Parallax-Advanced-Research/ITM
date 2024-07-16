@@ -1,8 +1,10 @@
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations, VitalsEffect
 from enum import Enum
 
 
 class Medical:
+    HEALING_ITEMS = [Supplies.BLOOD.value, Supplies.NASOPHARYNGEAL_AIRWAY.value,
+                     Supplies.IV_BAG.value, Supplies.PAIN_MEDICATIONS.value]
     FAILURE_CHANCE = {
         Supplies.PRESSURE_BANDAGE.value: .01,
         Supplies.HEMOSTATIC_GAUZE.value: .05,
@@ -60,8 +62,8 @@ class Medical:
         Supplies.TOURNIQUET.value: [Injuries.AMPUTATION.value, Injuries.LACERATION.value, Injuries.PUNCTURE.value,
                                     Injuries.SHRAPNEL.value],
         Supplies.EPI_PEN.value: [Injuries.ASTHMATIC.value],
-        Supplies.VENTED_CHEST_SEAL.value: [Injuries.LACERATION.value, Injuries.SHRAPNEL.value,
-                                           Injuries.BROKEN_BONE.value, Injuries.PUNCTURE.value],
+        Supplies.VENTED_CHEST_SEAL.value: [Injuries.LACERATION.value, Injuries.PUNCTURE.value,
+                                           Injuries.CHEST_COLLAPSE.value],
         Supplies.DECOMPRESSION_NEEDLE.value: [Injuries.CHEST_COLLAPSE.value],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Injuries.ASTHMATIC.value, Injuries.BURN_SUFFOCATION.value],
         Supplies.BURN_DRESSING.value: [Injuries.BURN.value],
@@ -75,11 +77,28 @@ class Medical:
                                     Locations.RIGHT_NECK.value, Locations.RIGHT_CHEST.value,
                                     Locations.RIGHT_SHOULDER.value, Locations.RIGHT_FACE.value,
                                     Locations.RIGHT_STOMACH.value],
+        Supplies.SPLINT.value: [Locations.LEFT_CALF.value, Locations.RIGHT_CALF.value,
+                                Locations.LEFT_THIGH.value, Locations.RIGHT_THIGH.value,
+                                Locations.LEFT_FOREARM.value, Locations.RIGHT_FOREARM.value,
+                                Locations.LEFT_BICEP.value, Locations.RIGHT_BICEP.value],
         Supplies.DECOMPRESSION_NEEDLE.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value],
         Supplies.VENTED_CHEST_SEAL.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
                                            Locations.UNSPECIFIED.value]
     }
+
+    CASUALTY_MAX_BURN_HP = 5000
+
+    class CasualtyBleedout(Enum):
+        BLEEDOUT_CHANCE_NONE = 0.15
+        BLEEDOUT_CHANCE_LOW = 0.3
+        BLEEDOUT_CHANCE_MED = 0.4
+        BLEEDOUT_CHANCE_HIGH = 0.5
+        NO_P_BLEEDOUT = 0.0
+        LOW_P_BLEEDOUT = 0.1
+        MED_P_BLEEDOUT = 0.5
+        HIGH_P_BLEEDOUT = 0.75
+        CRITICAL_P_BLEEDOUT = 0.9999
 
 
 class BodySystemEffect(Enum):
@@ -89,6 +108,12 @@ class BodySystemEffect(Enum):
     SEVERE = 'SEVERE'
     CRITICAL = 'CRITICAL'
     FATAL = 'FATAL'
+    BLOOD_HEAL = 'BLOOD HEAL'
+    NASO_HEAL = 'NASO HEAL'
+    IV_HEAL_BURN = 'IV HEAL BURN'
+    IV_HEAL_MINOR = 'IV HEAL MINOR'
+    PAINMED_MINOR = 'PAIN MINOR'
+
 
 
 class SmolSystems(Enum):
@@ -107,7 +132,7 @@ class InjuryUpdate:
         return {SmolSystems.BLEEDING.value: self.bleeding_effect, SmolSystems.BREATHING.value: self.breathing_effect,
                 SmolSystems.BURNING.value: self.burning_effect}
 
-INJURY_UPDATE = {
+AFFECCTOR_UPDATE = {
         # TODO - Injury update now needs to take in burn, and we need to add burn
         Injuries.LACERATION.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
                                                 breath=BodySystemEffect.NONE.value),
@@ -135,12 +160,50 @@ INJURY_UPDATE = {
         Injuries.INTERNAL.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
                                               breath=BodySystemEffect.MINIMAL.value),
         Injuries.EYE_TRAUMA.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
-                                                breath=BodySystemEffect.MODERATE.value)  # Assuming ET -> Brain injury
+                                                breath=BodySystemEffect.MODERATE.value),  # Assuming ET -> Brain injury
+        Injuries.ACTIVE_PAIN_MEDS.value: InjuryUpdate(bleed=BodySystemEffect.PAINMED_MINOR.value,
+                                                      breath=BodySystemEffect.PAINMED_MINOR.value,
+                                                      burn=BodySystemEffect.PAINMED_MINOR.value),
+        Injuries.ACTIVE_BLOOD.value: InjuryUpdate(bleed=BodySystemEffect.BLOOD_HEAL.value,
+                                                  breath=BodySystemEffect.NONE.value),
+        Injuries.ACTIVE_NASO.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                 breath=BodySystemEffect.NASO_HEAL.value),
+        Injuries.ACTIVE_BAG.value: InjuryUpdate(bleed=BodySystemEffect.IV_HEAL_MINOR.value,
+                                                breath=BodySystemEffect.IV_HEAL_MINOR.value,
+                                                burn=BodySystemEffect.IV_HEAL_BURN.value),
+        VitalsEffect.SPEAKING.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                            breath=BodySystemEffect.NONE.value),
+        VitalsEffect.AVPU_UNRESPONSIVE.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                     breath=BodySystemEffect.NONE.value),
+        VitalsEffect.AVPU_PAIN.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                             breath=BodySystemEffect.NONE.value),
+        VitalsEffect.ALERT.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                         breath=BodySystemEffect.NONE.value),
+        VitalsEffect.SLOW_BREATHING.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                  breath=BodySystemEffect.NONE.value),
+        VitalsEffect.NORMAL_BREATHING.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                    breath=BodySystemEffect.NONE.value),
+        VitalsEffect.FAST_BREATHING.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                  breath=BodySystemEffect.NONE.value),
+    VitalsEffect.FAST_HR.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                              breath=BodySystemEffect.NONE.value),
+    VitalsEffect.NORMAL_HR.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.FAINT_HR.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.CONFUSED.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.AGONY.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.CALM.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
+    VitalsEffect.MENTAL_UNRESPONSIVE.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                       breath=BodySystemEffect.NONE.value),
 }
 
 INITIAL_SEVERITIES = {Injuries.FOREHEAD_SCRAPE.value: 0.1, Injuries.PUNCTURE.value: .3, Injuries.SHRAPNEL.value: .4,
-                          Injuries.LACERATION.value: .6, Injuries.EAR_BLEED.value: .8, Injuries.CHEST_COLLAPSE.value: .9,
-                          Injuries.AMPUTATION.value: .1}
+                      Injuries.LACERATION.value: .6, Injuries.EAR_BLEED.value: .8, Injuries.CHEST_COLLAPSE.value: .9,
+                      Injuries.AMPUTATION.value: .1}
 
 
 location_surface_areas: dict[str, float] = {
@@ -170,11 +233,17 @@ location_surface_areas: dict[str, float] = {
 }
 
 DAMAGE_PER_SECOND = {
+    BodySystemEffect.BLOOD_HEAL.value: -50.0,
+    BodySystemEffect.NASO_HEAL.value: -50.0,
+    BodySystemEffect.IV_HEAL_BURN.value: -10.0,
+    BodySystemEffect.IV_HEAL_MINOR.value: -2.5,
+    BodySystemEffect.PAINMED_MINOR.value: -1.0,
     BodySystemEffect.NONE.value: 0.0,
     BodySystemEffect.MINIMAL.value: 0.5,
-    BodySystemEffect.MODERATE.value: 1.5,
-    BodySystemEffect.SEVERE.value: 10.0,
-    BodySystemEffect.CRITICAL.value: 50.0,
-    BodySystemEffect.FATAL.value: 9001.0
+    BodySystemEffect.MODERATE.value: 5.0,
+    BodySystemEffect.SEVERE.value: 15.0,
+    BodySystemEffect.CRITICAL.value: 42.0,
+    BodySystemEffect.FATAL.value: 9001.0  # IT'S OVER 9000 !!!
 }
+
 

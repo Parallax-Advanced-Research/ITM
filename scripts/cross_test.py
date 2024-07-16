@@ -189,7 +189,7 @@ def get_score_sequence_record_from_history(fname):
             "session_type": session_type
            }
            
-def compare_histories(args: argparse.Namespace):
+def compare_histories(args: argparse.Namespace) -> list[dict]:
     ssl = read_score_sequence_list(args.ssl_file)
     results = []
     if args.history_files is None:
@@ -208,10 +208,12 @@ def compare_histories(args: argparse.Namespace):
         result["variant"] = args.variant
         result["adm_name"] = ssr["adm_name"]
         result["session_type"] = ssr["session_type"]
+        result["context"] = args.context
         results.append(result)
         write_case_base("eval-comparisons.csv", results)
         print(f"Reported: {ssr['id']}, target: {ssr['target']}: {ssr['score_sequence']}")
         print(f"Optimal:  {old_ssrs[0]['id']}, target: {ssr['target']}: {old_ssrs[0]['score_sequence']}")
+    return results
 
         
 def main():
@@ -220,7 +222,8 @@ def main():
     parser.add_argument('--casebase_dir', type=str, help="Directory where case bases are found", default="local/casebases-20240310")
     parser.add_argument('--source_count', type=int, help="How many source files to use", default=1)
     parser.add_argument('--compare_histories', action=argparse.BooleanOptionalAction, help="Checks histories from TA3 server instead of running scenarios", default=False)
-    parser.add_argument('--history_files', type=str, help="Checks histories from TA3 server instead of running scenarios", default=None)
+    parser.add_argument('--history_files', type=str, help="Filename or glob to compare.", default=None)
+    parser.add_argument('--context', type=str, help="Context for run", default=None)
     args = parser.parse_args()
     
     if args.compare_histories:

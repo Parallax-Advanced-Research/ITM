@@ -12,7 +12,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import Me
 from components.decision_analyzer.monte_carlo.util.sort_functions import injury_to_dps
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
                                                                                MetricSet, SimulatorName, Actions,
-                                                                               Supplies)
+                                                                               Supplies, HealingItem)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calc_prob_death, calculate_injury_severity
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import MetricResultsT
@@ -71,7 +71,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
             dps += injury_to_dps(injury)
             casualty_dps[cas.id] += dps
 
-        casualty_p_death[cas.id] = calc_prob_death(cas)
+        casualty_p_death[cas.id] = calc_prob_death(cas, state.time)
         casualty_severities[cas.id] = cas_severity
     for supply in state.supplies:
         resource_score += supply.amount
@@ -262,7 +262,7 @@ def extract_medsim_state(probe: TADProbe) -> MedsimState:
     return medsim_state
 
 
-def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, probe_decisions: list[Decision]) -> mcsim.MonteCarloTree:
+def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, probe: TADProbe) -> mcsim.MonteCarloTree:
     score_functions = {Metric.SEVERITY.value: tiny_med_severity_score, Metric.SUPPLIES_REMAINING.value: tiny_med_resources_remaining,
                        Metric.AVERAGE_TIME_USED.value: tiny_med_time_score, Metric.CASUALTY_SEVERITY.value: tiny_med_casualty_severity,
                        Metric.DAMAGE_PER_SECOND.value: med_simulator_dps, Metric.CASUALTY_DAMAGE_PER_SECOND.value: med_casualty_dps,
@@ -270,7 +270,7 @@ def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, 
                        Metric.P_DEATH_ONEMINLATER.value: prob_death_after_minute,
                        Metric.STANDARD_TIME_SEVERITY.value: prob_death_standard_time}
 
-    sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe_constraints=probe_decisions)
+    sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe=probe)
     root = mcsim.MCStateNode(medsim_state)
     tree = mcsim.MonteCarloTree(sim, score_functions, [root], node_selector=select_unselected_node_then_random)
 
@@ -294,6 +294,7 @@ def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode
         dec_str = tinymedact_to_actstr(decision)
         if not len(decision.children):
             continue
+
         simulated_state_metrics[dec_str] = get_future_and_change_metrics(medsim_state, decision)
         for cas in list(decision.score[Metric.CASUALTY_P_DEATH.value].keys()):
             cas_p_death = decision.score[Metric.CASUALTY_P_DEATH.value][cas]
@@ -311,6 +312,17 @@ def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode
         logger.debug('mismatch list size')
     return simulated_state_metrics
 
+
+def get_healing_items(decision_node_list: list[mcnode.MCDecisionNode]) -> list[dict[str, list[HealingItem]]]:
+    healing_items: list[dict[str, HealingItem]] = list()
+    for decision in decision_node_list:
+        state_cas = decision.children[0].state.casualties
+        decision_healingitems: dict[str, list[HealingItem]] = dict()
+        for cas in state_cas:
+            present_healing: list[HealingItem] = [x for x in cas.injuries if isinstance(x, HealingItem)]
+            decision_healingitems[cas.id] = present_healing
+        healing_items.append(decision_healingitems)
+    return healing_items
 
 def get_weighted_score_element(action: str) -> int:
     item_val = Metric.STOCK_ITEM.value
@@ -363,12 +375,13 @@ def get_doctor_number(pdeath, dps, pdeath_60):
     pdeath_60_scaled = pdeath_60 * 10.
     pdeath_scaled = pdeath * 50.
     dps_scaled = dps * 1.
+    if pdeath_scaled < 0 or dps_scaled < 0:
+        pass
     return int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled]))
     # return max(0, min(100, int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled, pdeath_60_scaled]))))
 
 
 def get_nextgen_stats(all_decision_metrics: dict[str, list], ordered_treatmenmts: list[str]) -> dict[str, int]:
-    logger.debug('wakka')
     weighted_resource = [get_weighted_score_element(x) for x in ordered_treatmenmts] #get_weighted_resource_score(ordered_treatmenmts)
     pdeath = all_decision_metrics[Metric.P_DEATH.value]
     dps = all_decision_metrics[Metric.DAMAGE_PER_SECOND.value]

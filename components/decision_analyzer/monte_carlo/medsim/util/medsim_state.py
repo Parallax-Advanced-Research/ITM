@@ -83,15 +83,15 @@ class MedsimState(MCState):
             burn_loss += sum(inj.burn_hp_lost for inj in cas.injuries)
 
         morbidity_dict[Metric.P_DEATH.value] = probability_death
-        morbidity_dict[Metric.HIGHEST_P_DEATH.value] = calc_prob_death(deathly_person)
+        morbidity_dict[Metric.HIGHEST_P_DEATH.value] = calc_prob_death(deathly_person, self.time)
         if not generic:
             morbidity_dict[Metric.P_BLEEDOUT.value] = probability_bleedout
             morbidity_dict[Metric.P_ASPHYXIA.value] = probability_asphyxia
             morbidity_dict[Metric.P_SHOCK.value] = probability_shock
             morbidity_dict[Metric.TOT_BLOOD_LOSS.value] = tot_blood
             morbidity_dict[Metric.TOT_LUNG_LOSS.value] = lung_loss
-            morbidity_dict[Metric.HIGHEST_P_BLEEDOUT.value] = calc_prob_bleedout(deathly_person)
-            morbidity_dict[Metric.HIGHEST_P_ASPHYXIA.value] = calc_prob_asphyx(deathly_person)
+            morbidity_dict[Metric.HIGHEST_P_BLEEDOUT.value] = calc_prob_bleedout(deathly_person, self.time)
+            morbidity_dict[Metric.HIGHEST_P_ASPHYXIA.value] = calc_prob_asphyx(deathly_person, self.time)
             morbidity_dict[Metric.HIGHEST_BLOOD_LOSS.value] = sum(inj.blood_lost_ml for inj in deathly_person.injuries)
             morbidity_dict[Metric.HIGHEST_LUNG_LOSS.value] = sum(inj.breathing_hp_lost for inj in deathly_person.injuries)
         return morbidity_dict

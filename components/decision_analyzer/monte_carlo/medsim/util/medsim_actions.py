@@ -1,6 +1,6 @@
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Casualty, Locations, \
-    Actions, Tags, Injury, Supply
+    Actions, Tags, Injury, Supply, Affector
 from domain.internal import Decision
 from util import logger
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle
@@ -10,7 +10,7 @@ def supply_location_match(action: MedsimAction):
         return action.location != Locations.UNSPECIFIED.value
     if action.supply in [Supplies.TOURNIQUET.value, Supplies.SPLINT.value]:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.TOURNIQUET.value]:
-            return False
+            return False  # This is actually correct, its an except..
         return True
     if action.supply == Supplies.DECOMPRESSION_NEEDLE.value:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.DECOMPRESSION_NEEDLE.value]:
@@ -22,7 +22,10 @@ def supply_location_match(action: MedsimAction):
         return False
     if action.supply == Supplies.VENTED_CHEST_SEAL.value:
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.VENTED_CHEST_SEAL.value]:
-
+            return True
+        return False
+    if action.supply == Supplies.SPLINT.value:
+        if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.SPLINT.value]:
             return True
         return False
     return True
@@ -184,7 +187,7 @@ def decision_to_medsimaction(decision: Decision) -> MedsimAction:
 
 
 def supply_dict_to_list(supplies: list[Supply]) -> list[str]:
-    nonzero_supplies = [x for x in supplies if x.amount != 0]
+    nonzero_supplies = [x for x in supplies if x.amount > 0]
     keylist = [x.name for x in nonzero_supplies]
     return list(set(keylist))   # Set removes non  uniques
 
@@ -214,6 +217,25 @@ def create_medsim_actions(actions: list[tuple]) -> list[MedsimAction]:
                 tm_action = MedsimAction(action=action, casualty_id=act_tuple[1])
         medsim_actions.append(tm_action)
     return medsim_actions
+
+
+def trim_invalid_medsim_actions(actions: list[MedsimAction], casualties: list[Casualty]) -> list[MedsimAction]:
+    trimmed = []
+    for act in actions:
+        if act.action == Actions.APPLY_TREATMENT.value:
+            # check if the cas in the action has an injury for the supply
+            injuries = []
+            for cas in casualties:
+                if cas.id == act.casualty_id:  # found the right cas
+                    injuries = cas.injuries
+                    break
+            for inj in injuries:
+                if supply_injury_match(act.supply, inj.name):
+                    trimmed.append(act)
+                    break  # found match no need to search more
+        elif act.action != Actions.UNKNOWN.value:
+            trimmed.append(act)
+    return trimmed
 
 
 def trim_medsim_actions(actions: list[MedsimAction]) -> list[MedsimAction]:
@@ -279,19 +301,23 @@ def always_acceptable_treatments(casualties: list[Casualty]) -> list[MedsimActio
 
 
 def remove_non_injuries(state: MedsimState, tinymedactions: list[MedsimAction]) -> list[MedsimAction]:
+    trimmed = []
+    # checking if location on cas is good for supply (ie can't put decompression needle on calf)
+    supply_avaliable = [x.name for x in state.supplies if x.amount > 0]
     casualties: list[Casualty] = state.casualties
-    acceptable_actions: list[MedsimAction] = always_acceptable_treatments(casualties)
-    for casualty in casualties:
-        casualty_injuries: list[Injury] = casualty.injuries
-        for injury in casualty_injuries:
-            for supply in [s for s in Supplies]:
-                if supply == Supplies.PAIN_MEDICATIONS.value:
-                    continue
-                acceptable_action = MedsimAction(Actions.APPLY_TREATMENT.value, casualty.id,
-                                                 supply.value, injury.location)
-                acceptable_actions.append(acceptable_action)
+    for act in tinymedactions:
+        if act.action == Actions.APPLY_TREATMENT.value:
+            casualty_injuries = []
+            for cas in casualties:
+                if cas.id == act.casualty_id:  # found the right cas
+                    casualty_injuries = cas.injuries
+                    break
+            for injury in casualty_injuries:
+                if injury.location == act.location:
+                    trimmed.append(act)
+                    break
     retlist = [x for x in tinymedactions if x.action != Actions.APPLY_TREATMENT.value]
-    retlist.extend(acceptable_actions)
+    retlist.extend(trimmed)
     return list(set(retlist))
 
 

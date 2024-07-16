@@ -89,10 +89,6 @@ def launch_moral_dessert_v2(scene):
 
 logger.setLevel(LogLevel.INFO)
 logger.critical("Beginning Knexus Test Harness...")
-# scenes = ['3', '17', '18', '20']
-# logger.warning("Running MORAL DESSERT SCENES %s" % ', '.join(scenes))
-# for scene in scenes:
-#     launch_moral_dessert(scene=scene)
 adept_scenarios = ['MetricsEval.MD1-Urban',  'MetricsEval.MD6-Submarine', 'MetricsEval.MD4-Jungle',
                    'MetricsEval.MD5-Desert']
 for ad_sc in adept_scenarios:

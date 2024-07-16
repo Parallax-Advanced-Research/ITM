@@ -3,11 +3,15 @@ import random
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import (find_casualty, supply_injury_match,
                                                                                  supply_location_match)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Casualty, Supplies, Actions, Injury
-from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import update_smol_injury
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Casualty, Supplies, Actions,
+                                                                               Injury, Affector, HealingItem)
+from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import (update_smol_injury, SmolSystems,
+                                                                              heal)
 import typing
 
-from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle
+from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle, DAMAGE_PER_SECOND, \
+    InjuryUpdate
+from util.logger import logger
 
 
 def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
@@ -28,24 +32,68 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
     return time_taken
 
 
+def _switch(damage, c):
+    damage_return = 0.
+    for inj in c.injuries:
+        if isinstance(c, HealingItem):
+            continue
+        if damage == SmolSystems.BURNING.value:
+            damage_return += inj.burn_hp_lost
+        if damage == SmolSystems.BREATHING.value:
+            damage_return += inj.breathing_hp_lost
+        if damage == SmolSystems.BLEEDING.value:
+            damage_return += inj.blood_lost_ml
+    return damage_return
+
+
 def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int],
                             action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     c = find_casualty(action, casualties)
+
+    if action.supply in SmolMedicalOracle.HEALING_ITEMS:
+        healer = HealingItem(Affector.PREFIX + action.supply, action.location, severity=0)
+        c.injuries.append(healer)
+
     time_taken = apply_generic_treatment(c, supplies, action, rng)
+
     supply_dict = {supply.name:supply.amount for supply in supplies}
+
     if action.supply in supply_dict.keys():
         supply_dict[action.supply] -= 1
         for listed_supply in supplies:
             if listed_supply.name == action.supply:
-                listed_supply.amount = supply_dict[action.supply]
+                listed_supply.amount = max(0, supply_dict[action.supply])
+
     for c2 in casualties:
         if c.id == c2.id:
             continue  # already updated, casualty of action
-        casualty_injuries: list[Injury] = c2.injuries
+        casualty_injuries: list[Affector] = c2.injuries
         for ci in casualty_injuries:
             update_smol_injury(ci, time_taken)
+
+    if action.supply in SmolMedicalOracle.HEALING_ITEMS:
+        trim_healing_item(c, healer)
+
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
     return [new_state]
+
+
+def trim_healing_item(c, healer):
+    max_heal = {SmolSystems.BLEEDING.value: -1 * healer.blood_lost_ml,
+                SmolSystems.BREATHING.value: -1 * healer.breathing_hp_lost,
+                SmolSystems.BURNING.value: -1 * healer.burn_hp_lost}
+    healing_needed = {SmolSystems.BLEEDING.value: max(0, _switch(SmolSystems.BLEEDING.value, c)),
+                      SmolSystems.BREATHING.value: max(0, _switch(SmolSystems.BREATHING.value, c)),
+                      SmolSystems.BURNING.value: max(0, _switch(SmolSystems.BURNING.value, c))}
+    final_damage = dict()
+    effective_healing = dict()
+    for system in [SmolSystems.BLEEDING.value, SmolSystems.BREATHING.value, SmolSystems.BURNING.value]:
+        final_damage[system] = max(0, healing_needed[system] - max_heal[system])
+        effective_healing[system] = -1 * ( healing_needed[system] - final_damage[system] )
+    healer.blood_lost_ml = effective_healing[SmolSystems.BLEEDING.value]
+    healer.breathing_hp_lost = effective_healing[SmolSystems.BREATHING.value]
+    healer.burn_hp_lost = effective_healing[SmolSystems.BURNING.value]
+    healer.damage_set = True
 
 
 def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int],
@@ -57,7 +105,7 @@ def apply_zeroornone_action(casualties: list[Casualty], supplies: dict[str, int]
         for c in casualties:
             action.casualty_id = c.id
             retlist.extend(apply_singlecaualty_action(casualties, supplies, action, rng, start_time))
-            casualty_injuries: list[Injury] = c.injuries
+            casualty_injuries: list[Affector] = c.injuries
             for ci in casualty_injuries:
                 update_smol_injury(ci, time_taken)
         action.casualty_id = None
@@ -72,7 +120,7 @@ def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int
     time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.action])
     c1.tag = action.tag
     for c in casualties:
-        casualty_injuries: list[Injury] = c.injuries
+        casualty_injuries: list[Affector] = c.injuries
         for ci in casualty_injuries:
                 update_smol_injury(ci, time_taken)
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
@@ -83,7 +131,7 @@ def end_scenario_action(casualties: list[Casualty], supplies: dict[str, int], st
                         aid_delay: float) -> list[MedsimState]:
     time_taken = aid_delay
     for c in casualties:
-        casualty_injuries: list[Injury] = c.injuries
+        casualty_injuries: list[Affector] = c.injuries
         for ci in casualty_injuries:
             update_smol_injury(ci, time_taken)
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
@@ -94,7 +142,7 @@ def apply_singlecaualty_action(casualties: list[Casualty], supplies: dict[str, i
                                action: MedsimAction, rng: random.Random, start_time: float) -> list[MedsimState]:
     time_taken = rng.choice(SmolMedicalOracle.TIME_TAKEN[action.action])
     for c in casualties:
-        casualty_injuries: list[Injury] = c.injuries
+        casualty_injuries: list[Affector] = c.injuries
         for ci in casualty_injuries:
             update_smol_injury(ci, time_taken)
     new_state = MedsimState(casualties=casualties, supplies=supplies, time=start_time + time_taken)
