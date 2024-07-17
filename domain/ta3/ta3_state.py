@@ -28,18 +28,17 @@ class Demographics:
 class Vitals:
     conscious: bool
     avpu: str
-    ambulatory: str
+    ambulatory: bool
     mental_status: str
     breathing: str
     hrpmin: int
-    avpu: str
-    ambulatory: bool
-    spo2: int
+    spo2: str
     
     @staticmethod
     def from_ta3(data: dict):
         d = dict(data)
         d["hrpmin"] = data["heart_rate"]
+        d["conscious"] = (data["avpu"] == "ALERT")
         d.pop("heart_rate")
         return Vitals(**d)
 
@@ -52,7 +51,15 @@ class Injury:
     treated: bool
     status: str
     source_character: str
+    treatments_applied: int
 
+    @staticmethod
+    def from_ta3(data: dict):
+        d = dict(data)
+        d.pop("treatments_required")
+        # This value is always None, not intended for our consumption. Treated becomes true when 
+        # treatments_applied >= treatments_required, but treatments_required is hidden.
+        return Injury(**d)
 
 Locations = {"right forearm", "left forearm", "right calf", "left calf", "right thigh", "left thigh", "right stomach",
              "left stomach", "right bicep", "left bicep", "right shoulder", "left shoulder", "right side", "left side",
@@ -85,7 +92,7 @@ class Casualty:
         return Casualty(
             id=data['id'],
             name=data['name'],
-            injuries=[Injury(**i) for i in data['injuries']],
+            injuries=[Injury.from_ta3(i) for i in data['injuries']],
             demographics=Demographics(**data['demographics']),
             vitals=Vitals.from_ta3(data['vitals']),
             tag=data['tag'],
