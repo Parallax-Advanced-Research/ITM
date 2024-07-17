@@ -11,7 +11,9 @@ from domain.enum import ActionTypeEnum, SupplyTypeEnum, InjuryTypeEnum, InjuryLo
                         AvpuLevelEnum
 
 
-SPECIAL_SUPPLIES = [SupplyTypeEnum.IV_BAG, SupplyTypeEnum.BLOOD, SupplyTypeEnum.PAIN_MEDICATIONS]
+SPECIAL_SUPPLIES = [SupplyTypeEnum.BLANKET, SupplyTypeEnum.BLOOD, SupplyTypeEnum.EPI_PEN, \
+                    SupplyTypeEnum.FENTANYL_LOLLIPOP, SupplyTypeEnum.IV_BAG, \
+                    SupplyTypeEnum.PAIN_MEDICATIONS, SupplyTypeEnum.PULSE_OXIMETER]
 
 class TA3Elaborator(Elaborator):
 
@@ -62,6 +64,7 @@ class TA3Elaborator(Elaborator):
         #Kluge to bypass Soartech errors. In Soartech scenarios, some apply_treatments are suggested
         #that only make sense with vitals, which are not available. This workaround gets the vitals
         if len(suggested_treats) > 0 and final_treat_count == 0 and len(suggested_checks) == 0:
+            breakpoint()
             to_return += self._enumerate_check_actions(probe.state, Decision("TAD", Action(ActionTypeEnum.CHECK_ALL_VITALS, {})))
 
         final_list = []
@@ -83,7 +86,7 @@ class TA3Elaborator(Elaborator):
         
 
     def _add_evac_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
-        if probe.environment['decision_environment']['aid_delay'] == None:
+        if probe.environment['decision_environment']['aid'] == None:
             return []
         decisions = self._ground_casualty(probe.state.casualties, decision)
         ret_decisions = []
@@ -91,7 +94,7 @@ class TA3Elaborator(Elaborator):
             if ParamEnum.EVAC_ID in dec.value.params:
                 ret_decisions.append(dec)
             else:
-                for aid in probe.environment['decision_environment']['aid_delay']:
+                for aid in probe.environment['decision_environment']['aid']:
                     ret_decisions.append(
                         decision_copy_with_params(decision, {ParamEnum.EVAC_ID: aid['id']}))
         return ret_decisions
@@ -322,28 +325,31 @@ class TA3Elaborator(Elaborator):
 
         # Ground the location
         grounded: list[Decision[Action]] = []
-        for treat_action in treat_grounded:
+        for treat_decision in treat_grounded:
             # If no location set, enumerate the injured locations
-            if ParamEnum.LOCATION not in treat_action.value.params:
-                cas = get_casualty_by_id(treat_action.value.params[ParamEnum.CASUALTY], state.casualties)
+            if ParamEnum.LOCATION not in treat_decision.value.params:
+                cas = get_casualty_by_id(treat_decision.value.params[ParamEnum.CASUALTY], state.casualties)
                 if tag_available and cas.assessed and not cas.tag:
                     continue
                 if cas.vitals.breathing in [BreathingLevelEnum.RESTRICTED, BreathingLevelEnum.NONE] \
-                   and treat_action.value.params[ParamEnum.TREATMENT] == SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY:
-                    treat_action.value.params[ParamEnum.LOCATION] = InjuryLocationEnum.LEFT_FACE
-                    grounded.append(treat_action)
+                   and treat_decision.value.params[ParamEnum.TREATMENT] == SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY:
+                    treat_decision.value.params[ParamEnum.LOCATION] = InjuryLocationEnum.LEFT_FACE
+                    grounded.append(treat_decision)
                     continue
                 for injury in cas.injuries:
                     if injury.status == 'treated':
                         continue
-                    treat_params = treat_action.value.params.copy()
-                    if TA3Elaborator.medsim_allows_action(treat_action.value, injury.name):
+                    treat_params = treat_decision.value.params.copy()
+                    treat_params[ParamEnum.LOCATION] = injury.location
+                    new_treat_action = Action(decision.value.name, treat_params)
+                    if TA3Elaborator.medsim_allows_action(new_treat_action, injury.name):
+                        grounded.append(Decision(treat_decision.id_, new_treat_action, kdmas=treat_decision.kdmas))
+                    elif TA3Elaborator.medsim_allows_action(treat_decision.value, injury.name):
+                        treat_params = treat_decision.value.params.copy()
                         treat_params[ParamEnum.LOCATION] = treat_params.get(ParamEnum.LOCATION, InjuryLocationEnum.UNSPECIFIED)
-                    else:
-                        treat_params[ParamEnum.LOCATION] = injury.location
-                    grounded.append(Decision(treat_action.id_, Action(decision.value.name, treat_params), kdmas=treat_action.kdmas))
+                        grounded.append(Decision(treat_decision.id_, Action(decision.value.name, treat_params), kdmas=treat_decision.kdmas))
             else:
-                grounded.append(treat_action)
+                grounded.append(treat_decision)
 
         return grounded
         
