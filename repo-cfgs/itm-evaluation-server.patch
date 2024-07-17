@@ -1,25 +1,45 @@
-diff --git a/swagger_server/__main__.py b/swagger_server/__main__.py
-index f9fd1c4..9209b52 100644
---- a/swagger_server/__main__.py
-+++ b/swagger_server/__main__.py
-@@ -14,6 +14,7 @@ def main():
-     app.app.json_encoder = encoder.JSONEncoder
-     app.add_api('swagger.yaml', arguments={'title': 'ITM TA3 API'}, pythonic_params=True)
-     app.run(port=PORT)
-+    print("Listening on {PORT}.")
+diff --git a/swagger_server/controllers/itm_ta2_eval_controller.py b/swagger_server/controllers/itm_ta2_eval_controller.py
+index 4194040..8c37453 100644
+--- a/swagger_server/controllers/itm_ta2_eval_controller.py
++++ b/swagger_server/controllers/itm_ta2_eval_controller.py
+@@ -1,5 +1,6 @@
+ import connexion
+ import time
++import sys
  
+ from swagger_server.models.action import Action  # noqa: E501
+ from ..itm import ITMSession
+@@ -98,6 +99,7 @@ def start_scenario(session_id, scenario_id=None):  # noqa: E501
+     :rtype: Scenario
+     """
+     session = _get_session(session_id)
++    sys.stderr.write(f"Session scenarios: {[scenario.id for scenario in session.itm_scenarios]}\n")
+     return session.start_scenario(scenario_id=scenario_id) if session else ('Invalid Session ID', 400)
  
- if __name__ == '__main__':
+ def _reclaim_old_session():
+diff --git a/swagger_server/itm/itm_scene.py b/swagger_server/itm/itm_scene.py
+index e2c74ff..459023c 100644
+--- a/swagger_server/itm/itm_scene.py
++++ b/swagger_server/itm/itm_scene.py
+@@ -31,7 +31,7 @@ class ITMScene:
+         self.restricted_actions :List[ActionTypeEnum] = scene.restricted_actions
+         self.transition_semantics :SemanticTypeEnum = scene.transition_semantics
+         self.transitions :Conditions = scene.transitions
+-        self.training = False
++        self.training = True
+         from .itm_scenario import ITMScenario
+         self.parent_scenario :ITMScenario = None
+ 
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index ce0b030..ba5a249 100644
+index 4b80246..b8f03b8 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -397,7 +397,7 @@ class ITMSession:
-         ta1_names = []
-         if self.session_type == 'eval':
-             self.save_history = True
--            self.ta1_integration = True
-+            self.ta1_integration = False
-             max_scenarios = None
-             ta1_names = ['soartech', 'adept']
+@@ -425,7 +425,7 @@ class ITMSession:
          else:
+             ta1_names.append(self.session_type)
+         if kdma_training:
+-            self.ta1_integration = True
++            # self.ta1_integration = True
+             self.return_scenario_history = True
+ 
+         self.history.add_history(
