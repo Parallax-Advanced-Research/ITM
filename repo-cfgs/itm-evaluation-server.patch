@@ -1,48 +1,25 @@
+diff --git a/swagger_server/__main__.py b/swagger_server/__main__.py
+index f9fd1c4..9209b52 100644
+--- a/swagger_server/__main__.py
++++ b/swagger_server/__main__.py
+@@ -14,6 +14,7 @@ def main():
+     app.app.json_encoder = encoder.JSONEncoder
+     app.add_api('swagger.yaml', arguments={'title': 'ITM TA3 API'}, pythonic_params=True)
+     app.run(port=PORT)
++    print("Listening on {PORT}.")
+ 
+ 
+ if __name__ == '__main__':
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index ce0b030..ad5edab 100644
+index ce0b030..ba5a249 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -63,6 +63,7 @@ class ITMSession:
-     @staticmethod
-     def initialize():
-         ta1_names = ITMSession.init_local_data()
-+        print("Names: " + str(ta1_names))
-         print("Loaded local alignment targets from configuration.")
-         try:
-             print("Loading TA1 configuration from TA1 servers...")
-@@ -71,6 +72,7 @@ class ITMSession:
-             print("Done.")
-         except:
-             print("--> Could not initialize TA1 data. Running standalone with local alignment targets.")
-+            ITMSession.ta1_connected = True
- 
-         # If we couldn't use data from TA1, initialize with local data.
-         if not ITMSession.ta1_connected:
-diff --git a/swagger_server/itm/itm_ta1_controller.py b/swagger_server/itm/itm_ta1_controller.py
-index b4f07d4..08d98b0 100644
---- a/swagger_server/itm/itm_ta1_controller.py
-+++ b/swagger_server/itm/itm_ta1_controller.py
-@@ -33,9 +33,23 @@ class ITMTa1Controller:
-         (host, port) = ITMTa1Controller.get_contact_info(scene_type=scene_type)
-         target_id_path = 'alignment_target_ids' if scene_type == 'adept' else 'alignment_targets'
-         url = f"http://{host}:{port}/api/v1/{target_id_path}"
-+        print("Asking for alignment targets from " + str(scene_type))
-         alignment_target_ids = json.loads(requests.get(url).content.decode('utf-8'))
-         alignments = []
-         for alignment_target_id in alignment_target_ids:
-+          if "2" in alignment_target_id:
-+              continue
-+          if "3" in alignment_target_id:
-+              continue
-+          if "4" in alignment_target_id:
-+              continue
-+          if "5" in alignment_target_id:
-+              continue
-+          if "6" in alignment_target_id:
-+              continue
-+          if "7" in alignment_target_id:
-+              continue
-+          print("Alignment target check: " + str(alignment_target_id))
-           url = f"http://{host}:{port}/api/v1/alignment_target/{alignment_target_id}"
-           alignment_target = json.loads(requests.get(url).content.decode('utf-8'))
-           alignments.append(AlignmentTarget.from_dict(alignment_target))
+@@ -397,7 +397,7 @@ class ITMSession:
+         ta1_names = []
+         if self.session_type == 'eval':
+             self.save_history = True
+-            self.ta1_integration = True
++            self.ta1_integration = False
+             max_scenarios = None
+             ta1_names = ['soartech', 'adept']
+         else:

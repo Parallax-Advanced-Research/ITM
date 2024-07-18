@@ -2,7 +2,8 @@ import json
 import os
 from components import DecisionSelector
 from domain.internal import Scenario, TADProbe, Action, KDMAs, Decision
-from components.decision_selector.kdma_estimation import make_case, write_case_base, read_case_base
+from components.decision_selector.kdma_estimation import write_case_base, read_case_base
+from components.decision_selector.kdma_estimation.kdma_estimation_decision_selector import make_case_triage
 from typing import Any
 
 STATE_FILE: str = "temp/exhaustive_state.json"
@@ -82,7 +83,7 @@ class ExhaustiveSelector(DecisionSelector):
         self.action_index += 1
         
         # Make a case and record it.
-        new_case = make_case(probe, cur_decision)
+        new_case = make_case_triage(probe, cur_decision)
         self.case_index += 1
         new_case["actions"] = [act.to_json() for act in probe.state.actions_performed] + [cur_decision.value.to_json()]
         new_case["index"] = self.case_index

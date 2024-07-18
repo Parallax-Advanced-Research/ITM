@@ -64,12 +64,13 @@ class TA3Driver(Driver):
 
         analyzers = [ebd, br, bnd, mca]
         analyzers = [a for a in analyzers if a is not None]
+
+        self.estimator = ebd
         
         if args.variant == 'baseline': 
             analyzers = []
 
         trainer = KDMACaseBaseRetainer()
-
         super().__init__(elaborator, selector, analyzers, trainer, dumper_config = dump_config)
 
     def _extract_state(self, dict_state: dict):
@@ -79,5 +80,10 @@ class TA3Driver(Driver):
                 character['treatments'] = self.treatments[character_id]
             else:
                 character['treatments'] = list()
+            # Do the state estimation over injuries
+            if self.estimator is not None:
+                inferred_injuries = self.estimator.estimate_injuries(self.estimator.make_observation(character))
+                #inferred_injuries is not used, why?
+        
         dict_state['actions_performed'] = self.actions_performed
         return TA3State.from_dict(dict_state)
