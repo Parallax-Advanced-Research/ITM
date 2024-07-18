@@ -4,7 +4,7 @@ from enum import Enum
 
 class Medical:
     HEALING_ITEMS = [Supplies.BLOOD.value, Supplies.NASOPHARYNGEAL_AIRWAY.value,
-                     Supplies.IV_BAG.value, Supplies.PAIN_MEDICATIONS.value]
+                     Supplies.IV_BAG.value, Supplies.PAIN_MEDICATIONS.value, Supplies.FENTANYL_LOLLIPOP.value]
     FAILURE_CHANCE = {
         Supplies.PRESSURE_BANDAGE.value: .01,
         Supplies.HEMOSTATIC_GAUZE.value: .05,
@@ -12,6 +12,7 @@ class Medical:
         Supplies.DECOMPRESSION_NEEDLE.value: .03,
         Supplies.NASOPHARYNGEAL_AIRWAY.value: .05,
         Supplies.PULSE_OXIMETER.value: 1.0,
+        Supplies.FENTANYL_LOLLIPOP.value: 0.0,
         Supplies.BLANKET.value: .001,
         Supplies.EPI_PEN.value: .01,
         Supplies.VENTED_CHEST_SEAL.value: .01,
@@ -30,6 +31,7 @@ class Medical:
         Supplies.TOURNIQUET.value: [90.0],
         Supplies.DECOMPRESSION_NEEDLE.value: [60.0, 75.0],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [35.0],
+        Supplies.FENTANYL_LOLLIPOP.value: [36.0],
         Supplies.PULSE_OXIMETER.value: [30.0],
         Supplies.BLANKET.value: [30.0],
         Supplies.EPI_PEN.value: [30.0],
@@ -47,6 +49,7 @@ class Medical:
         Actions.MOVE_TO_EVAC.value: [120.0],
         Actions.DIRECT_MOBILE_CASUALTY.value: [60.0],
         Actions.SEARCH.value: [18.0],
+        Actions.CHECK_BLOOD_OXYGEN: [30.0],
         Actions.END_SCENE.value: [0.0],
         Actions.END_SCENARIO.value: [0.0]
     }
