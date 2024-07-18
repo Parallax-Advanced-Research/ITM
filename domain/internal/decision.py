@@ -33,6 +33,11 @@ class Action:
 
 
 class Decision(typing.Generic[T]):
+
+    ## DO NOT CALL this constructor directly. Use make_new_action_decision or 
+    ## update_decision_parameters instead. If you need something different, write a new factory 
+    ## function along the lines of those below that preserves the existing fields of prior 
+    ## decisions.
     def __init__(self, id_: str, value: T,
                  justifications: list[Justification],
                  metrics: typing.Mapping[DecisionName, DecisionMetric],

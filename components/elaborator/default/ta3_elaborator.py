@@ -377,7 +377,7 @@ class TA3Elaborator(Elaborator):
                     # Copy the casualty into the params dict
                     cas_params = action.params.copy()
                     cas_params[ParamEnum.CASUALTY] = cas.id
-                    dec_grounded.append(Decision(decision, cas_params))
+                    dec_grounded.append(update_decision_parameters(decision, cas_params))
         else:
             dec_grounded.append(decision)
 
