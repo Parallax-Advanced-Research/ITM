@@ -1006,6 +1006,15 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             "DIRECT_MOBILE_CHARACTERS": {
                 "DIRECT_MOBILE_CHARACTERS": {"risk_reward_ratio": "medium", "resources": "few", "time": "minutes",
                                              "system": "none"}},
+            # MCM (20240718): Added MESSAGE as copy of SITREP; remove this comment 
+            # after it is checked.
+            "MESSAGE": {
+                "MESSAGE": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all",
+                           "life_impact": "low"}},
+            # MCM (20240718): Added MOVE_TO as copy of SEARCH; remove this comment 
+            # after it is checked.
+            "MOVE_TO": {
+                "MOVE_TO": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all"}},
             "MOVE_TO_EVAC": {
                 "MOVE_TO_EVAC": {"risk_reward_ratio": "high", "resources": "few", "time": "minutes", "system": "none"}},
             "TAG_CHARACTER": {
