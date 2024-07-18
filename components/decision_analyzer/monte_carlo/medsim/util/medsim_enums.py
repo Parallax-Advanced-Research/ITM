@@ -188,6 +188,9 @@ class Actions(Enum):
     END_SCENARIO = 'END_SCENARIO'
     END_SCENE = 'END_SCENE'
     SEARCH = 'SEARCH'
+    CHECK_BLOOD_OXYGEN = 'CHECK_BLOOD_OXYGEN'
+    MESSAGE = 'MESSAGE'
+    MOVTE_TO = 'MOVE_TO'
 
 
 class MentalStates_KNX(Enum):
@@ -229,6 +232,7 @@ class Supplies(Enum):
     SPLINT = 'Splint'
     IV_BAG = 'IV Bag'
     BURN_DRESSING = 'Burn Dressing'
+    FENTANYL_LOLLIPOP = "Fentanyl Lollipop"
 
 
 class Ta3Vitals(Enum):
