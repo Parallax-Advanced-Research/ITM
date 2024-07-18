@@ -90,7 +90,8 @@ class TA3Client:
         _actions: list[ta3.Action] = self._api.get_available_actions(self._session_id, self._scenario.id)
         self._actions = {a.action_id: a for a in _actions}
         actions: list[Action] = [
-            Action(action.action_id, action.action_type, action.character_id, action.kdma_association, action.parameters)
+            Action(action.action_id, action.action_type, action.character_id, 
+                   action.kdma_association, action.parameters, action.intent_action)
             for action in _actions
         ]
 
@@ -110,7 +111,12 @@ class TA3Client:
             # scenario_id=self._scenario.id,
             action_type=action.type,
             character_id=action.casualty,
-            parameters=action.params
+            parameters=action.params,
+            justification="No justification given.",
+            intent_action=action.intend
         )
-        next_state = self._api.take_action(self._session_id, body=response)
+        if action.intend:
+            next_state = self._api.intend_action(self._session_id, body=response)
+        else:
+            next_state = self._api.take_action(self._session_id, body=response)
         return self.get_probe(next_state)
