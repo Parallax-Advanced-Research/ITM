@@ -25,8 +25,8 @@ class EvaluationDriver(TA3Driver):
                 self.actual_kdma_vals[kdma].append(val)
                 self.estimated_kdma_counts[kdma] = self.estimated_kdma_counts.get(kdma, 0) + 1
                 self.estimated_kdmas[kdma] = self.estimated_kdmas.get(kdma, 0) + val
-                kdmamin = min([opt.kdmas[kdmaName] for opt in itm_probe.options if opt.kdmas is not None])
-                kdmamax = max([opt.kdmas[kdmaName] for opt in itm_probe.options if opt.kdmas is not None])
+                kdmamin = min([opt.kdmas.get(kdmaName, 100) for opt in itm_probe.options if opt.kdmas is not None])
+                kdmamax = max([opt.kdmas.get(kdmaName, -100) for opt in itm_probe.options if opt.kdmas is not None])
                 # if self.alignment_tgt.kdma_map[kdmaName] > val and kdmamax > val:
                     # breakpoint()
                 # if self.alignment_tgt.kdma_map[kdmaName] < val and kdmamin < val:
