@@ -38,7 +38,10 @@ class Vitals:
     def from_ta3(data: dict):
         d = dict(data)
         d["hrpmin"] = data["heart_rate"]
-        d["conscious"] = (data["avpu"] == "ALERT")
+        if data["avpu"] is None:
+            d["conscious"] = None
+        else:
+            d["conscious"] = (data["avpu"] == "ALERT")
         d.pop("heart_rate")
         return Vitals(**d)
 
@@ -86,6 +89,7 @@ class Casualty:
     rapport: str = ''
     intent: str = ''
     directness_of_causality: str = ''
+    unseen: bool = False
 
     @staticmethod
     def from_ta3(data: dict):
@@ -103,7 +107,8 @@ class Casualty:
             rapport=data['rapport'],
             treatments=data['treatments'],
             intent = data['intent'],
-            directness_of_causality = data['directness_of_causality']
+            directness_of_causality = data['directness_of_causality'],
+            unseen = data.get('unseen', False)
         )
 
 
