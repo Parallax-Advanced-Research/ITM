@@ -125,13 +125,39 @@ class Casualty:
         self.lung_dps: float = 0.0
         self.burn_dps: float = 0.0
 
-        self.max_blood_ml = 5700 if demographics.sex == 'M' else 4300
-        if demographics.rank == 'Marine':
-            self.max_breath_hp = 6000
-        elif demographics.rank == 'Officer':
-            self.max_breath_hp = 5500
+        self._set_blood_ml_max_breath_hp()
+
+    def _set_blood_ml_max_breath_hp(self):
+        age = self.demographics.age
+        if age is None:
+            age = 35  # assume adult
+        # in general values were calculated by looking up average weight and multiply by 70  - ml per kg
+        if age <= 13:  # sex prob doesn't matter for this age group
+            self.max_blood_ml = 2500
+            self.max_breath_hp = 2500
+        elif age <= 17:
+            if self.demographics.sex == 'M':
+                self.max_blood_ml = 4100
+                self.max_breath_hp = 4100
+            else:
+                self.max_blood_ml = 3500
+                self.max_breath_hp = 3500
+        elif age >= 65:
+            if self.demographics.sex == 'M':
+                self.max_blood_ml = 4800
+                self.max_breath_hp = 4800
+            else:
+                self.max_blood_ml = 4100
+                self.max_breath_hp = 4100
         else:
+            self.max_blood_ml = 5700 if self.demographics.sex == 'M' else 4300
             self.max_breath_hp = 5000
+
+        # special stuff for ranks
+        if self.demographics.rank == 'Marine':
+            self.max_breath_hp = 6000
+        elif self.demographics.rank == 'Officer':
+            self.max_breath_hp = 5500
 
     def __str__(self):
         retstr = "%s_" % self.id
