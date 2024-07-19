@@ -17,6 +17,16 @@ TreatmentComparison = Union[
 ]
 
 
+CASUALTY_VAL_TABLE = dict()
+CASUALTY_VAL_TABLE['relationship'] = \
+      {'loathing': -2, 'dislike':-1, 'neutral': 0, 'close': 1, 'familial': 2}
+CASUALTY_VAL_TABLE['rank'] = {'e-1': 1, 'e-2': 2, 'e-3': 3, 'e-4': 4, 'e-5': 5, 'e-6': 6, \
+                              'e-7': 7, 'e-8': 8, 'e-9': 9, 'w-1': 1, 'w-2': 2, 'w-3': 3, \
+                              'w-4': 4, 'w-5': 5, 'o-1': 1, 'o-2': 2, 'o-3': 3, 'o-4': 4, \
+                              'o-5': 5, 'o-6': 6, 'o-7': 7, 'o-8': 8, 'o-9': 9, 'o-10': 10, \
+                              'special (navy)': 9, 'special (coast guard)': 9, 'special': 9}
+
+
 # currently runs for set of possible decisions, future may change to be called for each decision
 class HeuristicRuleAnalyzer(DecisionAnalyzer):
     STRATEGIES = ["take-the-best", "exhaustive", "tallying", "satisfactory", "one-bounce"]
@@ -193,13 +203,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         #max_kdma = max(zip(kdma_list.values(), kdma_list.keys()))[1]
 
         # create table of casualty fields to worth
-        casualty_val_table = dict()
-        casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2}
-        #casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
-        casualty_val_table['rank'] = {'e-1': 1, 'e-2': 2, 'e-3': 3, 'e-4': 4, 'e-5': 5, 'e-6': 6, 'e-7': 7, 'e-8': 8, \
-                                      'e-9': 9, 'w-1': 1, 'w-2': 2, 'w-3': 3, 'w-4': 4, 'w-5': 5, 'o-1': 1, 'o-2': 2, \
-                                      'o-3': 3, 'o-4': 4, 'o-5': 5, 'o-6': 6, 'o-7': 7, 'o-8': 8, 'o-9': 9, 'o-10': 10, \
-                                      'special (navy)': 9, 'special (coast guard)': 9, 'special': 9}
 
         # hold sums for each casualty
         casualty_sum = dict()
@@ -208,10 +211,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             casualty_sum[person] = 0
             #match max_kdma:  # do try here
                 # case 'moral_desert':
-                #     casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
+                #     casualty_sum[person] += 0 if info['demographics']['rank'] is None else CASUALTY_VAL_TABLE['rank'][
                 #         info['demographics']['rank'].lower()]
                 # case 'maximization':
-                #     casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
+                #     casualty_sum[person] += 0 if info['relationship'] == 'NONE' else CASUALTY_VAL_TABLE['relationship'][
                 #         info['relationship'].lower()]
                 # case _:
                 #     raise Exception("invalid kdma")
@@ -220,12 +223,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             casualty_sum[person] += 0 if info['intent'] is None else (
                 1.5 if (info['intent'] == 'no intent' or info['intent'] == 'intend minor help' or info['intent'] == 'intend major help') else -1)
             if kdma_list['relevance']['life_impact'] == 'high':
-                casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
+                casualty_sum[person] += 0 if info['demographics']['rank'] is None else CASUALTY_VAL_TABLE['rank'][
                 info['demographics']['rank'].lower()]
                 casualty_sum[person] += 0 if info['demographics']['age'] is None else (
                     1 if (0 <= info['demographics']['age'] <= 10 or 65 <= info['demographics']['age'] <= 100) else 0)
             elif kdma_list['relevance']['resources'] == 'many':
-                casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
+                casualty_sum[person] += 0 if info['relationship'] == 'NONE' else CASUALTY_VAL_TABLE['relationship'][
                 info['relationship'].lower()]
 
         # return casualty ranked highest
@@ -315,16 +318,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(casualty_dict) == 0: raise Exception("no casualties exist")
         if type(casualty_dict) != dict: raise AttributeError("Incorrect arg types or size")
 
-        # create table of casualty fields to worth
-        casualty_val_table = dict()
-        casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 2, 'neutral': 0}
-        #casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
-        #casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
-        casualty_val_table['rank'] = {'e-1': 1, 'e-2': 2, 'e-3': 3, 'e-4': 4, 'e-5': 5, 'e-6': 6, 'e-7': 7, 'e-8': 8,\
-                                      'e-9': 9, 'w-1': 1, 'w-2': 2, 'w-3': 3, 'w-4': 4, 'w-5': 5, 'o-1': 1, 'o-2': 2,\
-                                      'o-3': 3, 'o-4': 4, 'o-5': 5, 'o-6': 6, 'o-7': 7, 'o-8': 8, 'o-9': 9, 'o-10': 10,\
-                                      'special (navy)': 9, 'special (coast guard)': 9, 'special': 9}
-
         # hold sums for each casualty
         casualty_sum = dict()
 
@@ -335,10 +328,10 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 1.5 if info['directness_of_causality'] == 'none' else -1)
             casualty_sum[person] += 0 if info['intent'] is None else (
                 1.5 if (info['intent'] == 'no intent' or info['intent'] == 'intend minor help' or info['intent'] == 'intend major help') else -1)
-            casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
+            casualty_sum[person] += 0 if info['demographics']['rank'] is None else CASUALTY_VAL_TABLE['rank'][
                 info['demographics']['rank'].lower()]
-            casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
-                info['relationship'].lower()]
+            casualty_sum[person] += 0 if info['relationship'] == 'NONE' \
+                                      else CASUALTY_VAL_TABLE['relationship'][info['relationship'].lower()]
             casualty_sum[person] += 0 if info['demographics']['age'] is None else (
                 1 if (0 <= info['demographics']['age'] <= 10 or 65 <= info['demographics']['age'] <= 100) else 0)
             for injury in info['injuries']:
@@ -490,16 +483,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if len(casualty_dict) == 0: raise Exception("no casualties exist")
         if type(m) != int or m <= 0: raise Exception("A positive integer number of predictors must be considered")
 
-        # create table of casualty fields to worth
-        casualty_val_table = dict()
-        casualty_val_table['relationship'] = {'same-unit': 1, 'friend': 1, 'neutral': 0}
-        #casualty_val_table['rank'] = {'civilian': 1, 'marine': 1, 'intel officer': 1, 'vip': 1, 'e-4': 1}
-        #casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
-        casualty_val_table['rank'] = {'e-1': 1, 'e-2': 2, 'e-3': 3, 'e-4': 4, 'e-5': 5, 'e-6': 6, 'e-7': 7, 'e-8': 8,\
-                                      'e-9': 9, 'w-1': 1, 'w-2': 2, 'w-3': 3, 'w-4': 4, 'w-5': 5, 'o-1': 1, 'o-2': 2,\
-                                      'o-3': 3, 'o-4': 4, 'o-5': 5, 'o-6': 6, 'o-7': 7, 'o-8': 8, 'o-9': 9, 'o-10': 10,\
-                                      'special (navy)': 9, 'special (coast guard)': 9, 'special': 9}
-
         # variables for checking each casualty
         casualty_sum = dict()
 
@@ -514,11 +497,11 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 1.5 if (info['intent'] == 'no intent' or info['intent'] == 'intend minor help' or info['intent'] == 'intend major help') else -1)
             cnt += 1
             if cnt >= m: continue
-            casualty_sum[person] += 0 if info['relationship'] == 'NONE' else casualty_val_table['relationship'][
-                info['relationship'].lower()]
+            casualty_sum[person] += 0 if info['relationship'] == 'NONE' \
+                                      else CASUALTY_VAL_TABLE['relationship'][info['relationship'].lower()]
             cnt += 1
             if cnt >= m: continue
-            casualty_sum[person] += 0 if info['demographics']['rank'] is None else casualty_val_table['rank'][
+            casualty_sum[person] += 0 if info['demographics']['rank'] is None else CASUALTY_VAL_TABLE['rank'][
                 info['demographics']['rank'].lower()]
             cnt += 1
             if cnt >= m: continue
@@ -869,16 +852,6 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         if type(casualty_dict) != dict: raise AttributeError("Incorrect arg types or size")
         if len(casualty_dict) == 0: raise Exception("no casualties exist")
 
-        # create table of casualty fields to worth
-        casualty_val_table = dict()
-        casualty_val_table['relationship'] = {'neutral': 0, 'same-unit': 1, 'friend': 2}
-        #casualty_val_table['rank'] = {'civilian': 0, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4}
-        #casualty_val_table['rank'] = {'private (recruit)': 1, 'corporal': 3, 'marine': 1, 'intel officer': 2, 'vip': 3, 'e-4': 4, 'e-1': 1}
-        casualty_val_table['rank'] = {'e-1': 1, 'e-2': 2, 'e-3': 3, 'e-4': 4, 'e-5': 5, 'e-6': 6, 'e-7': 7, 'e-8': 8,\
-                                      'e-9': 9, 'w-1': 1, 'w-2': 2, 'w-3': 3, 'w-4': 4, 'w-5': 5, 'o-1': 1, 'o-2': 2,\
-                                      'o-3': 3, 'o-4': 4, 'o-5': 5, 'o-6': 6, 'o-7': 7, 'o-8': 8, 'o-9': 9, 'o-10': 10,\
-                                      'special (navy)': 9, 'special (coast guard)': 9, 'special': 9}
-
         # get random ordering of casualties
         casualty_list = list(casualty_dict)
         random_idx = random.sample(range(0, len(casualty_list)), len(casualty_list))
@@ -904,14 +877,14 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                     1.5 if info1['directness_of_causality'] == 'none' else -1)
                 casualty1_sum += 0 if info1['intent'] is None else (
                     1.5 if (info1['intent'] == 'no intent' or info1['intent'] == 'intend minor help' or info1['intent'] == 'intend major help') else -1)
-                casualty0_sum += 0 if info0['demographics']['rank'] is None else casualty_val_table['rank'][
+                casualty0_sum += 0 if info0['demographics']['rank'] is None else CASUALTY_VAL_TABLE['rank'][
                     info0['demographics']['rank'].lower()]
-                casualty1_sum += 0 if info1['demographics']['rank'] is None else casualty_val_table['rank'][
+                casualty1_sum += 0 if info1['demographics']['rank'] is None else CASUALTY_VAL_TABLE['rank'][
                     info1['demographics']['rank'].lower()]
-                #casualty0_sum += 0 if info0['relationship'] == 'NONE' else casualty_val_table['relationship'][
-                casualty0_sum += 0 if info0['relationship'] is None else casualty_val_table['relationship'][
+                #casualty0_sum += 0 if info0['relationship'] == 'NONE' else CASUALTY_VAL_TABLE['relationship'][
+                casualty0_sum += 0 if info0['relationship'] is None else CASUALTY_VAL_TABLE['relationship'][
                     info0['relationship'].lower()]
-                casualty1_sum += 0 if info1['relationship'] is None else casualty_val_table['relationship'][
+                casualty1_sum += 0 if info1['relationship'] is None else CASUALTY_VAL_TABLE['relationship'][
                     info1['relationship'].lower()]
                 casualty0_sum += 0 if info0['demographics']['age'] is None else (
                     1 if (0 <= info0['demographics']['age'] <= 10 or 65 <= info0['demographics']['age'] <= 100) else 0)
@@ -1022,12 +995,26 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
             "CHECK_PULSE": {
                 "CHECK_PULSE": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
                                 "system": "cardiovascular", "life_impact": "low"}},
+            # MCM (20240717): Added CHECK_BLOOD_OXYGEN as copy of CHECK_PULSE; remove this comment 
+            # after it is checked.
+            "CHECK_BLOOD_OXYGEN": {
+                "CHECK_BLOOD_OXYGEN": {"risk_reward_ratio": "low", "resources": "few", "time": "minutes",
+                                "system": "cardiovascular", "life_impact": "low"}},
             "CHECK_RESPIRATION": {
                 "CHECK_RESPIRATION": {"risk_reward_ratio": "low", "resources": "some", "time": "seconds",
                                       "system": "respiratory"}},
             "DIRECT_MOBILE_CHARACTERS": {
                 "DIRECT_MOBILE_CHARACTERS": {"risk_reward_ratio": "medium", "resources": "few", "time": "minutes",
                                              "system": "none"}},
+            # MCM (20240718): Added MESSAGE as copy of SITREP; remove this comment 
+            # after it is checked.
+            "MESSAGE": {
+                "MESSAGE": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all",
+                           "life_impact": "low"}},
+            # MCM (20240718): Added MOVE_TO as copy of SEARCH; remove this comment 
+            # after it is checked.
+            "MOVE_TO": {
+                "MOVE_TO": {"risk_reward_ratio": "low", "resources": "some", "time": "minutes", "system": "all"}},
             "MOVE_TO_EVAC": {
                 "MOVE_TO_EVAC": {"risk_reward_ratio": "high", "resources": "few", "time": "minutes", "system": "none"}},
             "TAG_CHARACTER": {

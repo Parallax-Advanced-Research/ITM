@@ -1,7 +1,7 @@
 import json
 
 from domain.ta3 import TA3State, Casualty, TagCategory, Supply
-from domain.internal import Decision, Action, Scenario, TADProbe
+from domain.internal import Decision, Action, Scenario, TADProbe, make_new_action_decision, update_decision_parameters
 from components import Elaborator
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import supply_injury_match, supply_location_match
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Actions
@@ -14,7 +14,9 @@ from domain.enum import ActionTypeEnum, SupplyTypeEnum, InjuryTypeEnum, InjuryLo
                         AvpuLevelEnum
 
 
-SPECIAL_SUPPLIES = [SupplyTypeEnum.IV_BAG, SupplyTypeEnum.BLOOD, SupplyTypeEnum.PAIN_MEDICATIONS]
+SPECIAL_SUPPLIES = [SupplyTypeEnum.BLANKET, SupplyTypeEnum.BLOOD, SupplyTypeEnum.EPI_PEN, \
+                    SupplyTypeEnum.FENTANYL_LOLLIPOP, SupplyTypeEnum.IV_BAG, \
+                    SupplyTypeEnum.PAIN_MEDICATIONS, SupplyTypeEnum.PULSE_OXIMETER]
 
 class TA3Elaborator(Elaborator):
 
@@ -56,6 +58,8 @@ class TA3Elaborator(Elaborator):
                 to_return += self._tag(probe.state.casualties, d)
             elif _name == ActionTypeEnum.END_SCENE:
                 to_return += [d]
+            elif _name == ActionTypeEnum.MOVE_TO:
+                to_return += self._add_move_options(probe, d)
             elif _name == ActionTypeEnum.MOVE_TO_EVAC:
                 to_return += self._add_evac_options(probe, d)
             else:
@@ -68,7 +72,10 @@ class TA3Elaborator(Elaborator):
         #Kluge to bypass Soartech errors. In Soartech scenarios, some apply_treatments are suggested
         #that only make sense with vitals, which are not available. This workaround gets the vitals
         if len(suggested_treats) > 0 and final_treat_count == 0 and len(suggested_checks) == 0:
-            to_return += self._enumerate_check_actions(probe.state, Decision("TAD", Action(ActionTypeEnum.CHECK_ALL_VITALS, {})))
+            breakpoint()
+            to_return += self._enumerate_check_actions(
+                            probe.state, 
+                            make_new_action_decision("TAD", ActionTypeEnum.CHECK_ALL_VITALS, {}, None, False))
 
         final_list = []
         for tr in to_return:
@@ -109,18 +116,24 @@ class TA3Elaborator(Elaborator):
             json.dump(total_dict, out)
 
     def _add_evac_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
-        if probe.environment['decision_environment']['aid_delay'] == None:
+        if probe.environment['decision_environment']['aid'] == None:
             return []
-        decisions = self._ground_casualty(probe.state.casualties, decision)
+        decisions = self._ground_casualty(probe.state.casualties, decision, unseen = None)
         ret_decisions = []
         for dec in decisions:
             if ParamEnum.EVAC_ID in dec.value.params:
                 ret_decisions.append(dec)
             else:
-                for aid in probe.environment['decision_environment']['aid_delay']:
+                for aid in probe.environment['decision_environment']['aid']:
                     ret_decisions.append(
                         decision_copy_with_params(decision, {ParamEnum.EVAC_ID: aid['id']}))
         return ret_decisions
+
+    def _add_move_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
+        if probe.environment['decision_environment']['aid'] == None:
+            return []
+        decisions = self._ground_casualty(probe.state.casualties, decision, unseen=True)
+        return decisions
 
     def _enumerate_check_actions(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
         # Ground the decision for all casualties with injuries
@@ -301,23 +314,21 @@ class TA3Elaborator(Elaborator):
                     # Copy the casualty into the params dict
                     cas_params = action.params.copy()
                     cas_params[ParamEnum.CASUALTY] = cas.id
-                    dec_grounded.append(Decision(decision.id_, Action(action.name, cas_params), 
-                                                 kdmas=decision.kdmas))
+                    dec_grounded.append(update_decision_parameters(decision, cas_params))
         else:
             cas = get_casualty_by_id(action.params[ParamEnum.CASUALTY], casualties)
             if not cas.tag:
                 dec_grounded.append(decision)
         tag_grounded: list[Decision[Action]] = []
-        for cas_action in dec_grounded:
+        for cas_decision in dec_grounded:
             # If no category set, enumerate the tag types
-            if ParamEnum.CATEGORY not in cas_action.value.params:
+            if ParamEnum.CATEGORY not in cas_decision.value.params:
                 for tag in TagCategory:
-                    tag_params = cas_action.value.params.copy()
+                    tag_params = cas_decision.value.params.copy()
                     tag_params[ParamEnum.CATEGORY] = tag
-                    tag_grounded.append(Decision(cas_action.id_, Action(action.name, tag_params), 
-                                                 kdmas=cas_action.kdmas))
+                    tag_grounded.append(update_decision_parameters(cas_decision, tag_params)); 
             else:
-                tag_grounded.append(cas_action)
+                tag_grounded.append(cas_decision)
         return tag_grounded
 
     def _supply_quantity(self, state: TA3State, supply_type: str):
@@ -331,45 +342,48 @@ class TA3Elaborator(Elaborator):
         actions = TA3Elaborator._ground_casualty(state.casualties, decision)
         # Ground the decision for all treatments
         treat_grounded: list[Decision[Action]] = []
-        for cas_action in actions:
+        for cas_decision in actions:
             # If no treatment set, enumerate the supplies
-            if ParamEnum.TREATMENT not in cas_action.value.params:
+            if ParamEnum.TREATMENT not in cas_decision.value.params:
                 for supply in supply_filter(state.supplies):
-                    sup_params = cas_action.value.params.copy()
+                    sup_params = cas_decision.value.params.copy()
                     if supply.quantity > 0:
                         sup_params[ParamEnum.TREATMENT] = supply.type
-                        treat_grounded.append(Decision(cas_action.id_, Action(decision.value.name, sup_params), kdmas=cas_action.kdmas))
+                        treat_grounded.append(update_decision_parameters(cas_decision, sup_params))
             else:
-                supply_needed = cas_action.value.params.copy()[ParamEnum.TREATMENT]
+                supply_needed = cas_decision.value.params.copy()[ParamEnum.TREATMENT]
                 for s in state.supplies:
                     if s.type == supply_needed and s.quantity > 0:
-                        treat_grounded.append(cas_action)
+                        treat_grounded.append(cas_decision)
                         break
 
         # Ground the location
         grounded: list[Decision[Action]] = []
-        for treat_action in treat_grounded:
+        for treat_decision in treat_grounded:
             # If no location set, enumerate the injured locations
-            if ParamEnum.LOCATION not in treat_action.value.params:
-                cas = get_casualty_by_id(treat_action.value.params[ParamEnum.CASUALTY], state.casualties)
+            if ParamEnum.LOCATION not in treat_decision.value.params:
+                cas = get_casualty_by_id(treat_decision.value.params[ParamEnum.CASUALTY], state.casualties)
                 if tag_available and cas.assessed and not cas.tag:
                     continue
                 if cas.vitals.breathing in [BreathingLevelEnum.RESTRICTED, BreathingLevelEnum.NONE] \
-                   and treat_action.value.params[ParamEnum.TREATMENT] == SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY:
-                    treat_action.value.params[ParamEnum.LOCATION] = InjuryLocationEnum.LEFT_FACE
-                    grounded.append(treat_action)
+                   and treat_decision.value.params[ParamEnum.TREATMENT] == SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY:
+                    treat_decision.value.params[ParamEnum.LOCATION] = InjuryLocationEnum.LEFT_FACE
+                    grounded.append(treat_decision)
                     continue
                 for injury in cas.injuries:
                     if injury.status == 'treated':
                         continue
-                    treat_params = treat_action.value.params.copy()
-                    if TA3Elaborator.medsim_allows_action(treat_action.value, injury.name):
+                    treat_params = treat_decision.value.params.copy()
+                    treat_params[ParamEnum.LOCATION] = injury.location
+                    new_treat_action = Action(decision.value.name, treat_params)
+                    if TA3Elaborator.medsim_allows_action(new_treat_action, injury.name):
+                        grounded.append(update_decision_parameters(treat_decision, new_treat_action.params))
+                    elif TA3Elaborator.medsim_allows_action(treat_decision.value, injury.name):
+                        treat_params = treat_decision.value.params.copy()
                         treat_params[ParamEnum.LOCATION] = treat_params.get(ParamEnum.LOCATION, InjuryLocationEnum.UNSPECIFIED)
-                    else:
-                        treat_params[ParamEnum.LOCATION] = injury.location
-                    grounded.append(Decision(treat_action.id_, Action(decision.value.name, treat_params), kdmas=treat_action.kdmas))
+                        grounded.append(update_decision_parameters(treat_decision, treat_params))
             else:
-                grounded.append(treat_action)
+                grounded.append(treat_decision)
 
         return grounded
         
@@ -378,16 +392,18 @@ class TA3Elaborator(Elaborator):
         
 
     @staticmethod
-    def _ground_casualty(casualties: list[Casualty], decision: Decision[Action], injured_only = True) -> list[Decision[Action]]:
+    def _ground_casualty(casualties: list[Casualty], decision: Decision[Action], injured_only = True, unseen=False) -> list[Decision[Action]]:
         action = decision.value
         dec_grounded: list[Decision[Action]] = []
-        if ParamEnum.CASUALTY not in action.params:
+        if action.params.get(ParamEnum.CASUALTY, None) is None:
             for cas in casualties:
+                if unseen is not None and cas.unseen != unseen:
+                    continue
                 if cas.injuries or not injured_only:
                     # Copy the casualty into the params dict
                     cas_params = action.params.copy()
                     cas_params[ParamEnum.CASUALTY] = cas.id
-                    dec_grounded.append(Decision(decision.id_, Action(action.name, cas_params), kdmas=decision.kdmas))
+                    dec_grounded.append(update_decision_parameters(decision, cas_params))
         else:
             dec_grounded.append(decision)
 
@@ -424,7 +440,7 @@ def get_casualty_by_id(id: str, casualties: list[Casualty]) -> Casualty:
 
 def decision_copy_with_params(dec: Decision[Action], params: dict[str, Any]):
     pcopy = dec.value.params.copy() | params
-    return Decision(dec.id_, Action(dec.value.name, pcopy), kdmas=dec.kdmas)
+    return update_decision_parameters(dec, pcopy)
 
 def supply_filter(supplies: list[Supply]):
     return [s for s in supplies if s.type not in SPECIAL_SUPPLIES]
