@@ -23,7 +23,7 @@ def error(msg: str) -> None:
     status = Status.ERROR
     color('red', msg)
 
-def update_server(dir_name: str) -> bool:
+def update_server(dir_name: str, rebuild: bool = False) -> bool:
     p: subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]
 
     print("\n **** Checking if " + dir_name + " needs updates. ****")
@@ -52,13 +52,19 @@ def update_server(dir_name: str) -> bool:
         print(ex)
         raise Exception("Could not find expected commit hash.") from ex
     
+        
     patching_status = check_git_diff_against_patch(ldir, dir_name)
+    if rebuild:
+        hashval = 0
+        patching_status.user_edited = False
+        patching_status.difference_exists = True
+        patching_status.patch_updated = True
 
     if hashval != desired_hash and patching_status.user_edited:
         warning("Cannot update repository due to local changes. Starting anyway, please consider "
               + "calling save-repo-states.py")
         return True
-    elif hashval != desired_hash and not patching_status.user_edited:
+    elif (hashval != desired_hash and not patching_status.user_edited):
         print("Updating repo " + dir_name + " to recorded commit hash.")
         if patching_status.difference_exists:
             print("Resetting prior patch.")
@@ -241,6 +247,9 @@ parser.add_argument("--adept", action=argparse.BooleanOptionalAction, default=Tr
                     help="Choose to run (default) / not run the ADEPT server.")
 parser.add_argument("--soartech", action=argparse.BooleanOptionalAction, default=True,
                     help="Choose to run (default) / not run the Soartech server.")
+parser.add_argument("--rebuild", action=argparse.BooleanOptionalAction, default=False,
+                    help="Rebuilds each downloaded directory regardless of patching/update status. " \
+                         "Will destroy changes in the .deprepos directory.")
 
 args = parser.parse_args()
 
@@ -248,8 +257,8 @@ if args.ta3_only:
     args.adept = False
     args.soartech = False
 
-update_server("itm-evaluation-client")
-ta3_server_available = update_server("itm-evaluation-server")
+update_server("itm-evaluation-client", rebuild = args.rebuild)
+ta3_server_available = update_server("itm-evaluation-server", rebuild = args.rebuild)
 
 if not ta3_server_available:
     error("TA3 server is not installed; neither tad_tester.py nor ta3_training.py will function. "
@@ -257,7 +266,7 @@ if not ta3_server_available:
     sys.exit(Status.ERROR.value)
 
 if args.soartech:
-    soartech_server_available = update_server("ta1-server-mvp")
+    soartech_server_available = update_server("ta1-server-mvp", rebuild = args.rebuild)
     if not soartech_server_available:
         warning("Training server from soartech not found. Proceeding without it.")
     else:
@@ -273,7 +282,7 @@ else:
     soartech_server_available = False
  
 if args.adept:
-    adept_server_available = update_server("adept_server")
+    adept_server_available = update_server("adept_server", rebuild = args.rebuild)
     if not adept_server_available:
         warning("ADEPT training server not found. Proceeding without it.")
 else:
