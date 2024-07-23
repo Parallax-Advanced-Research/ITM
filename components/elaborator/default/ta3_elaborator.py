@@ -159,7 +159,7 @@ class TA3Elaborator(Elaborator):
             if cas.vitals.hrpmin is None:
                 dec_applicable.append(cur_decision)
                 continue
-            if cas.vitals.spo2 is None and _supply_available(state, SupplyTypeEnum.PULSE_OXIMETER):
+            if cas.vitals.spo2 is None and TA3Elaborator._supply_available(state, SupplyTypeEnum.PULSE_OXIMETER):
                 dec_applicable.append(cur_decision)
                 continue
             if not cas.assessed:
