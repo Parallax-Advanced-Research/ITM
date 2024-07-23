@@ -54,8 +54,8 @@ class TA3Elaborator(Elaborator):
             elif _name == ActionTypeEnum.CHECK_RESPIRATION:
                 to_return += self._enumerate_check_resp_actions(probe.state, d)
             elif _name == ActionTypeEnum.SEARCH: 
-                pass #No good theory of the search action.
-                # to_return += [d]
+                # This one doesn't need elaboration, I think?
+                to_return += [d]
             elif _name == ActionTypeEnum.TAG_CHARACTER:
                 to_return += self._tag(probe.state.casualties, d)
             elif _name == ActionTypeEnum.END_SCENE:
@@ -132,8 +132,6 @@ class TA3Elaborator(Elaborator):
         return ret_decisions
 
     def _add_move_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
-        if probe.environment['decision_environment']['aid'] == None:
-            return []
         decisions = self._ground_casualty(probe.state.casualties, decision, unseen=True)
         return decisions
 
