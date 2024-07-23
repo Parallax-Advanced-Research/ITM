@@ -43,6 +43,8 @@ class TA3Elaborator(Elaborator):
                 to_return += self._enumerate_check_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_PULSE:
                 to_return += self._enumerate_check_pulse_actions(probe.state, d)
+            elif _name == ActionTypeEnum.CHECK_BLOOD_OXYGEN:
+                to_return += self._enumerate_check_blood_oxygen_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_RESPIRATION:
                 to_return += self._enumerate_check_resp_actions(probe.state, d)
             elif _name == ActionTypeEnum.SEARCH: 
@@ -116,26 +118,45 @@ class TA3Elaborator(Elaborator):
 
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
-            if cas.vitals.ambulatory is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.avpu is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.breathing is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.conscious is None:
-                dec_applicable.append(cur_decision)
-                continue
+            # if cas.vitals.ambulatory is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.avpu is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.breathing is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.conscious is None:
+                # dec_applicable.append(cur_decision)
+                # continue
             if cas.vitals.hrpmin is None:
                 dec_applicable.append(cur_decision)
                 continue
-            # if cas.vitals.spo2 is None:
-                # dec_applicable.append(cur_decision)
-                # continue
+            if cas.vitals.spo2 is None and _supply_available(state, SupplyTypeEnum.PULSE_OXIMETER):
+                dec_applicable.append(cur_decision)
+                continue
             if not cas.assessed:
                 dec_applicable.append(cur_decision)
+                
+        return dec_applicable
+
+    def _enumerate_check_blood_oxygen_actions(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
+        if not TA3Elaborator._supply_available(state, SupplyTypeEnum.PULSE_OXIMETER):
+            return []
+
+        # Ground the decision for all casualties
+        dec_grounded = self._ground_casualty(state.casualties, decision, injured_only = False)
+        dec_applicable = []
+
+        for cur_decision in dec_grounded:
+            cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
+            if not cas.assessed:
+                dec_applicable.append(cur_decision)
+                continue
+            if cas.vitals.spo2 is None:
+                dec_applicable.append(cur_decision)
+                continue
                 
         return dec_applicable
 
@@ -146,6 +167,9 @@ class TA3Elaborator(Elaborator):
 
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
+            if not cas.assessed:
+                dec_applicable.append(cur_decision)
+                continue
             if cas.vitals.hrpmin is None:
                 dec_applicable.append(cur_decision)
                 continue
@@ -159,7 +183,7 @@ class TA3Elaborator(Elaborator):
 
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
-            if cas.vitals.breathing is None:
+            if not cas.assessed:
                 dec_applicable.append(cur_decision)
                 continue
                 
@@ -172,20 +196,20 @@ class TA3Elaborator(Elaborator):
         
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
-            if cas.vitals.mental_status not in [None, MentalStatusEnum.CALM, MentalStatusEnum.AGONY, MentalStatusEnum.UPSET]:
-                continue
-            if cas.vitals.ambulatory is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.avpu is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.breathing is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.conscious is None:
-                dec_applicable.append(cur_decision)
-                continue
+            # if cas.vitals.mental_status not in [None, MentalStatusEnum.CALM, MentalStatusEnum.AGONY, MentalStatusEnum.UPSET]:
+                # continue
+            # if cas.vitals.ambulatory is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.avpu is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.breathing is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.conscious is None:
+                # dec_applicable.append(cur_decision)
+                # continue
             if not cas.assessed:
                 dec_applicable.append(cur_decision)
                 continue
@@ -325,11 +349,9 @@ class TA3Elaborator(Elaborator):
                         sup_params[ParamEnum.TREATMENT] = supply.type
                         treat_grounded.append(update_decision_parameters(cas_decision, sup_params))
             else:
-                supply_needed = cas_decision.value.params.copy()[ParamEnum.TREATMENT]
-                for s in state.supplies:
-                    if s.type == supply_needed and s.quantity > 0:
-                        treat_grounded.append(cas_decision)
-                        break
+                if TA3Elaborator._supply_available(state, cas_decision.value.params[ParamEnum.TREATMENT]):
+                    treat_grounded.append(cas_decision)
+                    break
 
         # Ground the location
         grounded: list[Decision[Action]] = []
@@ -361,6 +383,13 @@ class TA3Elaborator(Elaborator):
 
         return grounded
         
+        
+    @staticmethod 
+    def _supply_available(state: TA3State, supply: str):
+        for s in state.supplies:
+            if s.type == supply and s.quantity > 0:
+                return True
+        return False
         
     
         
