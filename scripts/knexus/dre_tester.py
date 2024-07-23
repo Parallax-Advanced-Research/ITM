@@ -10,15 +10,19 @@ import tad
 ADEPT_SCENARIOS = ['DryRunEval.IO1', 'DryRunEval.MJ1', 'DryRunEval-MJ2-eval', 'DryRunEval-MJ4-eval']
 SOARTECH_SCENARIOS = ['qol-dre-v2-train', 'vol-dre-v2-train', 'qol-dre-v2-eval', 'vol-dre-v2-eval']
 
+# SUCCESS_SCENARIOS = ['DryRunEval.IO1', 'DryRunEval.MJ1', 'DryRunEval-MJ2-eval']
+SUCCESS_SCENARIOS = []
 
 def dry_run():
     args = parse_default_arguments()
-    all_scenarios = ADEPT_SCENARIOS + SOARTECH_SCENARIOS
+    all_scenarios = ADEPT_SCENARIOS #+ SOARTECH_SCENARIOS
     for scen in all_scenarios:
+        if scen in SUCCESS_SCENARIOS:
+            continue
         args.session_type = 'adept' if 'Dry' in scen else 'soartech'
         args.scenario = scen
         args.training = False if 'eval' in scen else True
-        args.mc = False
+        args.mc = True
         tad.api_test(args)
 
 
