@@ -228,6 +228,8 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
             if display_name == sort_metric:
                 if display_name == 'Heuristic Rule Analytic Strategy HRA':
                     sort_func = lambda x: get_hra_strategy(x)[0] if 'HRA Strategy' in x.metrics.keys() else x.id_
+                elif display_name in ['Severity per Casualty MCA', 'DPS per Casualty MCA', 'P(Death) per Casualty MCA']:
+                    sort_func = lambda x: list(x.metrics[m_c.name].value.values())[0] if m_c.name in x.metrics.keys() else 0.0
                 else:
                     sort_func = lambda x: x.metrics[m_c.name].value if m_c.name in x.metrics.keys() else 0.0
                 break
@@ -282,6 +284,14 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
                 if m_c.name == 'HRA Strategy':
                     strat_selected, strat_justification = get_hra_strategy(decision)
                     table_full_html += f"""<td {pink_style}> <div title='{strat_justification}'> {strat_selected} </div> </td>"""
+                elif m_c.name in ['CASUALTY_SEVERITY', 'CASUALTY_DAMAGE_PER_SECOND', 'CASUALTY_P_DEATH']:
+                    # assuming justification is eventually given and follows the structure as other justifications
+                    try:
+                        just_english = justifications[m_c.name].split('is')[-1]
+                    except:
+                        just_english = 'No justification given'
+                    metric = decision.metrics[m_c.name].value
+                    table_full_html += f"""<td {pink_style}> <div title='{just_english}'> {metric} </div> </td>"""
                 else:
                     try:
                         just_english = justifications[m_c.name].split('is')[-1]
@@ -329,7 +339,10 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
     'INFORMATION_GAINED': ('Information<br>Gained', 'How much information is gained by the action', '{:.0f}', 'MCA'),
     'HRA Strategy': ('Heuristic Rule<br>Analytic Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '', 'HRA',),
     'STANDARD_TIME_SEVERITY': ('Standard<br>Time<br>Severity', 'Severity 200 seconds after the action is begiun', '{:.0f}', 'MCA'),
-    'SMOL_MEDICAL_SOUNDNESS_V2': ('Medical<br>Soundness V2', 'Percent corrected ranked ordering of STANDARD_TIME_SEVERITY', '{:.0f}', 'MCA')
+    'SMOL_MEDICAL_SOUNDNESS_V2': ('Medical<br>Soundness V2', 'Percent corrected ranked ordering of STANDARD_TIME_SEVERITY', '{:.0f}', 'MCA'),
+    'CASUALTY_SEVERITY': ('Severity<br>per Casualty', 'Dictionary of severity of all casualties', '{:.2%}', 'MCA'),
+    'CASUALTY_DAMAGE_PER_SECOND': ('DPS per<br>Casualty', 'Dictionary of damage per second per casualty', '{:.2%}', 'MCA'),
+    'CASUALTY_P_DEATH': ('P(Death)<br>per Casualty', 'Dictionary of probability of death for all casualties', '{:.0%}', 'MCA')
 }
 
 
