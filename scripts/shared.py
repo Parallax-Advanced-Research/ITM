@@ -87,6 +87,8 @@ def get_default_parser() -> argparse.ArgumentParser:
                              + "kedsd, not otherwise.")
     parser.add_argument('--decision_verbose', action=argparse.BooleanOptionalAction, default=False, 
                         help="Causes a decision selector to output extra information explaining its selections.")
+    parser.add_argument('--elab_output', action=argparse.BooleanOptionalAction, default=False,
+                        help="Outputs the elaborator actions into json file (used to help compare to llm).")
 
 
 

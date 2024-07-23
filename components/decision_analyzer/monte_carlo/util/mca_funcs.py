@@ -28,6 +28,13 @@ def decision_to_actstr(decision: Decision) -> str:
     action_params: dict[str, str] = action.params
     retstr = "%s_" % action.name
     for opt_param in sorted(list(action_params.keys())):
+        if decision.value.name == Actions.MOVE_TO_EVAC.value:
+            if opt_param == 'aid_id':
+                continue
+        if decision.value.name == Actions.MESSAGE.value:  # This is an ugly hack but wont break
+            for in_param in ['casualty', 'type', 'recipient']:
+                retstr += '%s_' % action_params[in_param]  # if action.lookup(opt_param) is not None else ''
+            return retstr
         retstr += '%s_' % action_params[opt_param]
     return retstr
 
@@ -35,7 +42,7 @@ def decision_to_actstr(decision: Decision) -> str:
 def tinymedact_to_actstr(decision: mcnode.MCDecisionNode) -> str:
     action: MedsimAction = decision.action
     retstr = "%s_" % action.action
-    for opt_param in ['casualty_id', 'location', 'supply', 'tag', 'evac_id']:
+    for opt_param in ['casualty_id', 'location', 'supply', 'tag', 'evac_id', 'message_type', 'recipient']:
         retstr += '%s_' % action.lookup(opt_param) if action.lookup(opt_param) is not None else ''
     return retstr
 
@@ -296,6 +303,8 @@ def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode
             continue
 
         simulated_state_metrics[dec_str] = get_future_and_change_metrics(medsim_state, decision)
+        # if decision.action.action == 'MESSAGE':
+        #     print('wakka')
         for cas in list(decision.score[Metric.CASUALTY_P_DEATH.value].keys()):
             cas_p_death = decision.score[Metric.CASUALTY_P_DEATH.value][cas]
             if cas_p_death < casualty_best_worst[cas][Metric.CAS_LOW_P_DEATH.value]:
@@ -345,9 +354,10 @@ def get_weighted_score_element(action: str) -> int:
 
 def get_information_gained_element(action: str) -> int:
     no_knowledge = [Actions.APPLY_TREATMENT.value, Actions.DIRECT_MOBILE_CASUALTY.value, Actions.MOVE_TO_EVAC.value,
-                    Actions.TAG_CHARACTER.value, Actions.END_SCENE.value, Actions.END_SCENARIO.value]
-    little_knowledge = [Actions.CHECK_RESPIRATION.value, Actions.CHECK_PULSE.value]
-    some_knowledge = [Actions.CHECK_ALL_VITALS.value]
+                    Actions.TAG_CHARACTER.value, Actions.END_SCENE.value,
+                    Actions.END_SCENARIO.value, Actions.MOVTE_TO.value]
+    little_knowledge = [Actions.CHECK_RESPIRATION.value, Actions.CHECK_PULSE.value, Actions.MESSAGE.value]
+    some_knowledge = [Actions.CHECK_ALL_VITALS.value, Actions.CHECK_BLOOD_OXYGEN.value]
     lots_knowledge = [Actions.SITREP.value]
     most_knowledge = [Actions.SEARCH.value]
     for know in no_knowledge:
@@ -418,6 +428,10 @@ def process_probe_decisions(probe: TADProbe, simulated_state_metrics: list[mcnod
             if value.name not in all_decision_metrics.keys():
                 all_decision_metrics[value.name] = list()
             all_decision_metrics[value.name].append(value.value)
+    # When it breaks here, its because the only kind of decision is move_to_evac which doesnt have a metric return dict
+    # Fix this after meeting with john
+    # decision metrics raw is None
+    # basic_metrics is an empty kist
     nextgen_stats = get_nextgen_stats(all_decision_metrics, ordered_treatments)
     all_decision_metrics.update(nextgen_stats)
     for idx in range(len(ordered_treatments)):
