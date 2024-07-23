@@ -365,6 +365,8 @@ class Injuries(Enum):
     ACTIVE_NASO = 'ACTIVE Nasopharyngeal airway'
     ACTIVE_BAG = 'ACTIVE IV Bag'
     ACTIVE_BLOOD = 'ACTIVE Blood'
+    OPEN_ABDOMINAL_WOUND = 'Open Abdominal Wound'
+    TBI = 'Traumatic Brain Injury'
 
 
 class Metric(Enum):

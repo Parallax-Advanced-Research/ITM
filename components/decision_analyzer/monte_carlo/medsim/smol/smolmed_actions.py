@@ -175,10 +175,12 @@ smol_action_map: typing.Mapping[str, resolve_action] = {
     Actions.DIRECT_MOBILE_CASUALTY.value: apply_zeroornone_action,
     Actions.SEARCH.value: apply_zeroornone_action,
     Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
+    Actions.MOVTE_TO.value: apply_singlecaualty_action,
     Actions.TAG_CHARACTER.value: apply_casualtytag_action,
     Actions.SITREP.value: apply_zeroornone_action,
     Actions.UNKNOWN.value: apply_default_action,
     Actions.END_SCENARIO.value: end_scenario_action,
     Actions.END_SCENE.value: end_scenario_action,
-    Actions.CHECK_BLOOD_OXYGEN: apply_singlecaualty_action
+    Actions.CHECK_BLOOD_OXYGEN.value: apply_singlecaualty_action,
+    Actions.MESSAGE.value: apply_singlecaualty_action  # This may need more logic later but for the time is inert
 }
