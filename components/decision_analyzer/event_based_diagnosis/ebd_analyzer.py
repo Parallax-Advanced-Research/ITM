@@ -23,6 +23,72 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         self._hems = self._lisp.find_package("HEMS")
         self.load_model()
 
+        self._icd9_itm_map = dict()
+        self._itm_icd9_map = dict()
+        
+        itm_ear_bleed = "EAR_BLEED"
+        itm_burn = "BURN"
+        itm_laceration = "LACERATION"
+        itm_puncture = "PUNCTURE"
+        itm_shrapnel = "SHRAPNEL"
+        itm_chest_collapse = "CHEST_COLLAPSE"
+        itm_amputation = "AMPUTATION"
+        itm_internal = "INTERNAL"
+        itm_tbi = "TRAUMATIC_BRAIN_INJURY"
+        itm_oaw = "OPEN_ABDOMENAL_WOUND"
+        itm_broken = "BROKEN_BONE"
+
+        icd9_fracture = "FRACTURE"
+        icd9_internal = "INTERNAL_INJURY"
+        icd9_chest_collapse = "CERTAIN_TRAUMATIC_COMPLICATIONS_AND_UNSPECIFIED_INJURIES"
+        icd9_tbi = "INTRACRANIAL_INJURY_EXCLUDING_THOSE_WITH_SKULL_FRACTURE"
+        icd9_ear_bleed = "INTRACRANIAL_INJURY_EXCLUDING_THOSE_WITH_SKULL_FRACTURE"
+        icd9_open_wound = "OPEN_WOUND"
+        icd9_amputation = "AMPUTATION"
+        icd9_burn = "BURNS"
+        icd9_laceration = "LACERATIONS_AND_PIERCINGS"
+        icd9_shrapnel = "LACERATIONS_AND_PIERCINGS"
+        icd9_puncture = "PUNCTURE"
+
+        self._icd9_itm_map[icd9_fracture] = itm_broken
+        self._icd9_itm_map[icd9_internal] = itm_internal
+        self._icd9_itm_map[icd9_chest_collapse] = itm_chest_collapse
+        self._icd9_itm_map[icd9_tbi] = itm_tbi
+        self._icd9_itm_map[icd9_ear_bleed] = itm_ear_bleed
+        self._icd9_itm_map[icd9_open_wound] = itm_oaw
+        self._icd9_itm_map[icd9_amputation] = itm_amputation
+        self._icd9_itm_map[icd9_burn] = itm_burn
+        self._icd9_itm_map[icd9_laceration] = itm_laceration
+        self._icd9_itm_map[icd9_shrapnel] = itm_shrapnel
+        self._icd9_itm_map[icd9_puncture] = itm_puncture
+
+        self._itm_icd9_map[itm_ear_bleed] = icd9_ear_bleed
+        self._itm_icd9_map[itm_burn] = icd9_burn
+        self._itm_icd9_map[itm_laceration] = icd9_laceration
+        self._itm_icd9_map[itm_puncture] = icd9_puncture
+        self._itm_icd9_map[itm_shrapnel] = icd9_shrapnel
+        self._itm_icd9_map[itm_chest_collapse = icd9_chest_collapse
+        self._itm_icd9_map[itm_amputation] = icd9_amputation
+        self._itm_icd9_map[itm_internal] = icd9_internal
+        self._itm_icd9_map[itm_tbi] = icd9_tbi
+        self._itm_icd9_map[itm_oaw] = icd9_open_wound
+        self._itm_icd9_map[itm_broken] = icd9_fracture
+
+        self._itm_resources_icd9_map = dict()
+        self._itm_resources_icd9_map['Hemostatic Gause'] = ["Operations on the integumentary system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Tourniquet'] = ["Operations on the integumentary system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Pressure Bandage'] = ["Operations on the integumentary system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Decompression Needle'] = ["Operations on the respiratory system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Nasopharyngeal airway'] = ["Operations on the respiratory system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Pulse Oximeter'] = ["Miscellaneous diagnostic and therapeutic procedures".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Blanket'] = ["Miscellaneous diagnostic and therapeutic procedures".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Epi Pen'] = ["Miscellaneous diagnostic and therapeutic procedures".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Vented Chest Seal'] = ["Operations on the respiratory system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Blood'] = ["Operations on the cardiovascular system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['IV Bag'] = ["Operations on the cardiovascular system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map['Burn Dressing'] = ["Operations on the integumentary system".upper().replace(" ", "_")]
+        
+
     def load_model(self):
         self._hems.load_eltm_from_file("components/decision_analyzer/event_based_diagnosis/eltm.txt")
         
@@ -57,6 +123,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         for cpd in recollection:
             if self._hems.rule_based_cpd_singleton_p(cpd) == True and self._hems.get_hash(0, self._hems.rule_based_cpd_concept_ids(cpd))[0] == "INJURY":
                 injury_name = self._hems.rule_based_cpd_dependent_var(cpd)
+                injury_name = self._icd9_itm_map[injury_name]
                 injury_id = self._hems.rule_based_cpd_dependent_id(cpd)
                 vvbm = self._hems.get_hash(0, self._hems.rule_based_cpd_var_value_block_map(cpd))[0]
                 if injury_name not in injuries:
