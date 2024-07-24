@@ -317,6 +317,7 @@ class InjuryAssumptuions:
 
 
 class SeverityEnums(Enum):
+    MINOR = 'minor'
     MODERATE = 'moderate'
     SUBSTANTIAL = 'substantial'
     MAJOR = 'major'

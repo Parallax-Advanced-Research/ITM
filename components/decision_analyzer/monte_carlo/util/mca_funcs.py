@@ -32,7 +32,9 @@ def decision_to_actstr(decision: Decision) -> str:
             if opt_param == 'aid_id':
                 continue
         if decision.value.name == Actions.MESSAGE.value:  # This is an ugly hack but wont break
-            for in_param in ['casualty', 'type', 'recipient']:
+            for in_param in ['casualty', 'type', 'recipient', 'object']:
+                if in_param not in set(action_params.keys()):
+                    continue
                 retstr += '%s_' % action_params[in_param]  # if action.lookup(opt_param) is not None else ''
             return retstr
         retstr += '%s_' % action_params[opt_param]

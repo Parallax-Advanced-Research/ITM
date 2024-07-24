@@ -163,7 +163,8 @@ class InjuryUpdate:
             BodySystemEffect.SEVERE.value: 3,
             BodySystemEffect.CRITICAL.value: 4,
             BodySystemEffect.FATAL.value: 10,
-            SeverityEnums.MODERATE.value: 1,
+            SeverityEnums.MINOR.value: 1,
+            SeverityEnums.MODERATE.value: 2,
             SeverityEnums.MAJOR.value: 3,
             SeverityEnums.SUBSTANTIAL.value: 6,
             SeverityEnums.EXTREME.value: 100
@@ -179,7 +180,6 @@ class InjuryUpdate:
         self.burning_effect = self.burning_effect if not injury_burn else\
             InjuryUpdate.val_to_bse(injury_burn + effect_burn)
 
-        pass
 
 AFFECCTOR_UPDATE = {
         # TODO - Injury update now needs to take in burn, and we need to add burn
@@ -255,6 +255,9 @@ AFFECCTOR_UPDATE = {
         # Normally we would never set injury update values to anything that isnt a body system effect,
         # however, this is the new way forward to handle severity? Its self contained, and these injuries are only
         # created and never stored to modify the original injury value. Sketch code below {
+        SeverityEnums.MINOR.value: InjuryUpdate(bleed=SeverityEnums.MINOR.value,
+                                                breath=SeverityEnums.MINOR.value,
+                                                burn=SeverityEnums.MINOR.value),
         SeverityEnums.MODERATE.value: InjuryUpdate(bleed=SeverityEnums.MODERATE.value,
                                                    breath=SeverityEnums.MODERATE.value,
                                                    burn=SeverityEnums.MODERATE.value),
