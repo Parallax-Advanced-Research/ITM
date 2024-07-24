@@ -1,4 +1,5 @@
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations, VitalsEffect, SeverityEnums
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Supplies, Actions, Injuries, Locations, \
+    VitalsEffect, SeverityEnums, Ta3Vitals
 from enum import Enum
 
 
@@ -71,6 +72,7 @@ class Medical:
                                            Injuries.CHEST_COLLAPSE.value, Injuries.BROKEN_BONE.value],
         Supplies.DECOMPRESSION_NEEDLE.value: [Injuries.CHEST_COLLAPSE.value],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Injuries.ASTHMATIC.value, Injuries.BURN_SUFFOCATION.value],
+        Supplies.BLANKET.value: [Ta3Vitals.SHOCK.value],
         Supplies.BURN_DRESSING.value: [Injuries.BURN.value],
         Supplies.SPLINT.value: [Injuries.BROKEN_BONE.value]
     }
@@ -89,7 +91,8 @@ class Medical:
         Supplies.DECOMPRESSION_NEEDLE.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value],
         Supplies.VENTED_CHEST_SEAL.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
-                                           Locations.UNSPECIFIED.value]
+                                           Locations.UNSPECIFIED.value],
+        Supplies.BLANKET.value: [Locations.UNSPECIFIED.value]
     }
 
     CASUALTY_MAX_BURN_HP = 5000

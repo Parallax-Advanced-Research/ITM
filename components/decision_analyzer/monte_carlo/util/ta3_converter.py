@@ -109,6 +109,9 @@ def get_vital_injuries(ta_cas: TA_CAS) -> list[InferredInjury]:
         ii = InferredInjury('Character is calm', Locations.UNSPECIFIED.value, 1.0)
         ii.set_source("calm in mental status")
         injuries.append(ii)
+    if ta_cas.vitals.mental_status == Ta3Vitals.SHOCK.value:
+        ii = InferredInjury(Ta3Vitals.SHOCK.value, Locations.UNSPECIFIED, severity=1.0)
+        ii.set_source('shock is in mentakl status')
     return injuries
 
 

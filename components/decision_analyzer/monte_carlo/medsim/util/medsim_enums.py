@@ -262,7 +262,6 @@ class Supplies(Enum):
 
 
 class Ta3Vitals(Enum):
-
     SLOW = 'SLOW'
     FAST = 'FAST'
     NORMAL = 'NORMAL'
@@ -274,6 +273,7 @@ class Ta3Vitals(Enum):
     CONFUSED = 'CONFUSED'
     AGONY = 'AGONY'
     CALM = 'CALM'
+    SHOCK = 'SHOCK'
 
     BREATHING = [None, SLOW, FAST, NORMAL]
     HRPMIN = [None, FAST, FAINT, NORMAL]
