@@ -68,7 +68,7 @@ class Medical:
                                     Injuries.SHRAPNEL.value],
         Supplies.EPI_PEN.value: [Injuries.ASTHMATIC.value],
         Supplies.VENTED_CHEST_SEAL.value: [Injuries.LACERATION.value, Injuries.PUNCTURE.value,
-                                           Injuries.CHEST_COLLAPSE.value],
+                                           Injuries.CHEST_COLLAPSE.value, Injuries.BROKEN_BONE.value],
         Supplies.DECOMPRESSION_NEEDLE.value: [Injuries.CHEST_COLLAPSE.value],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Injuries.ASTHMATIC.value, Injuries.BURN_SUFFOCATION.value],
         Supplies.BURN_DRESSING.value: [Injuries.BURN.value],
