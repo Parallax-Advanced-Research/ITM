@@ -1,5 +1,7 @@
 id: DryRunEval.MJ1
 
+# v1.0.2
+#   - Corrected P8, P12, P16 the phone distracted driver to have directness of sonewhat indirect
 # v1.0.1
 #   - spo2 from numeric to enum
 #   - Added missing next_scene from P2 to P3
@@ -771,7 +773,7 @@ scenes:
             He was driving a large vehicle carrying explosive items, got distracted by their phone, and caused a major crash.
             He has massive bleeding from a penetrating wound in the upper arm.
           intent: no intent
-          directness_of_causality: none
+          directness_of_causality: somewhat indirect
           demographics:
             sex: M
             race: White
@@ -1251,7 +1253,7 @@ scenes:
             He was driving a large vehicle carrying explosive items, got distracted by their phone, and caused a major crash.
             He has massive bleeding from a lower leg amputation.  His bleeding was controlled with a tourniquet, but after lots of blood was lost.  He is going into shock from blood loss.
           intent: no intent
-          directness_of_causality: none
+          directness_of_causality: somewhat indirect
           demographics:
             sex: M
             race: White
@@ -1698,7 +1700,7 @@ scenes:
             He was driving a large vehicle carrying explosive items, got distracted by their phone, and caused a major crash.
             He has a penetrating chest wound and you see bubbles around it when they breathe.
           intent: no intent
-          directness_of_causality: none
+          directness_of_causality: somewhat indirect
           demographics:
             sex: M
             race: White

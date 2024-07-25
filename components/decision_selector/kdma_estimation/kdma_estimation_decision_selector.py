@@ -319,8 +319,8 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
                                                        for co in s.casualties if not co.id == c.id])
 
     case['aid_available'] = \
-        (probe.environment['decision_environment']['aid_delay'] is not None
-         and len(probe.environment['decision_environment']['aid_delay']) > 0)
+        (probe.environment['decision_environment']['aid'] is not None
+         and len(probe.environment['decision_environment']['aid']) > 0)
     case['environment_type'] = probe.environment['sim_environment']['type']
     a: Action = d.value
     case['questioning'] = a.name in ["SITREP"]
