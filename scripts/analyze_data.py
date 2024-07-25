@@ -262,7 +262,8 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
         new_case.pop("pre-action-hash")
         new_case.pop("action-len")
         new_case.pop("state-hash")
-        new_case.pop("run_index")
+        if "run_index" in new_case:
+            new_case.pop("run_index")
         
         if len(case_list) > 1:
             # Handle averaging different real values across combined cases
@@ -286,6 +287,7 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
                 if len(vals) > 1:
                     print(f"Multiple values for key {key}: {vals}")
                     breakpoint()
+                    break
         ret_cases.append(new_case)
         index = index + 1
         
