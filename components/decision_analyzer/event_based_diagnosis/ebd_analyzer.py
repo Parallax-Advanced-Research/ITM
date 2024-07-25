@@ -8,6 +8,8 @@ from domain.internal.decision import Action
 from domain.ta3.ta3_state import Casualty, State
 from components import DecisionAnalyzer
 from statistics import mean, pstdev
+# Enumerations for injuries and supplies from .deprepos evaluation client
+from domain.enum import InjuryTypeEnum, SupplyTypeEnum
 
 class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
     def __init__(self):
@@ -25,19 +27,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
 
         self._icd9_itm_map = dict()
         self._itm_icd9_map = dict()
-        
-        itm_ear_bleed = "EAR_BLEED"
-        itm_burn = "BURN"
-        itm_laceration = "LACERATION"
-        itm_puncture = "PUNCTURE"
-        itm_shrapnel = "SHRAPNEL"
-        itm_chest_collapse = "CHEST_COLLAPSE"
-        itm_amputation = "AMPUTATION"
-        itm_internal = "INTERNAL"
-        itm_tbi = "TRAUMATIC_BRAIN_INJURY"
-        itm_oaw = "OPEN_ABDOMENAL_WOUND"
-        itm_broken = "BROKEN_BONE"
-
+    
         icd9_fracture = "FRACTURE"
         icd9_internal = "INTERNAL_INJURY"
         icd9_chest_collapse = "CERTAIN_TRAUMATIC_COMPLICATIONS_AND_UNSPECIFIED_INJURIES"
@@ -49,51 +39,55 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         icd9_laceration = "LACERATIONS_AND_PIERCINGS"
         icd9_shrapnel = "LACERATIONS_AND_PIERCINGS"
         icd9_puncture = "PUNCTURE"
+        icd9_scrape = "SUPERFICIAL_INJURY"
+        
+        self._icd9_itm_map[icd9_fracture] = InjuryTypeEnum.BROKEN_BONE
+        self._icd9_itm_map[icd9_internal] = InjuryTypeEnum.INTERNAL
+        self._icd9_itm_map[icd9_chest_collapse] = InjuryTypeEnum.CHEST_COLLAPSE
+        #self._icd9_itm_map[icd9_tbi] = itm_tbi
+        self._icd9_itm_map[icd9_scrape] = InjuryTypeEnum.ABRASION
+        self._icd9_itm_map[icd9_ear_bleed] = InjuryTypeEnum.EAR_BLEED
+        #self._icd9_itm_map[icd9_open_wound] = itm_oaw
+        self._icd9_itm_map[icd9_amputation] = InjuryTypeEnum.AMPUTATION
+        self._icd9_itm_map[icd9_burn] = InjuryTypeEnum.BURN
+        self._icd9_itm_map[icd9_laceration] = InjuryTypeEnum.LACERATION
+        self._icd9_itm_map[icd9_shrapnel] = InjuryTypeEnum.SHRAPNEL
+        self._icd9_itm_map[icd9_puncture] = InjuryTypeEnum.PUNCTURE
 
-        self._icd9_itm_map[icd9_fracture] = itm_broken
-        self._icd9_itm_map[icd9_internal] = itm_internal
-        self._icd9_itm_map[icd9_chest_collapse] = itm_chest_collapse
-        self._icd9_itm_map[icd9_tbi] = itm_tbi
-        self._icd9_itm_map[icd9_ear_bleed] = itm_ear_bleed
-        self._icd9_itm_map[icd9_open_wound] = itm_oaw
-        self._icd9_itm_map[icd9_amputation] = itm_amputation
-        self._icd9_itm_map[icd9_burn] = itm_burn
-        self._icd9_itm_map[icd9_laceration] = itm_laceration
-        self._icd9_itm_map[icd9_shrapnel] = itm_shrapnel
-        self._icd9_itm_map[icd9_puncture] = itm_puncture
-
-        self._itm_icd9_map[itm_ear_bleed] = icd9_ear_bleed
-        self._itm_icd9_map[itm_burn] = icd9_burn
-        self._itm_icd9_map[itm_laceration] = icd9_laceration
-        self._itm_icd9_map[itm_puncture] = icd9_puncture
-        self._itm_icd9_map[itm_shrapnel] = icd9_shrapnel
-        self._itm_icd9_map[itm_chest_collapse = icd9_chest_collapse
-        self._itm_icd9_map[itm_amputation] = icd9_amputation
-        self._itm_icd9_map[itm_internal] = icd9_internal
-        self._itm_icd9_map[itm_tbi] = icd9_tbi
-        self._itm_icd9_map[itm_oaw] = icd9_open_wound
-        self._itm_icd9_map[itm_broken] = icd9_fracture
+        self._itm_icdS9_map[InjuryTypeEnum.ABRASION] = icd9_scrape
+        self._itm_icd9_map[InjuryTypeEnum.EAR_BLEED] = icd9_ear_bleed
+        self._itm_icd9_map[InjuryTypeEnum.BURN] = icd9_burn
+        self._itm_icd9_map[InjuryTypeEnum.LACERATION] = icd9_laceration
+        self._itm_icd9_map[InjuryTypeEnum.PUNCTURE] = icd9_puncture
+        self._itm_icd9_map[InjuryTypeEnum.SHRAPNEL] = icd9_shrapnel
+        self._itm_icd9_map[InjuryTypeEnum.CHEST_COLLAPSE] = icd9_chest_collapse
+        self._itm_icd9_map[InjuryTypeEnum.AMPUTATION] = icd9_amputation
+        self._itm_icd9_map[InjuryTypeEnum.INTERNAL] = icd9_internal
+        #self._itm_icd9_map[itm_tbi] = icd9_tbi
+        #self._itm_icd9_map[itm_oaw] = icd9_open_wound
+        self._itm_icd9_map[InjuryTypeEnum.BROKEN_BONE] = icd9_fracture
 
         self._itm_resources_icd9_map = dict()
-        self._itm_resources_icd9_map['Hemostatic Gause'] = ["Operations on the integumentary system".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Tourniquet'] = ["Operations on the integumentary system".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Pressure Bandage'] = ["Operations on the integumentary system".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Decompression Needle'] = ["Operations on the respiratory system".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Nasopharyngeal airway'] = ["Operations on the respiratory system".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Pulse Oximeter'] = ["Miscellaneous diagnostic and therapeutic procedures".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Blanket'] = ["Miscellaneous diagnostic and therapeutic procedures".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Epi Pen'] = ["Miscellaneous diagnostic and therapeutic procedures".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Vented Chest Seal'] = ["Operations on the respiratory system".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Blood'] = ["Operations on the cardiovascular system".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['IV Bag'] = ["Operations on the cardiovascular system".upper().replace(" ", "_")]
-        self._itm_resources_icd9_map['Burn Dressing'] = ["Operations on the integumentary system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.HEMOSTATIC_GAUZE] = ["Operations on the integumentary system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.TOURNIQUET] = ["Operations on the integumentary system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.PRESSURE_BANDAGE] = ["Operations on the integumentary system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.DECOMPRESSION_NEEDLE] = ["Operations on the respiratory system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY] = ["Operations on the respiratory system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.PULSE_OXIMETER] = ["Miscellaneous diagnostic and therapeutic procedures".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.BLANKET] = ["Miscellaneous diagnostic and therapeutic procedures".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.EPI_PEN] = ["Miscellaneous diagnostic and therapeutic procedures".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.VENTED_CHEST_SEAL] = ["Operations on the respiratory system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.BLOOD] = ["Operations on the cardiovascular system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.IV_BAG] = ["Operations on the cardiovascular system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.BURN_DRESSING] = ["Operations on the integumentary system".upper().replace(" ", "_")]
+        self._itm_resources_icd9_map[SupplyTypeEnum.SPLINT] = ["Operations on the musculoskeletal system".upper().replace(" ", "_")]
         
 
     def load_model(self):
         self._hems.load_eltm_from_file("components/decision_analyzer/event_based_diagnosis/eltm.txt")
         
     def analyze(self, _: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
-        analysis = {}
+        analysis = dict()
 
         for decision in probe.decisions:
             cue = self.make_observation_from_state (probe.state, decision.value)
@@ -113,6 +107,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             stdspread = DecisionMetric[float]("StdSpread", "", std_spread)
 
             metrics = {avgspread.name: avgspread, stdspread.name: stdspread}
+            justifications = dict()
             decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
         return analysis
@@ -136,6 +131,20 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
 
     def make_observation(self, character):
         with tempfile.NamedTemporaryFile() as fp:
+            prog = ""
+            i = 1
+            for cv in character['vitals']:
+                prog += f'c{i} = (percept-node {d[0]} :value "{value}")\n'
+                i += 1
+            for ci in character['injuries']:
+                if ci['treated'] == True:
+                    prog += f'c{i} = (relation-node {d[0]} :value "NA")\n'
+                else:
+                    prog += f'c{i} = (relation-node {d[0]} :value "T")\n'
+                i += 1
+
+            fp.write(bytes(prog, 'utf-8'))
+            fp.seek(0)
             return self._hems.compile_program_from_file(fp.name)
     
     def make_observation_from_state(self, state: State, a: Action):
@@ -146,18 +155,19 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         if cas is None:
             raise Exception("No casualty in state with name: " + patient)
         data = [
-            #('rank', cas.demographics.rank, 4),
-             ('hrpmin', self.get_hrpmin(cas), 5),
-             #('sex', cas.demographics.sex, 3),
-             #('age', cas.demographics.age, 2),
-             ('pain', self.get_pain(cas), 9),
-             ('AVPU', self.get_AVPU(cas), 101),
-             #('breathing', cas.vitals.breathing, 102),
-             ('severe_burns', self.get_burns(cas), 103),
-             ('visible_trauma_to_extremities', self.get_trauma(cas), 104),
-             ('amputation', self.get_amputation(cas), 105),
-             #('relationship', cas.relationship, 107)
-             ]
+            ('PAIN', self.get_pain(cas), 'vitals'),
+            ('RESPRATE', self.get_breathing(cas), 'vitals'),
+            ('HEARTRATE', self.get_hrpmin(cas), 'vitals'),
+            ('O2SAT', self.get_spo2(cas), 'vitals'),
+            (self._itm_icd9_map[InjuryTypeEnum.ABRASION], self.get_abrasion(cas), 'injury'),
+            (self._itm_icd9_map[InjuryTypeEnum.EAR_BLEED], self.get_ear_bleed(cas), 'injury'),
+            (self._itm_icd9_map[InjuryTypeEnum.BURN], self.get_burns(cas), 'injury'),
+            (self._itm_icd9_map[InjuryTypeEnum.LACERATION], self.get_laceration_and_shrapnel(cas), 'injury'),
+            (self._itm_icd9_map[InjuryTypeEnum.PUNCTURE], self.get_puncture(cas), 'injury'),
+            (self._itm_icd9_map[InjuryTypeEnum.CHEST_COLLAPSE], self.get_chest_collapse(cas), 'injury'),
+            (self._itm_icd9_map[InjuryTypeEnum.AMPUTATION], self.get_amputation(cas), 'injury'),
+            (self._itm_icd9_map[InjuryTypeEnum.INTERNAL], self.get_internal(cas), 'injury'),
+            (self._itm_resources_icd9_map[a], self.get_treatment(cas), 'treatment')]
         # TODO: Needs to make use of new stuff the server gives us. q.v. bn_analyzer:make_observation()
         
         cue = self.get_cue_string(data)
@@ -167,55 +177,102 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             return self._hems.compile_program_from_file(fp.name)
         
     def get_hrpmin(self, c: Casualty) -> str | None:
-        val = c.vitals.hrpmin
+        val = c.vitals.heart_rate
 
         if val is None:
             return None
             
         if 'FAST' == val: return "high"
         if 'FAINT' == val: return "low"
-        if 'NONE' == val: return "low" # TODO: add a NONE value to bayesian net
+        if 'NONE' == val: return "NA" # TODO: add a NONE value to bayesian net
         if 'NORMAL' == val: return "normal"
         assert False, f"Invalid hrpmin: {val}"
 
+    def get_spo2(self, c: Casualty) -> str | None:
+        val = c.vitals.spo2
+
+        if val is None:
+            return None
+            
+        if 95 <= val < = 100: return "normal"
+        if val < 95: return "low"
+        if  val > 100: return "high"
+        assert False, f"Invalid hrpmin: {val}"
+        
+    def get_breathing(self, c: Casualty) -> str | None:
+        val = c.vitals.breathing
+
+        if val is None:
+            return None
+            
+        if 'FAST' == val: return "high"
+        if 'NORMAL' == val: return "normal"
+        if 'SLOW' == val: return "low" # TODO: add a NONE value to bayesian net
+        if 'RESTRICTED' == val: return "low"
+        if 'NONE' == val: return "NA"
+        assert False, f"Invalid hrpmin: {val}"
+
+    def get_abrasion(self, c : Casualty):
+        for i in c.injuries:
+            if i.name == InjuryTypeEnum.AMPUTATION:
+                if i.treated == True:
+                    return "NA"
+                if i.treated == False:
+                    return "T"
+        return None
+    
     def get_burns(self, c : Casualty):
         for i in c.injuries:
-            if i.name == 'Burn':
-                #"high" if i.severity > 0.7 else "medium" if i.severity > 0.3 else "low"
-                return "high" if i.severity in [ "substantial", "severe", "extreme" ]  else "medium" if i.severity == "medium" else "low"
+            if i.name == InjuryTypeEnum.BURN:
+                if i.treated == True:
+                    return "NA"
+                if i.treated == False:
+                    return "T"
         return None
-
-    def get_trauma(self, c : Casualty):
-        for i in c.injuries:
-            if i.name == 'Amputation' and ('calf' in i.location or 'leg' in i.location 
-                                           or 'arm' in i.location):
-                return "true"
-        return "false"
 
     def get_amputation(self, c : Casualty):
         for i in c.injuries:
-            if i.name == 'Amputation':
-                return "true"
-        return "false"
+            if i.name == InjuryTypeEnum.AMPUTATION:
+                if i.treated == True:
+                    return "NA"
+                if i.treated == False:
+                    return "T"
+        return None
         
+    def get_laceration_and_shrapnel(self, c : Casualty):
+        na_count = 0
+        for i in c.injuries:
+            if i.name == InjuryTypeEnum.LACERATION or i.name == InjuryTypeEnum.SHRAPNEL:
+                if i.treated == True:
+                    na_count += 1
+                if i.treated == False:
+                    return "T"
+        if na_count == 2:
+            return "NA"
+        else:
+            return None
+    
     def get_pain(self, c : Casualty):
         if c.vitals.mental_status is None:
             return None
         if c.vitals.mental_status == "AGONY":
             return "high"
-        if c.vitals.conscious is False: return "low_or_none"
+        if c.vitals.mental_status == "CALM":
+            return "low"
+        if c.vitals.conscious is False:
+            return "unknown"
+        if c.vitals.mental_status == "UNRESPONSIVE" or c.vitals.mental_status == "SHOCK":
+            return "unknown"
+        if c.vitals.mental_status == "UPSET" or c.vitals.mental_status == "CONFUSED":
+            return "normal"
         return None
-       
-    def get_AVPU(self, c: Casualty) -> str | None:
-        d = { "ALERT": "A", "VOICE": "V", "PAIN": "P", "UNRESPONSIVE": "U", None: None }
-        return d[c.vitals.avpu]
         
     def get_cue_string(self, data : list[tuple]):
         i = 1
         ret = ""
         for d in data:
             if d[1] is not None:
-                ret += f'c{i} = (percept-node {d[0]} :value "{d[1]}" :kb-concept-id "CNPT-{d[2]}")\n'
+                ret += f'c{i} = (percept-node {d[0]} :value "{d[1]}")\n'
                 i += 1
         return ret
 
