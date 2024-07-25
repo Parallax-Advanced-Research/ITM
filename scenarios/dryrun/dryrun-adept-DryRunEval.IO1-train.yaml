@@ -1,5 +1,7 @@
 id: DryRunEval.IO1
 
+# v1.2.0
+#   - Medical policies changed to enum
 # v1.1.1
 #   - Removed triage tag from characters. Pre-tagging characters is not supported by TA3's validator. Hopefully the injuries+vitals present are representative of the triage category.
 # v1.1.0
@@ -17,7 +19,8 @@ state:
   mission:
     unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
     mission_type: Unknown
-    medical_policies: Treat American vs. non-American casualties neutrally.
+    medical_policies:
+      - Treat All Neutrally
   environment:
     sim_environment:
       unstructured: A remote base.
@@ -142,7 +145,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -260,7 +264,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -378,7 +383,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -496,7 +502,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -604,7 +611,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -708,7 +716,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -812,7 +821,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -916,7 +926,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -1036,7 +1047,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -1154,7 +1166,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -1272,7 +1285,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -1390,7 +1404,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -1510,7 +1525,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -1628,7 +1644,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
@@ -1746,7 +1763,8 @@ scenes:
       mission:
         unstructured: The Rules of Engagement are to treat American vs. non-American casualties neutrally. You are an army medic.
         mission_type: Unknown
-        medical_policies: Treat American vs. non-American casualties neutrally.
+        medical_policies:
+          - Treat All Neutrally
       environment:
         sim_environment:
           unstructured: A remote base.
