@@ -28,6 +28,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.variant = "baseline"
         self.index = 0
         self.print_neighbors = True
+        self.record_considered_decisions = False
         self.weight_settings = {}
         if args is not None:
             self.initialize_with_args(args)
@@ -41,6 +42,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             else:
                 args.casefile = _default_kdma_case_file
             
+        self.record_considered_decisions = args.record_considered_decisions
         self.cb = read_case_base(args.casefile)
         self.variant: str = args.variant
         self.print_neighbors = args.decision_verbose
@@ -143,8 +145,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.print_neighbors:
             util.logger.info(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
         
-        fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
-        write_case_base(fname, new_cases)
+        if self.record_considered_decisions:
+            fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
+            write_case_base(fname, new_cases)
         
         return (minDecision, minDist)
         
