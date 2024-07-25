@@ -29,10 +29,10 @@ def check_for_servers(args):
     if args.session_type == 'eval':
         check_adept = True
         check_soartech = True
-    # if args.training and args.session_type == 'adept':
-        # check_adept = True
-    # if args.training and args.session_type == 'soartech':
-        # check_soartech = True
+    if args.connect_to_ta1 and args.session_type == 'adept':
+        check_adept = True
+    if args.connect_to_ta1 and args.session_type == 'soartech':
+        check_soartech = True
         
     if check_adept:
         adept_port = util.find_environment("ADEPT_PORT", 8081)
@@ -122,7 +122,7 @@ def api_test(args, driver = None):
     
     if driver is None:
         driver = TA3Driver(args)
-    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario)
+    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario, args.connect_to_ta1)
     if args.training:
         sid = client.start_session(adm_name=f'TAD', session_type=args.session_type, kdma_training=True)
     else:
