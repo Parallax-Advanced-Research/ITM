@@ -65,6 +65,7 @@ scenes:
       PerceivedQuantityOfLivesSaved: 0.1
     parameters:
       treatment: Tourniquet
+      location: left thigh
     probe_id: vol-dre-1-train-Probe-2
     unstructured: Treat the left leg of Casualty Y
   - action_id: action-2
@@ -76,6 +77,7 @@ scenes:
       PerceivedQuantityOfLivesSaved: 0.1
     parameters:
       treatment: Tourniquet
+      location: right thigh
     probe_id: vol-dre-1-train-Probe-2
     unstructured: Treat the right leg of Casualty Y
   - action_id: action-3

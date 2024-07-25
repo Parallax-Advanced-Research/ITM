@@ -47,7 +47,7 @@ scenes:
     - qol-dre-1-train-Probe-1
 - action_mapping:
   - action_id: action-0
-    action_type: SITREP
+    action_type: APPLY_TREATMENT
     character_id: casualty_o
     choice: choice-0
     intent_action: false
@@ -58,7 +58,7 @@ scenes:
     probe_id: qol-dre-1-train-Probe-2
     unstructured: Treat Casualty O with hemostatic gauze.
   - action_id: action-1
-    action_type: SITREP
+    action_type: APPLY_TREATMENT
     character_id: casualty_n
     choice: choice-1
     intent_action: false
@@ -76,7 +76,7 @@ scenes:
       where you also discover Casualty N. What action do you take?
     probe_id: qol-dre-1-train-Probe-2
   restricted_actions:
-  - APPLY_TREATMENT
+  - SITREP
   - CHECK_ALL_VITALS
   - CHECK_BLOOD_OXYGEN
   - CHECK_PULSE
