@@ -5,12 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Adept MJ2",
+            "name": "Adept MJ5",
             "type": "debugpy",
             "request": "launch",
             "program": "tad_tester.py",
             "console": "integratedTerminal",
-            "args": "--session_type adept --scenario DryRunEval-MJ2-eval --no-training --no-mc"
+            "args": "--session_type adept --kdma moraldesert=.84 --scenario DryRunEval-MJ5-eval --no-training --keds --dump"
         },
         {
             "name": "Explanation Tester (ADEPT, MD1-Urban, Moraldesert)",

@@ -5,7 +5,7 @@ import random
 from components.decision_explainer import KDMADecisionExplainer
 
 # specify the location of the input directory
-input_file = "components/probe_dumper/tmp/MetricsEval.MD1-Urban.pkl"
+input_file = "components/probe_dumper/tmp/DryRunEval-MJ5-eval.pkl"
 
 kdma_explainer = KDMADecisionExplainer()
 

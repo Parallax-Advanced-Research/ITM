@@ -115,8 +115,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 util.logger.info(f"Evaluating action: {cur_decision.value}")
             for kdma in target.kdmas:
                 kdma_name = kdma.id_.lower()
-                weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
-                estimate, topK = self.estimate_KDMA(cur_case, weights, kdma_name, print_neighbors = self.print_neighbors)
+                weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})               
+                try: #TODO - remove try/except
+                    estimate, topK = self.estimate_KDMA(cur_case, weights, kdma_name, print_neighbors = self.print_neighbors)
+                except Exception as e:
+                    util.logger.error(f"Error estimating KDMA {kdma_name}: {e}")
+                    continue
                 if estimate is None:
                     sqDist += 100
                     continue
@@ -145,6 +149,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 util.logger.info(f"New dist: {sqDist} Best Dist: {minDist}")
             cur_case["distance"] = sqDist
         
+        
         if len(minDecisions) > 1:
             minDecision = util.get_global_random_generator().choice(minDecisions)
 
@@ -154,6 +159,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.record_considered_decisions:
             fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
             write_case_base(fname, new_cases)
+        
+        
         
         return (minDecision, minDist)
         
