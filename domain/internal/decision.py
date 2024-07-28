@@ -50,7 +50,7 @@ class Decision(typing.Generic[T]):
         self.id_: str = id_
         self.value: T = value
         self.justifications: list[Justification] = justifications
-        self.explanations: dict[Any] = explanations
+        self.explanations: list[Explanation] = explanations
         self.metrics: DecisionMetrics = Dict_No_Overwrite()
         self.selected = False
         if metrics:
@@ -75,10 +75,10 @@ class Decision(typing.Generic[T]):
 def make_new_action_decision(
             id_: str, action_type: str, params: dict[str, typing.Any],
             kdmas: KDMAs, intend: bool) -> Decision[Action]:
-    return Decision(id_, Action(action_type, params), [], None, kdmas, intend);
+    return Decision(id_, Action(action_type, params), [],[], None, kdmas, intend);
 
 
 def update_decision_parameters(
             d: Decision, params: dict[str, typing.Any]) -> Decision[Action]:
-    return Decision(d.id_, Action(d.value.name, params.copy()), d.justifications, d.metrics, 
+    return Decision(d.id_, Action(d.value.name, params.copy()), d.justifications, d.explanations, d.metrics, 
                     d.kdmas, d.intend);

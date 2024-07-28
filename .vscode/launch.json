@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Adept MJ2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type adept --scenario DryRunEval-MJ2-eval --no-training --no-mc"
+        },
+        {
             "name": "Explanation Tester (ADEPT, MD1-Urban, Moraldesert)",
             "type": "debugpy",
             "request": "launch",
