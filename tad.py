@@ -29,9 +29,9 @@ def check_for_servers(args):
     if args.session_type == 'eval':
         check_adept = True
         check_soartech = True
-    if args.training and args.session_type == 'adept':
+    if args.connect_to_ta1 and args.session_type == 'adept':
         check_adept = True
-    if args.training and args.session_type == 'soartech':
+    if args.connect_to_ta1 and args.session_type == 'soartech':
         check_soartech = True
         
     if check_adept:
@@ -120,12 +120,9 @@ def api_test(args, driver = None):
     else:
         logger.setLevel(LogLevel.INFO)
     
-    if args.seed is not None:
-        util.set_global_random_seed(args.seed)
-    
     if driver is None:
         driver = TA3Driver(args)
-    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario)
+    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario, args.connect_to_ta1)
     if args.training:
         sid = client.start_session(adm_name=f'TAD', session_type=args.session_type, kdma_training=True)
     else:

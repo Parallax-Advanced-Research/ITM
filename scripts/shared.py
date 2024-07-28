@@ -1,4 +1,4 @@
-import argparse, sys
+import argparse, sys, util
 
 def validate_args(args: argparse.Namespace) -> None:
 
@@ -16,9 +16,11 @@ def validate_args(args: argparse.Namespace) -> None:
     elif args.csv: args.selector = 'csv'
     elif args.human: args.selector = 'human'
     
-    if args.session_type != 'eval' and args.selector in ['keds', 'kedsd', 'csv'] and args.kdmas is None:
+    if args.session_type != 'eval' and args.selector in ['keds', 'kedsd', 'csv'] \
+                                   and args.kdmas is None and not args.connect_to_ta1:
         sys.stderr.write("\x1b[93mYour selected decision selector requires an alignment target. "
-                         + "Provide one by running in evaluation mode (--session_type eval), or "
+                         + "Provide one by running in evaluation mode (--session_type eval), "
+                         + " connecting to TA1 (--connect_to_ta1), or "
                          + "by listing kdmas explicitly (e.g., --kdma mission=.8 --kdma denial=.5)."
                          + "\x1b[0m\n"
                         )
@@ -38,6 +40,12 @@ def validate_args(args: argparse.Namespace) -> None:
     if args.session_type == 'eval' and args.training:
         sys.stderr.write("\x1b[93mCannot perform training in evaluation mode.\x1b[0m\n")
         sys.exit(1)
+        
+    if args.seed is not None:
+        util.set_global_random_seed(args.seed)
+    else:
+        args.seed = util.get_global_random_seed()
+
     
     #args.keds = ('keds' == args.selector)
     #args.kedsd = ('kedsd' == args.selector)
@@ -65,6 +73,8 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--scenario', type=str, default=None, help="ID of a scenario that TA3 can play back.")
     parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to alignment target for selection purposes. Format is <kdma_name>-<kdma_value>")
     parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=False, help="Asks for KDMA associations to actions")
+    parser.add_argument('--connect_to_ta1', action=argparse.BooleanOptionalAction, default=False,
+                        help="Sets up pathway to TA1 server for alignment scoring.")
     parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, implies --training.")
     parser.add_argument('--selector', default='random', choices=['keds', 'kedsd', 'csv', 'human', 'random'], help="Sets the decision selector") # TODO: add details of what each option does
     parser.add_argument('--selector-object', default=None, help=argparse.SUPPRESS)
@@ -81,6 +91,10 @@ def get_default_parser() -> argparse.ArgumentParser:
                              + "kedsd, not otherwise.")
     parser.add_argument('--decision_verbose', action=argparse.BooleanOptionalAction, default=False, 
                         help="Causes a decision selector to output extra information explaining its selections.")
+    parser.add_argument('--elab_output', action=argparse.BooleanOptionalAction, default=False,
+                        help="Outputs the elaborator actions into json file (used to help compare to llm).")
+    parser.add_argument('--record_considered_decisions', action=argparse.BooleanOptionalAction, default=False, 
+                        help="Causes a decision selector to log the decisions it considered.")
 
 
 

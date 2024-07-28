@@ -1,13 +1,68 @@
+diff --git a/swagger_server/config.ini b/swagger_server/config.ini
+new file mode 100755
+index 0000000..5e07b62
+--- /dev/null
++++ b/swagger_server/config.ini
+@@ -0,0 +1,7 @@
++; Copy over this template file and rename it to config.ini
++; Replace the default configurations below with the desired values
++
++[DEFAULT]
++
++EVALUATION_TYPE=dryrun
++SCENARIO_DIRECTORY=../../scenarios/%(EVALUATION_TYPE)s/
+diff --git a/swagger_server/controllers/itm_ta2_eval_controller.py b/swagger_server/controllers/itm_ta2_eval_controller.py
+index 9c36cfc..1ee902a 100644
+--- a/swagger_server/controllers/itm_ta2_eval_controller.py
++++ b/swagger_server/controllers/itm_ta2_eval_controller.py
+@@ -1,5 +1,6 @@
+ import connexion
+ import time
++import sys
+ 
+ from swagger_server.models.action import Action  # noqa: E501
+ from ..itm import ITMSession
+@@ -98,6 +99,7 @@ def start_scenario(session_id, scenario_id=None):  # noqa: E501
+     :rtype: Scenario
+     """
+     session = _get_session(session_id)
++    sys.stderr.write(f"Session scenarios: {[scenario.id for scenario in session.itm_scenarios]}\n")
+     return session.start_scenario(scenario_id=scenario_id) if session else ('Invalid Session ID', 400)
+ 
+ def _reclaim_old_session():
+diff --git a/swagger_server/itm/itm_scene.py b/swagger_server/itm/itm_scene.py
+index e586c20..d54efed 100644
+--- a/swagger_server/itm/itm_scene.py
++++ b/swagger_server/itm/itm_scene.py
+@@ -31,7 +31,7 @@ class ITMScene:
+         self.restricted_actions :List[ActionTypeEnum] = scene.restricted_actions
+         self.transition_semantics :SemanticTypeEnum = scene.transition_semantics
+         self.transitions :Conditions = scene.transitions
+-        self.training = False
++        self.training = True
+         from .itm_scenario import ITMScenario
+         self.parent_scenario :ITMScenario = None
+ 
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index ce0b030..ba5a249 100644
+index f7cf414..282888d 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -397,7 +397,7 @@ class ITMSession:
-         ta1_names = []
-         if self.session_type == 'eval':
-             self.save_history = True
--            self.ta1_integration = True
-+            self.ta1_integration = False
-             max_scenarios = None
-             ta1_names = ['soartech', 'adept']
+@@ -84,7 +84,8 @@ class ITMSession:
+             ITMSession.init_ta1_data(ta1_names)
+             ITMSession.ta1_connected = True
+             logging.info("Done.")
+-        except:
++        except Exception as ex:
++            logging.warning(f"Exception is {ex}")
+             logging.warning("Could not initialize TA1 data. Running standalone with local alignment targets.")
+ 
+         # If we couldn't use data from TA1, initialize with local data.
+@@ -443,7 +444,7 @@ class ITMSession:
          else:
+             ta1_names.append(self.session_type)
+         if kdma_training:
+-            self.ta1_integration = True
++            self.ta1_integration = "ta1" in self.adm_name
+             self.return_scenario_history = True
+ 
+         self.history.add_history(

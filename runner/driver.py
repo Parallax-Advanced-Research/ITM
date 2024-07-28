@@ -4,7 +4,7 @@ import swagger_client as ta3
 from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer, DecisionExplainer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
 from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
-from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback, Explanation
+from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback, make_new_action_decision, Explanation
 from util import logger
 import uuid
 
@@ -55,7 +55,7 @@ class Driver:
             params = option.params.copy() if option.params is not None else {}
             params.update({'casualty': option.casualty})
             # Add decision
-            decisions.append(Decision(option.id, Action(option.type, params), kdmas=kdmas))
+            decisions.append(make_new_action_decision(option.id, option.type, params, kdmas, option.intend))
         probe = TADProbe(itm_probe.id, state, itm_probe.prompt, itm_probe.state['environment'], decisions)
         return probe
         
@@ -101,7 +101,7 @@ class Driver:
             kdma_dict = decision.kdmas.kdma_map
         else:
             kdma_dict = {}
-        return ext.Action(decision.id_, decision.value.name, casualty, kdma_dict, params, url)
+        return ext.Action(decision.id_, decision.value.name, casualty, kdma_dict, params, decision.intend, url)
 
     def decide(self, itm_probe: ext.ITMProbe) -> ext.Action:
         probe: TADProbe = self.translate_probe(itm_probe)

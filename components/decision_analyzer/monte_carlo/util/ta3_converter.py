@@ -7,6 +7,7 @@ from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTO
                                                                         BodySystemEffect)
 from domain.external import Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
+from copy import deepcopy
 
 
 
@@ -113,11 +114,16 @@ def get_vital_injuries(ta_cas: TA_CAS) -> list[InferredInjury]:
 
 def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
     if ta_injury.severity is None:
-        severe = INITIAL_SEVERITIES[ta_injury.name] if ta_injury.name in INITIAL_SEVERITIES.keys() else 0.7
+        # severe = INITIAL_SEVERITIES[ta_injury.name] if ta_injury.name in INITIAL_SEVERITIES.keys() else 0.7
+        severe = "moderate"
     else:
         severe = ta_injury.severity
     injuries = []
-    effect = AFFECCTOR_UPDATE[ta_injury.name]
+
+    severity_added_effect = AFFECCTOR_UPDATE[severe]
+    effect = deepcopy(AFFECCTOR_UPDATE[ta_injury.name])
+    effect.augment_with_severity(severity_added_effect)
+
     injury = Injury(name=ta_injury.name, location=ta_injury.location, severity=severe,
                     burning_effect=effect.burning_effect, bleeding_effect=effect.bleeding_effect,
                     breathing_effect=effect.breathing_effect)

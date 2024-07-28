@@ -3,17 +3,16 @@ import os.path
 from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision
 
 from components import DecisionSelector
-from components.decision_selector.kdma_estimation import KDMAEstimationDecisionSelector, write_case_base, make_case, read_case_base
 
 import util
 
-class RandomProbeBasedAttributeExplorer(KDMAEstimationDecisionSelector):
+class RandomProbeBasedAttributeExplorer(DecisionSelector):
     def __init__(self, csv_file: str):
-        self._csv_file_path: str = csv_file
-        if os.path.isfile(self._csv_file_path):
-            self.cb = read_case_base(self._csv_file_path)
-        else:
-            self.cb = []
+        # self._csv_file_path: str = csv_file
+        # if os.path.isfile(self._csv_file_path):
+            # self.cb = read_case_base(self._csv_file_path)
+        # else:
+            # self.cb = []
             
         self.local_random = util.get_global_random_generator()
 
