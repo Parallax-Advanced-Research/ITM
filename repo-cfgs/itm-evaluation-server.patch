@@ -12,7 +12,7 @@ index 0000000..5e07b62
 +EVALUATION_TYPE=dryrun
 +SCENARIO_DIRECTORY=../../scenarios/%(EVALUATION_TYPE)s/
 diff --git a/swagger_server/controllers/itm_ta2_eval_controller.py b/swagger_server/controllers/itm_ta2_eval_controller.py
-index 4194040..8c37453 100644
+index 9c36cfc..1ee902a 100644
 --- a/swagger_server/controllers/itm_ta2_eval_controller.py
 +++ b/swagger_server/controllers/itm_ta2_eval_controller.py
 @@ -1,5 +1,6 @@
@@ -30,39 +30,6 @@ index 4194040..8c37453 100644
      return session.start_scenario(scenario_id=scenario_id) if session else ('Invalid Session ID', 400)
  
  def _reclaim_old_session():
-diff --git a/swagger_server/itm/itm_action_handler.py b/swagger_server/itm/itm_action_handler.py
-index a3fed02..71b4729 100644
---- a/swagger_server/itm/itm_action_handler.py
-+++ b/swagger_server/itm/itm_action_handler.py
-@@ -5,8 +5,8 @@ from swagger_server.models import (
-     ActionTypeEnum,
-     AvpuLevelEnum,
-     Character,
--    CharacterTag,
--    InjuryLocation,
-+    CharacterTagEnum,
-+    InjuryLocationEnum,
-     InjuryStatusEnum,
-     InjuryTypeEnum,
-     MentalStatusEnum,
-@@ -181,7 +181,7 @@ class ITMActionHandler:
-         if action.action_type == ActionTypeEnum.APPLY_TREATMENT:
-             # Apply treatment requires a character id and parameters (treatment and location)
-             # treatment and location
--            valid_locations = get_swagger_class_enum_values(InjuryLocation)
-+            valid_locations = get_swagger_class_enum_values(InjuryLocationEnum)
-             if not action.parameters or not 'treatment' in action.parameters or not 'location' in action.parameters:
-                 return False, f'Malformed Action: Missing parameters for {action.action_type}', 400
-             elif 'location' in action.parameters and action.parameters['location'] not in valid_locations:
-@@ -200,7 +200,7 @@ class ITMActionHandler:
-             if not action.parameters or not 'category' in action.parameters:
-                 return False, f'Malformed {action.action_type} Action: Missing `category` parameter', 400
-             else:
--                allowed_values = get_swagger_class_enum_values(CharacterTag)
-+                allowed_values = get_swagger_class_enum_values(CharacterTagEnum)
-                 tag = action.parameters.get('category')
-                 if not tag in allowed_values:
-                     return False, f'Malformed {action.action_type} Action: Invalid Tag `{tag}`', 400
 diff --git a/swagger_server/itm/itm_scene.py b/swagger_server/itm/itm_scene.py
 index e586c20..d54efed 100644
 --- a/swagger_server/itm/itm_scene.py
@@ -77,15 +44,25 @@ index e586c20..d54efed 100644
          self.parent_scenario :ITMScenario = None
  
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index f27780e..f01cc2b 100644
+index f7cf414..282888d 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -440,7 +440,7 @@ class ITMSession:
+@@ -84,7 +84,8 @@ class ITMSession:
+             ITMSession.init_ta1_data(ta1_names)
+             ITMSession.ta1_connected = True
+             logging.info("Done.")
+-        except:
++        except Exception as ex:
++            logging.warning(f"Exception is {ex}")
+             logging.warning("Could not initialize TA1 data. Running standalone with local alignment targets.")
+ 
+         # If we couldn't use data from TA1, initialize with local data.
+@@ -443,7 +444,7 @@ class ITMSession:
          else:
              ta1_names.append(self.session_type)
          if kdma_training:
 -            self.ta1_integration = True
-+            # self.ta1_integration = True
++            self.ta1_integration = "ta1" in self.adm_name
              self.return_scenario_history = True
  
          self.history.add_history(
