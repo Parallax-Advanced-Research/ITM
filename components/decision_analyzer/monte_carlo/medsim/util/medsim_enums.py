@@ -366,8 +366,15 @@ class Injuries(Enum):
     ACTIVE_NASO = 'ACTIVE Nasopharyngeal airway'
     ACTIVE_BAG = 'ACTIVE IV Bag'
     ACTIVE_BLOOD = 'ACTIVE Blood'
+    ACTIVE_FENTANYL_LOLLIPOP = 'ACTIVE Fentanyl Lollipop'
     OPEN_ABDOMINAL_WOUND = 'Open Abdominal Wound'
     TBI = 'Traumatic Brain Injury'
+    ENVIRONMENTAL_FIRE_HAZARD = 'fire'
+    ENVIRONMENTAL_ATTACK_HAZARD = 'attack'
+    ENVIRONMENTAL_EXPLOSION_HAZARD = 'explosion'
+    ENVIRONMENTAL_COLLISION_HAZARD = 'collision'
+    ENVIRONMENTAL_FIREARM_HAZARD = 'firearm'
+    ENVIRONMENTAL_FIGHT_HAZARD = 'fight'
 
 
 class Metric(Enum):
