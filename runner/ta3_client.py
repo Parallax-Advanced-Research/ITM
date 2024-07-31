@@ -2,7 +2,7 @@ import swagger_client.models as models
 import swagger_client as ta3
 import util
 from domain.external import Scenario, ITMProbe, Action
-from domain.internal import AlignmentTarget
+from domain.internal import AlignmentTarget, target
 
 
 class TA3Client:
@@ -65,7 +65,7 @@ class TA3Client:
 
         if self._session_type == 'eval':
             at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
-            self._align_tgt = AlignmentTarget(at.id, at.kdma_values.keys().copy(), at.kdma_values.copy())
+            self._align_tgt = target.from_ta3(at)
 
         self._scenario = scen
         self._probe_count = 0
