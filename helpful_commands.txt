@@ -31,7 +31,6 @@ cd .deprepos\itm-evaluation-server
 git reset --hard
 git checkout development
 git pull
-git apply -v ..\..\repo-cfgs\itm-evaluation-server.patch  
-git add swagger_server\config.ini
+git apply -v --index ..\..\repo-cfgs\itm-evaluation-server.patch  
 cd ..\..
 python save-repo-states.py # Erases prior patch, it should have been already committed for safety
