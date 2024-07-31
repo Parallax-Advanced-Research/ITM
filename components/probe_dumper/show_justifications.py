@@ -88,11 +88,18 @@ def htmlify_casualty(casualty: Casualty):
         return '|%s| None | N/A | N/A| N/A | N/A| N/A |\n' % casualty.id
     lines = ''
     for injury in casualty.injuries:
+        suffix_hash = {'fire': 'Environmental Hazard (Fire)',
+                       'attack': 'Environmental Hazard (Under Attack)',
+                       'fight': 'Environmental Hazard (Fighting)',
+                       'firearm': 'Environmental Hazard (Firearm)',
+                       'collision': 'Environmental Hazard (Post Collision)',
+                       'explosion': 'Environmental Hazard (Explosion)'}
+        qualified_name = injury.name if injury.name not in set(suffix_hash.keys()) else suffix_hash[injury.name]
         injury_effect = AFFECCTOR_UPDATE[injury.name]
         bleed = f'{injury_effect.bleeding_effect} ({DAMAGE_PER_SECOND[injury_effect.bleeding_effect]})'
         breath = f'{injury_effect.breathing_effect} ({DAMAGE_PER_SECOND[injury_effect.breathing_effect]})'
         burn = f'{injury_effect.burning_effect} ({DAMAGE_PER_SECOND[injury_effect.burning_effect]})'
-        lines += '|%s|%s|%s|%s|%s|%s|%s|\n' % (casualty.id, injury.name, injury.location, injury.treated, bleed, breath, burn)
+        lines += '|%s|%s|%s|%s|%s|%s|%s|\n' % (casualty.id, qualified_name, injury.location, injury.treated, bleed, breath, burn)
     return lines
 
 

@@ -177,31 +177,32 @@ def _reverse_convert_casualty(internal_casualty: Casualty) -> TA_CAS:
 
 
 def _get_environmnental_injury(environment_hazard: str) -> Injury | None:
+    env_hazard_suffix = ''
     if environment_hazard == Injuries.ENVIRONMENTAL_FIRE_HAZARD.value:
-        return Injury(Injuries.ENVIRONMENTAL_FIRE_HAZARD.value, Locations.UNSPECIFIED.value,
+        return Injury(Injuries.ENVIRONMENTAL_FIRE_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.SEVERE.value,
                       burning_effect=BodySystemEffect.CRITICAL.value, is_burn=False)  # is burn effects treatment
 
     if environment_hazard == Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value:
-        return Injury(Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value, Locations.UNSPECIFIED.value,
+        return Injury(Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.MODERATE.value)
 
     if environment_hazard == Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value:
-        return Injury(Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value, Locations.UNSPECIFIED.value,
+        return Injury(Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.SEVERE.value,
                       burning_effect=BodySystemEffect.SEVERE.value, is_burn=False)  # is burn effects treatment
 
     if environment_hazard == Injuries.ENVIRONMENTAL_COLLISION_HAZARD.value:
-        return Injury(Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value, Locations.UNSPECIFIED.value,
+        return Injury(Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.SEVERE.value)
 
     if environment_hazard == Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value:
-        return Injury(Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value, Locations.UNSPECIFIED.value,
+        return Injury(Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.SEVERE.value,
                       breathing_effect=BodySystemEffect.MODERATE.value)
 
     if environment_hazard == Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value:
-        return Injury(Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value, Locations.UNSPECIFIED.value,
+        return Injury(Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.MODERATE.value,
                       breathing_effect=BodySystemEffect.MODERATE.value)
 
@@ -215,8 +216,8 @@ def convert_casualties(ta_casualties: list[TA_CAS], environment_hazard: str) -> 
     for cas in ta_casualties:
         casualties.append(_convert_casualty(cas))
         environment_injury: Injury = _get_environmnental_injury(environment_hazard)
-        # if not environment_injury:
-        #     casualties.append(environment_injury)
+        if environment_injury is not None:
+            cas.injuries.append(environment_injury)
     return casualties
 
 
