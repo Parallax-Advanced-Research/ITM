@@ -4,7 +4,7 @@ import swagger_client as ta3
 from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
 from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
-from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback, make_new_action_decision
+from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentTarget, AlignmentFeedback, make_new_action_decision, target
 from util import logger
 import uuid
 
@@ -14,7 +14,7 @@ class Driver:
     def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer], trainer: AlignmentTrainer, dumper_config: DumpConfig = DEFAULT_DUMP):
         self.session: str = ''
         self.scenario: typing.Optional[Scenario] = None
-        self.alignment_tgt: KDMAs = KDMAs([])
+        self.alignment_tgt: AlignmentTarget = target.make_empty_alignment_target()
         # Components
         self.elaborator: Elaborator = elaborator
         self.selector: DecisionSelector = selector
@@ -32,7 +32,7 @@ class Driver:
     def new_session(self, session_id: str):
         self.session = session_id
 
-    def set_alignment_tgt(self, alignment_tgt: KDMAs):
+    def set_alignment_tgt(self, alignment_tgt: AlignmentTarget):
         self.alignment_tgt = alignment_tgt
 
     def set_scenario(self, scenario: ext.Scenario):

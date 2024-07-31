@@ -2,7 +2,7 @@ import json
 import os
 import random
 from components import DecisionSelector
-from domain.internal import Scenario, TADProbe, Action, KDMAs, Decision
+from domain.internal import Scenario, TADProbe, Action, AlignmentTarget, Decision
 from components.decision_selector.kdma_estimation import write_case_base, read_case_base
 from components.decision_selector.kdma_estimation.kdma_estimation_decision_selector import make_case_triage
 from typing import Any
@@ -30,7 +30,7 @@ class DiverseSelector(DecisionSelector):
             with open(CASE_FILE, "w") as outfile:
                 outfile.write("")
         
-    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         # Make a case and record it.
         self.case_index += 1
         
