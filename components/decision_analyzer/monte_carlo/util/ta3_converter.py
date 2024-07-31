@@ -1,5 +1,7 @@
+import logging
 import sys
 
+from util import logger
 from domain.internal import TADProbe
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
@@ -11,8 +13,6 @@ from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTO
 from domain.external import Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
 from copy import deepcopy
-
-
 
 def _convert_demographic(ta_demographic: TA_DEM) -> Demographics:
     return Demographics(age=ta_demographic.age, sex=ta_demographic.sex, rank=ta_demographic.rank)
@@ -206,8 +206,7 @@ def _get_environmnental_injury(environment_hazard: str) -> Injury | None:
                       breathing_effect=BodySystemEffect.MODERATE.value)
 
 
-    print(environment_hazard)
-    sys.exit(1)
+    logger.warning("%s not found in known environmental hazards" % environment_hazard)
     return None
 
 

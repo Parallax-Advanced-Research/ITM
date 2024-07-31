@@ -4,7 +4,8 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
                                                                                  supply_location_match)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Casualty, Supplies, Actions,
-                                                                               Injury, Affector, HealingItem)
+                                                                               Injury, Affector, HealingItem,
+                                                                               ENVIRONMENTAL_HAZARDS)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import (update_smol_injury, SmolSystems,
                                                                               heal)
 import typing
@@ -22,6 +23,7 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
     supply_dict = {supply.name:supply.amount for supply in supplies}
     if action.supply not in supply_dict.keys() or supply_dict[action.supply] <= 0:
         fail = True
+    casualty.injuries = [x for x in casualty.injuries if x.name not in ENVIRONMENTAL_HAZARDS]
     for ci in casualty.injuries:
         supply_injury_logical = supply_injury_match(action.supply, ci.name)
         if ci.location == action.location and not fail and supply_location_logical and supply_injury_logical:

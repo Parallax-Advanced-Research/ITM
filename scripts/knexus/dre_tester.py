@@ -11,8 +11,7 @@ ADEPT_SCENARIOS = ['DryRunEval.IO1', 'DryRunEval.MJ1', 'DryRunEval-MJ2-eval', 'D
 SOARTECH_SCENARIOS = ['qol-dre-1-train', 'qol-dre-v2-train', 'vol-dre-v2-train', 'qol-dre-v2-eval', 'vol-dre-v2-eval']
 
 # SUCCESS_SCENARIOS = []
-SUCCESS_SCENARIOS = ['DryRunEval.IO1', 'DryRunEval.MJ1', 'DryRunEval-MJ2-eval', 'DryRunEval-MJ4-eval',
-                     'DryRunEval-MJ5-eval', 'qol-dre-v2-train', 'qol-dre-v2-eval']
+SUCCESS_SCENARIOS = ['DryRunEval-MJ5-eval', 'qol-dre-v2-train', 'qol-dre-v2-eval']
 
 
 def moist_run(mc=True):
