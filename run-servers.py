@@ -106,7 +106,7 @@ def update_server(dir_name: str, rebuild: bool = False) -> bool:
 
         subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir, check=True)
         subprocess.run(["git", "clean", "--force", "-d", "-x", "-e", "venv"], cwd=ldir, check=True)
-        p = subprocess.run(["git", "apply", "-v", os.path.join("..", "..", patching_status.patch_filename)], 
+        p = subprocess.run(["git", "apply", "-v", "--index", os.path.join("..", "..", patching_status.patch_filename)], 
                            cwd=ldir,  stdout=subprocess.PIPE, text=True, check=False)
         if p.returncode != 0:
             warning("Failed to apply patch to repo " + dir_name + ". Starting anyway.")
