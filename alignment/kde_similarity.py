@@ -5,6 +5,9 @@ import numpy as np
 from scipy.spatial.distance import jensenshannon
 from sklearn.neighbors import KernelDensity
 from scipy.integrate import trapezoid
+import pickle
+import codecs
+
 
 def _normalize_2feature(x, y, z):
     """
@@ -94,3 +97,7 @@ def compute_alignment(kdmaLocalEstimates, kdmaGlobalEstimates, targetKde):
     newKde = make_2feature_kde(kdmaLocalEstimates, kdmaGlobalEstimates)
     return js_similarity_2feature(newKde, targetKde)
     
+    
+def load_kde(kdma_value_dict: dict):
+    kde_str = kdma_value_dict["kdes"]["globalnormx_localnormy"]["kde"]
+    return pickle.loads(codecs.decode(kde_str.encode(), "base64"))

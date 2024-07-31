@@ -12,7 +12,7 @@ from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnos
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from .case_base_functions import *
-from components.alignment_trainer import kde_similarity
+from alignment import kde_similarity
 
 _default_weight_file = os.path.join("data", "keds_weights.json")
 _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")

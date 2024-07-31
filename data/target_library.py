@@ -1,8 +1,7 @@
 from typing import Any
 import json
 from domain.internal import AlignmentTarget, AlignmentTargetType
-import pickle
-import codecs
+from alignment import kde_similarity
 
 def get_named_alignment_target(name: str) -> Any:
     if name.startswith("soartech-dryrun-"):
@@ -23,9 +22,6 @@ def get_named_alignment_target(name: str) -> Any:
                 raise Error(f"Can't find target {target_id} in {fname}.")
         return AlignmentTarget(chosen_target["id"], 
                                [kv["kdma"] for kv in chosen_target["kdma_values"]],
-                               {kv["kdma"]:get_kde(kv) for kv in chosen_target["kdma_values"]},
+                               {kv["kdma"]:kde_similarity.load_kde(kv) for kv in chosen_target["kdma_values"]},
                                AlignmentTargetType.KDE)
         
-def get_kde(kdma_value_dict: dict):
-    kde_str = kdma_value_dict["kdes"]["globalnormx_localnormy"]["kde"]
-    return pickle.loads(codecs.decode(kde_str.encode(), "base64"))
