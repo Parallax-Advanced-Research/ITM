@@ -17,10 +17,12 @@ def validate_args(args: argparse.Namespace) -> None:
     elif args.human: args.selector = 'human'
     
     if args.session_type != 'eval' and args.selector in ['keds', 'kedsd', 'csv'] \
-                                   and args.kdmas is None and not args.connect_to_ta1:
+                                   and args.kdmas is None and not args.connect_to_ta1 \
+                                   and args.alignment_target is None:
         sys.stderr.write("\x1b[93mYour selected decision selector requires an alignment target. "
                          + "Provide one by running in evaluation mode (--session_type eval), "
-                         + " connecting to TA1 (--connect_to_ta1), or "
+                         + "connecting to TA1 (--connect_to_ta1), "
+                         + "by naming a target found ing target.library (--alignment-target soartech-dryrun-0), or "
                          + "by listing kdmas explicitly (e.g., --kdma mission=.8 --kdma denial=.5)."
                          + "\x1b[0m\n"
                         )
@@ -75,6 +77,8 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=False, help="Asks for KDMA associations to actions")
     parser.add_argument('--connect_to_ta1', action=argparse.BooleanOptionalAction, default=False,
                         help="Sets up pathway to TA1 server for alignment scoring.")
+    parser.add_argument('--alignment_target', type=str, default=None,
+                        help="Names an alignment target that must be found in data.target_library.")
     parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, implies --training.")
     parser.add_argument('--selector', default='random', choices=['keds', 'kedsd', 'csv', 'human', 'random'], help="Sets the decision selector") # TODO: add details of what each option does
     parser.add_argument('--selector-object', default=None, help=argparse.SUPPRESS)
