@@ -273,11 +273,11 @@ if args.soartech:
         if not update_submodules('ta1-server-mvp'):
             warning("Failed to update soartech server. Proceeding without it.")
             soartech_server_available = False
-        else:
-            docker_compose = which_docker_compose()
-            if docker_compose is None:
-                soartech_server_available = False
-                warning("Docker not found; proceeding without Soartech server.")
+        # else:
+            # docker_compose = which_docker_compose()
+            # if docker_compose is None:
+                # soartech_server_available = False
+                # warning("Docker not found; proceeding without Soartech server.")
 else:
     soartech_server_available = False
  
@@ -319,9 +319,7 @@ elif soartech_server_available:
           + '"--session_type eval" will not.')
 
 if soartech_server_available:
-    start_server("ta1-server-mvp", docker_compose + ["-f", "docker-compose-dev.yaml", "up"],
-                 str(soartech_port),
-                 use_venv = False, extra_env={"ITM_PORT": str(soartech_port)})
+    start_server("ta1-server-mvp", ["ta1_server"], str(soartech_port))
 elif adept_server_available:
     warning('Soartech server is not in use. Use the arguments '
           + '"--session_type adept" to use only the ADEPT server with ta3_training.py. The arguments '
@@ -374,9 +372,9 @@ if not servers_up:
     if soartech_server_available and not soartech_verified:
         old_status = status
         error("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp.err")
-        if Status.SUCCESS == old_status:
-            warning("Temporarily returning success even though Soartech isn't running. Will change once TA1 fixes it")
-            status = old_status
+        # if Status.SUCCESS == old_status:
+            # warning("Temporarily returning success even though Soartech isn't running. Will change once TA1 fixes it")
+            # status = old_status
 else:
     color('green', "Servers started successfully.")
 
