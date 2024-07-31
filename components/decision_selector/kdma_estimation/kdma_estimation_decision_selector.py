@@ -4,7 +4,7 @@ import math
 import statistics
 import util
 from typing import Any, Sequence, Callable
-from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State
+from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, Decision, Action, State
 from domain.ta3 import TA3State, Casualty, Supply
 from components import DecisionSelector, DecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
@@ -12,6 +12,7 @@ from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnos
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from .case_base_functions import *
+from components.alignment_trainer import kde_similarity
 
 _default_weight_file = os.path.join("data", "keds_weights.json")
 _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")
@@ -47,6 +48,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.variant: str = args.variant
         self.print_neighbors = args.decision_verbose
         self.index = 0
+        self.kdma_choice_history = []
         if args.weightfile is None:
             global _default_weight_file
             if self.use_drexel_format:
@@ -79,18 +81,18 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.weight_settings = other_selector.weight_settings
 
 
-    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         if target is None:
             raise Exception("KDMA Estimation Decision Selector needs an alignment target to operate correctly.")
         minDist: float = math.inf
         minDecision: Decision = None
         minDecisions: list[Decision] = []
-        misalign = self.variant.lower() == "misaligned"
         new_cases: list[dict[str, Any]] = list()
         self.index += 1
         best_kdmas = None
-        min_kdmas = {kdma.id_.lower():100 for kdma in target.kdmas}
-        max_kdmas = {kdma.id_.lower():0   for kdma in target.kdmas}
+        possible_choices = []
+        min_kdmas = {kdma:100 for kdma in target.kdma_names}
+        max_kdmas = {kdma:0   for kdma in target.kdma_names}
         for cur_decision in probe.decisions:
             cur_kdmas = {}
             cur_case = self.make_case(probe, cur_decision)
@@ -111,45 +113,105 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     weights = weights | self.weight_settings.get("activity_weights", {}).get(act, {})
             if self.print_neighbors:
                 util.logger.info(f"Evaluating action: {cur_decision.value}")
-            for kdma in target.kdmas:
-                kdma_name = kdma.id_.lower()
+            for kdma_name in target.kdma_names:
                 weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
                 estimate = self.estimate_KDMA(cur_case, weights, kdma_name, print_neighbors = self.print_neighbors)
                 if estimate is None:
-                    sqDist += 100
                     continue
                 cur_case[kdma_name] = estimate
                 cur_kdmas[kdma_name] = estimate
                 if not cur_case['leaving']:
                     min_kdmas[kdma_name] = min(min_kdmas[kdma_name], estimate)
                     max_kdmas[kdma_name] = max(max_kdmas[kdma_name], estimate)
-                if not misalign:
-                    diff = kdma.value - estimate
-                else:
-                    diff = (1 - kdma.value) - estimate
-                sqDist += diff * diff
-            if sqDist == minDist:
-                minDecisions.append(cur_decision)
-            elif sqDist < minDist:
-                minDist = sqDist
-                minDecision = cur_decision
-                minDecisions = [cur_decision]
-                best_kdmas = cur_kdmas
-            if self.print_neighbors:
-                util.logger.info(f"New dist: {sqDist} Best Dist: {minDist}")
-            cur_case["distance"] = sqDist
-        
-        if len(minDecisions) > 1:
-            minDecision = util.get_global_random_generator().choice(minDecisions)
+            if not cur_case['leaving']:
+                possible_choices.append((cur_decision, cur_case, cur_kdmas))
 
+        if len(possible_choices) == 1:
+            return possible_choices[0][0], 3.14159
+        if len(possible_choices) == 0:
+            breakpoint()
+        if target.type == AlignmentTargetType.SCALAR:
+            self.compute_euclidean_distances(possible_choices, target)
+        elif target.type == AlignmentTargetType.KDE:
+            self.compute_kde_alignment_distances(possible_choices, target, min_kdmas, max_kdmas)
+        else:
+            raise Error()
+
+        (best_decision, best_case, best_kdmas) = self.minimize_distance(possible_choices)
+        
         if self.print_neighbors:
-            util.logger.info(f"Chosen Decision: {minDecision.value} Dist: {minDist} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
+            util.logger.info(f"Chosen Decision: {best_decision.value} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
         
         if self.record_considered_decisions:
             fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
             write_case_base(fname, new_cases)
         
-        return (minDecision, minDist)
+        self.kdma_choice_history.append((best_kdmas, min_kdmas, max_kdmas))
+        return (best_decision, best_case["distance"])
+
+    def minimize_distance(self, possible_choices):
+        minDist = min([case["distance"] for (decision, case, ests) in possible_choices])
+        minDecisions = [(decision, case, ests) for (decision, case, ests) in possible_choices if case["distance"] == minDist]
+        if len(minDecisions) > 1:
+            minDecision = [util.get_global_random_generator().choice(minDecisions)]
+        return minDecisions[0]
+    
+
+    def calc_dist(self, estimates, target):
+        for kdma_name in target.kdma_names:
+            estimate = estimates[kdma_name]
+            targetValue = target.getKDMAValue(kdma_name)
+            if self.variant.lower() != "misaligned":
+                diff = targetValue - estimate
+            else:
+                diff = (1 - targetValue) - estimate
+            sqDist += diff * diff
+        return sqDist
+    
+        
+    def compute_euclidean_distances(self, possible_choices, target):
+        for (decision, case, kdma_estimates) in possible_choices:
+            case["distance"]  = self.calc_dist(kdma_estimates, target)
+        
+    def compute_kde_alignment(self, kde, estimate, kdma_name, mins, maxes):
+        local_min = mins[kdma_name]
+        local_max = maxes[kdma_name]
+        global_min = local_min
+        global_max = local_max
+        for (best_kdmas, min_kdmas, max_kdmas) in self.kdma_choice_history:
+            global_min = min(min_kdmas[kdma_name], global_min)
+            global_max = max(max_kdmas[kdma_name], global_max)
+
+        local_norm_estimates = []
+        global_norm_estimates = []
+        
+        for (best_kdmas, min_kdmas, max_kdmas) in self.kdma_choice_history:
+            local_norm_estimates.append(normalize(best_kdmas[kdma_name], min_kdmas[kdma_name], max_kdmas[kdma_name]))
+            global_norm_estimates.append(normalize(best_kdmas[kdma_name], global_min, global_max))
+        local_norm_estimates.append(normalize(estimate, local_min, local_max))
+        global_norm_estimates.append(normalize(estimate, global_min, global_max))
+        
+        return kde_similarity.compute_alignment(local_norm_estimates, global_norm_estimates, kde)
+        
+    def compute_kde_alignment_distances(self, possible_choices, target, mins, maxes):
+        for (decision, case, kdma_estimates) in possible_choices:
+            case["distance"] = 0
+            for kdma_name in target.kdma_names:
+                estimate = kdma_estimates.get(kdma_name, None)
+                if estimate is None:
+                    case["distance"] += 100
+                    continue
+                targetKDE = target.getKDMAValue(kdma_name)
+                case["distance"] += self.compute_kde_alignment(
+                                        targetKDE,
+                                        kdma_estimates[kdma_name],
+                                        kdma_name, mins, maxes)
+        minDist = min([case["distance"] for (decision, case, ests) in possible_choices])
+        minDecisions = [(decision, case, ests) for (decision, case, ests) in possible_choices if case["distance"] == minDist]
+        if len(minDecisions) > 1:
+            minDecision = [util.get_global_random_generator().choice(minDecisions)]
+        return minDecisions[0]
+        
         
     def find_leave_one_out_error(self, weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> float:
         if cases is None:
@@ -173,6 +235,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
     def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None, print_neighbors: bool = False) -> float:
         if cases is None:
             cases = self.cb
+        kdma = kdma.lower()
         if self.use_drexel_format:
             kdma = kdma + "-Ave"
         topk = self.top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors)
@@ -312,7 +375,10 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['breathing'] = c.vitals.breathing
         case['hrpmin'] = c.vitals.hrpmin
         case['avpu'] = c.vitals.avpu
-        case['intent'] = c.intent
+        if c.intent == False:
+            case['intent'] = None
+        else:
+            case['intent'] = c.intent
         case['directness_of_causality'] = c.directness_of_causality
         case['unvisited_count'] = len([co for co in s.casualties if not co.assessed 
                                                                     and not co.id == c.id])
@@ -404,4 +470,9 @@ def make_case_drexel(probe: TADProbe, d: Decision) -> dict[str, Any]:
     return case
     
 
+def normalize(value, min, max):
+    if max - min <= 0:
+        return 0.5
+    return (value - min) / (max - min)
+        
 
