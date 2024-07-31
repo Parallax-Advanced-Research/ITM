@@ -93,21 +93,43 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             cue = self.make_observation_from_state (probe.state, decision.value)
             if cue is None:
                 continue
-            (recollection, _) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, temporalp=False)
+            (_, eme) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, temporalp=False)
+
+            (recollection, conditional_entropy) = self._hems.get_entropy(eme, cue)
             spreads = []
+            
+            just = dict()
             for cpd in recollection:
                 if self._hems.rule_based_cpd_singleton_p(cpd):
                     spreads.append((1 - self._hems.compute_cpd_concentration(cpd)))
-            
+                if not self._hems.rule_based_cpd_singleton_p(cpd) and self._hems.get_hash(0, self._hems.rule_based_cpd_types(cpd))[0] == "PERCEPT":
+                    for rule in self._hems.rule_based_cpd_rules(cpd):
+                        dep_id = self._hems.rule_based_cpd_dependent_id(cpd)
+                        dep_var = self._hems_rule_based_cpd_dependent_var(cpd)
+                        value = self._hems.get_hash(dep_id, self._hems.rule_conditions(rule))[0]
+                        rule_dict = dict()
+                        rule_dict['head'] = (self._icd9_itm_map[dep_var], value)
+                        rule_dict['probability'] = self._hems.rule_probability(rule)
+                        rule_conditions = self._hems.rule_conditions(rule)
+                        body = dict()
+                        for (att, val) in self._hems.hash_to_assoc_list(rule_conditions):
+                            idx = self._hems.get_hash(dep_id, self._hems.rule_based_cpd_identifiers(cpd))[0]
+                            attribute = self._hems.get_hash(idx, self._hems.rule_based_cpd_vars(cpd))[0]
+                            body[self._icd9_itm_map[attribute]] = val
+                        rule_dict['body'] = body
+                        rule_id = self._hems.rule_id(rule)
+                        just[rule_id] = rule_dict
+                        
             avg_spread = mean(spreads)
             std_spread = pstdev(spreads)
 
             # TODO: These need descriptions
             avgspread = DecisionMetric[float]("AvgSpread", "", avg_spread)
             stdspread = DecisionMetric[float]("StdSpread", "", std_spread)
-
-            metrics = {avgspread.name: avgspread, stdspread.name: stdspread}
-            justifications = dict()
+            entropy = DecisionMetric[float]("Entropy", "", conditional_entropy)
+            justifications = DecisionMetric[dict]("Justifications", "", just)
+            
+            metrics = {avgspread.name: avgspread, stdspread.name: stdspread, entropy.name: entropy}
             decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
         return analysis
@@ -167,7 +189,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             (self._itm_icd9_map[InjuryTypeEnum.CHEST_COLLAPSE], self.get_chest_collapse(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.AMPUTATION], self.get_amputation(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.INTERNAL], self.get_internal(cas), 'injury'),
-            (self._itm_resources_icd9_map[a], self.get_treatment(cas), 'treatment')]
+            (self._itm_resources_icd9_map[a.name], "T", 'treatment')]
         # TODO: Needs to make use of new stuff the server gives us. q.v. bn_analyzer:make_observation()
         
         cue = self.get_cue_string(data)
@@ -252,6 +274,33 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         else:
             return None
     
+    def get_puncture(self, c : Casualty):
+        for i in c.injuries:
+            if i.name == InjuryTypeEnum.PUNCTURE:
+                if i.treated == True:
+                    return "NA"
+                if i.treated == False:
+                    return "T"
+        return None
+    
+    def get_chest_collapse(self, c : Casualty):
+        for i in c.injuries:
+            if i.name == InjuryTypeEnum.CHEST_COLLAPSE:
+                if i.treated == True:
+                    return "NA"
+                if i.treated == False:
+                    return "T"
+        return None
+
+    def get_internal(self, c : Casualty):
+        for i in c.injuries:
+            if i.name == InjuryTypeEnum.INTERNAL:
+                if i.treated == True:
+                    return "NA"
+                if i.treated == False:
+                    return "T"
+        return None
+    
     def get_pain(self, c : Casualty):
         if c.vitals.mental_status is None:
             return None
@@ -272,7 +321,10 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         ret = ""
         for d in data:
             if d[1] is not None:
-                ret += f'c{i} = (percept-node {d[0]} :value "{d[1]}")\n'
+                if d[2] == 'vitals':
+                    ret += f'c{i} = (percept-node {d[0]} :value "{d[1]}")\n'
+                else:
+                    ret += f'c{i} = (relation-node {d[0]} :value "{d[1]}")\n'
                 i += 1
         return ret
 
