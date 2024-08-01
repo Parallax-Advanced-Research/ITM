@@ -135,6 +135,8 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
                         value = self._hems.get_hash(dep_id, self._hems.rule_conditions(rule))[0]
                         valeur = self._hems.get_hash(0, self._hems.rule_based_cpd_var_value_block_map(cpd))[0][value][0][0]
                         if dep_var in self._icd9_itm_map.keys() or dep_var in self._mimic_vitals_itm_vitals_map.keys():
+                            if dep_var == 'PAIN':
+                                valeur = self.bin_pain(valeur)
                             rule_dict = dict()
                             try:
                                 rule_dict['head'] = (self._icd9_itm_map[dep_var], valeur)
@@ -149,8 +151,10 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
                                 if att != dep_id:
                                     idx = self._hems.get_hash(att, self._hems.rule_based_cpd_identifiers(cpd))[0]
                                     attribute = self._hems.get_hash(idx, self._hems.rule_based_cpd_vars(cpd))[0]
-                                    valuee = self._hems.get_hash(0, self._hems.rule_based_cpd_var_value_block_map(cpd))[0][val][0][0]
+                                    valuee = self._hems.get_hash(idx, self._hems.rule_based_cpd_var_value_block_map(cpd))[0][val][0][0]
                                     if attribute in self._icd9_itm_map.keys() or attribute in self._mimic_vitals_itm_vitals_map.keys():
+                                        if attribute == "PAIN":
+                                            valuee = self.bin_pain(valuee)
                                         try:
                                             body[self._icd9_itm_map[attribute]] = valuee
                                         except:
@@ -315,6 +319,14 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         if val == "UPSET" or val == "CONFUSED":
             return "normal"        
         return None
+
+    def bin_pain(self, val):
+        if not val.isdigit():
+            return val
+        if int(val) <= 5:
+            return "CALM"
+        if int(val) > 5:
+            return "AGONY"
     
     def get_abrasion(self, c : Casualty):
         for i in c.injuries:
