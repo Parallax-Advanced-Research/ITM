@@ -13,7 +13,7 @@ if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
 
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import AFFECCTOR_UPDATE, DAMAGE_PER_SECOND
 from components.probe_dumper.probe_dumper import DUMP_PATH
 from domain.mvp.mvp_state import Casualty, Supply
@@ -298,7 +298,12 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
                     except:
                         just_english = 'No justification given'
                     metric = decision.metrics[m_c.name].value
-                    table_full_html += f"""<td {pink_style}> <div title='{just_english}'> {metric} </div> </td>"""
+                    display_metric = '<table> <tbody>'
+                    for cas in metric:
+                        row = f'<tr>  <td>{cas}</td> <td>{METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][2].format(metric[cas] + 0)}</td>  </tr>'
+                        display_metric += row
+                    display_metric += ' </tbody>  </table> <br>'
+                    table_full_html += f"""<td {pink_style}> <div title='{just_english}'> {display_metric} </div> </td>"""
                 else:
                     try:
                         just_english = justifications[m_c.name].split('is')[-1]
@@ -347,9 +352,9 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
     'HRA Strategy': ('Heuristic Rule<br>Analytic Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '', 'HRA',),
     'STANDARD_TIME_SEVERITY': ('Standard<br>Time<br>Severity', 'Severity 200 seconds after the action is begiun', '{:.0f}', 'MCA'),
     'SMOL_MEDICAL_SOUNDNESS_V2': ('Medical<br>Soundness V2', 'Percent corrected ranked ordering of STANDARD_TIME_SEVERITY', '{:.0f}', 'MCA'),
-    'CASUALTY_SEVERITY': ('Severity<br>per Casualty', 'Dictionary of severity of all casualties', '{:.2%}', 'MCA'),
-    'CASUALTY_DAMAGE_PER_SECOND': ('DPS per<br>Casualty', 'Dictionary of damage per second per casualty', '{:.2%}', 'MCA'),
-    'CASUALTY_P_DEATH': ('P(Death)<br>per Casualty', 'Dictionary of probability of death for all casualties', '{:.0%}', 'MCA')
+    'CASUALTY_SEVERITY': ('Severity<br>per Casualty', 'Dictionary of severity of all casualties', '{:.0f}', 'MCA'),
+    'CASUALTY_DAMAGE_PER_SECOND': ('DPS per<br>Casualty', 'Dictionary of damage per second per casualty', '{:.0f}', 'MCA'),
+    'CASUALTY_P_DEATH': ('P(Death)<br>per Casualty', 'Dictionary of probability of death for all casualties', '{:.2%}', 'MCA')
 }
 
 
@@ -430,6 +435,9 @@ if __name__ == '__main__':
         notes = '##### CONTEXT: '
         notes += environment['decision_environment']['unstructured']
         st.markdown(notes)
+        env_hazard = '##### Environment Hazard: '
+        env_hazard += environment['decision_environment']['injury_triggers']
+        st.markdown(env_hazard)
     st.caption("The pink decision in the table below is the chosen decision.")
 
     decision_table_html, supply_used = construct_decision_table(analysis_df, metric_choices, sort_metric=sort_by)
