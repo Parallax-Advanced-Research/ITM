@@ -150,10 +150,10 @@ def _reverse_convert_injury(internal_injury: Affector) -> TA_INJ:
                   severity=internal_injury.severity, treated=internal_injury.treated)
 
 
-def _convert_casualty(ta_casualty: TA_CAS) -> Casualty:
+def _convert_casualty(ta_casualty: TA_CAS, env_inj=None) -> Casualty:
     demos = ta_casualty.demographics
     dem = _convert_demographic(demos)
-    injuries = []
+    injuries = [] if env_inj is None else [env_inj]
     for inj in ta_casualty.injuries:
         injuries.extend(_convert_injury(inj))
     vit = _convert_vitals(ta_casualty.vitals)
@@ -214,10 +214,8 @@ def _get_environmnental_injury(environment_hazard: str) -> Injury | None:
 def convert_casualties(ta_casualties: list[TA_CAS], environment_hazard: str) -> list[Casualty]:
     casualties: list[Casualty] = []
     for cas in ta_casualties:
-        casualties.append(_convert_casualty(cas))
         environment_injury: Injury = _get_environmnental_injury(environment_hazard)
-        if environment_injury is not None:
-            cas.injuries.append(environment_injury)
+        casualties.append(_convert_casualty(cas, environment_injury))
     return casualties
 
 
