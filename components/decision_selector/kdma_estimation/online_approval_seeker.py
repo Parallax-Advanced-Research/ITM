@@ -1,7 +1,7 @@
 from .kdma_estimation_decision_selector import KDMAEstimationDecisionSelector, BASIC_WEIGHTS, BASIC_TRIAGE_CASE_TYPES
 from .case_base_functions import write_case_base, read_case_base
 from components import AlignmentTrainer
-from domain.internal import AlignmentFeedback, Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State
+from domain.internal import AlignmentFeedback, Scenario, TADProbe, KDMA, KDMAs, AlignmentTarget, Decision, Action, State
 from typing import Any, Sequence, Callable
 import util
 import os
@@ -158,7 +158,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.all_fields = all_fields
     
     
-    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         if len(self.experiences) == 0 and self.is_training:
             self.current_critic = self.critic_random.choice(self.critics)
         

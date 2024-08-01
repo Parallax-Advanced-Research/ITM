@@ -12,6 +12,7 @@ from components.decision_selector.mvp_cbr import Case
 from domain import Scenario
 from domain.internal import KDMAs, KDMA
 import util
+from data import target_library
 from util import logger, LogLevel, use_simple_logger, dict_difference
 
 MVP_DIR = './data/mvp'
@@ -136,7 +137,11 @@ def api_test(args, driver = None):
             break
         logger.info(f"Started Scenario-{scen.id}")
         driver.set_scenario(scen)
-        driver.set_alignment_tgt(client.align_tgt)
+        if args.alignment_target is None:
+            driver.set_alignment_tgt(client.align_tgt)
+        else:
+            driver.set_alignment_tgt(target_library.get_named_alignment_target(args.alignment_target))
+        
         logger.debug(f"-Alignment target: {client.align_tgt}")
         logger.debug(f"-Initial State: {scen.state}")
 
