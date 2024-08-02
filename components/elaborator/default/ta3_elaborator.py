@@ -73,11 +73,11 @@ class TA3Elaborator(Elaborator):
 
         #Kluge to bypass Soartech errors. In Soartech scenarios, some apply_treatments are suggested
         #that only make sense with vitals, which are not available. This workaround gets the vitals
-        if len(suggested_treats) > 0 and final_treat_count == 0 and len(suggested_checks) == 0:
-            breakpoint()
-            to_return += self._enumerate_check_actions(
-                            probe.state, 
-                            make_new_action_decision("TAD", ActionTypeEnum.CHECK_ALL_VITALS, {}, None, False))
+        # if len(suggested_treats) > 0 and final_treat_count == 0 and len(suggested_checks) == 0:
+            # breakpoint()
+            # to_return += self._enumerate_check_actions(
+                            # probe.state, 
+                            # make_new_action_decision("TAD", ActionTypeEnum.CHECK_ALL_VITALS, {}, None, False))
 
         final_list = []
         for tr in to_return:
