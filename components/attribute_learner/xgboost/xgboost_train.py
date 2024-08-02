@@ -7,7 +7,7 @@ import xgboost
 from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.datasets import fetch_california_housing
 def drop_columns_by_patterns(df, keys={}, label=""):
-    patterns = ['index', 'hash', 'feedback', 'action-len', 'justification', 'unnamed', 'nondeterminism', 'action', 'hint', 'maximization', 'moraldesert', '.stdev']
+    patterns = ['index', 'hash', 'feedback', 'action-len', 'justification', 'unnamed', 'nondeterminism', 'action', 'hint', 'maximization', 'moraldesert', '.stdev', 'casualty_']
     if keys != {}:
         patterns = [keys[x] for x in patterns]
         columns_to_drop = [col for col in df.columns if col in patterns and col != label]

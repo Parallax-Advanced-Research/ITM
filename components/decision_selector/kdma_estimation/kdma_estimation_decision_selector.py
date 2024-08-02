@@ -91,10 +91,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.index += 1
         best_kdmas = None
         possible_choices = []
-        min_kdmas = {kdma:100 for kdma in target.kdma_names}
-        max_kdmas = {kdma:0   for kdma in target.kdma_names}
+        min_kdma_probs = {}
+        max_kdma_probs = {}
         for cur_decision in probe.decisions:
-            cur_kdmas = {}
+            cur_kdma_probs = {}
             cur_case = self.make_case(probe, cur_decision)
             new_cases.append(cur_case)
             sqDist: float = 0.0
@@ -115,39 +115,66 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 util.logger.info(f"Evaluating action: {cur_decision.value}")
             for kdma_name in target.kdma_names:
                 weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
-                estimate = self.estimate_KDMA(cur_case, weights, kdma_name, print_neighbors = self.print_neighbors)
-                if estimate is None:
+                kdmaProbs = self.get_KDMA_probabilities(cur_case, weights, kdma_name, print_neighbors = self.print_neighbors)
+                if kdmaProbs is None:
                     continue
-                cur_case[kdma_name] = estimate
-                cur_kdmas[kdma_name] = estimate
-                if not cur_case['leaving']:
-                    min_kdmas[kdma_name] = min(min_kdmas[kdma_name], estimate)
-                    max_kdmas[kdma_name] = max(max_kdmas[kdma_name], estimate)
+                cur_case[kdma_name] = kdmaProbs
+                cur_kdma_probs[kdma_name] = kdmaProbs
             if not cur_case['leaving']:
-                possible_choices.append((cur_decision, cur_case, cur_kdmas))
+                min_kdma_probs = self.update_kdma_probabilities(min_kdma_probs, cur_kdma_probs, min)
+                max_kdma_probs = self.update_kdma_probabilities(max_kdma_probs, cur_kdma_probs, max)
+                possible_choices.append((cur_decision, cur_case, cur_kdma_probs))
 
         if len(possible_choices) == 1:
+            util.logger.error("Only one possible choice!")
+            breakpoint()
             return possible_choices[0][0], 3.14159
         if len(possible_choices) == 0:
             breakpoint()
         if target.type == AlignmentTargetType.SCALAR:
             self.compute_euclidean_distances(possible_choices, target)
         elif target.type == AlignmentTargetType.KDE:
-            self.compute_kde_alignment_distances(possible_choices, target, min_kdmas, max_kdmas)
+            self.compute_kde_alignment_distances(possible_choices, target, min_kdma_probs, max_kdma_probs)
         else:
             raise Error()
 
-        (best_decision, best_case, best_kdmas) = self.minimize_distance(possible_choices)
+        (best_decision, best_case, best_kdma_probs) = self.minimize_distance(possible_choices)
         
         if self.print_neighbors:
-            util.logger.info(f"Chosen Decision: {best_decision.value} Estimates: {best_kdmas} Mins: {min_kdmas} Maxes: {max_kdmas}")
+            best_kdma_estimates = self.estimate_KDMAs_from_probs(best_kdma_probs)
+            util.logger.info(f"Chosen Decision: {best_decision.value} Estimates: {best_kdma_estimates} Mins: {min_kdma_probs} Maxes: {max_kdma_probs}")
+            util.logger.info(f"Distance: {best_case['distance']}")
+
+        breakpoint()
         
         if self.record_considered_decisions:
             fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
             write_case_base(fname, new_cases)
         
-        self.kdma_choice_history.append((best_kdmas, min_kdmas, max_kdmas))
+        self.kdma_choice_history.append((best_kdma_probs, min_kdma_probs, max_kdma_probs))
         return (best_decision, best_case["distance"])
+        
+        
+    def update_kdma_probabilities(self, kdma_probs: dict[str, float], new_kdma_probs: dict[str, float], fn: Callable[[float, float], float] = min):
+        ret_kdma_probs = dict()
+        keys = set(kdma_probs.keys())
+        keys = keys.union(new_kdma_probs.keys())
+        for kdma_name in keys:
+            if kdma_name not in kdma_probs:
+                ret_kdma_probs[kdma_name] = new_kdma_probs[kdma_name]
+            elif kdma_name not in new_kdma_probs:
+                ret_kdma_probs[kdma_name] = kdma_probs[kdma_name]
+            else:
+                ret_kdma_probs[kdma_name] = self.update_probability_dict(kdma_probs[kdma_name], new_kdma_probs[kdma_name], fn = fn)
+        return ret_kdma_probs
+        
+    def update_probability_dict(self, item_probs: dict[str, float], new_item_probs: dict[str, float], fn: Callable[[Any, Any], Any] = min):
+        ret_probs = dict()
+        for (item1, prob1) in item_probs.items():
+            for (item2, prob2) in new_item_probs.items():
+                winner = fn(item1, item2)
+                ret_probs[winner] = ret_probs.get(winner, 0) + (prob1 * prob2)
+        return ret_probs
 
     def minimize_distance(self, possible_choices):
         minDist = min([case["distance"] for (decision, case, ests) in possible_choices])
@@ -170,47 +197,72 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
     
         
     def compute_euclidean_distances(self, possible_choices, target):
-        for (decision, case, kdma_estimates) in possible_choices:
+        for (decision, case, kdma_prob_set) in possible_choices:
+            kdma_estimates = [self.estimate_KDMA_from_probs(kdma_probs) for kdma_probs in kdma_prob_set]
             case["distance"]  = self.calc_dist(kdma_estimates, target)
-        
-    def compute_kde_alignment(self, kde, estimate, kdma_name, mins, maxes):
+
+    def compute_kde_alignment(self, kde, cur_kdma_probs, kdma_name, mins, maxes):
         local_min = mins[kdma_name]
         local_max = maxes[kdma_name]
         global_min = local_min
         global_max = local_max
-        for (best_kdmas, min_kdmas, max_kdmas) in self.kdma_choice_history:
-            global_min = min(min_kdmas[kdma_name], global_min)
-            global_max = max(max_kdmas[kdma_name], global_max)
+        for (best_kdma_probs, min_kdma_probs, max_kdma_probs) in self.kdma_choice_history:
+            if kdma_name not in best_kdma_probs:
+                # Skip any choices for which the KDMA was irrelevant.
+                continue
+            global_min = self.update_probability_dict(min_kdma_probs[kdma_name], global_min, min)
+            global_max = self.update_probability_dict(max_kdma_probs[kdma_name], global_max, max)
 
-        local_norm_estimates = []
-        global_norm_estimates = []
+        choice_history = [(cur_kdma_probs, mins, maxes)] + self.kdma_choice_history
+        alignment_probs = []
+        for (gmax, gmax_prob) in global_max.items():
+            for (gmin, gmin_prob) in global_min.items():
+                alignment_probs += self.compound_alignments(kde, kdma_name, [], choice_history, 
+                                                            gmin, gmax, gmax_prob * gmin_prob)
         
-        for (best_kdmas, min_kdmas, max_kdmas) in self.kdma_choice_history:
-            local_norm_estimates.append(normalize(best_kdmas[kdma_name], min_kdmas[kdma_name], max_kdmas[kdma_name]))
-            global_norm_estimates.append(normalize(best_kdmas[kdma_name], global_min, global_max))
-        local_norm_estimates.append(normalize(estimate, local_min, local_max))
-        global_norm_estimates.append(normalize(estimate, global_min, global_max))
+        est_score = 0
+        prob_sum = 0
+        for (alignment, prob) in alignment_probs:
+            est_score += alignment*prob
+            prob_sum += prob
+        if prob_sum < 0.99 or prob_sum > 1:
+            util.logger.error("Bad probability calculation.")
+            breakpoint()
+        return est_score / prob_sum
+                    
         
-        return kde_similarity.compute_alignment(local_norm_estimates, global_norm_estimates, kde)
+    def compound_alignments(self, kde, kdma_name, global_norm_estimates, choice_history, gmin, gmax, pprob):
+        alignment_probs = []
+        if pprob < .001:
+            return []
+
+        cur_kdma_probs = {}
+        while kdma_name not in cur_kdma_probs:
+            if len(choice_history) == 0:
+                alignment_probs.append((kde_similarity.compute_global_alignment(kde, global_norm_estimates), pprob))
+                return alignment_probs
+            (cur_kdma_probs, min_kdma_probs, max_kdma_probs) = choice_history[0]
+            choice_history = choice_history[1:]
+
+            
+        for (kdma, prob) in cur_kdma_probs[kdma_name].items():
+            global_norm_estimates.append(normalize(kdma, gmin, gmax))
+            alignment_probs += self.compound_alignments(kde, kdma_name, global_norm_estimates, 
+                                                        choice_history, gmin, gmax, prob * pprob)
+        return alignment_probs
         
     def compute_kde_alignment_distances(self, possible_choices, target, mins, maxes):
-        for (decision, case, kdma_estimates) in possible_choices:
+        for (decision, case, kdma_prob_dict) in possible_choices:
             case["distance"] = 0
             for kdma_name in target.kdma_names:
-                estimate = kdma_estimates.get(kdma_name, None)
-                if estimate is None:
-                    case["distance"] += 100
+                kdma_probs = kdma_prob_dict.get(kdma_name, None)
+                if kdma_probs is None:
                     continue
                 targetKDE = target.getKDMAValue(kdma_name)
-                case["distance"] += self.compute_kde_alignment(
-                                        targetKDE,
-                                        kdma_estimates[kdma_name],
-                                        kdma_name, mins, maxes)
-        minDist = min([case["distance"] for (decision, case, ests) in possible_choices])
-        minDecisions = [(decision, case, ests) for (decision, case, ests) in possible_choices if case["distance"] == minDist]
-        if len(minDecisions) > 1:
-            minDecision = [util.get_global_random_generator().choice(minDecisions)]
-        return minDecisions[0]
+                case["distance"] += 1 - self.compute_kde_alignment(
+                                                targetKDE,
+                                                kdma_prob_dict,
+                                                kdma_name, mins, maxes)
         
         
     def find_leave_one_out_error(self, weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> float:
@@ -233,6 +285,26 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         return error_total / case_count
 
     def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None, print_neighbors: bool = False) -> float:
+        kdmaProbs = self.get_KDMA_probabilities(cur_case, weights, kdmas, cases=cases, print_neighbors = print_neighbors)
+        kdmaVal = self.estimate_value_from_probability_dict(kdmaProbs)
+        if print_neighbors:
+            util.logger.info(f"kdma_val: {kdmaVal}")
+        return kdmaVal
+
+
+    def estimate_KDMAs_from_probs(self, kdma_probs: dict[str, dict[float, float]]) -> dict[str, float]:
+        kdma_estimates = {}
+        for (kdma, prob_dict) in kdma_probs.items():
+            kdma_estimates[kdma] = self.estimate_value_from_probability_dict(prob_dict)
+        return kdma_estimates
+
+    def estimate_value_from_probability_dict(self, probability_dict: dict[float, float]) -> float:
+        estimated_value = 0
+        for (value, prob) in probability_dict.items():
+            estimated_value += prob * value
+        return estimated_value
+        
+    def get_KDMA_probabilities(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None, print_neighbors: bool = False) -> float:
         if cases is None:
             cases = self.cb
         kdma = kdma.lower()
@@ -241,24 +313,21 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         topk = self.top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors)
         if len(topk) == 0:
             return None
-        total = sum([max(dist, 0.01) for (dist, case) in topk])
-        divisor = 0
-        kdma_total = 0
+
+        dists = [max(dist, 0.01) for (dist, case) in topk]
+        total = sum(dists)
+        sim = [total/dist for dist in dists]
+        simTotal = sum(sim)
+        
+        kdma_probs = {}
         neighbor = 0
         for (dist, case) in topk:
+            kdma_probs[case[kdma]] = kdma_probs.get(case[kdma], 0) + (sim[neighbor]/simTotal)
             neighbor += 1
-            if kdma not in case or case[kdma] is None:
-                breakpoint()
-                raise Exception()
-            kdma_val = case[kdma] 
-            kdma_total += kdma_val * total/max(dist, 0.01)
-            divisor += total/max(dist, 0.01)
             cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
-        kdma_val = kdma_total / divisor
-        if print_neighbors:
-            util.logger.info(f"kdma_val: {kdma_val}")
-        return kdma_val
-        
+
+        return kdma_probs
+
     def top_K(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None, print_neighbors: bool = False) -> list[dict[str, Any]]:
         if cases is None:
             cases = self.cb

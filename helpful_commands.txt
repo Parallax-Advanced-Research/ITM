@@ -12,7 +12,7 @@ python tad_tester.py --session_type soartech --scenario qol-dre-1-train --traini
 python tad_tester.py --session_type adept --scenario DryRunEval-MJ2-eval --no-training --human
 
 # Collect kdma associations and create a case base from them by taking random but diverse actions in repeated runs of Soartech training scenario qol-dre-1-train. Do not restart from last stopping point.
-python ta3_trainer.py --session_type soartech --scenario qol-dre-1-train --training --diverse --reset
+python ta3_training.py --session_type soartech --scenario qol-dre-1-train --training --diverse --reset
 
 # Test KEDS selection, with uniform weights, a locally stored alignment target, and a local case file.
 python tad_tester.py --session_type soartech --scenario qol-dre-1-train --selector keds --training --alignment_target "soartech-dryrun-0" --casefile data/temp-soartech-qol-train-cases.csv --uniformweight
