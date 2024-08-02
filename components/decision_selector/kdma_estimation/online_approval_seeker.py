@@ -626,7 +626,7 @@ class SimpleWeightTrainer(WeightTrainer):
             self.add_to_history(record["weights"], source = "derived empty")
             
         
-def get_test_seeker(cb_fname: str, entries = None) -> float:
+def get_test_seeker(cb_fname: str, entries = None, kdma = KDMA_NAME) -> float:
     args = parse_default_arguments()
     args.critic = None
     args.train_weights = True
@@ -641,7 +641,7 @@ def get_test_seeker(cb_fname: str, entries = None) -> float:
     seeker.cb = read_case_base(cb_fname)
     for case in seeker.cb:
         seeker.add_fields(case.keys())
-    seeker.approval_experiences = [case for case in seeker.cb if integerish(10 * case["approval"])]
+    seeker.approval_experiences = [case for case in seeker.cb if integerish(10 * case[kdma])]
     if entries is not None:
         seeker.approval_experiences = seeker.approval_experiences[:entries]
     return seeker
@@ -660,7 +660,7 @@ def test_file_error(cb_fname: str, weights_dict: dict[str, float], drop_discount
 def make_approval_data_frame(cases: list[dict[str, Any]], cols=None, drop_discounts = False, entries = None) -> pandas.DataFrame:
     cases = [dict(case) for case in cases]
     if drop_discounts:
-        cases = [case for case in cases if integerish(10 * case["approval"])]
+        cases = [case for case in cases if integerish(10 * case[KDMA_NAME])]
     if entries is not None:
         cases = cases[:entries]
     cleaned_experiences, category_labels = data_processing.clean_data(dict(zip(range(len(cases)), cases)))
