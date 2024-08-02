@@ -19,6 +19,11 @@
             "aid_available": 0.27030327916145325,
             "treating": 0.4327956736087799,
             "SUPPLIES_USED": 0.17001353204250336
+        },
+        "QualityOfLife": {
+            "age": 0.20,
+            "Take-The-Best Priority": 0.60,
+            "WEIGHTED_RESOURCE_SCORE": 0.10
         }
     },
     "activity_weights": {},
