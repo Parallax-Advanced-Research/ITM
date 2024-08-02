@@ -93,7 +93,11 @@ def make_2feature_kde(X: list[float], Y: list[float]):
 
     return kde
 
-def compute_alignment(kdmaLocalEstimates, kdmaGlobalEstimates, targetKde):
+def compute_global_alignment(targetKde, kdmaGlobalEstimates):
+    newKde = make_2feature_kde(kdmaGlobalEstimates, kdmaGlobalEstimates)
+    return js_similarity_2feature(newKde, targetKde)
+    
+def compute_double_alignment(targetKde, kdmaLocalEstimates, kdmaGlobalEstimates):
     newKde = make_2feature_kde(kdmaLocalEstimates, kdmaGlobalEstimates)
     return js_similarity_2feature(newKde, targetKde)
     
