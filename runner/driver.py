@@ -97,6 +97,7 @@ class Driver:
 
     def decide(self, itm_probe: ext.ITMProbe) -> ext.Action:
         probe: TADProbe = self.translate_probe(itm_probe)
+        environmental_hazard: str = probe.get_environment_hazard()
 
         # Elaborate decisions, and analyze them
         probe.decisions = self.elaborate(probe)  # Probe.decisions changes from valid to invalid here
@@ -114,7 +115,7 @@ class Driver:
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
         if self.dumper is not None:
-            self.dumper.dump(probe, decision, self.session_uuid)
+            self.dumper.dump(probe, decision, self.session_uuid, environmental_hazard)
 
         # Extract external decision for response
         # url construction
