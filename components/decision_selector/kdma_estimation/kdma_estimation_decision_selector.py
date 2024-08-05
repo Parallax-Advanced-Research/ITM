@@ -13,6 +13,8 @@ from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnaly
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from .case_base_functions import *
 from alignment import kde_similarity
+from . import kdma_estimation
+from . import triage_constants
 
 _default_weight_file = os.path.join("data", "keds_weights.json")
 _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")
@@ -20,8 +22,6 @@ _default_kdma_case_file = os.path.join("data", "kdma_cases.csv")
 _default_drexel_case_file = os.path.join("data", "sept", "extended_case_base.csv")
 
 class KDMAEstimationDecisionSelector(DecisionSelector):
-    K = 4
-    
     
     def __init__(self, args = None):
         self.use_drexel_format = False
@@ -101,29 +101,28 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             
             default_weight = self.weight_settings.get("default", 1)
             if self.weight_settings.get("standard_weights", {}) == "basic":
-                weights = dict(BASIC_WEIGHTS)
+                weights = dict(triage_constants.BASIC_WEIGHTS)
             elif self.weight_settings.get("standard_weights", {}) == "uniform": 
                 weights = {key: default_weight for key in cur_case.keys()}
             else:
                 weights = {key: default_weight for key in cur_case.keys()}
                 weights = weights | self.weight_settings.get("standard_weights", {})
             
-            for act in BASIC_TRIAGE_CASE_TYPES:
+            for act in triage_constants.BASIC_TRIAGE_CASE_TYPES:
                 if cur_case[act]:
                     weights = weights | self.weight_settings.get("activity_weights", {}).get(act, {})
             if self.print_neighbors:
                 util.logger.info(f"Evaluating action: {cur_decision.value}")
             for kdma_name in target.kdma_names:
                 weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
-                kdmaProbs = self.get_KDMA_probabilities(cur_case, weights, kdma_name, print_neighbors = self.print_neighbors)
+                kdmaProbs = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name, self.cb, print_neighbors = self.print_neighbors, mutable_case = True)
                 if kdmaProbs is None:
                     continue
                 cur_case[kdma_name] = kdmaProbs
                 cur_kdma_probs[kdma_name] = kdmaProbs
-            if not cur_case['leaving']:
-                min_kdma_probs = self.update_kdma_probabilities(min_kdma_probs, cur_kdma_probs, min)
-                max_kdma_probs = self.update_kdma_probabilities(max_kdma_probs, cur_kdma_probs, max)
-                possible_choices.append((cur_decision, cur_case, cur_kdma_probs))
+            min_kdma_probs = self.update_kdma_probabilities(min_kdma_probs, cur_kdma_probs, min)
+            max_kdma_probs = self.update_kdma_probabilities(max_kdma_probs, cur_kdma_probs, max)
+            possible_choices.append((cur_decision, cur_case, cur_kdma_probs))
 
         if len(possible_choices) == 1:
             util.logger.error("Only one possible choice!")
@@ -141,11 +140,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         (best_decision, best_case, best_kdma_probs) = self.minimize_distance(possible_choices)
         
         if self.print_neighbors:
-            best_kdma_estimates = self.estimate_KDMAs_from_probs(best_kdma_probs)
+            best_kdma_estimates = kdma_estimation.estimate_KDMAs_from_probs(best_kdma_probs)
             util.logger.info(f"Chosen Decision: {best_decision.value} Estimates: {best_kdma_estimates} Mins: {min_kdma_probs} Maxes: {max_kdma_probs}")
             util.logger.info(f"Distance: {best_case['distance']}")
 
-        breakpoint()
+        # breakpoint()
         
         if self.record_considered_decisions:
             fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
@@ -170,6 +169,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
     def update_probability_dict(self, item_probs: dict[str, float], new_item_probs: dict[str, float], fn: Callable[[Any, Any], Any] = min):
         ret_probs = dict()
+        if len(item_probs) == 0:
+            return new_item_probs
+        if len(new_item_probs) == 0:
+            return item_probs
         for (item1, prob1) in item_probs.items():
             for (item2, prob2) in new_item_probs.items():
                 winner = fn(item1, item2)
@@ -198,7 +201,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
     def compute_euclidean_distances(self, possible_choices, target):
         for (decision, case, kdma_prob_set) in possible_choices:
-            kdma_estimates = [self.estimate_KDMA_from_probs(kdma_probs) for kdma_probs in kdma_prob_set]
+            kdma_estimates = [kdma_estimation.estimate_KDMA_from_probs(kdma_probs) for kdma_probs in kdma_prob_set]
             case["distance"]  = self.calc_dist(kdma_estimates, target)
 
     def compute_kde_alignment(self, kde, cur_kdma_probs, kdma_name, mins, maxes):
@@ -225,7 +228,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         for (alignment, prob) in alignment_probs:
             est_score += alignment*prob
             prob_sum += prob
-        if prob_sum < 0.99 or prob_sum > 1:
+        if prob_sum < 0.99 or prob_sum > 1.0001:
             util.logger.error("Bad probability calculation.")
             breakpoint()
         return est_score / prob_sum
@@ -237,7 +240,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             return []
 
         cur_kdma_probs = {}
-        while kdma_name not in cur_kdma_probs:
+        while kdma_name not in cur_kdma_probs or len(cur_kdma_probs[kdma_name]) == 0:
             if len(choice_history) == 0:
                 alignment_probs.append((kde_similarity.compute_global_alignment(kde, global_norm_estimates), pprob))
                 return alignment_probs
@@ -256,7 +259,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             case["distance"] = 0
             for kdma_name in target.kdma_names:
                 kdma_probs = kdma_prob_dict.get(kdma_name, None)
-                if kdma_probs is None:
+                if kdma_probs is None or len(kdma_probs) == 0:
                     continue
                 targetKDE = target.getKDMAValue(kdma_name)
                 case["distance"] += 1 - self.compute_kde_alignment(
@@ -265,121 +268,6 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                                                 kdma_name, mins, maxes)
         
         
-    def find_leave_one_out_error(self, weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None) -> float:
-        if cases is None:
-            cases = self.cb
-        new_case_list = [case for case in cases]
-        error_total = 0
-        case_count = 0
-        for case in cases:
-            new_case_list.remove(case)
-            estimate = self.estimate_KDMA(dict(case), weights, kdma, cases = new_case_list)
-            if estimate is None:
-                continue
-            error = abs(case[kdma] - estimate)
-            case_count += 1
-            error_total += error
-            new_case_list.append(case)
-        if case_count == 0:
-            return math.inf
-        return error_total / case_count
-
-    def estimate_KDMA(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None, print_neighbors: bool = False) -> float:
-        kdmaProbs = self.get_KDMA_probabilities(cur_case, weights, kdmas, cases=cases, print_neighbors = print_neighbors)
-        kdmaVal = self.estimate_value_from_probability_dict(kdmaProbs)
-        if print_neighbors:
-            util.logger.info(f"kdma_val: {kdmaVal}")
-        return kdmaVal
-
-
-    def estimate_KDMAs_from_probs(self, kdma_probs: dict[str, dict[float, float]]) -> dict[str, float]:
-        kdma_estimates = {}
-        for (kdma, prob_dict) in kdma_probs.items():
-            kdma_estimates[kdma] = self.estimate_value_from_probability_dict(prob_dict)
-        return kdma_estimates
-
-    def estimate_value_from_probability_dict(self, probability_dict: dict[float, float]) -> float:
-        estimated_value = 0
-        for (value, prob) in probability_dict.items():
-            estimated_value += prob * value
-        return estimated_value
-        
-    def get_KDMA_probabilities(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None, print_neighbors: bool = False) -> float:
-        if cases is None:
-            cases = self.cb
-        kdma = kdma.lower()
-        if self.use_drexel_format:
-            kdma = kdma + "-Ave"
-        topk = self.top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors)
-        if len(topk) == 0:
-            return None
-
-        dists = [max(dist, 0.01) for (dist, case) in topk]
-        total = sum(dists)
-        sim = [total/dist for dist in dists]
-        simTotal = sum(sim)
-        
-        kdma_probs = {}
-        neighbor = 0
-        for (dist, case) in topk:
-            kdma_probs[case[kdma]] = kdma_probs.get(case[kdma], 0) + (sim[neighbor]/simTotal)
-            neighbor += 1
-            cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
-
-        return kdma_probs
-
-    def top_K(self, cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]] = None, print_neighbors: bool = False) -> list[dict[str, Any]]:
-        if cases is None:
-            cases = self.cb
-        lst = []
-        max_distance = 10000
-        for pcase in cases:
-            if kdma not in pcase or pcase[kdma] is None:
-                continue
-            if cur_case['treating'] and not pcase['treating']:
-                continue
-            if cur_case['tagging'] and (not pcase['tagging'] or pcase['category'] != cur_case['category']):
-                continue
-            if cur_case['leaving'] and not pcase['leaving']:
-                continue
-            if cur_case['assessing'] and not pcase['assessing']:
-                continue
-            if cur_case['questioning'] and not pcase['questioning']:
-                continue
-            distance = calculate_distance(pcase, cur_case, weights, local_compare)
-            if distance > max_distance:
-                continue
-            lst.append((distance, pcase))
-            if len(lst) < KDMAEstimationDecisionSelector.K:
-                continue
-            lst.sort(key=first)
-            max_distance = lst[KDMAEstimationDecisionSelector.K - 1][0] * 1.01
-            lst = [item for item in lst if first(item) <= max_distance]
-        if len(lst) == 0:
-            # breakpoint()
-            return lst
-        if len(lst) > KDMAEstimationDecisionSelector.K:
-            guarantee_distance = max_distance * 0.99
-            lst_guaranteed = []
-            lst_pool = []
-            for item in lst:
-                if first(item) < guarantee_distance:
-                    lst_guaranteed.append(item[1])
-                else:
-                    lst_pool.append(item[1])
-            lst = construct_distanced_list(lst_guaranteed, lst_pool, weights | {kdma: 10}, 
-                                           KDMAEstimationDecisionSelector.K, 
-                                           lambda case1, case2, weights: 
-                                                calculate_distance(case1, case2, weights, 
-                                                                   local_compare))
-            lst = [(calculate_distance(item, cur_case, weights, local_compare), item) for item in lst]
-            
-        if print_neighbors:
-            util.logger.info(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
-            util.logger.info(f"kdma: {kdma} weights: { {key:val for (key, val) in weights.items() if val != 0} }")
-            for i in range(0, len(lst)):
-                util.logger.info(f"Neighbor {i} ({lst[i][0]}): {relevant_fields(lst[i][1], weights, kdma)}")
-        return lst
 
     def make_case(self, probe: TADProbe, d: Decision) -> dict[str, Any]:
         if self.use_drexel_format:
@@ -387,39 +275,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         else:
             return make_case_triage(probe, d)
 
-        
-        
-    
 
-
-def relevant_fields(case: dict[str, Any], weights: dict[str, Any], kdma: str):
-    fields = [key for (key, val) in weights.items() if val != 0] + [kdma, "index"]
-    return {key: val for (key, val) in case.items() if key in fields}
-
-            
-VALUED_FEATURES = {
-        "intent": {"intend major help": 0.5, "intend minor help": 0.25, "no intent": 0.0, 
-                   "intend minor harm": -0.25, "intend major harm": -0.5},
-        "directness_of_causality": 
-            {"none": 0.0, "indirect": 0.25, "somewhat indirect": 0.5, "somewhat direct": 0.75, "direct": 1.0}
-    }    
-
-def local_compare(val1: Any, val2: Any, feature: str):
-    if val1 is not None and val2 is not None and feature in VALUED_FEATURES:
-        return abs(VALUED_FEATURES[feature][val1.lower()] - VALUED_FEATURES[feature][val2.lower()])
-    return compare(val1, val2, feature) 
-
-
-BASIC_TRIAGE_CASE_FEATURES = [
-    "unvisited_count", "injured_count", "others_tagged_or_uninjured", "age", "tagged", "visited", 
-    "relationship", "rank", "conscious", "mental_status", "breathing", "hrpmin", "avpu", "intent",
-    "directness_of_causality", "aid_available", "environment_type"
-]
-
-BASIC_TRIAGE_CASE_TYPES = ["treating", "tagging", "leaving", "questioning", "assessing"]
-
-BASIC_WEIGHTS = {feature:1 for feature in BASIC_TRIAGE_CASE_FEATURES}
-    
 def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     case = {}
     s: State = probe.state
