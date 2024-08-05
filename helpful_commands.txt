@@ -2,27 +2,34 @@
 venv\Scripts\activate.bat # Tells python where to find its libraries on Windows
 source venv/bin/activate  # Tells python where to find its libraries on Linux
 
-# Runs the TA3 ADM "simulation" only, allowing testing of decisions and selection, even training of KDMAs, but not alignment targets or scores.
+# Runs the TA3 ADM "simulation" only, allowing testing of decisions and selection, even training of 
+# KDMAs, but not alignment targets or scores.
 python run-servers.py --ta3_only
 
-# Take random actions in the TA3 server for a soartech training scenario, without using Monte Carlo or connecting to TA1. KDMA associations available, but not alignment targets or scores
+# Take random actions in the TA3 server for a soartech training scenario, without using Monte Carlo 
+# or connecting to TA1. KDMA associations available, but not alignment targets or scores
 python tad_tester.py --session_type soartech --scenario qol-dre-1-train --training --no-mc
 
-# Run through an ADEPT evaluation scenario with the TA3 server but not TA1, stop at every decision to print possible decisions and select one at command line
+# Run through an ADEPT evaluation scenario with the TA3 server but not TA1, stop at every decision 
+# to print possible decisions and select one at command line
 python tad_tester.py --session_type adept --scenario DryRunEval-MJ2-eval --no-training --human
 
-# Collect and store kdma associations by taking random but diverse actions in repeated runs of Soartech training scenario qol-dre-1-train. Do not restart from last stopping point.
+# Collect and store kdma associations by taking random but diverse actions in repeated runs of 
+# Soartech training scenario qol-dre-1-train. Do not restart from last stopping point.
 python ta3_training.py --session_type soartech --scenario qol-dre-1-train --training --diverse --reset
 
-# Create a case base and weights from last run of ta3_training.py, store at data/temp-soartech-qol-train-cases.csv, data/qol_weights.json
+# Create a case base and weights from last run of ta3_training.py, store at 
+# data/temp-soartech-qol-train-cases.csv, data/qol_weights.json
 python -m scripts.analyze_data --kdma_case_output_file data/temp-soartech-qol-train-cases.csv --weight_file data/qol_weights.json 
-
-# Test KEDS selection, with uniform weights, a locally stored alignment target (--alignment_target), a local case file (--casefile), and local weights (--weightfile), against a remote alignment target (--evaltarget).
-python tad_tester.py --session_type soartech --scenario qol-dre-1-train --selector keds --training --alignment_target "soartech-dryrun-0" --casefile data/temp-soartech-qol-train-cases.csv --weightfile data/qol_weights.json --evaltarget qol-prelim-emt-d29ef563
 
 # Runs the TA3 ADM "simulation" and TA1 servers, allowing testing of alignment targets and scores.
 # You need to run Mongo database to run the Soartech server.
 python run-servers.py
+
+# Test KEDS selection, with uniform weights, a locally stored alignment target (--alignment_target),
+# a local case file (--casefile), and local weights (--weightfile), against a remote alignment 
+# target (--evaltarget). Requests alignment from TA1 server (--connect_to_ta1).
+python tad_tester.py --session_type soartech --scenario qol-dre-1-train --selector keds --training --alignment_target "soartech-dryrun-0" --casefile data/temp-soartech-qol-train-cases.csv --weightfile data/qol_weights.json --evaltarget qol-prelim-emt-d29ef563 --connect_to_ta1
 
 # Test an evaluation, using KEDS, and a local case file.
 # Requires Mongo, Adept, and Soartech server to be running
