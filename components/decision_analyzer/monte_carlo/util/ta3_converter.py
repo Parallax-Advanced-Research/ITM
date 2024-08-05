@@ -205,7 +205,6 @@ def _get_environmnental_injury(environment_hazard: str) -> Injury | None:
                       severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.MODERATE.value,
                       breathing_effect=BodySystemEffect.MODERATE.value)
 
-
     print(environment_hazard)
     sys.exit(1)
     return None
