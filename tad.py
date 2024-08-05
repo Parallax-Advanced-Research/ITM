@@ -162,6 +162,9 @@ def api_test(args, driver = None):
             if args.training:
                 for alignment in client.get_session_alignments():
                     driver.train(alignment, probe is None)
+                    if probe is None:
+                        logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
+                        
         logger.info(f"Scenario Complete")
     
     
