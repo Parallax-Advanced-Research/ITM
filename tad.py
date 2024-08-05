@@ -160,9 +160,9 @@ def api_test(args, driver = None):
                 logger.debug(f"-State Removals: {difference}")
             probe = new_probe
             if args.training:
-                for alignment in client.get_session_alignments():
-                    driver.train(alignment, probe is None)
-                    if probe is None:
+                if probe is None:
+                    for alignment in client.get_session_alignments():
+                        driver.train(alignment, probe is None)
                         logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
                         
         logger.info(f"Scenario Complete")
