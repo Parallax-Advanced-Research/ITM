@@ -5,6 +5,7 @@ from domain.internal import Decision
 from util import logger
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle
 
+
 def supply_location_match(action: MedsimAction):
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
         return action.location != Locations.UNSPECIFIED.value
