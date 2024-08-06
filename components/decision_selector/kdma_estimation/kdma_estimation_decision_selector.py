@@ -188,6 +188,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
     
 
     def calc_dist(self, estimates, target):
+        sqDist = 0
         for kdma_name in target.kdma_names:
             estimate = estimates[kdma_name]
             targetValue = target.getKDMAValue(kdma_name)
@@ -201,7 +202,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
     def compute_euclidean_distances(self, possible_choices, target):
         for (decision, case, kdma_prob_set) in possible_choices:
-            kdma_estimates = [kdma_estimation.estimate_KDMA_from_probs(kdma_probs) for kdma_probs in kdma_prob_set]
+            kdma_estimates = kdma_estimation.estimate_KDMAs_from_probs(kdma_prob_set)
             case["distance"]  = self.calc_dist(kdma_estimates, target)
 
     def compute_kde_alignment(self, kde, cur_kdma_probs, kdma_name, mins, maxes):
@@ -294,6 +295,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['tagged'] = c.tag is not None
         case['visited'] = c.assessed
         case['relationship'] = c.relationship
+        case['disposition'] = c.demographics.military_disposition
         case['rank'] = c.demographics.rank
         case['conscious'] = c.vitals.conscious
         case['mental_status'] = c.vitals.mental_status
