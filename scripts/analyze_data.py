@@ -17,12 +17,13 @@ import random
 
 
 NON_NOISY_KEYS = [
-    'age', 'tagged', 'visited', 'relationship', 'rank', 'conscious', 
-    'mental_status', 'breathing', 'hrpmin', 'unvisited_count', 'injured_count', 
-    'others_tagged_or_uninjured', 'assessing', 'treating', 'tagging', 'leaving', 
-    'category', 'intent', 'directness_of_causality', 'SEVERITY', 'SEVERITY_CHANGE', 
+    'age', 'tagged', 'visited', 'relationship', 'rank', 'conscious',
+    'mental_status', 'breathing', 'hrpmin', 'avpu', 'intent', 'directness_of_causality', 
+    'unvisited_count', 'injured_count', 'others_tagged_or_uninjured', 'aid_available', 
+    'environment_type', 'questioning', 'assessing', 'treating', 'tagging', 'leaving', 
+    'category', 'SEVERITY', 'SEVERITY_CHANGE', 
     'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE', 'AVERAGE_TIME_USED', 
-    'SUPPLIES_REMAINING', 'SMOL_MEDICAL_SOUNDNESS_V2', 'aid_available', 'environment_type',
+    'SUPPLIES_REMAINING', 'disposition',
     'Take-The-Best Priority', 'Exhaustive Priority', 'Tallying Priority', 
     'Satisfactory Priority', 'One-Bounce Priority',
     'HRA Strategy.time-resources.take-the-best', 
@@ -83,7 +84,7 @@ NON_NOISY_KEYS = [
 ]
 
 NOISY_KEYS : str = [
-    "SMOL_MEDICAL_SOUNDNESS", "MEDSIM_P_DEATH", "entropy", "entropyDeath", 
+    "SMOL_MEDICAL_SOUNDNESS", "SMOL_MEDICAL_SOUNDNESS_V2", "MEDSIM_P_DEATH", "entropy", "entropyDeath", 
     'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding', 
     'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER'
 ]
@@ -489,13 +490,20 @@ def main():
     parser.add_argument("--alignment_file", type=str, default="alignment_target_cases.csv",
                         help="A csv file with alignment data from feedback objects."
                        )
-    parser.add_argument("--weight_file", type=str, default="kdma_weights.csv",
+    parser.add_argument("--weight_file", type=str, default="kdma_weights.json",
                         help="A csv file with alignment data from feedback objects."
                        )
     args = parser.parse_args()
     if args.case_file is None:
         raise Error()
     pre_cases = read_pre_cases(args.case_file)
+    for case in pre_cases:
+        cur_keys = list(case.keys())
+        for key in cur_keys:
+            for pattern in ["casualty_", "nondeterminism"]:
+                if pattern in key.lower():
+                    case.pop(key)
+                    break
     training_data = None
     if args.feedback_file is not None:
         training_data = read_feedback(args.feedback_file)
