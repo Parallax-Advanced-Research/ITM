@@ -1,4 +1,13 @@
 id: DryRunEval-MJ4-eval
+# v2.1.0
+#   - Kicker mental_status of SHOCK changed to CONFUSED (shock means physiological shock, not surprised)
+#   - Remove ability to treat in scene Scene 4 because that is meant for scene Probe 8
+# v2.0.0
+#   - Added support for MESSAGE justify
+#     - This allowed scene scene Probe 3 kicker and scene Probe 3 passerby to be incorporated into Scene 1A
+#     - This allowed the scene Probe 7 to be moved into its predecessor scenes
+#   - Broken wrist turned into broken shoulder (validator)
+#   - Extended unstructured text of a scene to contain relevant text from previous scenes in addition to the new text for the scene.
 # v1.2.1
 #   - Refilled supplies in Probe 9 in case blood was used up in Probe 8
 # v1.1.1
@@ -73,7 +82,7 @@ state:
       vitals:
         avpu: VOICE
         ambulatory: false
-        mental_status: SHOCK
+        mental_status: CONFUSED
         breathing: FAST
         heart_rate: FAST
         spo2: LOW
@@ -130,9 +139,18 @@ scenes:
       actions:
         - [assess_Kicker]
         - [assess_Passerby]
+
   - id: Probe 2 kicker
     state:
-      unstructured: You have assessed the kicker.  Do you assess the passerby or start treating the kicker?
+      unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        
+        You have assessed the kicker.  Do you assess the passerby or start treating the kicker?
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -165,9 +183,18 @@ scenes:
       actions:
         - [treat_Kicker]
         - [assess_Passerby]
+
   - id: Probe 2 passerby
     state:
-      unstructured: You have assessed the passerby.  Do you assess the kicker or start treating the passerby?
+      unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        
+        You have assessed the passerby.  Do you assess the kicker or start treating the passerby?
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -200,9 +227,19 @@ scenes:
       actions:
         - [assess_Kicker]
         - [treat_Passerby]
+
   - id: Probe 2-A.1
     state:
-      unstructured: As you begin treating the kicker, you get interrupted by a member of your unit.
+      unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You have assessed the kicker.
+        
+        As you begin treating the kicker, you get interrupted by a member of your unit.
       events:
         - unstructured: A member of your unit says, "Don't you want to assess them both before you treat anyone? The guy you're treating should have stopped when we shouted at him then no one would have gotten hurt, but that other guy was just passing by." 
           type: recommend
@@ -245,9 +282,19 @@ scenes:
       actions:
         - [assess_Passerby]
         - [continue_treating_Kicker]
+
   - id: Probe 2-D.1
     state:
-      unstructured: As you begin treating the passerby, you get interrupted by a member of your unit.
+      unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You have assessed the passerby.
+        
+        As you begin treating the passerby, you get interrupted by a member of your unit.
       events:
         - unstructured: A member of your unit says, "Don't you want to assess them both before you treat anyone? The other guy looks like he has a serious injury." 
           type: recommend
@@ -289,9 +336,19 @@ scenes:
       actions:
         - [assess_Kicker]
         - [continue_treating_Passerby]
+
   - id: Probe 2-D.1-B.1
     state:
-      unstructured: As you continue treating the passerby, you once again get interrupted by a member of your unit.
+      unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You have assessed the passerby and began treating him. Another member of your unit indicated the other patient has serious injuries.
+        
+        As you continue treating the passerby, you once again get interrupted by a member of your unit.
       events:
         - unstructured: A member of your unit says, "This other casualty has massive bleeding and his foot is partially torn off. You better take a look." 
           type: recommend
@@ -333,9 +390,17 @@ scenes:
       actions:
         - [assess_Kicker]
         - [continue_treating_Passerby]
+
   - id: Scene 1A
     state:
       unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+
         After you have assessed and treated the casualties, you are interrupted again by a radio call and another piece of information from a member of your unit.
         Which patient do you prepare to help load up into the transport?
       events:
@@ -362,6 +427,11 @@ scenes:
           movement_restriction: minimal
           population_density: some
           injury_triggers: explosion
+      threat_state:
+        unstructured: There is no indication of future explosions, but you are always staying vigilant just in case. One of the patients may be incapacitated but is a hostile.
+        threats:
+          - {threat_type: IED activity, severity: low}
+          - {threat_type: Gunfire, severity: low}
       characters:
         - id: Kicker
           name: Beckham
@@ -380,7 +450,7 @@ scenes:
           vitals:
             avpu: VOICE
             ambulatory: false
-            mental_status: SHOCK
+            mental_status: CONFUSED
             breathing: FAST
             heart_rate: FAST
             spo2: LOW
@@ -389,6 +459,7 @@ scenes:
           visited: true
           unstructured: A civilian who had heard the shouting and paused to look back at the scene and was subsequently injured with some bleeding from shrapnel.
           intent: no intent
+          directness_of_causality: none
           demographics:
             sex: M
             race: White
@@ -411,9 +482,17 @@ scenes:
         character_id: Kicker
         parameters: {"aid_id": "civilian_medical_transport"}
         intent_action: true
+        threat_state:
+          unstructured: The kicker appears unconscious but may be carrying a concealed weapon.
+          threats:
+            - threat_type: Gunfire
+              severity: low
         probe_id: Probe 3
         choice: Response 3-A
-        next_scene: Probe 3 kicker
+        condition_semantics: not
+        conditions:
+          probes:
+            - Probe 3
       - action_id: evac_Passerby
         action_type: MOVE_TO_EVAC
         unstructured: Prepare the passerby for evacuation on transport.
@@ -422,164 +501,50 @@ scenes:
         intent_action: true
         probe_id: Probe 3
         choice: Response 3-B
-        next_scene: Probe 3 passerby
-    restricted_actions:
-      - APPLY_TREATMENT
-      - CHECK_ALL_VITALS
-      - CHECK_BLOOD_OXYGEN
-      - CHECK_PULSE
-      - CHECK_RESPIRATION
-      - DIRECT_MOBILE_CHARACTERS
-      - MESSAGE
-      - MOVE_TO
-      - SEARCH
-      - SITREP
-      - TAG_CHARACTER
-    transitions:
-      actions:
-        - [evac_Kicker]
-        - [evac_Passerby]
-  - id: Probe 3 kicker
-    state:
-      unstructured: >
-        The member of your unit asks why you decided to prepare the kicker for transport.
-        Two other nearby members of your unit offer possible reasons.
-      events:
-        - unstructured: The kicker was more seriously injured.
-          type: emphasize
-          source: Person1
-          object: Kicker
-          relevant_state:
-            - characters[Kicker].injuries
-            - characters[Passerby].injuries
-        - unstructured: We want to question the kicker more about the plan he was working on.
-          type: emphasize
-          source: Person2
-          object: Kicker
-          relevant_state:
-            - characters[Kicker].intent
-      characters:
-        - id: Person1
-          name: Person1
-          unstructured: Suggests it was because patient was the most seriously injured.
-          demographics:
-            sex: M
-            race: White
-          injuries: []
-          vitals: 
-            avpu: ALERT
-            ambulatory: true
-            mental_status: CALM
-            breathing: NORMAL
-            heart_rate: NORMAL
-        - id: Person2
-          name: Person2
-          unstructured: Suggests it was because we should learn more about the kicker's plan.
-          demographics:
-            sex: M
-            race: White
-          injuries: []
-          vitals: 
-            avpu: ALERT
-            ambulatory: true
-            mental_status: CALM
-            breathing: NORMAL
-            heart_rate: NORMAL
-    end_scene_allowed: false
-    persist_characters: true
-    action_mapping:
-      - action_id: indicate_injury
+        condition_semantics: not
+        conditions:
+          probes:
+            - Probe 3
+      - action_id: more_injured
         action_type: MESSAGE
-        unstructured: You chose the kicker because they were the most seriously injured.
-        parameters: {"type": "allow", "recipient": "Person1", "action_type": "MESSAGE"}
+        unstructured: The patient was chosen for transport because they are the most seriously injured.
+        parameters: {"type": "justify", "relevant_state": "[characters[Kicker].injuries], [characters[Passerby].injuries]"}
         probe_id: Probe 3-A.1
         choice: Response 3-A.1-A
         next_scene: Transition to Scene 2
-      - action_id: indicate_learn_plan
+        conditions:
+          probe_responses:
+            - Response 3-A
+      - action_id: question_about_plan
         action_type: MESSAGE
-        unstructured: You chose the kicker because we want to learn more about his plan.
-        parameters: {"type": "allow", "recipient": "Person2", "action_type": "MESSAGE"}
+        unstructured: The patient was chosen for transport because we'll want to question him about the plan.
+        parameters: {"type": "justify", "relevant_state": "[characters[Kicker].intent], [characters[Kicker].directness_of_causality]"}
         probe_id: Probe 3-A.1
         choice: Response 3-A.1-B
         next_scene: Transition to Scene 2
-    restricted_actions:
-      - APPLY_TREATMENT
-      - CHECK_ALL_VITALS
-      - CHECK_BLOOD_OXYGEN
-      - CHECK_PULSE
-      - CHECK_RESPIRATION
-      - DIRECT_MOBILE_CHARACTERS
-      - MOVE_TO
-      - MOVE_TO_EVAC
-      - SEARCH
-      - SITREP
-      - TAG_CHARACTER
-    transitions:
-      actions:
-        - [indicate_injury]
-        - [indicate_learn_plan]
-  - id: Probe 3 passerby
-    state:
-      unstructured: >
-        The member of your unit asks why you decided to prepare the passerby for transport.
-        Two other nearby members of your unit offer possible reasons.
-      events:
-        - unstructured: The passerby is an innocent victim.
-          type: emphasize
-          source: Person3
-          object: Passerby
-          relevant_state:
-            - characters[Passerby].intent
-        - unstructured: The kicker might be hiding a grenade or other weapon.
-          type: emphasize
-          source: Person4
-          object: Kicker
-          relevant_state:
-            - characters[Kicker].intent
-      characters:
-        - id: Person3
-          name: Person3
-          unstructured: Suggests it was because patient is an innocent victim.
-          demographics:
-            sex: M
-            race: White
-          injuries: []
-          vitals: 
-            avpu: ALERT
-            ambulatory: true
-            mental_status: CALM
-            breathing: NORMAL
-            heart_rate: NORMAL
-        - id: Person4
-          name: Person4
-          unstructured: Suggests it was because the kicker might be hiding a grenade or other weapon.
-          demographics:
-            sex: M
-            race: White
-          injuries: []
-          vitals: 
-            avpu: ALERT
-            ambulatory: true
-            mental_status: CALM
-            breathing: NORMAL
-            heart_rate: NORMAL
-    end_scene_allowed: false
-    persist_characters: true
-    action_mapping:
-      - action_id: indicate_innocence
+        conditions:
+          probe_responses:
+            - Response 3-A
+      - action_id: innocent_victim
         action_type: MESSAGE
-        unstructured: You chose the passerby because they were an innocent victim.
-        parameters: {"type": "allow", "recipient": "Person3", "action_type": "MESSAGE"}
-        probe_id: Probe 3-B.1
-        choice: Response 3-B.1-A
-        next_scene: Transition to Scene 2
-      - action_id: indicate_prevent_more_attack
-        action_type: MESSAGE
-        unstructured: You chose the passerby because it's possible the kicker is hiding a grenade or other weapon.
-        parameters: {"type": "allow", "recipient": "Person4", "action_type": "MESSAGE"}
+        unstructured: The patient was chosen for transport because they are an innocent victim.
+        parameters: {"type": "justify", "relevant_state": "[characters[Passerby].intent], [characters[Passerby].directness_of_causality]"}
         probe_id: Probe 3-B.1
         choice: Response 3-B.1-B
         next_scene: Transition to Scene 2
+        conditions:
+          probe_responses:
+            - Response 3-B
+      - action_id: hidden_weapon
+        action_type: MESSAGE
+        unstructured: The patient was chosen for transport because the other patient may be concealing a weapon.
+        parameters: {"type": "justify", "relevant_state": "[threat_state.threats[Gunfire]], [characters[Kicker].intent]"}
+        probe_id: Probe 3-B.1
+        choice: Response 3-B.1-A
+        next_scene: Transition to Scene 2
+        conditions:
+          probe_responses:
+            - Response 3-B
     restricted_actions:
       - APPLY_TREATMENT
       - CHECK_ALL_VITALS
@@ -588,19 +553,29 @@ scenes:
       - CHECK_RESPIRATION
       - DIRECT_MOBILE_CHARACTERS
       - MOVE_TO
-      - MOVE_TO_EVAC
       - SEARCH
       - SITREP
       - TAG_CHARACTER
     transitions:
       actions:
-        - [indicate_innocence]
-        - [indicate_prevent_more_attack]
+        - [more_injured]
+        - [question_about_plan]
+        - [innocent_victim]
+        - [hidden_weapon]  
 
   - id: Transition to Scene 2
     state:
       unstructured: >
-        You are interrupted by the sound of gunfire (before the IED kicker treatment is completed).  Go to them.
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile. A civilian medical transport is nearing.
+        You have at least partially attended to the civilians.
+
+        You are interrupted by the sound of gunfire (before the IED kicker treatment is completed). A member of your unit screams and falls. Go to them.
       threat_state:
         unstructured: You hear the sound of gunfire, and a member of your unit screams and falls.
         threats:
@@ -614,6 +589,7 @@ scenes:
             sex: M
             race: White
             military_disposition: Allied US
+            military_branch: US Army
           injuries:
             - {name: Puncture, location: left shoulder, severity: moderate, status: visible}
           vitals: 
@@ -651,7 +627,16 @@ scenes:
   - id: Scene 2
     state:
       unstructured: >
-        There is the sound of gunfire.  A member of your unit has screamed and fell.  You moved to them.
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile. A civilian medical transport is nearing.
+        You visited the civilians.
+        There was the sound of gunfire. A member of your unit screamed and fell. You moved to him.
+
         You assess the wounded US soldier and find that he has a gunshot wound in the arm, which is bleeding but not massively.
         Do you treat him now or have others move him while you go back to the wounded civilians?
       threat_state:
@@ -697,9 +682,20 @@ scenes:
         - [treat_us_soldier]
         - [move_back_to_kicker]
         - [move_back_to_passerby]
+
   - id: Scene 4
     state:
       unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile. A civilian medical transport is nearing.
+        You visited the civilians.
+        There was the sound of gunfire. A member of your unit screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
+        
         A member of your unit says, "We should bring him back to the casualty collection point since it's under cover."
         Back at the casualty collection point, there are three casualties who have not been fully treated.
         Who do you assess first?
@@ -728,7 +724,7 @@ scenes:
           vitals:
             avpu: VOICE
             ambulatory: false
-            mental_status: SHOCK
+            mental_status: CONFUSED
             breathing: FAST
             heart_rate: FAST
             spo2: LOW
@@ -738,7 +734,7 @@ scenes:
           unstructured: >
             A civilian who had heard the shouting and paused to look back at the scene and was subsequently injured with some bleeding from shrapnel.
             The bleeding has begun to be treated but not completely.
-            He also mentions that he feels dizzy and his wrist hurts a lot.
+            He also mentions that he feels dizzy and his shoulder hurts a lot.
           intent: no intent
           demographics:
             sex: M
@@ -746,7 +742,7 @@ scenes:
             military_disposition: Civilian
           injuries:
             - {name: Shrapnel, location: left face, severity: moderate, status: visible, source_character: Kicker}
-            - {name: Broken Bone, location: right wrist, severity: moderate, status: discoverable, source_character: Kicker}
+            - {name: Broken Bone, location: right shoulder, severity: moderate, status: discoverable, source_character: Kicker}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -761,6 +757,7 @@ scenes:
             sex: M
             race: White
             military_disposition: Allied US
+            military_branch: US Army
           injuries:
             - {name: Puncture, location: left shoulder, severity: moderate, status: visible}
           vitals: 
@@ -769,7 +766,8 @@ scenes:
             mental_status: UPSET
             breathing: NORMAL
             heart_rate: FAST
-    end_scene_allowed: false
+    next_scene: Probe 8
+    end_scene_allowed: true
     persist_characters: false
     action_mapping:
       - action_id: assess_us_soldier
@@ -793,28 +791,14 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-C
         next_scene: Probe 8
-      - action_id: treat_us_soldier
-        action_type: APPLY_TREATMENT
-        unstructured: Treat the US soldier.
-        character_id: US soldier
-        probe_id: Probe 7
-        choice: Response 7-D
-        next_scene: Probe 8
-      - action_id: treat_kicker
-        action_type: APPLY_TREATMENT
-        unstructured: Treat the kicker.
-        character_id: Kicker
-        probe_id: Probe 7
-        choice: Response 7-D
-        next_scene: Probe 8
-      - action_id: treat_passerby
-        action_type: APPLY_TREATMENT
-        unstructured: Treat the passerby.
-        character_id: Passerby
+      - action_id: no_assess
+        action_type: END_SCENE
+        unstructured: Do not assess anyone.
         probe_id: Probe 7
         choice: Response 7-D
         next_scene: Probe 8
     restricted_actions:
+      - APPLY_TREATMENT
       - CHECK_BLOOD_OXYGEN
       - CHECK_PULSE
       - CHECK_RESPIRATION
@@ -829,12 +813,23 @@ scenes:
         - [assess_us_soldier]
         - [assess_kicker]
         - [assess_passerby]
-        - [treat_us_soldier]
-        - [treat_kicker]
-        - [treat_passerby]
+        - [no_assess]
+
   - id: Probe 8
     state:
       unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
+        You visited the civilians.
+        There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
+        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Back at the casualty collection point, there are three casualties who have not been fully treated.
+
         Who do you treat first?
     end_scene_allowed: false
     persist_characters: true
@@ -876,9 +871,22 @@ scenes:
         - [treat_us_soldier]
         - [treat_kicker]
         - [treat_passerby]
+
   - id: Probe 9
     state:
       unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
+        You visited the civilians.
+        There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
+        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Back at the casualty collection point, there are three casualties who have not been fully treated.
+
         While applying a treatment to one of the patients, you are interrupted by a squad member shouting.
         The kicker who triggered the IED has slumped over and is gasping.
         You have a unit of whole blood, which you could use now to try to stabilize this casualty.
@@ -982,9 +990,23 @@ scenes:
         - [treat_kicker_but_dont_give_blood]
         - [treat_us_soldier]
         - [treat_passerby]
+
   - id: Probe 10
     state:
       unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
+        You visited the civilians.
+        There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
+        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Back at the casualty collection point, there are three casualties who have not been fully treated.
+        While applying a treatment to one of the patients, you werw interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
+        
         You hear a commotion as the passerby faints.
         One of your squad members tells you that he is an insulin dependent diabetic.
         You also get a radio message saying that a new transport is coming that can take military or civilian casualties.
@@ -1026,7 +1048,7 @@ scenes:
             military_disposition: Civilian
           injuries:
             - {name: Shrapnel, location: left face, severity: moderate, status: visible, source_character: Kicker}
-            - {name: Broken Bone, location: right wrist, severity: moderate, status: discoverable, source_character: Kicker}
+            - {name: Broken Bone, location: right shoulder, severity: moderate, status: discoverable, source_character: Kicker}
           vitals:
             avpu: UNRESPONSIVE
             ambulatory: false
@@ -1080,9 +1102,24 @@ scenes:
         - [evac_US_soldier]
         - [evac_Passerby]
         - [evac_Kicker]
+
   - id: Probe 10 US soldier
     state:
       unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
+        You visited the civilians.
+        There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
+        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Back at the casualty collection point, there are three casualties who have not been fully treated.
+        While applying a treatment to one of the patients, you were interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
+        You heard a commotion as the passerby fainted. One of your squad members told you that he is an insulin dependent diabetic. You also got a radio message saying that a new transport is coming that can take military or civilian casualties.
+        
         You have chosen to transport the US soldier.
         You get a radio from the helicopter saying you can take one additional person.
         Who else do you want to put in with the US soldier?
@@ -1140,9 +1177,24 @@ scenes:
       actions:
         - [evac_Passerby]
         - [evac_Kicker]
+
   - id: Probe 10-A.1-B.1
     state:
       unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
+        You visited the civilians.
+        There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
+        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Back at the casualty collection point, there are three casualties who have not been fully treated.
+        While applying a treatment to one of the patients, you were interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
+        You heard a commotion as the passerby fainted. One of your squad members told you that he is an insulin dependent diabetic. You also got a radio message saying that a new transport is coming that can take military or civilian casualties.  The transport can take upto two patients.
+        
         You have chosen to transport the US soldier and the kicker.
         A fellow squad member questions your most recent decision.
         Do you stick with your choice to add the kicker to the transport?
@@ -1188,9 +1240,24 @@ scenes:
       actions:
         - [evac_Kicker]
         - [evac_Passerby]
+
   - id: Probe 10 passerby
     state:
       unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
+        You visited the civilians.
+        There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
+        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Back at the casualty collection point, there are three casualties who have not been fully treated.
+        While applying a treatment to one of the patients, you were interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
+        You heard a commotion as the passerby fainted. One of your squad members told you that he is an insulin dependent diabetic. You also got a radio message saying that a new transport is coming that can take military or civilian casualties.
+        
         You have chosen to transport the passerby.
         You get another message from command.
         Do you want to switch and put the kicker on the helicopter instead?
@@ -1249,9 +1316,24 @@ scenes:
         - [evac_Passerby]
         - [evac_Kicker]
         - [evac_US_soldier]
+
   - id: Probe 10 kicker
     state:
       unstructured: >
+        You are a deployed medic whose unit is stationed at a roadside checkpoint on a side road that leads to your base.
+        Local civilians often pass along the main road outside the checkpoint.
+        You heard one of the members of your unit shout out to a civilian standing on the main road: "Hey! Hey, back up! That could be dangerous. Don't touch it. Back away!"
+        The civilian was kicking at something sticking out of the dirt.
+        It exploded, and you saw that the person who was kicking at what was apparently an IED has been injured.
+        Another civilian who had heard the shouting and paused to look back at the scene is further away, but also injured.
+        You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
+        You visited the civilians.
+        There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
+        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Back at the casualty collection point, there are three casualties who have not been fully treated.
+        While applying a treatment to one of the patients, you were interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
+        You heard a commotion as the passerby fainted. One of your squad members told you that he is an insulin dependent diabetic. You also got a radio message saying that a new transport is coming that can take military or civilian casualties.
+        
         You have chosen to transport the kicker.
         You get another message from command.
         Are you sure you want to put the kicker on the helicopter?
