@@ -7,21 +7,22 @@ import pprint
 import argparse
 import tad
 
-ADEPT_SCENARIOS = ['DryRunEval.IO1', 'DryRunEval.MJ1', 'DryRunEval-MJ2-eval', 'DryRunEval-MJ4-eval', 'DryRunEval-MJ5-eval']
+ADEPT_SCENARIOS = ['DryRunEval.IO1', 'DryRunEval.MJ1', 'DryRunEval.MJ3', 'DryRunEval-MJ2-eval',
+                   'DryRunEval-MJ4-eval', 'DryRunEval-MJ5-eval']
 SOARTECH_SCENARIOS = ['qol-dre-1-train', 'vol-dre-1-train', 'qol-dre-1-eval', 'vol-dre-1-eval']
 
 # Last scenes in qol trainer
 
 VOL_CHECK = ['qol-dre-1-train']
 
-SKIP_SCENARIOS = VOL_CHECK
+SKIP_SCENARIOS = []
 # SUCCESS_SCENARIOS = ['qol-dre-1-train']  # ['qol-dre-v2-train', 'qol-dre-v2-eval']
 # SUCCESS_SCENARIOS = ['DryRunEval.IO1', 'DryRunEval.MJ1', 'DryRunEval-MJ2-eval', 'DryRunEval-MJ4-eval']
 
 
 def moist_run(mc=True):
     args = parse_default_arguments()
-    all_scenarios = ['DryRunEval.MJ1']   # [SOARTECH_SCENARIOS]
+    all_scenarios = ADEPT_SCENARIOS + SOARTECH_SCENARIOS  # [SOARTECH_SCENARIOS]
     for scen in all_scenarios:
         if scen in SKIP_SCENARIOS:
             continue

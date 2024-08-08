@@ -99,7 +99,8 @@ class MedsimState(MCState):
 class MedsimAction(MCAction):
     def __init__(self, action: Actions, casualty_id: str | None = None, supply: str | None = None,
                  location: str | None = None, tag: str | None = None, evac_id : str | None = None,
-                 action_type: str | None = None, message_type: str | None = None, recipient: str | None = None):
+                 action_type: str | None = None, message_type: str | None = None, recipient: str | None = None,
+                 relevant_state: str | None = None):
         super().__init__()
         self.action: Actions = action
         self.casualty_id: str | None = casualty_id
@@ -111,6 +112,8 @@ class MedsimAction(MCAction):
         self.action_type: str | None = action_type
         self.message_type: str | None = message_type
         self.recipient: str | None = recipient
+        self.relevant_state = relevant_state
+
 
     def __str__(self):
         return "%s %s %s %s %s %s" % (self.action, self.casualty_id, self.supply, self.location, self.tag, self.evac_id)

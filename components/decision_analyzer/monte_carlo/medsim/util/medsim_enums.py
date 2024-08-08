@@ -369,7 +369,7 @@ class Injuries(Enum):
     ACTIVE_FENTANYL_LOLLIPOP = 'ACTIVE Fentanyl Lollipop'
     OPEN_ABDOMINAL_WOUND = 'Open Abdominal Wound'
     TBI = 'Traumatic Brain Injury'
-    ABRASION = 'abrasion'
+    ABRASION = 'Abrasion'
     ENVIRONMENTAL_FIRE_HAZARD = 'fire'
     ENVIRONMENTAL_ATTACK_HAZARD = 'attack'
     ENVIRONMENTAL_EXPLOSION_HAZARD = 'explosion'
