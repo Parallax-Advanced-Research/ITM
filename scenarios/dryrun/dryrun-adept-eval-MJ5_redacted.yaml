@@ -1,4 +1,15 @@
 id: DryRunEval-MJ5-eval
+# v1.3.0
+#   - US Soldier (scenes Scene 3 and Probe 8) mental_status changed from SHOCK to CALM
+#   - Scene 3, Unstructured text asking you if you'll treat insurgent added
+# v1.2.0
+#   - Added missing bleeding injury to Springer and Upton that was described in text and expected to be treated with gauze
+#   - For military_disposition Allied US, added military_branch US Army
+#   - Extended unstructured text of a scene to contain relevant text from previous scenes in addition to the new text for the scene.
+# v1.1.1
+#   - medical_policy became an array
+#   - Scene 1, restricted CHECK_BLOOD_OXYGEN, CHECK_PULSE, CHECK_RESPIRATION
+#   - Modified some choice IDs to provide info on who was treated to ADEPT server (internal)
 # v1.1.0
 #   - Changed MOVE_TO to END_SCENE in Probe 3
 #   - Fixed US soldier and insurgent unseen properties and related action_mappings
@@ -128,13 +139,18 @@ scenes:
       actions:
         - [evac_Springer]
         - [evac_Upton]
+  
   - id: Probe 1-A.1
     state:
       unstructured: >
+        You are a deployed medic, currently in a helicopter en route to a site where US soldiers fight alongside a local allied military unit.
+        You are told by radio, "The situation at the site is that we have two local allied force casualties. All we know is that one soldier (SPC Springer) started a fight, and another soldier (SPC Upton) tried to intervene. Springer has a messy compound fracture and Upton has maybe a dislocated shoulder or broken collarbone."
+        You indicated that if you could only transport one patient, it would be Springer.
+        
         You find out more information by radio.
         Do you still think we should prioritize Springer?
       events:
-        - unstructured: You are told by radio, "Word is that it’s been busy down there. Upton saved the US unit from getting ambushed by insurgents this morning." 
+        - unstructured: You are told by radio, "Word is that it's been busy down there. Upton saved the US unit from getting ambushed by insurgents this morning." 
           type: inform
           source: ally
           object: Upton
@@ -196,13 +212,18 @@ scenes:
       actions:
         - [evac_Springer]
         - [evac_Upton]
+  
   - id: Probe 1-B.1
     state:
       unstructured: >
+        You are a deployed medic, currently in a helicopter en route to a site where US soldiers fight alongside a local allied military unit.
+        You were told of two casualties at the site.
+        You indicated that if you could only transport one patient, it would be Upton.
+        
         You find out more information by radio.
         Do you still think we should prioritize Upton?
       events:
-        - unstructured: You are told by radio, "Word is that it’s been busy down there. Springer saved the US unit from getting ambushed by insurgents this morning." 
+        - unstructured: You are told by radio, "Word is that it's been busy down there. Springer saved the US unit from getting ambushed by insurgents this morning." 
           type: inform
           source: ally
           object: Springer
@@ -264,17 +285,20 @@ scenes:
       actions:
         - [evac_Upton]
         - [evac_Springer]
+  
   - id: Scene 1
     state:
       unstructured: >
-        You get to the scene, leave the helicopter, and see the two casualties.
-        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can’t use a tourniquet) that doesn’t entirely match the original reports.
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.
+        
+        You get to the scene, leave the helicopter, and see two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
         Someone tells you more information about the mechanism of injury. 
         Who do you assess first?
       events:
         - unstructured: >
             Someone at the site tells you, "What a day. 
-            First, we were out on patrol, and if it wasn’t for both SPC Springer and SPC Upton here having keen eyes, our unit would’ve gotten shot up by insurgents in an ambush.
+            First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush.
             Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer.
             They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
           type: inform
@@ -304,6 +328,7 @@ scenes:
             military_disposition: Allied
           injuries:
           - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
+          - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -322,6 +347,7 @@ scenes:
             military_disposition: Allied
           injuries:
           - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
+          - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -349,8 +375,8 @@ scenes:
     restricted_actions:
       - APPLY_TREATMENT
       - CHECK_BLOOD_OXYGEN
-      - CHECK_RESPIRATION
       - CHECK_PULSE
+      - CHECK_RESPIRATION
       - DIRECT_MOBILE_CHARACTERS
       - MESSAGE
       - MOVE_TO
@@ -362,9 +388,15 @@ scenes:
       actions:
         - [assess_Springer]
         - [assess_Upton]
+  
   - id: Probe 2-A.1
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone tells you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+        
         You have assessed Springer and find that he has normal vital signs.
         Do you assess the second person (Upton) or begin treatment on Springer?
     end_scene_allowed: false
@@ -390,7 +422,7 @@ scenes:
         character_id: Springer
         parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-A.1
-        choice: Response 2-A.1-B-gauze
+        choice: Response 2-A.1-B-gauze-sp
         next_scene: Probe 2-A.1-B.1
     restricted_actions:
       - DIRECT_MOBILE_CHARACTERS
@@ -405,9 +437,16 @@ scenes:
         - [assess_Upton]
         - [treat_Springer]
         - [treat_Springer_with_gauze]
+  
   - id: Probe 2-A.1-A.1
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone tells you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+        You assessed Springer and found that he has normal vital signs.
+        
         You have assessed Upton and find that he has fast breathing and a fast pulse.
         Who do you treat first?
       characters:
@@ -422,6 +461,7 @@ scenes:
             military_disposition: Allied
           injuries:
           - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
+          - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -445,7 +485,7 @@ scenes:
         character_id: Springer
         parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-A.1-A.1
-        choice: Response 2-A.1-A.1-A-gauze
+        choice: Response 2-A.1-A.1-A-gauze-sp
         next_scene: Probe 3
       - action_id: treat_Upton
         action_type: APPLY_TREATMENT
@@ -460,7 +500,7 @@ scenes:
         character_id: Upton
         parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
         probe_id: Probe 2-A.1-A.1
-        choice: Response 2-A.1-A.1-B-gauze
+        choice: Response 2-A.1-A.1-B-gauze-u
         next_scene: Probe 3
     restricted_actions:
       - DIRECT_MOBILE_CHARACTERS
@@ -476,14 +516,21 @@ scenes:
         - [treat_Upton]
         - [treat_Springer_with_gauze]
         - [treat_Upton_with_gauze]
+  
   - id: Probe 2-A.1-B.1
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone tells you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+        You assessed Springer and found that he has normal vital signs.
+        
         You begin treating Springer.
         The other person from the helicopter suggests that you assess Upton.
         Do you stop and assess Upton?
       events:
-        - unstructured: The other person from the helicopter says, "Upton doesn’t look like he’s doing very well. Maybe you should take a look."
+        - unstructured: The other person from the helicopter says, "Upton doesn't look like he's doing very well. Maybe you should take a look."
           type: recommend
           source: ally
           object: Upton
@@ -513,7 +560,7 @@ scenes:
         character_id: Springer
         parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-A.1-B.1
-        choice: Response 2-A.1-B.1-B-gauze
+        choice: Response 2-A.1-B.1-B-gauze-sp
         next_scene: Probe 3
     restricted_actions:
       - DIRECT_MOBILE_CHARACTERS
@@ -528,9 +575,17 @@ scenes:
         - [assess_Upton]
         - [treat_Springer]
         - [treat_Springer_with_gauze]
+  
   - id: Probe 2-A.1-B.1-A.1
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone tells you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+        You assessed Springer and found that he has normal vital signs.
+        You began treating Springer. The other person from the helicopter suggested that you assess Upton.
+
         You have assessed Upton and find that he has fast breathing and a fast pulse.
         Who do you treat first?
       characters:
@@ -545,6 +600,7 @@ scenes:
             military_disposition: Allied
           injuries:
           - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
+          - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -568,7 +624,7 @@ scenes:
         character_id: Springer
         parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-A.1-B.1-A.1
-        choice: Response 2-A.1-B.1-A.1-A-gauze
+        choice: Response 2-A.1-B.1-A.1-A-gauze-sp
         next_scene: Probe 3
       - action_id: treat_Upton
         action_type: APPLY_TREATMENT
@@ -583,7 +639,7 @@ scenes:
         character_id: Upton
         parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
         probe_id: Probe 2-A.1-B.1-A.1
-        choice: Response 2-A.1-B.1-A.1-B-gauze
+        choice: Response 2-A.1-B.1-A.1-B-gauze-u
         next_scene: Probe 3
     restricted_actions:
       - DIRECT_MOBILE_CHARACTERS
@@ -599,9 +655,15 @@ scenes:
         - [treat_Upton]
         - [treat_Springer_with_gauze]
         - [treat_Upton_with_gauze]
+  
   - id: Probe 2-B.1
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone told you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+        
         You have assessed Upton and find that he has normal vital signs.
         Do you assess the second person (Springer) or begin treatment on Upton?
     end_scene_allowed: false
@@ -627,7 +689,7 @@ scenes:
         character_id: Upton
         parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
         probe_id: Probe 2-B.1
-        choice: Response 2-B.1-B-gauze
+        choice: Response 2-B.1-B-gauze-u
         next_scene: Probe 2-B.1-B.1
     restricted_actions:
       - DIRECT_MOBILE_CHARACTERS
@@ -642,9 +704,16 @@ scenes:
         - [assess_Springer]
         - [treat_Upton]
         - [treat_Upton_with_gauze]
+  
   - id: Probe 2-B.1-A.1
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone told you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+        You assessed Upton and found that he has normal vital signs.
+
         You have assessed Springer and find that he has fast breathing and a fast pulse.
         Who do you treat first?
       characters:
@@ -659,6 +728,7 @@ scenes:
             military_disposition: Allied
           injuries:
           - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
+          - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -682,7 +752,7 @@ scenes:
         character_id: Springer
         parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-B.1-A.1
-        choice: Response 2-B.1-A.1-A-gauze
+        choice: Response 2-B.1-A.1-A-gauze-sp
         next_scene: Probe 3
       - action_id: treat_Upton
         action_type: APPLY_TREATMENT
@@ -697,7 +767,7 @@ scenes:
         character_id: Upton
         parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
         probe_id: Probe 2-B.1-A.1
-        choice: Response 2-B.1-A.1-B-gauze
+        choice: Response 2-B.1-A.1-B-gauze-u
         next_scene: Probe 3
     restricted_actions:
       - DIRECT_MOBILE_CHARACTERS
@@ -713,14 +783,21 @@ scenes:
         - [treat_Upton]
         - [treat_Springer_with_gauze]
         - [treat_Upton_with_gauze]
+  
   - id: Probe 2-B.1-B.1
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone told you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+        You assessed Upton and found that he has normal vital signs.
+
         You begin treating Upton.
         The other person from the helicopter suggests that you assess Springer.
         Do you stop and assess Springer?
       events:
-        - unstructured: The other person from the helicopter says, "Springer doesn’t look like he’s doing very well. Maybe you should take a look."
+        - unstructured: The other person from the helicopter says, "Springer doesn't look like he's doing very well. Maybe you should take a look."
           type: recommend
           source: ally
           object: Springer
@@ -750,7 +827,7 @@ scenes:
         character_id: Upton
         parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
         probe_id: Probe 2-B.1-B.1
-        choice: Response 2-B.1-B.1-B-gauze
+        choice: Response 2-B.1-B.1-B-gauze-u
         next_scene: Probe 3
     restricted_actions:
       - DIRECT_MOBILE_CHARACTERS
@@ -765,9 +842,17 @@ scenes:
         - [assess_Springer]
         - [treat_Upton]
         - [treat_Upton_with_gauze]
+  
   - id: Probe 2-B.1-B.1-A.1
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone told you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+        You assessed Upton and found that he has normal vital signs.
+        You began treating Upton. The other person from the helicopter suggested that you assess Springer.
+
         You have assessed Springer and find that he has fast breathing and a fast pulse.
         Who do you treat first?
       characters:
@@ -782,6 +867,7 @@ scenes:
             military_disposition: Allied
           injuries:
           - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
+          - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -805,7 +891,7 @@ scenes:
         character_id: Springer
         parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-B.1-B.1-A.1
-        choice: Response 2-B.1-B.1-A.1-A-gauze
+        choice: Response 2-B.1-B.1-A.1-A-gauze-sp
         next_scene: Probe 3
       - action_id: treat_Upton
         action_type: APPLY_TREATMENT
@@ -820,7 +906,7 @@ scenes:
         character_id: Upton
         parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
         probe_id: Probe 2-B.1-B.1-A.1
-        choice: Response 2-B.1-B.1-A.1-B-gauze
+        choice: Response 2-B.1-B.1-A.1-B-gauze-u
         next_scene: Probe 3
     restricted_actions:
       - DIRECT_MOBILE_CHARACTERS
@@ -836,9 +922,15 @@ scenes:
         - [treat_Upton]
         - [treat_Springer_with_gauze]
         - [treat_Upton_with_gauze]
+  
   - id: Probe 3
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone told you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+
         You have assessed and at least begun treating both patients.
         How much of the remaining supply of hemostatic gauze would you like to use on each patient?
         Each patient needed 3 treatments of gauze and you began with 5 total.
@@ -852,7 +944,7 @@ scenes:
         character_id: Springer
         parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 3
-        choice: Response 3-A
+        choice: Response 3-A-gauze-sp
         next_scene: Probe 4
       - action_id: treat_Upton
         action_type: APPLY_TREATMENT
@@ -861,7 +953,7 @@ scenes:
         character_id: Upton
         parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
         probe_id: Probe 3
-        choice: Response 3-B
+        choice: Response 3-B-gauze-u
         next_scene: Probe 4
       - action_id: done_treating
         action_type: END_SCENE
@@ -883,9 +975,15 @@ scenes:
         - [done_treating]
       supplies:
         - {type: Hemostatic gauze, quantity: 0}
+  
   - id: Probe 4
     state:
       unstructured: >
+        You took a helicopter to a site where US soldiers fight alongside a local allied military unit.  When you arrived there were two casualties.
+        They are both not in visible immediate danger, but both have a similar visible serious injury (such as significant shoulder area bleeding and a compound fracture of the upper arm such that you can't use a tourniquet) that doesn't entirely match the original reports.
+        Someone told you more information about the mechanism of injury.
+        Someone told you, "What a day. First, we were out on patrol, and if it wasn't for both SPC Springer and SPC Upton here having keen eyes, our unit would've gotten shot up by insurgents in an ambush. Then Springer started arguing with the US unit commander about clean-up duty, and was starting to punch him when Upton stepped in to grab Springer. They were grappling with each other at that abandoned house and bumped into that wall, and it collapsed on them."
+
         After you have treated both people, their vital signs are now both normal.
         Somebody tells you that they can take one person in transport now, but the second person will have to wait.
         Who do you get ready to load into the helicopter?
@@ -915,6 +1013,7 @@ scenes:
             military_disposition: Allied 
           injuries:
           - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
+          - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -933,6 +1032,7 @@ scenes:
             military_disposition: Allied
           injuries:
           - {name: Broken Bone, location: left shoulder, severity: major, status: discoverable}
+          - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -977,6 +1077,7 @@ scenes:
       actions:
         - [evac_Springer]
         - [evac_Upton]
+  
   - id: Scene 2
     state:
       unstructured: >
@@ -989,7 +1090,7 @@ scenes:
         While you are assessing/treating Springer, you hear shouts for help from behind the building.
         Another soldier runs up and tells you that they need help around the back of the building.
       events:
-        - unstructured: Another soldier runs up and says, "There’s nothing else you can do for him. I’ll take him inside. Go! They need you around the back of the building."
+        - unstructured: Another soldier runs up and says, "There's nothing else you can do for him. I'll take him inside. Go! They need you around the back of the building."
           type: recommend
           source: ally
           action_id: search_for_new_patients
@@ -1049,6 +1150,7 @@ scenes:
             military_disposition: Allied
           injuries:
           - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
+          - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -1080,6 +1182,7 @@ scenes:
     transitions:
       actions:
         - [search_for_new_patients]
+  
   - id: Scene 3
     state:
       unstructured: >
@@ -1089,6 +1192,7 @@ scenes:
         You can see there is an injured US soldier about 20 ft away on the ground, and another US solder is with them.
         As you assess him, you hear a commotion.
         An enemy insurgent runs over with his hands up and asks for help.
+        A US soldier asks you if you'd be willing to treat the insurgent.
       events:
         - unstructured: An enemy insurgent runs over with his hands up and says, "Please help! We surrender! My friend needs help."
           type: recommend
@@ -1111,12 +1215,13 @@ scenes:
             sex: M
             race: White
             military_disposition: Allied US
+            military_branch: US Army
           injuries:
           - {name: Puncture, location: right calf, severity: moderate, status: discoverable}
           vitals:
             avpu: ALERT
             ambulatory: false
-            mental_status: SHOCK
+            mental_status: CALM
             breathing: NORMAL
             heart_rate: NORMAL
             spo2: NORMAL
@@ -1172,9 +1277,17 @@ scenes:
       actions:
         - [do_not_treat_insurgent]
         - [treat_insurgent]
+  
   - id: Probe 8
     state:
       unstructured: >
+        You went partway around a building, and a US soldier told you more about the situation.
+        He said that a truck drove up, shot a grenade, and opened fire with at least two rifles.
+        The US soldiers returned fire and disabled the vehicle.
+        You saw an injured US soldier about 20 ft away on the ground, and another US solder was with them.
+        As you assessed the injured US soldier, you heard a commotion.
+        An enemy insurgent ran over with his hands up and asked for help.
+
         Two uninjured US soldiers go with the POW to the vehicle and bring back the other casualty.
         You are assessing/treating the wounded US soldier, who has a delayed (moderate bleeding from a glancing shot, bleeding has slowed) rather than immediate injury, when the others return with the wounded insurgent, who has visible heavy bleeding from the abdomen.
         Do you stop treating the US soldier and either assess or treat the wounded insurgent?
@@ -1195,12 +1308,13 @@ scenes:
             sex: M
             race: White
             military_disposition: Allied US
+            military_branch: US Army
           injuries:
           - {name: Puncture, location: right calf, severity: moderate, status: discoverable}
           vitals:
             avpu: ALERT
             ambulatory: false
-            mental_status: SHOCK
+            mental_status: CALM
             breathing: NORMAL
             heart_rate: NORMAL
             spo2: NORMAL
@@ -1271,14 +1385,24 @@ scenes:
         - [treat_us_soldier]
         - [assess_insurgent]
         - [treat_insurgent]
+  
   - id: Probe 8-A.1
     state:
       unstructured: >
+        You went partway around a building, and a US soldier told you more about the situation.
+        He said that a truck drove up, shot a grenade, and opened fire with at least two rifles.
+        The US soldiers returned fire and disabled the vehicle.
+        You saw an injured US soldier about 20 ft away on the ground, and another US solder was with them.
+        As you assessed the injured US soldier, you heard a commotion.
+        An enemy insurgent ran over with his hands up and asked for help.
+        Two uninjured US soldiers went with the POW to the vehicle and brought back the other casualty.
+        You were assessing/treating the wounded US soldier, who has a delayed (moderate bleeding from a glancing shot, bleeding has slowed) rather than immediate injury, when the others return with the wounded insurgent, who has visible heavy bleeding from the abdomen.
+
         You continue to assess/treat the US soldier.
         The insurgent's friend tells you he is sorry they attacked you and gives more information about their backstory.
         Do you switch and assess/treat the insurgent instead?
       events:
-        - unstructured: Their friend tells you, "I’m sorry we attacked you. Both of us were kidnapped by the insurgents last month, and force to join. We tried to run away but they caught us, and told us that if we didn’t do this attack, they’d kill us. Can’t you help him?"
+        - unstructured: Their friend tells you, "I'm sorry we attacked you. Both of us were kidnapped by the insurgents last month, and force to join. We tried to run away but they caught us, and told us that if we didn't do this attack, they'd kill us. Can't you help him?"
           type: inform
           source: adversary
           object: insurgent
@@ -1351,14 +1475,25 @@ scenes:
         - [treat_us_soldier]
         - [assess_insurgent]
         - [treat_insurgent]
+  
   - id: Probe 8-A.1-A.1
     state:
       unstructured: >
+        You went partway around a building, and a US soldier told you more about the situation.
+        He said that a truck drove up, shot a grenade, and opened fire with at least two rifles.
+        The US soldiers returned fire and disabled the vehicle.
+        You saw an injured US soldier about 20 ft away on the ground, and another US solder was with them.
+        As you assessed the injured US soldier, you heard a commotion.
+        An enemy insurgent ran over with his hands up and asked for help.
+        Two uninjured US soldiers went with the POW to the vehicle and brought back the other casualty.
+        You were assessing/treating the wounded US soldier, who has a delayed (moderate bleeding from a glancing shot, bleeding has slowed) rather than immediate injury, when the others return with the wounded insurgent, who has visible heavy bleeding from the abdomen.
+        You continued to assess/treat the US soldier. The insurgent's friend told you, "I'm sorry we attacked you. Both of us were kidnapped by the insurgents last month, and force to join. We tried to run away but they caught us, and told us that if we didn't do this attack, they'd kill us. Can't you help him?"
+
         You continue to assess/treat the US soldier.
         One of the US soldiers tells you that the ROE says we need to provide medical treatment to POWs.
         Do you switch and assess/treat the insurgent?
       events:
-        - unstructured: One of the US soldiers tells you, "At this point, he’s a POW, so the ROE says we need to provide medical treatment."
+        - unstructured: One of the US soldiers tells you, "At this point, he's a POW, so the ROE says we need to provide medical treatment."
           type: recommend
           source: ally
           object: insurgent
@@ -1369,7 +1504,8 @@ scenes:
       mission:
         unstructured: The ROE says that you must provide medical treatment to POWs.
         mission_type: Patrol
-        medical_policies: Treat All Neutrally
+        medical_policies:
+          - Treat All Neutrally
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -1418,16 +1554,17 @@ scenes:
         - [treat_us_soldier]
         - [assess_insurgent]
         - [treat_insurgent]
+  
   - id: Scene 4
     state:
       unstructured: >
         All injured have been moved inside the building.
         The teenage insurgent is the most seriously injured, the local soldier Upton is next, then the US soldier.
-        The wounded teenage insurgent’s friend apologizes to the US soldier and explains their situation.
+        The wounded teenage insurgent's friend apologizes to the US soldier and explains their situation.
         A US soldier tells you that the helicopter is ready to take off.
         Which patient should be loaded onto the helicopter?
       events:
-        - unstructured: You overhear the insurgent's friend tell the US soldier, "I’m sorry we attacked you. Both of us were kidnapped by the insurgents last month, and force to join. We tried to run away but they caught us, and told us that if we didn’t do this attack, they’d kill us. Can’t you help him?"
+        - unstructured: You overhear the insurgent's friend tell the US soldier, "I'm sorry we attacked you. Both of us were kidnapped by the insurgents last month, and force to join. We tried to run away but they caught us, and told us that if we didn't do this attack, they'd kill us. Can't you help him?"
           type: inform
           source: adversary
           object: insurgent
@@ -1462,6 +1599,7 @@ scenes:
             sex: M
             race: White
             military_disposition: Allied US
+            military_branch: US Army
           injuries:
           - {name: Puncture, location: right calf, severity: minor, status: visible}
           vitals:
@@ -1482,6 +1620,7 @@ scenes:
             military_disposition: Allied
           injuries:
           - {name: Broken Bone, location: left shoulder, severity: moderate, status: visible}
+          - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -1536,13 +1675,20 @@ scenes:
         - [evac_us_soldier]
         - [evac_Upton]
         - [evac_insurgent]
+  
   - id: Probe 9-A.1
     state:
       unstructured: >
+        All injured have been moved inside the building.
+        The teenage insurgent is the most seriously injured, the local soldier Upton is next, then the US soldier.
+        The wounded teenage insurgent's friend apologized to the US soldier and explains their situation.
+        A US soldier told you that the helicopter is ready to take off.
+
+        You indicated you were going to load the US soldier.
         One of the US soldiers reminds you that the ROE says we need to provide medical treatment to POWs.
         Does that change your mind about who to move to evac?
       events:
-        - unstructured: One of the US soldiers tells you, "You know that according to the ROE, we’re supposed to prioritize POWs the same as blue force. Does that change your mind?"
+        - unstructured: One of the US soldiers tells you, "You know that according to the ROE, we're supposed to prioritize POWs the same as blue force. Does that change your mind?"
           type: emphasize
           source: ally
           relevant_state:
@@ -1582,13 +1728,20 @@ scenes:
       actions:
         - [evac_us_soldier]
         - [evac_insurgent]
+  
   - id: Probe 9-B.1
     state:
       unstructured: >
+        All injured have been moved inside the building.
+        The teenage insurgent is the most seriously injured, the local soldier Upton is next, then the US soldier.
+        The wounded teenage insurgent's friend apologized to the US soldier and explains their situation.
+        A US soldier told you that the helicopter is ready to take off.
+
+        You indicated you were going to load the Upton.
         One of the US soldiers reminds you that the ROE says we need to provide medical treatment to POWs.
         Does that change your mind about who to move to evac?
       events:
-        - unstructured: One of the US soldiers tells you, "You know that according to the ROE, we’re supposed to prioritize POWs the same as blue force. Does that change your mind?"
+        - unstructured: One of the US soldiers tells you, "You know that according to the ROE, we're supposed to prioritize POWs the same as blue force. Does that change your mind?"
           type: emphasize
           source: ally
           relevant_state:
@@ -1628,9 +1781,16 @@ scenes:
       actions:
         - [evac_Upton]
         - [evac_insurgent]
+  
   - id: Probe 9-C.1
     state:
       unstructured:
+        All injured have been moved inside the building.
+        The teenage insurgent is the most seriously injured, the local soldier Upton is next, then the US soldier.
+        The wounded teenage insurgent's friend apologized to the US soldier and explains their situation.
+        A US soldier told you that the helicopter is ready to take off.
+
+        You indicated you were going to load the POW.
         One of the US soldiers tells you that the helicopter could take the two allied patients or the one adversary patient.
         Does that change your mind about who to move to evac?
       events:

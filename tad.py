@@ -10,7 +10,7 @@ from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
 from runner import MVPDriver, TA3Driver, TA3Client
 from components.decision_selector.mvp_cbr import Case
 from domain import Scenario
-from domain.internal import KDMAs, KDMA
+from domain.internal import AlignmentTarget, AlignmentTargetType
 import util
 from data import target_library
 from util import logger, LogLevel, use_simple_logger, dict_difference
@@ -65,11 +65,13 @@ def parse_kdmas(kdma_args: list[str]):
     if kdma_args is None: 
         return None
 
-    kdma_lst = []
+    kdma_names = []
+    kdma_values = {}
     for kdmastr in kdma_args:
         k, v = kdmastr.replace("-", "=").split('=')
-        kdma_lst.append(KDMA(k, float(v)))
-    return KDMAs(kdma_lst)
+        kdma_names.append(k)
+        kdma_values[k] = float(v)
+    return AlignmentTarget("CmdLine", kdma_names, kdma_values, AlignmentTargetType.SCALAR)
 
 
 def ltest(args):
@@ -160,8 +162,11 @@ def api_test(args, driver = None):
                 logger.debug(f"-State Removals: {difference}")
             probe = new_probe
             if args.training:
-                for alignment in client.get_session_alignments():
-                    driver.train(alignment, probe is None)
+                if probe is None:
+                    for alignment in client.get_session_alignments():
+                        driver.train(alignment, probe is None)
+                        logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
+                        
         logger.info(f"Scenario Complete")
     
     

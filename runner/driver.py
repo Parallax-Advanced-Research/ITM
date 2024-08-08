@@ -61,7 +61,7 @@ class Driver:
     def translate_feedback(self, feedback: ta3.AlignmentResults) -> AlignmentFeedback:
         return AlignmentFeedback(
                     feedback.alignment_target_id,
-                    KDMAs([KDMA(ass.kdma, ass.value) for ass in feedback.kdma_values]), 
+                    KDMAs([]),
                     feedback.score)
 
     def elaborate(self, probe: TADProbe) -> list[Decision[Action]]:
