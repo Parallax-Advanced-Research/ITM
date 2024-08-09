@@ -36,8 +36,8 @@ def validate_args(args: argparse.Namespace) -> None:
         sys.stderr.write("\x1b[93mPlease do not supply your own KDMAs in evaluation mode.\x1b[0m\n")
         sys.exit(1)
 
-    if args.eval_targets is not None and len(args.eval_targets) > 0 and not args.training:
-        args.training = True
+    # if args.eval_targets is not None and len(args.eval_targets) > 0 and not args.training:
+        # args.training = True
 
     if args.session_type == 'eval' and args.training:
         sys.stderr.write("\x1b[93mCannot perform training in evaluation mode.\x1b[0m\n")
@@ -95,6 +95,8 @@ def get_default_parser() -> argparse.ArgumentParser:
                              + "kedsd, not otherwise.")
     parser.add_argument('--decision_verbose', action=argparse.BooleanOptionalAction, default=False, 
                         help="Causes a decision selector to output extra information explaining its selections.")
+    parser.add_argument('--insert_pauses', action=argparse.BooleanOptionalAction, default=False, 
+                        help="Causes a decision selector to break after selection decisions.")
     parser.add_argument('--elab_output', action=argparse.BooleanOptionalAction, default=False,
                         help="Outputs the elaborator actions into json file (used to help compare to llm).")
     parser.add_argument('--record_considered_decisions', action=argparse.BooleanOptionalAction, default=False, 
