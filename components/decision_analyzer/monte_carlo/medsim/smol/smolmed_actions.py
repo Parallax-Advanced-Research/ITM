@@ -129,7 +129,7 @@ def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int
 
 def end_scenario_action(casualties: list[Casualty], supplies: dict[str, int], start_time: float,
                         aid_delay: float) -> list[MedsimState]:
-    time_taken = aid_delay
+    time_taken = 1.0 # lol aid_delay
     for c in casualties:
         casualty_injuries: list[Affector] = c.injuries
         for ci in casualty_injuries:

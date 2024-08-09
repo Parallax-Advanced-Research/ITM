@@ -53,8 +53,8 @@ class Medical:
         Actions.DIRECT_MOBILE_CASUALTY.value: [60.0],
         Actions.SEARCH.value: [18.0],
         Actions.CHECK_BLOOD_OXYGEN.value: [30.0],
-        Actions.END_SCENE.value: [0.0],
-        Actions.END_SCENARIO.value: [0.0]
+        Actions.END_SCENE.value: [1.0],
+        Actions.END_SCENARIO.value: [1.0]
     }
 
     SUPPLY_INJURY_MATCH = {
