@@ -1,0 +1,24 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Adept MJ5",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type adept --kdma moraldesert=.84 --scenario DryRunEval-MJ5-eval --no-training --keds --dump"
+        },
+        {
+            "name": "Explanation Tester (ADEPT, MD1-Urban, Moraldesert)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type adept --kdma moraldesert=.84 --scenario MetricsEval.MD1-Urban --verbose --keds --dump"
+        }
+    ]
+}

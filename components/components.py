@@ -1,4 +1,4 @@
-from domain.internal import Scenario, TADProbe, Decision, AlignmentTarget, DecisionMetrics, AlignmentFeedback, Action
+from domain.internal import Scenario, TADProbe, Decision, AlignmentTarget, DecisionMetrics, AlignmentFeedback, Action, Explanation
 
 
 class DecisionAnalyzer:
@@ -20,6 +20,9 @@ class AlignmentTrainer:
     def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback):
         raise NotImplementedError
 
+class DecisionExplainer:
+    def explain(self, decision: Decision):
+        raise NotImplementedError
 
 class Elaborator:
     def elaborate(self, scenario: Scenario, probe: TADProbe) -> list[Decision]:

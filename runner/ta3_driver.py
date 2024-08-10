@@ -1,3 +1,4 @@
+from components.decision_explainer.kdma_decision.kdma_decision_explainer import KDMADecisionExplainer
 from domain.ta3 import TA3State
 from components.decision_selector.default import HumanDecisionSelector
 from components.decision_selector.sept_cbr import CSVDecisionSelector
@@ -65,13 +66,19 @@ class TA3Driver(Driver):
         analyzers = [ebd, br, bnd, mca]
         analyzers = [a for a in analyzers if a is not None]
 
+        kdma_explainer = KDMADecisionExplainer() 
+
+        explainers = [kdma_explainer]
+        explainers = [e for e in explainers if e is not None]
+
+
         self.estimator = ebd
         
         if args.variant == 'baseline': 
             analyzers = []
 
         trainer = KDMACaseBaseRetainer()
-        super().__init__(elaborator, selector, analyzers, trainer, dumper_config = dump_config)
+        super().__init__(elaborator, selector, analyzers, explainers, trainer, dumper_config = dump_config)
 
     def _extract_state(self, dict_state: dict):
         for character in dict_state['characters']:
