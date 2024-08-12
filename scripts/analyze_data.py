@@ -106,7 +106,15 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
         case["action-len"] = len(case["actions"])
         case["action-hash"] = hash(case["action-string"])
         case["pre-action-hash"] = hash(case["pre-action-string"])
+        # if "context" not in case:
+            # case["context"] = {}
+            # for key in case:
+                # if key.startswith("topic") or key.startswith("val_"):
+                    # case[key] = str(case[key])
+                    # case["context"][key] = case[key]
         case["state-hash"] = case_state_hash(case)
+        context = case.pop("context")
+        case |= flatten("context", context)
     last_action_len : int = 1
     last_hints : dict[str, float] = {}
     last_pre_action_string = ""
@@ -322,10 +330,11 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
                 hint_val : float = -1
                 if key in hint_names:
                     hint_val = new_case.get("hint." + key, -1)
+                    new_case[key.lower()] = hint_val
                 if hint_val == -1:
                     hint_val = statistics.mean([case.get("dhint", {}).get(key, None) for case in case_list])
                     hint_val = (hint_val + 1.0) / 2
-                new_case[key.lower()] = hint_val
+                    new_case["bprop." + key.lower()] = hint_val
                 new_case.pop("dhint")
         
         new_case.pop("hash")
@@ -471,6 +480,9 @@ def case_state_hash(case: dict[str, Any]) -> int:
     val_list = []
     for key in NON_NOISY_KEYS:
         val_list.append(case.get(key, None))
+    for key in sorted(case["context"].keys()):
+        val_list.append(key)
+        val_list.append(str(case["context"][key]))
     val_list.append(str(case.get("hint", None)))
     return hash(tuple(val_list))
 
@@ -512,10 +524,12 @@ def main():
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
+    patterns = triage_constants.IGNORE_PATTERNS
+    patterns.append("bprop.")
     for case in kdma_cases:
         cur_keys = list(case.keys())
         for key in cur_keys:
-            for pattern in triage_constants.IGNORE_PATTERNS:
+            for pattern in patterns:
                 if pattern in key.lower():
                     case.pop(key)
                     break
@@ -526,10 +540,10 @@ def main():
         fields.remove(kdma_name.lower())
         
     for kdma_name in hint_types:
-        trainer = WeightTrainer(KEDSWithXGBModeller(kdma_cases, kdma_name.lower()), fields)
+        # trainer = WeightTrainer(KEDSWithXGBModeller(kdma_cases, kdma_name.lower()), fields)
+        # trainer.weight_train({key:1 for key in fields})
+        trainer = SimpleWeightTrainer(KEDSModeller(kdma_cases, kdma_name.lower()), fields, kdma_cases, kdma_name.lower())
         trainer.weight_train({key:1 for key in fields})
-        # trainer = SimpleWeightTrainer(KEDSModeller(kdma_cases, kdma_name.lower()), fields, kdma_cases, kdma_name.lower())
-        # trainer.weight_train({})
         new_weights[kdma_name] = trainer.get_best_weights()
     
     with open(args.weight_file, "w") as wf:
