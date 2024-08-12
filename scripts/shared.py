@@ -102,10 +102,13 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--weight_file', type=str, default=None, 
                         help="Provides weights to be used in comparing cases by the decision "\
                              + "selector. Used with keds, kedsd, not otherwise.")
-    parser.add_argument('--uniform_weight', action=argparse.BooleanOptionalAction, default=False, help=argparse.SUPPRESS)
+    parser.add_argument('--uniform_weight', action=argparse.BooleanOptionalAction, default=False,
+                        help="Requests that a default uniform weight be used in comparing cases "\
+                             + "by the decision selector. Overrides --weightfile. Used with keds, "\
+                             + "kedsd, not otherwise.")    
     parser.add_argument('--casefile', type=str, default=None, help=argparse.SUPPRESS)
     parser.add_argument('--weightfile', type=str, default=None, help=argparse.SUPPRESS)
-    parser.add_argument('--uniformweight', action=argparse.BooleanOptionalAction, default=False, 
+    parser.add_argument('--uniformweight', action=argparse.BooleanOptionalAction, default=False, help=argparse.SUPPRESS)
     parser.add_argument('--decision_verbose', action=argparse.BooleanOptionalAction, default=False, 
                         help="Causes a decision selector to output extra information explaining its selections.")
     parser.add_argument('--insert_pauses', action=argparse.BooleanOptionalAction, default=False, 
