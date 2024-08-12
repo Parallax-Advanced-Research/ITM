@@ -1,0 +1,10 @@
+{
+    "kdma_specific_weights": {
+        "QualityOfLife": {
+            "HRA Strategy.time-risk_reward_ratio-system.take-the-best": 8,
+            "age": 0.125,
+            "Tallying Priority": 1
+        }
+    },
+    "default": 0
+}
