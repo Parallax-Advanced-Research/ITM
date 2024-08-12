@@ -1,0 +1,1789 @@
+{
+  "cui_count": 0,
+  "empty_count": {
+    "TAB 01  DEMOGRAPHICS": {
+      "UID ": 0.0,
+      "AGE": 0.0,
+      "AGE_UNIT": 0.0,
+      "GENDER": 0.0,
+      "PATIENT_CATEGORY_DESCRIPTION": 0.0,
+      "MILITARY_SERVICE": 0.3333333333333333,
+      "CLASSIFICATION_OF_INJURY": 0.0,
+      "INJURY_YEAR": 0.0,
+      "MILITARY_RANK": 0.6666666666666666,
+      "NAME_OF_MILITARY_OPERATION": 0.0,
+      "FINAL_DISCHARGE_STATUS": 0.0,
+      "COMPOSITE_ISS_2005": 0.0,
+      "MAX_AIS_BR1": 0.6666666666666666,
+      "MAX_AIS_BR2": 1.0,
+      "MAX_AIS_BR3": 1.0,
+      "MAX_AIS_BR4": 1.0,
+      "MAX_AIS_BR5": 0.6666666666666666,
+      "MAX_AIS_BR6": 0.6666666666666666
+    },
+    "TAB 02 INJURY INFORMATION 71983": {
+      "UID": 0.0,
+      "INJURY_YEAR": 0.0,
+      "CONFLICT_RELATED": 0.0,
+      "CLASSIFICATION_OF_INJURY": 0.0,
+      "NAME_OF_MILITARY_OPERATION": 0.0,
+      "MILITARY_OPERATION_IF_OTHER": 1.0,
+      "ICD10_LOCATION_CODE": 0.3333333333333333
+    },
+    "TAB 03 MECHANISM OF INJURY71983": {
+      "UID": 0.0,
+      "INJURY_YEAR": 0.0,
+      "DOMINANT_MECHANISM_OF_INJURY": 0.0,
+      "DOMINANT_MECHANISM_OTHER": 1.0,
+      "DOMINANT_TYPE_OF_INJURY": 0.0,
+      "ICD10_CODE": 0.6666666666666666,
+      "ICD10_CODE_DESCRIPTION": 0.6666666666666666
+    },
+    "TAB 04AIS ANDICDDIAGNOSIS 71983": {
+      "UID": 0.0,
+      "FACILITY_ROLE": 0.0,
+      "AIS_CODE": 0.0,
+      "AIS_CODE_DESCRIPTION": 0.0,
+      "LOCALIZER1": 1.0,
+      "LOCALIZER2": 0.8333333333333334,
+      "ICD_CODE": 0.0,
+      "ICD_CODE_DESCRIPTION": 0.0,
+      "ISS_BODY_REGION": 0.0,
+      "AIS_VERSION": 1.0,
+      "FRAGMENTS": 0.8333333333333334,
+      "FRAGMENTS_RETAINED": 0.8333333333333334,
+      "OPEN_ABDOMEN_ON_ARRIVAL": 0.5,
+      "OPEN_ABDOMEN_ON_DISCHARGE": 0.6666666666666666,
+      "CIV_ISS05": 0.0,
+      "CIV_NISS": 0.0,
+      "CIV_TRISS": 0.5,
+      "CIV_MAX_AIS": 0.0,
+      "MIL_ISS05": 0.0,
+      "MIL_NISS": 0.0,
+      "MIL_TRISS": 0.5,
+      "MIL_MAX_AIS": 0.0
+    },
+    "TAB 05 ICD PROCEDURES 71983": {
+      "UID ": 0.0,
+      "FACILITY_ROLE": 0.0,
+      "CODE": 0.0,
+      "CODE_DESCRIPTION": 0.0,
+      "CODE_TYPE": 0.0,
+      "LOCATION": 0.0,
+      "LOCATION_IF_OTHER": 0.8333333333333334,
+      "TQ_TRUE_FALSE": 0.0,
+      "TQ_TIMES": 0.8333333333333334,
+      "RESULT": 0.8333333333333334,
+      "ANATOMIC_REGION": 0.8333333333333334,
+      "WARMING_DEVICES": 0.5
+    },
+    "TAB 06  AT PROVIDERS 71983": {
+      "UID": 0.0,
+      "FACILITY_ROLE": 0.0,
+      "TRANSPORT_LEG_NUMBER": 0.5,
+      "CARE_LOCATION": 0.25,
+      "TRANSPORT_STAGE": 0.5,
+      "PREHOSPITAL_FACILITY_DESC": 0.75,
+      "TRANSPORT_TEAM": 0.5,
+      "TRANSPORT_TEAM_IF_OTHER": 1.0,
+      "TRANSPORT_TYPE": 0.5,
+      "TRANSPORT_MODE": 0.5,
+      "PROVIDER_JOB_FUNCTION": 1.0,
+      "PROVIDER_ROLE": 1.0,
+      "PROVIDER_ROLE_IF_OTHER": 1.0
+    },
+    "TAB 07  AT VITALS": {
+      "UID ": 0.0,
+      "FACILITY_ROLE": 0.0,
+      "AT_TEMPERATURE": 0.6666666666666666,
+      "AT_TEMPERATURE_UNITS": 0.6666666666666666,
+      "AT_TEMPERATURE_ROUTE": 1.0,
+      "AT_PULSE_RATE": 0.6666666666666666,
+      "AT_PULSE_QUALITY": 0.6666666666666666,
+      "AT_RESPIRATORY_RATE": 0.6666666666666666,
+      "AT_SBP": 0.6666666666666666,
+      "AT_DBP": 0.6666666666666666,
+      "AT_SAO2": 0.6666666666666666,
+      "AT_GCS_EYE": 0.6666666666666666,
+      "AT_GCS_VERBAL": 0.6666666666666666,
+      "AT_GCS_MOTOR": 0.6666666666666666,
+      "AT_GCS_TOTAL": 0.6666666666666666,
+      "AT_PAIN": 1.0,
+      "AT_PAIN_SCALE": 1.0,
+      "AT_PARALYTIC_AGENTS": 0.3333333333333333,
+      "AT_SEDATED": 0.3333333333333333,
+      "AT_INTUBATED": 0.3333333333333333,
+      "AT_RESPIRATION_ASSISTED": 0.3333333333333333,
+      "AT_UNIT_NUMBER": 1.0,
+      "AT_CARE_LOCATION": 0.3333333333333333,
+      "AT_RTS": 0.6666666666666666
+    },
+    "TAB 8  AT PROCEDURES": {
+      "UID ": 0.0,
+      "FACILITY_ROLE": 0.0,
+      "PH_PROCEDURE": 0.0,
+      "PH_PROCEDURE_DESCRIPTION": 0.0,
+      "PROCEDURES_IF_OTHER": 0.75,
+      "ANATOMIC_REGION": 0.75,
+      "EFFECTIVE": 1.0,
+      "TQ_TRUE_FALSE": 0.0,
+      "CARE_LOCATION": 0.0
+    },
+    "TAB 09  AT MEDICATIONS": {
+      "UID ": 0.0,
+      "FACILITY_ROLE": 0.0,
+      "MEDICATION_GIVEN": 0.0,
+      "MEDICATION_GIVEN_IF_OTHER": 0.6666666666666666,
+      "MEDICATION_DOSE": 0.6666666666666666,
+      "MEDICATION_DOSE_UNITS": 0.6666666666666666,
+      "MEDICATION_ROUTE": 0.0
+    },
+    "TAB 10 ED VITALS": {
+      "UID ": 0.0,
+      "FACILITY_ROLE": 0.0,
+      "WAS_THIS_A_TRANSFER_PATIENT": 0.0,
+      "WAS_THIS_A_MASS_CASUALTY": 0.6666666666666666,
+      "TIME_IN_ED": 0.3333333333333333,
+      "INITIAL_STATUS": 0.0,
+      "POST_ED_DISPOSITION": 0.0,
+      "ED_PULSE_RATE": 0.0,
+      "ED_PULSE_QUALITY": 0.6666666666666666,
+      "ED_RESPIRATORY_RATE": 0.0,
+      "ED_SBP": 0.0,
+      "ED_DBP": 0.0,
+      "ED_SAO2": 0.6666666666666666,
+      "ED_PAIN": 0.3333333333333333,
+      "ED_PAIN_SCALE": 0.6666666666666666,
+      "ED_GCS_EYE": 0.3333333333333333,
+      "ED_GCS_VERBAL": 0.3333333333333333,
+      "ED_GCS_MOTOR": 0.3333333333333333,
+      "ED_GCS_TOTAL": 0.3333333333333333,
+      "ED_TEMPERATURE": 0.3333333333333333,
+      "ED_TEMPERATURE_UNITS": 0.3333333333333333,
+      "ED_TEMPERATURE_ROUTE": 0.6666666666666666,
+      "ED_SEDATED": 0.0,
+      "ED_INTUBATED": 0.0,
+      "ED_INTUBATION_IF_YES_METHOD": 0.6666666666666666,
+      "ED_PARALYTIC_AGENTS": 0.0,
+      "ED_RESPIRATION_ASSISTED": 0.0,
+      "ED_RESP_ASSISTED_IF_YES_TYPE": 0.6666666666666666,
+      "ED_RTS": 0.3333333333333333,
+      "ED_INR": 0.6666666666666666,
+      "ED_ABG_DRAWN": 0.3333333333333333,
+      "ED_VGB_DRAWN": 0.3333333333333333,
+      "ED_HGB": 0.6666666666666666,
+      "ED_HCT": 0.6666666666666666,
+      "ED_PLATELET_COUNT": 0.6666666666666666,
+      "ED_BG_PH": 0.6666666666666666,
+      "ED_PACO2": 0.6666666666666666,
+      "ED_PAO2": 0.6666666666666666,
+      "ED_BASEDEFICIT": 0.6666666666666666,
+      "TRIAGE_CATEGORY": 0.3333333333333333
+    },
+    "TAB 11  BLOOD": {
+      "UID ": 0.0,
+      "FACILITY_ROLE": 0.0,
+      "CRYSTALLOIDS_TYPE_TOTAL": 0.6666666666666666,
+      "CRYSTALLOIDS_1ST_24HRS": 0.3333333333333333,
+      "COLLOIDS_TYPE_TOTAL": 0.3333333333333333,
+      "COLLOIDS_1ST_24HRS": 0.6666666666666666,
+      "TOTAL_CCS_TYPE_TOTAL": 0.3333333333333333,
+      "TOTAL_CCS_1ST_24HRS": 0.6666666666666666,
+      "WHOLE_BLOOD_TYPE_TOTAL": 0.3333333333333333,
+      "WHOLE_BLOOD_1ST_24HRS": 0.3333333333333333,
+      "PRBC_TYPE_TOTAL": 0.3333333333333333,
+      "PRBC_1ST_24HRS": 0.3333333333333333,
+      "FROZEN_PRBC_TYPE_TOTAL": 0.3333333333333333,
+      "FROZEN_PRBC_1ST_24HRS": 0.3333333333333333,
+      "PLATELETS_TYPE_TOTAL": 0.3333333333333333,
+      "PLATELETS_1ST_24HRS": 0.3333333333333333,
+      "CRYOPRECIPITATES_TYPE_TOTAL": 0.3333333333333333,
+      "CRYOPRECIPITATES_1ST_24HRS": 0.3333333333333333,
+      "FRESH_FROZEN_PLASMA_TYPE_TOTAL": 0.6666666666666666,
+      "FRESH_FROZEN_PLASMA_1ST_24HRS": 0.3333333333333333,
+      "FREEZE_DRIED_PLASMA_TYPE_TOTAL": 0.3333333333333333,
+      "FREEZE_DRIED_PLASMA_1ST_24HRS": 0.3333333333333333,
+      "TOTAL_UNITS_TYPE_TOTAL": 0.3333333333333333,
+      "TOTAL_UNITS_FIRST_24HRS": 0.3333333333333333,
+      "FACTOR_VII": 0.3333333333333333,
+      "THAM": 0.6666666666666666,
+      "TXA": 0.6666666666666666,
+      "MEDICATION": 0.6666666666666666,
+      "DOSE": 0.6666666666666666,
+      "DOSE_UNITS": 0.6666666666666666,
+      "CRYSTALLOIDS_FIRST24_INJ": 1.0,
+      "COLLOIDS_FIRST24_INJ": 1.0,
+      "TOTAL_MLS_FIRST24_INJ": 1.0,
+      "WHOLE_BLOOD_FIRST24_INJ": 0.6666666666666666,
+      "PRBC_FIRST24_INJ": 0.6666666666666666,
+      "FROZEN_PRBC_FIRST24_INJ": 0.6666666666666666,
+      "PLATELETS_FIRST24_INJ": 0.6666666666666666,
+      "CRYOPRCIPATATES_FIRST24_INJ": 0.6666666666666666,
+      "FRESH_FROZEN_FIRST24_INJ": 0.6666666666666666,
+      "FREEZE_DRIED_FIRST24_INJ": 0.6666666666666666,
+      "TOTAL_FIRST24_INJ_UNITS": 0.6666666666666666
+    }
+  },
+  "unique_values": {
+    "TAB 01  DEMOGRAPHICS": {
+      "UID ": [
+        3,
+        1.0
+      ],
+      "AGE": [
+        3,
+        1.0
+      ],
+      "AGE_UNIT": [
+        2,
+        0.6666666666666666
+      ],
+      "GENDER": [
+        2,
+        0.6666666666666666
+      ],
+      "PATIENT_CATEGORY_DESCRIPTION": [
+        3,
+        1.0
+      ],
+      "MILITARY_SERVICE": [
+        3,
+        1.0
+      ],
+      "CLASSIFICATION_OF_INJURY": [
+        2,
+        0.6666666666666666
+      ],
+      "INJURY_YEAR": [
+        3,
+        1.0
+      ],
+      "MILITARY_RANK": [
+        2,
+        0.6666666666666666
+      ],
+      "NAME_OF_MILITARY_OPERATION": [
+        1,
+        0.3333333333333333
+      ],
+      "FINAL_DISCHARGE_STATUS": [
+        2,
+        0.6666666666666666
+      ],
+      "COMPOSITE_ISS_2005": [
+        3,
+        1.0
+      ],
+      "MAX_AIS_BR1": [
+        2,
+        0.6666666666666666
+      ],
+      "MAX_AIS_BR2": [
+        1,
+        0.3333333333333333
+      ],
+      "MAX_AIS_BR3": [
+        1,
+        0.3333333333333333
+      ],
+      "MAX_AIS_BR4": [
+        1,
+        0.3333333333333333
+      ],
+      "MAX_AIS_BR5": [
+        2,
+        0.6666666666666666
+      ],
+      "MAX_AIS_BR6": [
+        2,
+        0.6666666666666666
+      ]
+    },
+    "TAB 02 INJURY INFORMATION 71983": {
+      "UID": [
+        3,
+        1.0
+      ],
+      "INJURY_YEAR": [
+        3,
+        1.0
+      ],
+      "CONFLICT_RELATED": [
+        1,
+        0.3333333333333333
+      ],
+      "CLASSIFICATION_OF_INJURY": [
+        2,
+        0.6666666666666666
+      ],
+      "NAME_OF_MILITARY_OPERATION": [
+        1,
+        0.3333333333333333
+      ],
+      "MILITARY_OPERATION_IF_OTHER": [
+        1,
+        0.3333333333333333
+      ],
+      "ICD10_LOCATION_CODE": [
+        3,
+        1.0
+      ]
+    },
+    "TAB 03 MECHANISM OF INJURY71983": {
+      "UID": [
+        3,
+        1.0
+      ],
+      "INJURY_YEAR": [
+        3,
+        1.0
+      ],
+      "DOMINANT_MECHANISM_OF_INJURY": [
+        3,
+        1.0
+      ],
+      "DOMINANT_MECHANISM_OTHER": [
+        1,
+        0.3333333333333333
+      ],
+      "DOMINANT_TYPE_OF_INJURY": [
+        2,
+        0.6666666666666666
+      ],
+      "ICD10_CODE": [
+        2,
+        0.6666666666666666
+      ],
+      "ICD10_CODE_DESCRIPTION": [
+        2,
+        0.6666666666666666
+      ]
+    },
+    "TAB 04AIS ANDICDDIAGNOSIS 71983": {
+      "UID": [
+        3,
+        0.5
+      ],
+      "FACILITY_ROLE": [
+        3,
+        0.5
+      ],
+      "AIS_CODE": [
+        6,
+        1.0
+      ],
+      "AIS_CODE_DESCRIPTION": [
+        6,
+        1.0
+      ],
+      "LOCALIZER1": [
+        1,
+        0.16666666666666666
+      ],
+      "LOCALIZER2": [
+        2,
+        0.3333333333333333
+      ],
+      "ICD_CODE": [
+        6,
+        1.0
+      ],
+      "ICD_CODE_DESCRIPTION": [
+        6,
+        1.0
+      ],
+      "ISS_BODY_REGION": [
+        6,
+        1.0
+      ],
+      "AIS_VERSION": [
+        1,
+        0.16666666666666666
+      ],
+      "FRAGMENTS": [
+        3,
+        0.5
+      ],
+      "FRAGMENTS_RETAINED": [
+        3,
+        0.5
+      ],
+      "OPEN_ABDOMEN_ON_ARRIVAL": [
+        3,
+        0.5
+      ],
+      "OPEN_ABDOMEN_ON_DISCHARGE": [
+        2,
+        0.3333333333333333
+      ],
+      "CIV_ISS05": [
+        3,
+        0.5
+      ],
+      "CIV_NISS": [
+        3,
+        0.5
+      ],
+      "CIV_TRISS": [
+        2,
+        0.3333333333333333
+      ],
+      "CIV_MAX_AIS": [
+        3,
+        0.5
+      ],
+      "MIL_ISS05": [
+        3,
+        0.5
+      ],
+      "MIL_NISS": [
+        3,
+        0.5
+      ],
+      "MIL_TRISS": [
+        2,
+        0.3333333333333333
+      ],
+      "MIL_MAX_AIS": [
+        3,
+        0.5
+      ]
+    },
+    "TAB 05 ICD PROCEDURES 71983": {
+      "UID ": [
+        3,
+        0.5
+      ],
+      "FACILITY_ROLE": [
+        2,
+        0.3333333333333333
+      ],
+      "CODE": [
+        6,
+        1.0
+      ],
+      "CODE_DESCRIPTION": [
+        6,
+        1.0
+      ],
+      "CODE_TYPE": [
+        1,
+        0.16666666666666666
+      ],
+      "LOCATION": [
+        3,
+        0.5
+      ],
+      "LOCATION_IF_OTHER": [
+        2,
+        0.3333333333333333
+      ],
+      "TQ_TRUE_FALSE": [
+        2,
+        0.3333333333333333
+      ],
+      "TQ_TIMES": [
+        2,
+        0.3333333333333333
+      ],
+      "RESULT": [
+        2,
+        0.3333333333333333
+      ],
+      "ANATOMIC_REGION": [
+        2,
+        0.3333333333333333
+      ],
+      "WARMING_DEVICES": [
+        3,
+        0.5
+      ]
+    },
+    "TAB 06  AT PROVIDERS 71983": {
+      "UID": [
+        3,
+        0.75
+      ],
+      "FACILITY_ROLE": [
+        1,
+        0.25
+      ],
+      "TRANSPORT_LEG_NUMBER": [
+        2,
+        0.5
+      ],
+      "CARE_LOCATION": [
+        3,
+        0.75
+      ],
+      "TRANSPORT_STAGE": [
+        3,
+        0.75
+      ],
+      "PREHOSPITAL_FACILITY_DESC": [
+        2,
+        0.5
+      ],
+      "TRANSPORT_TEAM": [
+        3,
+        0.75
+      ],
+      "TRANSPORT_TEAM_IF_OTHER": [
+        1,
+        0.25
+      ],
+      "TRANSPORT_TYPE": [
+        3,
+        0.75
+      ],
+      "TRANSPORT_MODE": [
+        3,
+        0.75
+      ],
+      "PROVIDER_JOB_FUNCTION": [
+        1,
+        0.25
+      ],
+      "PROVIDER_ROLE": [
+        1,
+        0.25
+      ],
+      "PROVIDER_ROLE_IF_OTHER": [
+        1,
+        0.25
+      ]
+    },
+    "TAB 07  AT VITALS": {
+      "UID ": [
+        3,
+        1.0
+      ],
+      "FACILITY_ROLE": [
+        3,
+        1.0
+      ],
+      "AT_TEMPERATURE": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_TEMPERATURE_UNITS": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_TEMPERATURE_ROUTE": [
+        1,
+        0.3333333333333333
+      ],
+      "AT_PULSE_RATE": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_PULSE_QUALITY": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_RESPIRATORY_RATE": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_SBP": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_DBP": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_SAO2": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_GCS_EYE": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_GCS_VERBAL": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_GCS_MOTOR": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_GCS_TOTAL": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_PAIN": [
+        1,
+        0.3333333333333333
+      ],
+      "AT_PAIN_SCALE": [
+        1,
+        0.3333333333333333
+      ],
+      "AT_PARALYTIC_AGENTS": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_SEDATED": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_INTUBATED": [
+        2,
+        0.6666666666666666
+      ],
+      "AT_RESPIRATION_ASSISTED": [
+        3,
+        1.0
+      ],
+      "AT_UNIT_NUMBER": [
+        1,
+        0.3333333333333333
+      ],
+      "AT_CARE_LOCATION": [
+        3,
+        1.0
+      ],
+      "AT_RTS": [
+        2,
+        0.6666666666666666
+      ]
+    },
+    "TAB 8  AT PROCEDURES": {
+      "UID ": [
+        3,
+        0.75
+      ],
+      "FACILITY_ROLE": [
+        1,
+        0.25
+      ],
+      "PH_PROCEDURE": [
+        4,
+        1.0
+      ],
+      "PH_PROCEDURE_DESCRIPTION": [
+        4,
+        1.0
+      ],
+      "PROCEDURES_IF_OTHER": [
+        2,
+        0.5
+      ],
+      "ANATOMIC_REGION": [
+        2,
+        0.5
+      ],
+      "EFFECTIVE": [
+        1,
+        0.25
+      ],
+      "TQ_TRUE_FALSE": [
+        2,
+        0.5
+      ],
+      "CARE_LOCATION": [
+        2,
+        0.5
+      ]
+    },
+    "TAB 09  AT MEDICATIONS": {
+      "UID ": [
+        3,
+        1.0
+      ],
+      "FACILITY_ROLE": [
+        2,
+        0.6666666666666666
+      ],
+      "MEDICATION_GIVEN": [
+        3,
+        1.0
+      ],
+      "MEDICATION_GIVEN_IF_OTHER": [
+        2,
+        0.6666666666666666
+      ],
+      "MEDICATION_DOSE": [
+        2,
+        0.6666666666666666
+      ],
+      "MEDICATION_DOSE_UNITS": [
+        2,
+        0.6666666666666666
+      ],
+      "MEDICATION_ROUTE": [
+        3,
+        1.0
+      ]
+    },
+    "TAB 10 ED VITALS": {
+      "UID ": [
+        3,
+        1.0
+      ],
+      "FACILITY_ROLE": [
+        2,
+        0.6666666666666666
+      ],
+      "WAS_THIS_A_TRANSFER_PATIENT": [
+        2,
+        0.6666666666666666
+      ],
+      "WAS_THIS_A_MASS_CASUALTY": [
+        2,
+        0.6666666666666666
+      ],
+      "TIME_IN_ED": [
+        3,
+        1.0
+      ],
+      "INITIAL_STATUS": [
+        1,
+        0.3333333333333333
+      ],
+      "POST_ED_DISPOSITION": [
+        3,
+        1.0
+      ],
+      "ED_PULSE_RATE": [
+        3,
+        1.0
+      ],
+      "ED_PULSE_QUALITY": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_RESPIRATORY_RATE": [
+        3,
+        1.0
+      ],
+      "ED_SBP": [
+        3,
+        1.0
+      ],
+      "ED_DBP": [
+        3,
+        1.0
+      ],
+      "ED_SAO2": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_PAIN": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_PAIN_SCALE": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_GCS_EYE": [
+        3,
+        1.0
+      ],
+      "ED_GCS_VERBAL": [
+        3,
+        1.0
+      ],
+      "ED_GCS_MOTOR": [
+        3,
+        1.0
+      ],
+      "ED_GCS_TOTAL": [
+        3,
+        1.0
+      ],
+      "ED_TEMPERATURE": [
+        3,
+        1.0
+      ],
+      "ED_TEMPERATURE_UNITS": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_TEMPERATURE_ROUTE": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_SEDATED": [
+        1,
+        0.3333333333333333
+      ],
+      "ED_INTUBATED": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_INTUBATION_IF_YES_METHOD": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_PARALYTIC_AGENTS": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_RESPIRATION_ASSISTED": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_RESP_ASSISTED_IF_YES_TYPE": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_RTS": [
+        3,
+        1.0
+      ],
+      "ED_INR": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_ABG_DRAWN": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_VGB_DRAWN": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_HGB": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_HCT": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_PLATELET_COUNT": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_BG_PH": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_PACO2": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_PAO2": [
+        2,
+        0.6666666666666666
+      ],
+      "ED_BASEDEFICIT": [
+        2,
+        0.6666666666666666
+      ],
+      "TRIAGE_CATEGORY": [
+        3,
+        1.0
+      ]
+    },
+    "TAB 11  BLOOD": {
+      "UID ": [
+        3,
+        1.0
+      ],
+      "FACILITY_ROLE": [
+        1,
+        0.3333333333333333
+      ],
+      "CRYSTALLOIDS_TYPE_TOTAL": [
+        2,
+        0.6666666666666666
+      ],
+      "CRYSTALLOIDS_1ST_24HRS": [
+        3,
+        1.0
+      ],
+      "COLLOIDS_TYPE_TOTAL": [
+        3,
+        1.0
+      ],
+      "COLLOIDS_1ST_24HRS": [
+        2,
+        0.6666666666666666
+      ],
+      "TOTAL_CCS_TYPE_TOTAL": [
+        3,
+        1.0
+      ],
+      "TOTAL_CCS_1ST_24HRS": [
+        2,
+        0.6666666666666666
+      ],
+      "WHOLE_BLOOD_TYPE_TOTAL": [
+        3,
+        1.0
+      ],
+      "WHOLE_BLOOD_1ST_24HRS": [
+        3,
+        1.0
+      ],
+      "PRBC_TYPE_TOTAL": [
+        3,
+        1.0
+      ],
+      "PRBC_1ST_24HRS": [
+        3,
+        1.0
+      ],
+      "FROZEN_PRBC_TYPE_TOTAL": [
+        2,
+        0.6666666666666666
+      ],
+      "FROZEN_PRBC_1ST_24HRS": [
+        2,
+        0.6666666666666666
+      ],
+      "PLATELETS_TYPE_TOTAL": [
+        3,
+        1.0
+      ],
+      "PLATELETS_1ST_24HRS": [
+        2,
+        0.6666666666666666
+      ],
+      "CRYOPRECIPITATES_TYPE_TOTAL": [
+        3,
+        1.0
+      ],
+      "CRYOPRECIPITATES_1ST_24HRS": [
+        2,
+        0.6666666666666666
+      ],
+      "FRESH_FROZEN_PLASMA_TYPE_TOTAL": [
+        2,
+        0.6666666666666666
+      ],
+      "FRESH_FROZEN_PLASMA_1ST_24HRS": [
+        3,
+        1.0
+      ],
+      "FREEZE_DRIED_PLASMA_TYPE_TOTAL": [
+        2,
+        0.6666666666666666
+      ],
+      "FREEZE_DRIED_PLASMA_1ST_24HRS": [
+        2,
+        0.6666666666666666
+      ],
+      "TOTAL_UNITS_TYPE_TOTAL": [
+        2,
+        0.6666666666666666
+      ],
+      "TOTAL_UNITS_FIRST_24HRS": [
+        3,
+        1.0
+      ],
+      "FACTOR_VII": [
+        3,
+        1.0
+      ],
+      "THAM": [
+        2,
+        0.6666666666666666
+      ],
+      "TXA": [
+        2,
+        0.6666666666666666
+      ],
+      "MEDICATION": [
+        2,
+        0.6666666666666666
+      ],
+      "DOSE": [
+        2,
+        0.6666666666666666
+      ],
+      "DOSE_UNITS": [
+        2,
+        0.6666666666666666
+      ],
+      "CRYSTALLOIDS_FIRST24_INJ": [
+        1,
+        0.3333333333333333
+      ],
+      "COLLOIDS_FIRST24_INJ": [
+        1,
+        0.3333333333333333
+      ],
+      "TOTAL_MLS_FIRST24_INJ": [
+        1,
+        0.3333333333333333
+      ],
+      "WHOLE_BLOOD_FIRST24_INJ": [
+        2,
+        0.6666666666666666
+      ],
+      "PRBC_FIRST24_INJ": [
+        2,
+        0.6666666666666666
+      ],
+      "FROZEN_PRBC_FIRST24_INJ": [
+        2,
+        0.6666666666666666
+      ],
+      "PLATELETS_FIRST24_INJ": [
+        2,
+        0.6666666666666666
+      ],
+      "CRYOPRCIPATATES_FIRST24_INJ": [
+        2,
+        0.6666666666666666
+      ],
+      "FRESH_FROZEN_FIRST24_INJ": [
+        2,
+        0.6666666666666666
+      ],
+      "FREEZE_DRIED_FIRST24_INJ": [
+        2,
+        0.6666666666666666
+      ],
+      "TOTAL_FIRST24_INJ_UNITS": [
+        2,
+        0.6666666666666666
+      ]
+    }
+  },
+  "value_count": {
+    "TAB 01  DEMOGRAPHICS": {
+      "UID ": {
+        "[": 1,
+        "9": 1,
+        "6": 1
+      },
+      "AGE": {
+        "[": 1,
+        "4": 1,
+        "2": 1
+      },
+      "AGE_UNIT": {
+        "[": 2,
+        "'": 1
+      },
+      "GENDER": {
+        "[": 2,
+        "'": 1
+      },
+      "PATIENT_CATEGORY_DESCRIPTION": {
+        "[": 1,
+        "'": 1,
+        "N": 1
+      },
+      "MILITARY_SERVICE": {
+        "[": 1,
+        "'": 1
+      },
+      "CLASSIFICATION_OF_INJURY": {
+        "[": 2,
+        "'": 1
+      },
+      "INJURY_YEAR": {
+        "[": 1,
+        "2": 1,
+        "0": 1
+      },
+      "MILITARY_RANK": {
+        "[": 1
+      },
+      "NAME_OF_MILITARY_OPERATION": {
+        "[": 3
+      },
+      "FINAL_DISCHARGE_STATUS": {
+        "[": 2,
+        "'": 1
+      },
+      "COMPOSITE_ISS_2005": {
+        "[": 1,
+        "1": 1,
+        "7": 1
+      },
+      "MAX_AIS_BR1": {
+        "[": 1
+      },
+      "MAX_AIS_BR2": {},
+      "MAX_AIS_BR3": {},
+      "MAX_AIS_BR4": {},
+      "MAX_AIS_BR5": {
+        "[": 1
+      },
+      "MAX_AIS_BR6": {
+        "[": 1
+      }
+    },
+    "TAB 02 INJURY INFORMATION 71983": {
+      "UID": {
+        "[": 1,
+        "9": 1,
+        "6": 1
+      },
+      "INJURY_YEAR": {
+        "[": 1,
+        "2": 1,
+        "0": 1
+      },
+      "CONFLICT_RELATED": {
+        "[": 3
+      },
+      "CLASSIFICATION_OF_INJURY": {
+        "[": 2,
+        "'": 1
+      },
+      "NAME_OF_MILITARY_OPERATION": {
+        "[": 3
+      },
+      "MILITARY_OPERATION_IF_OTHER": {},
+      "ICD10_LOCATION_CODE": {
+        "[": 1,
+        "'": 1
+      }
+    },
+    "TAB 03 MECHANISM OF INJURY71983": {
+      "UID": {
+        "[": 1,
+        "9": 1,
+        "6": 1
+      },
+      "INJURY_YEAR": {
+        "[": 1,
+        "2": 1,
+        "0": 1
+      },
+      "DOMINANT_MECHANISM_OF_INJURY": {
+        "[": 1,
+        "'": 1,
+        "E": 1
+      },
+      "DOMINANT_MECHANISM_OTHER": {},
+      "DOMINANT_TYPE_OF_INJURY": {
+        "[": 2,
+        "'": 1
+      },
+      "ICD10_CODE": {
+        "[": 1
+      },
+      "ICD10_CODE_DESCRIPTION": {
+        "[": 1
+      }
+    },
+    "TAB 04AIS ANDICDDIAGNOSIS 71983": {
+      "UID": {
+        "[": 3,
+        "9": 2,
+        "6": 1
+      },
+      "FACILITY_ROLE": {
+        "[": 4,
+        "'": 1,
+        "R": 1
+      },
+      "AIS_CODE": {
+        "[": 1,
+        "'": 1,
+        "5": 1,
+        "4": 1,
+        "1": 1,
+        "6": 1
+      },
+      "AIS_CODE_DESCRIPTION": {
+        "[": 1,
+        "'": 1,
+        "5": 1,
+        "4": 1,
+        "1": 1,
+        "6": 1
+      },
+      "LOCALIZER1": {},
+      "LOCALIZER2": {
+        "[": 1
+      },
+      "ICD_CODE": {
+        "[": 1,
+        "'": 1,
+        "8": 1,
+        "6": 1,
+        ".": 1
+      },
+      "ICD_CODE_DESCRIPTION": {
+        "[": 1,
+        "'": 1,
+        "8": 1,
+        "6": 1,
+        ".": 1
+      },
+      "ISS_BODY_REGION": {
+        "[": 1,
+        "4": 1,
+        ",": 1,
+        " ": 1,
+        "3": 1
+      },
+      "AIS_VERSION": {},
+      "FRAGMENTS": {
+        "[": 1
+      },
+      "FRAGMENTS_RETAINED": {
+        "[": 1
+      },
+      "OPEN_ABDOMEN_ON_ARRIVAL": {
+        "[": 2,
+        "'": 1
+      },
+      "OPEN_ABDOMEN_ON_DISCHARGE": {
+        "[": 2
+      },
+      "CIV_ISS05": {
+        "[": 3,
+        "1": 2,
+        "4": 1
+      },
+      "CIV_NISS": {
+        "[": 3,
+        "1": 2,
+        "4": 1
+      },
+      "CIV_TRISS": {
+        "[": 3
+      },
+      "CIV_MAX_AIS": {
+        "[": 3,
+        "3": 2,
+        ",": 1
+      },
+      "MIL_ISS05": {
+        "[": 3,
+        "2": 2,
+        "1": 1
+      },
+      "MIL_NISS": {
+        "[": 3,
+        "2": 2,
+        "4": 1
+      },
+      "MIL_TRISS": {
+        "[": 3
+      },
+      "MIL_MAX_AIS": {
+        "[": 3,
+        "4": 2,
+        ",": 1
+      }
+    },
+    "TAB 05 ICD PROCEDURES 71983": {
+      "UID ": {
+        "[": 3,
+        "9": 2,
+        "6": 1
+      },
+      "FACILITY_ROLE": {
+        "[": 5,
+        "'": 1
+      },
+      "CODE": {
+        "[": 1,
+        "'": 1,
+        "9": 1,
+        "7": 1,
+        ".": 1,
+        "4": 1
+      },
+      "CODE_DESCRIPTION": {
+        "[": 1,
+        "'": 1,
+        "9": 1,
+        "7": 1,
+        ".": 1,
+        "4": 1
+      },
+      "CODE_TYPE": {
+        "[": 6
+      },
+      "LOCATION": {
+        "[": 3,
+        "'": 2,
+        "I": 1
+      },
+      "LOCATION_IF_OTHER": {
+        "[": 1
+      },
+      "TQ_TRUE_FALSE": {
+        "[": 5,
+        "'": 1
+      },
+      "TQ_TIMES": {
+        "[": 1
+      },
+      "RESULT": {
+        "[": 1
+      },
+      "ANATOMIC_REGION": {
+        "[": 1
+      },
+      "WARMING_DEVICES": {
+        "[": 3
+      }
+    },
+    "TAB 06  AT PROVIDERS 71983": {
+      "UID": {
+        "[": 2,
+        "9": 1,
+        "6": 1
+      },
+      "FACILITY_ROLE": {
+        "[": 4
+      },
+      "TRANSPORT_LEG_NUMBER": {
+        "[": 2
+      },
+      "CARE_LOCATION": {
+        "[": 2,
+        "'": 1
+      },
+      "TRANSPORT_STAGE": {
+        "[": 1,
+        "'": 1
+      },
+      "PREHOSPITAL_FACILITY_DESC": {
+        "[": 1
+      },
+      "TRANSPORT_TEAM": {
+        "[": 1,
+        "'": 1
+      },
+      "TRANSPORT_TEAM_IF_OTHER": {},
+      "TRANSPORT_TYPE": {
+        "[": 1,
+        "'": 1
+      },
+      "TRANSPORT_MODE": {
+        "[": 1,
+        "'": 1
+      },
+      "PROVIDER_JOB_FUNCTION": {},
+      "PROVIDER_ROLE": {},
+      "PROVIDER_ROLE_IF_OTHER": {}
+    },
+    "TAB 07  AT VITALS": {
+      "UID ": {
+        "[": 1,
+        "9": 1,
+        "6": 1
+      },
+      "FACILITY_ROLE": {
+        "[": 1,
+        "'": 1,
+        "R": 1
+      },
+      "AT_TEMPERATURE": {
+        "[": 1
+      },
+      "AT_TEMPERATURE_UNITS": {
+        "[": 1
+      },
+      "AT_TEMPERATURE_ROUTE": {},
+      "AT_PULSE_RATE": {
+        "[": 1
+      },
+      "AT_PULSE_QUALITY": {
+        "[": 1
+      },
+      "AT_RESPIRATORY_RATE": {
+        "[": 1
+      },
+      "AT_SBP": {
+        "[": 1
+      },
+      "AT_DBP": {
+        "[": 1
+      },
+      "AT_SAO2": {
+        "[": 1
+      },
+      "AT_GCS_EYE": {
+        "[": 1
+      },
+      "AT_GCS_VERBAL": {
+        "[": 1
+      },
+      "AT_GCS_MOTOR": {
+        "[": 1
+      },
+      "AT_GCS_TOTAL": {
+        "[": 1
+      },
+      "AT_PAIN": {},
+      "AT_PAIN_SCALE": {},
+      "AT_PARALYTIC_AGENTS": {
+        "[": 2
+      },
+      "AT_SEDATED": {
+        "[": 2
+      },
+      "AT_INTUBATED": {
+        "[": 2
+      },
+      "AT_RESPIRATION_ASSISTED": {
+        "[": 1,
+        "'": 1
+      },
+      "AT_UNIT_NUMBER": {},
+      "AT_CARE_LOCATION": {
+        "[": 1,
+        "'": 1
+      },
+      "AT_RTS": {
+        "[": 1
+      }
+    },
+    "TAB 8  AT PROCEDURES": {
+      "UID ": {
+        "[": 2,
+        "9": 1,
+        "6": 1
+      },
+      "FACILITY_ROLE": {
+        "[": 4
+      },
+      "PH_PROCEDURE": {
+        "[": 1,
+        "3": 1,
+        "9": 1,
+        ",": 1
+      },
+      "PH_PROCEDURE_DESCRIPTION": {
+        "[": 1,
+        "'": 1,
+        "S": 1,
+        "t": 1
+      },
+      "PROCEDURES_IF_OTHER": {
+        "[": 1
+      },
+      "ANATOMIC_REGION": {
+        "[": 1
+      },
+      "EFFECTIVE": {},
+      "TQ_TRUE_FALSE": {
+        "[": 3,
+        "'": 1
+      },
+      "CARE_LOCATION": {
+        "[": 3,
+        "'": 1
+      }
+    },
+    "TAB 09  AT MEDICATIONS": {
+      "UID ": {
+        "[": 1,
+        "9": 1,
+        "6": 1
+      },
+      "FACILITY_ROLE": {
+        "[": 2,
+        "'": 1
+      },
+      "MEDICATION_GIVEN": {
+        "[": 1,
+        "'": 1,
+        "M": 1
+      },
+      "MEDICATION_GIVEN_IF_OTHER": {
+        "[": 1
+      },
+      "MEDICATION_DOSE": {
+        "[": 1
+      },
+      "MEDICATION_DOSE_UNITS": {
+        "[": 1
+      },
+      "MEDICATION_ROUTE": {
+        "[": 1,
+        "'": 1,
+        "I": 1
+      }
+    },
+    "TAB 10 ED VITALS": {
+      "UID ": {
+        "[": 1,
+        "9": 1,
+        "6": 1
+      },
+      "FACILITY_ROLE": {
+        "[": 2,
+        "'": 1
+      },
+      "WAS_THIS_A_TRANSFER_PATIENT": {
+        "[": 2,
+        "'": 1
+      },
+      "WAS_THIS_A_MASS_CASUALTY": {
+        "[": 1
+      },
+      "TIME_IN_ED": {
+        "[": 1,
+        "0": 1
+      },
+      "INITIAL_STATUS": {
+        "[": 3
+      },
+      "POST_ED_DISPOSITION": {
+        "[": 1,
+        "'": 1,
+        "M": 1
+      },
+      "ED_PULSE_RATE": {
+        "[": 1,
+        "1": 1,
+        "2": 1
+      },
+      "ED_PULSE_QUALITY": {
+        "[": 1
+      },
+      "ED_RESPIRATORY_RATE": {
+        "[": 1,
+        "2": 1,
+        "3": 1
+      },
+      "ED_SBP": {
+        "[": 1,
+        "1": 1,
+        "3": 1
+      },
+      "ED_DBP": {
+        "[": 1,
+        "8": 1,
+        "1": 1
+      },
+      "ED_SAO2": {
+        "[": 1
+      },
+      "ED_PAIN": {
+        "[": 2
+      },
+      "ED_PAIN_SCALE": {
+        "[": 1
+      },
+      "ED_GCS_EYE": {
+        "[": 1,
+        "4": 1
+      },
+      "ED_GCS_VERBAL": {
+        "[": 1,
+        "5": 1
+      },
+      "ED_GCS_MOTOR": {
+        "[": 1,
+        "6": 1
+      },
+      "ED_GCS_TOTAL": {
+        "[": 1,
+        "1": 1
+      },
+      "ED_TEMPERATURE": {
+        "[": 1,
+        "9": 1
+      },
+      "ED_TEMPERATURE_UNITS": {
+        "[": 2
+      },
+      "ED_TEMPERATURE_ROUTE": {
+        "[": 1
+      },
+      "ED_SEDATED": {
+        "[": 3
+      },
+      "ED_INTUBATED": {
+        "[": 2,
+        "'": 1
+      },
+      "ED_INTUBATION_IF_YES_METHOD": {
+        "[": 1
+      },
+      "ED_PARALYTIC_AGENTS": {
+        "[": 2,
+        "'": 1
+      },
+      "ED_RESPIRATION_ASSISTED": {
+        "[": 2,
+        "'": 1
+      },
+      "ED_RESP_ASSISTED_IF_YES_TYPE": {
+        "[": 1
+      },
+      "ED_RTS": {
+        "[": 1,
+        "7": 1
+      },
+      "ED_INR": {
+        "[": 1
+      },
+      "ED_ABG_DRAWN": {
+        "[": 2
+      },
+      "ED_VGB_DRAWN": {
+        "[": 2
+      },
+      "ED_HGB": {
+        "[": 1
+      },
+      "ED_HCT": {
+        "[": 1
+      },
+      "ED_PLATELET_COUNT": {
+        "[": 1
+      },
+      "ED_BG_PH": {
+        "[": 1
+      },
+      "ED_PACO2": {
+        "[": 1
+      },
+      "ED_PAO2": {
+        "[": 1
+      },
+      "ED_BASEDEFICIT": {
+        "[": 1
+      },
+      "TRIAGE_CATEGORY": {
+        "[": 1,
+        "'": 1
+      }
+    },
+    "TAB 11  BLOOD": {
+      "UID ": {
+        "[": 1,
+        "9": 1,
+        "6": 1
+      },
+      "FACILITY_ROLE": {
+        "[": 3
+      },
+      "CRYSTALLOIDS_TYPE_TOTAL": {
+        "[": 1
+      },
+      "CRYSTALLOIDS_1ST_24HRS": {
+        "[": 1,
+        "0": 1
+      },
+      "COLLOIDS_TYPE_TOTAL": {
+        "[": 1,
+        "0": 1
+      },
+      "COLLOIDS_1ST_24HRS": {
+        "[": 1
+      },
+      "TOTAL_CCS_TYPE_TOTAL": {
+        "[": 1,
+        "0": 1
+      },
+      "TOTAL_CCS_1ST_24HRS": {
+        "[": 1
+      },
+      "WHOLE_BLOOD_TYPE_TOTAL": {
+        "[": 1,
+        "6": 1
+      },
+      "WHOLE_BLOOD_1ST_24HRS": {
+        "[": 1,
+        "3": 1
+      },
+      "PRBC_TYPE_TOTAL": {
+        "[": 1,
+        "9": 1
+      },
+      "PRBC_1ST_24HRS": {
+        "[": 1,
+        "1": 1
+      },
+      "FROZEN_PRBC_TYPE_TOTAL": {
+        "[": 2
+      },
+      "FROZEN_PRBC_1ST_24HRS": {
+        "[": 2
+      },
+      "PLATELETS_TYPE_TOTAL": {
+        "[": 1,
+        "1": 1
+      },
+      "PLATELETS_1ST_24HRS": {
+        "[": 2
+      },
+      "CRYOPRECIPITATES_TYPE_TOTAL": {
+        "[": 1,
+        "1": 1
+      },
+      "CRYOPRECIPITATES_1ST_24HRS": {
+        "[": 2
+      },
+      "FRESH_FROZEN_PLASMA_TYPE_TOTAL": {
+        "[": 1
+      },
+      "FRESH_FROZEN_PLASMA_1ST_24HRS": {
+        "[": 1,
+        "4": 1
+      },
+      "FREEZE_DRIED_PLASMA_TYPE_TOTAL": {
+        "[": 2
+      },
+      "FREEZE_DRIED_PLASMA_1ST_24HRS": {
+        "[": 2
+      },
+      "TOTAL_UNITS_TYPE_TOTAL": {
+        "[": 2
+      },
+      "TOTAL_UNITS_FIRST_24HRS": {
+        "[": 1,
+        "1": 1
+      },
+      "FACTOR_VII": {
+        "[": 1,
+        "'": 1
+      },
+      "THAM": {
+        "[": 1
+      },
+      "TXA": {
+        "[": 1
+      },
+      "MEDICATION": {
+        "[": 1
+      },
+      "DOSE": {
+        "[": 1
+      },
+      "DOSE_UNITS": {
+        "[": 1
+      },
+      "CRYSTALLOIDS_FIRST24_INJ": {},
+      "COLLOIDS_FIRST24_INJ": {},
+      "TOTAL_MLS_FIRST24_INJ": {},
+      "WHOLE_BLOOD_FIRST24_INJ": {
+        "[": 1
+      },
+      "PRBC_FIRST24_INJ": {
+        "[": 1
+      },
+      "FROZEN_PRBC_FIRST24_INJ": {
+        "[": 1
+      },
+      "PLATELETS_FIRST24_INJ": {
+        "[": 1
+      },
+      "CRYOPRCIPATATES_FIRST24_INJ": {
+        "[": 1
+      },
+      "FRESH_FROZEN_FIRST24_INJ": {
+        "[": 1
+      },
+      "FREEZE_DRIED_FIRST24_INJ": {
+        "[": 1
+      },
+      "TOTAL_FIRST24_INJ_UNITS": {
+        "[": 1
+      }
+    }
+  }
+}

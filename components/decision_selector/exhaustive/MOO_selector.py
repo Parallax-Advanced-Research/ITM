@@ -13,6 +13,7 @@ from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAn
 from domain.internal import Scenario, TADProbe, Action, KDMA, KDMAs, Decision, State
 from domain.ta3 import Casualty
 from components.decision_selector.kdma_estimation import make_case, make_relational_case, write_case_base, read_case_base, write_relational_case_base, read_relational_case_base
+import yaml
 from typing import Any
 
 CASE_FILE: str = "temp/relational_cases.json"
@@ -20,27 +21,14 @@ INFORMATIONAL_WEIGHT = 0.5
 EXPLORATION_WEIGHT = 0.25
 KDMA_WEIGHT = 0.25
 
+
 _default_weight_file = os.path.join("data", "keds_weights.json")
 _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")
 _default_kdma_case_file = os.path.join("data", "kdma_cases.csv")
 _default_drexel_case_file = os.path.join("data", "sept", "extended_case_base.csv")
 
 
-class Feature:
-    scenario_counter = 0
 
-    def __init__(self, name: str, value: Any):
-            self.name = name
-            self.value = value
-            self.features = []
-
-    def add_feature(self, feature: Self):
-        self.features.append(feature)
-
-    @staticmethod
-    def get_scenario_counter():
-        Feature.scenario_counter += 1
-        return Feature.scenario_counter
 
 
 def get_analyzers():
@@ -228,23 +216,6 @@ class MOOSelector(DecisionSelector):
         retval = val.pop()
         print(retval)
         return retval
-        # total = sum([max(dist, 0.01) for (dist, case) in topK])
-        # divisor = 0
-        # kdma_total = 0
-        # neighbor = 0
-        # for (dist, case) in topK:
-        #     neighbor += 1
-        #     if kdma not in case or case[kdma] is None:
-        #         breakpoint()
-        #         raise Exception()
-        #     kdma_val = case[kdma]
-        #     kdma_total += kdma_val * total/max(dist, 0.01)
-        #     divisor += total/max(dist, 0.01)
-        #     cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
-        # kdma_val = kdma_total / divisor
-        # if self.print_neighbors:
-        #     util.logger.info(f"kdma_val: {kdma_val}")
-        # return kdma_val
 
     def top_K_LID(self, cur_case: dict[str, Any], kdma: str) -> list[dict[str, Any]]:
         '''
@@ -254,7 +225,7 @@ class MOOSelector(DecisionSelector):
         :param kdma:
         :return:
         '''
-        return util.information.LID(self.cb, cur_case, [], create_solution_class([kdma], self.cb), [kdma])
+        return util.information.LID(self.cb, cur_case, [], create_solution_class(['pDeath'], self.cb), ['pDeath'])
 
 # return util.information.LID(self.cb, cur_case, [], create_solution_class(['pDeath'], self.cb), ['pDeath'])
 
