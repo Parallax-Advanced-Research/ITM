@@ -22,7 +22,7 @@ SKIP_SCENARIOS = []
 
 def moist_run(mc=True):
     args = parse_default_arguments()
-    all_scenarios = ADEPT_SCENARIOS + SOARTECH_SCENARIOS  # [SOARTECH_SCENARIOS]
+    all_scenarios = SOARTECH_SCENARIOS  # [SOARTECH_SCENARIOS]
     for scen in all_scenarios:
         if scen in SKIP_SCENARIOS:
             continue
