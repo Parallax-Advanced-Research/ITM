@@ -31,33 +31,34 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.print_neighbors = True
         self.record_considered_decisions = False
         self.weight_settings = {}
+        self.insert_pauses = False
+        self.kdma_choice_history = []
         if args is not None:
             self.initialize_with_args(args)
         
 
     def initialize_with_args(self, args):
         self.use_drexel_format = args.selector == 'kedsd'
-        if args.casefile is None:
+        if args.case_file is None:
             if self.use_drexel_format:
-                args.casefile = _default_drexel_case_file
+                args.case_file = _default_drexel_case_file
             else:
-                args.casefile = _default_kdma_case_file
+                args.case_file = _default_kdma_case_file
             
         self.record_considered_decisions = args.record_considered_decisions
-        self.cb = read_case_base(args.casefile)
+        self.cb = read_case_base(args.case_file)
         self.variant: str = args.variant
         self.print_neighbors = args.decision_verbose
-        self.index = 0
-        self.kdma_choice_history = []
-        if args.weightfile is None:
+        self.insert_pauses = args.insert_pauses
+        if args.weight_file is None:
             global _default_weight_file
             if self.use_drexel_format:
                 weight_filename = _default_drexel_weight_file
             else:
                 weight_filename = _default_weight_file
         else:
-            weight_filename = args.weightfile
-        if args.uniformweight or args.variant == 'baseline':
+            weight_filename = args.weight_file
+        if args.uniform_weight or args.variant == 'baseline':
             self.weight_settings = {}
         else:
             self.initialize_weights(weight_filename)
@@ -144,13 +145,15 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             util.logger.info(f"Chosen Decision: {best_decision.value} Estimates: {best_kdma_estimates} Mins: {min_kdma_probs} Maxes: {max_kdma_probs}")
             util.logger.info(f"Distance: {best_case['distance']}")
 
-        # breakpoint()
+        if self.insert_pauses:
+            breakpoint()
         
         if self.record_considered_decisions:
             fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
             write_case_base(fname, new_cases)
         
-        self.kdma_choice_history.append((best_kdma_probs, min_kdma_probs, max_kdma_probs))
+        if not self.empty_probs(best_kdma_probs):
+            self.kdma_choice_history.append((best_kdma_probs, min_kdma_probs, max_kdma_probs))
         return (best_decision, best_case["distance"])
         
         
@@ -180,18 +183,29 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         return ret_probs
 
     def minimize_distance(self, possible_choices):
-        minDist = min([case["distance"] for (decision, case, ests) in possible_choices])
-        minDecisions = [(decision, case, ests) for (decision, case, ests) in possible_choices if case["distance"] == minDist]
+        minDist = min([case["distance"] for (decision, case, ests) in possible_choices if not self.empty_probs(ests)], default = -1)
+        if minDist < 0:
+            minDecisions = possible_choices
+        else:
+            minDecisions = [(decision, case, ests) for (decision, case, ests) in possible_choices if case["distance"] == minDist]
         if len(minDecisions) > 1:
             minDecision = [util.get_global_random_generator().choice(minDecisions)]
         return minDecisions[0]
     
+    def empty_probs(self, estimates: dict[str, dict[str, float]]):
+        for value in estimates.values():
+            if len(value) > 0:
+                return False
+        return True
 
     def calc_dist(self, estimates, target):
-        sqDist = 0
+        sqDist = -1
         for kdma_name in target.kdma_names:
             estimate = estimates[kdma_name]
             targetValue = target.getKDMAValue(kdma_name)
+            if targetValue is None:
+                continue
+            sqDist = max(sqDist, 0)
             if self.variant.lower() != "misaligned":
                 diff = targetValue - estimate
             else:
@@ -229,7 +243,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         for (alignment, prob) in alignment_probs:
             est_score += alignment*prob
             prob_sum += prob
-        if prob_sum < 0.99 or prob_sum > 1.0001:
+        if prob_sum < 0.95 or prob_sum > 1.0001:
             util.logger.error("Bad probability calculation.")
             breakpoint()
         return est_score / prob_sum
@@ -257,12 +271,13 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
     def compute_kde_alignment_distances(self, possible_choices, target, mins, maxes):
         for (decision, case, kdma_prob_dict) in possible_choices:
-            case["distance"] = 0
+            case["distance"] = -1
             for kdma_name in target.kdma_names:
                 kdma_probs = kdma_prob_dict.get(kdma_name, None)
                 if kdma_probs is None or len(kdma_probs) == 0:
                     continue
                 targetKDE = target.getKDMAValue(kdma_name)
+                case["distance"] = max(case["distance"], 0)
                 case["distance"] += 1 - self.compute_kde_alignment(
                                                 targetKDE,
                                                 kdma_prob_dict,
@@ -277,42 +292,66 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             return make_case_triage(probe, d)
 
 
+def add_feature_to_case_with_rank(case: dict[str, Any], feature: str, 
+                                  characteristic_fn: Callable[[Casualty], Any], 
+                                  c: Casualty, chrs: list[Casualty]):
+    case[feature] = characteristic_fn(c)
+    if case[feature] is not None:
+        case[feature + '_rank'] = \
+            kdma_estimation.rank(case[feature], [characteristic_fn(chr) for chr in chrs], feature)
+        if case[feature + '_rank'] > 5:
+            breakpoint()
+    
+def get_casualty_by_id(cid: str, casualties: list[Casualty]) -> Casualty:
+    if cid is None: 
+        return None
+    return [c for c in casualties if c.id == cid][0]
+
+def get_casualties_in_probe(probe: TADProbe) -> list[Casualty]:
+    cids = {d.value.params.get("casualty", None) for d in probe.decisions}
+    if None in cids:
+        cids.remove(None)
+    return [get_casualty_by_id(cid, probe.state.casualties) for cid in cids]
+
 def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     case = {}
     s: State = probe.state
-    c: Casualty = None
-    for cas in s.casualties:
-        if cas.id == d.value.params.get("casualty", None):
-            c = cas
-            break
+    chrs: list[Casualty] = get_casualties_in_probe(probe)
+    c: Casualty = get_casualty_by_id(d.value.params.get("casualty", None), chrs)
+    sevs = []
+    
+    for cas in chrs:
+        for inj in cas.injuries:
+            sevs.append(inj.severity)
     if c is None:
-        case['unvisited_count'] = len([co for co in s.casualties if not co.assessed])
-        case['injured_count'] = len([co for co in s.casualties if len(co.injuries) > 0])
+        case['unvisited_count'] = len([co for co in chrs if not co.assessed])
+        case['injured_count'] = len([co for co in chrs if len(co.injuries) > 0])
         case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
-                                                       for co in s.casualties])
+                                                       for co in chrs])
     else:
         case['age'] = c.demographics.age
         case['tagged'] = c.tag is not None
         case['visited'] = c.assessed
-        case['relationship'] = c.relationship
-        case['disposition'] = c.demographics.military_disposition
-        case['rank'] = c.demographics.rank
         case['conscious'] = c.vitals.conscious
-        case['mental_status'] = c.vitals.mental_status
-        case['breathing'] = c.vitals.breathing
-        case['hrpmin'] = c.vitals.hrpmin
-        case['avpu'] = c.vitals.avpu
-        if c.intent == False:
-            case['intent'] = None
-        else:
-            case['intent'] = c.intent
-        case['directness_of_causality'] = c.directness_of_causality
-        case['unvisited_count'] = len([co for co in s.casualties if not co.assessed 
+
+        add_feature_to_case_with_rank(case, "military_paygrade", lambda chr: chr.demographics.rank, c, chrs)
+        add_feature_to_case_with_rank(case, "mental_status", lambda chr: chr.vitals.mental_status, c, chrs)
+        add_feature_to_case_with_rank(case, "breathing", lambda chr: chr.vitals.breathing, c, chrs)
+        add_feature_to_case_with_rank(case, "hrpmin", lambda chr: chr.vitals.hrpmin, c, chrs)
+        add_feature_to_case_with_rank(case, "avpu", lambda chr: chr.vitals.avpu, c, chrs)
+        add_feature_to_case_with_rank(case, "intent", lambda chr: chr.intent, c, chrs)
+        add_feature_to_case_with_rank(case, "relationship", lambda chr: chr.relationship, c, chrs)
+        add_feature_to_case_with_rank(case, "disposition", lambda chr: chr.demographics.military_disposition, c, chrs)
+        add_feature_to_case_with_rank(case, "directness_of_causality", 
+                                    lambda chr: chr.directness_of_causality, c, chrs)
+        case['inj_severity_rank'] = \
+            min([kdma_estimation.rank(inj.severity, sevs, "inj_severity") for inj in c.injuries])
+        case['unvisited_count'] = len([co for co in chrs if not co.assessed 
                                                                     and not co.id == c.id])
-        case['injured_count'] = len([co for co in s.casualties if len(co.injuries) > 0 
+        case['injured_count'] = len([co for co in chrs if len(co.injuries) > 0 
                                                                   and not co.id == c.id])
         case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
-                                                       for co in s.casualties if not co.id == c.id])
+                                                       for co in chrs if not co.id == c.id])
 
     case['aid_available'] = \
         (probe.environment['decision_environment']['aid'] is not None
@@ -334,10 +373,9 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         else:
             for (inner_key, inner_value) in flatten(dm.name, dm.value).items():
                 case[inner_key] = inner_value
+    # case |= d.context
+    case["context"] = d.context
     return case
-    
-            
-        
 
 
 CASE_INDEX = 1000
