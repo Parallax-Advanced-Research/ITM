@@ -35,14 +35,14 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         icd9_internal = "INTERNAL_INJURY"
         icd9_chest_collapse = "CERTAIN_TRAUMATIC_COMPLICATIONS_AND_UNSPECIFIED_INJURIES"
         icd9_tbi = "INTRACRANIAL_INJURY_EXCLUDING_THOSE_WITH_SKULL_FRACTURE"
-        icd9_ear_bleed = "INTRACRANIAL_INJURY_EXCLUDING_THOSE_WITH_SKULL_FRACTURE"
+        icd9_ear_bleed = "EAR_BLEED"
         icd9_open_wound = "OPEN_WOUNDS"
         icd9_amputation = "AMPUTATION"
         icd9_burn = "BURNS"
         icd9_laceration = "LACERATIONS_AND_PIERCINGS"
         icd9_shrapnel = "LACERATIONS_AND_PIERCINGS"
         icd9_puncture = "PUNCTURE"
-        icd9_scrape = "SUPERFICIAL_INJURY"
+        icd9_scrape = "SCRAPE"
 
         mimic_pain = "PAIN"
         mimic_resp = "RESPRATE"
@@ -68,7 +68,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         self._icd9_itm_map[icd9_internal] = InjuryTypeEnum.INTERNAL
         self._icd9_itm_map[icd9_chest_collapse] = InjuryTypeEnum.CHEST_COLLAPSE
         self._icd9_itm_map[icd9_tbi] = InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY
-        #self._icd9_itm_map[icd9_scrape] = InjuryTypeEnum.ABRASION
+        self._icd9_itm_map[icd9_scrape] = InjuryTypeEnum.ABRASION
         self._icd9_itm_map[icd9_ear_bleed] = InjuryTypeEnum.EAR_BLEED
         self._icd9_itm_map[icd9_open_wound] = InjuryTypeEnum.OPEN_ABDOMINAL_WOUND
         self._icd9_itm_map[icd9_amputation] = InjuryTypeEnum.AMPUTATION
@@ -77,7 +77,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         self._icd9_itm_map[icd9_shrapnel] = InjuryTypeEnum.SHRAPNEL
         self._icd9_itm_map[icd9_puncture] = InjuryTypeEnum.PUNCTURE
 
-        #self._itm_icdS9_map[InjuryTypeEnum.ABRASION] = icd9_scrape
+        self._itm_icdS9_map[InjuryTypeEnum.ABRASION] = icd9_scrape
         self._itm_icd9_map[InjuryTypeEnum.EAR_BLEED] = icd9_ear_bleed
         self._itm_icd9_map[InjuryTypeEnum.BURN] = icd9_burn
         self._itm_icd9_map[InjuryTypeEnum.LACERATION] = icd9_laceration
@@ -115,10 +115,12 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             cue = self.make_observation_from_state (probe.state, decision.value)
             if cue is None:
                 continue
-            (recollection, eme) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, temporalp=False)
+            (recollection, eltm) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, type="observation")
             #eltm = self._hems.new_retrieve_episode(self._hems.get_eltm(), cue, False)
-            #eme = eltm.car
-            #(recollection, conditional_entropy) = self._hems.get_entropy(eme, cue)
+            eme = eltm.car
+            (recollection, conditional_entropy) = self._hems.get_entropy(eme, cue)
+            print(conditional_entropy)
+            sdfs
             spreads = []
             
             just = dict()
@@ -169,7 +171,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             # TODO: These need descriptions
             avgspread = DecisionMetric[float]("AvgSpread", "", avg_spread)
             stdspread = DecisionMetric[float]("StdSpread", "", std_spread)
-            #entropy = DecisionMetric[float]("Entropy", "", conditional_entropy)
+            entropy = DecisionMetric[float]("Entropy", "", conditional_entropy)
             justifications = DecisionMetric[dict]("Justifications", "", just)
             #print(conditional_entropy)
             #print(just)
@@ -183,7 +185,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         return analysis
     
     def estimate_injuries(self, cue_bn):
-        (recollection, _) = self._hems.remember(self._hems.get_eltm(), cue_bn, Symbol('+', 'HEMS'), 1, True, temporalp=False)
+        (recollection, _) = self._hems.remember(self._hems.get_eltm(), cue_bn, Symbol('+', 'HEMS'), 1, True, type="observation")
         injuries = dict()
         for cpd in recollection:
             if self._hems.rule_based_cpd_singleton_p(cpd) == True and self._hems.get_hash(0, self._hems.rule_based_cpd_concept_ids(cpd))[0] == "INJURY":
@@ -234,11 +236,14 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         cas = self.find_casualty(patient, state)
         if cas is None:
             raise Exception("No casualty in state with name: " + patient)
+        print(a)
+        sadfas
         data = [
             ('PAIN', self.get_pain(cas), 'vitals'),
             ('RESPRATE', self.get_breathing(cas), 'vitals'),
             ('HEARTRATE', self.get_hrpmin(cas), 'vitals'),
             ('O2SAT', self.get_spo2(cas), 'vitals'),
+            (self._itm_icd9_map[InjuryTypeEnum.ABRASION], self.get_abrasion(cas), 'injury')
             (self._itm_icd9_map[InjuryTypeEnum.OPEN_ABDOMINAL_WOUND], self.get_oaw(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY], self.get_tbi(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.EAR_BLEED], self.get_ear_bleed(cas), 'injury'),
