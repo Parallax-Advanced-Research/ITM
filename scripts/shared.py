@@ -36,8 +36,8 @@ def validate_args(args: argparse.Namespace) -> None:
         sys.stderr.write("\x1b[93mPlease do not supply your own KDMAs in evaluation mode.\x1b[0m\n")
         sys.exit(1)
 
-    if args.eval_targets is not None and len(args.eval_targets) > 0 and not args.training:
-        args.training = True
+    # if args.eval_targets is not None and len(args.eval_targets) > 0 and not args.training:
+        # args.training = True
 
     if args.session_type == 'eval' and args.training:
         sys.stderr.write("\x1b[93mCannot perform training in evaluation mode.\x1b[0m\n")
@@ -48,6 +48,19 @@ def validate_args(args: argparse.Namespace) -> None:
     else:
         args.seed = util.get_global_random_seed()
 
+    if args.casefile is not None:
+        args.case_file = args.casefile
+    args.casefile = 0
+
+    if args.weightfile is not None:
+        args.weight_file = args.weightfile
+    args.weightfile = 0
+    
+    if args.uniformweight == True:
+        args.uniform_weight = args.uniform_weight
+    args.uniformweight = 0
+    
+    
     
     #args.keds = ('keds' == args.selector)
     #args.kedsd = ('kedsd' == args.selector)
@@ -83,18 +96,23 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--selector', default='random', choices=['keds', 'kedsd', 'csv', 'human', 'random'], help="Sets the decision selector") # TODO: add details of what each option does
     parser.add_argument('--selector-object', default=None, help=argparse.SUPPRESS)
     parser.add_argument('--seed', type=int, default=None, help="Changes the random seed to be used during this run; must be an integer")
-    parser.add_argument('--casefile', type=str, default=None, 
+    parser.add_argument('--case_file', type=str, default=None, 
                         help="Provides cases to be used in making decisions by the decision "\
                              + "selector. Used with keds, kedsd, not otherwise.")
-    parser.add_argument('--weightfile', type=str, default=None, 
+    parser.add_argument('--weight_file', type=str, default=None, 
                         help="Provides weights to be used in comparing cases by the decision "\
                              + "selector. Used with keds, kedsd, not otherwise.")
-    parser.add_argument('--uniformweight', action=argparse.BooleanOptionalAction, default=False, 
+    parser.add_argument('--uniform_weight', action=argparse.BooleanOptionalAction, default=False,
                         help="Requests that a default uniform weight be used in comparing cases "\
                              + "by the decision selector. Overrides --weightfile. Used with keds, "\
-                             + "kedsd, not otherwise.")
+                             + "kedsd, not otherwise.")    
+    parser.add_argument('--casefile', type=str, default=None, help=argparse.SUPPRESS)
+    parser.add_argument('--weightfile', type=str, default=None, help=argparse.SUPPRESS)
+    parser.add_argument('--uniformweight', action=argparse.BooleanOptionalAction, default=False, help=argparse.SUPPRESS)
     parser.add_argument('--decision_verbose', action=argparse.BooleanOptionalAction, default=False, 
                         help="Causes a decision selector to output extra information explaining its selections.")
+    parser.add_argument('--insert_pauses', action=argparse.BooleanOptionalAction, default=False, 
+                        help="Causes a decision selector to break after selection decisions.")
     parser.add_argument('--elab_output', action=argparse.BooleanOptionalAction, default=False,
                         help="Outputs the elaborator actions into json file (used to help compare to llm).")
     parser.add_argument('--record_considered_decisions', action=argparse.BooleanOptionalAction, default=False, 

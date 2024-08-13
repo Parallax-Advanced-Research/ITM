@@ -1,7 +1,9 @@
+import functools
 from typing import Any
-from .case_base_functions import *
+
 import util
 from . import triage_constants
+from .case_base_functions import *
 
 def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False) -> float:
     kdmaProbs = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors)
@@ -108,10 +110,14 @@ def find_leave_one_out_error(weights: dict[str, float], kdma: str, cases: list[d
     case_count = 0
     for case in cases:
         new_case_list.remove(case)
-        estimate = estimate_KDMA(dict(case), weights, kdma, cases = new_case_list)
-        if estimate is None:
+        if case.get(kdma) is None:
             continue
-        error = abs(case[kdma] - estimate)
+        # estimate = estimate_KDMA(dict(case), weights, kdma, cases = new_case_list)
+        # if estimate is None:
+            # continue
+        # error = abs(case[kdma] - estimate)
+        kdma_probs = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list)
+        error = 1 - kdma_probs.get(case[kdma], 0)
         case_count += 1
         error_total += error
         new_case_list.append(case)
@@ -120,11 +126,77 @@ def find_leave_one_out_error(weights: dict[str, float], kdma: str, cases: list[d
     return error_total / case_count
 
 VALUED_FEATURES = {
-        "intent": {"intend major help": 0.5, "intend minor help": 0.25, "no intent": 0.0, 
-                   "intend minor harm": -0.25, "intend major harm": -0.5},
+        "disposition": 
+            {"non-military adversary": -2, "military adversary": -1, 
+             "military neutral": 0, "civilian": 1, "allied": 2, "allied us": 3},
+        "relationship": 
+            {"loathing" : -2, "dislike": -1, "neutral": 0, "close": 1, "familial": 2},
+        "intent": 
+            {"intend major help": 0.5, "intend minor help": 0.25, "no intent": 0.0, 
+             "intend minor harm": -0.25, "intend major harm": -0.5},
         "directness_of_causality": 
-            {"none": 0.0, "indirect": 0.25, "somewhat indirect": 0.5, "somewhat direct": 0.75, "direct": 1.0}
-    }    
+            {"none": 0.0, "indirect": 0.25, "somewhat indirect": 0.5, "somewhat direct": 0.75, "direct": 1.0},
+        "threat_severity":
+            {"low": -1, "moderate": -2, "substantial": -3, "severe": -4, "extreme": -5},
+        "inj_severity":
+            {"minor": -1, "moderate": -2, "substantial": -3, "major": -4, "extreme": -5},
+        "mental_status":
+            {"agony": -3, "calm": 0, "confused": -1, "shock": -2, "upset": -1, "unresponsive": -3},
+        "avpu":
+            {"alert": 0, "voice": -1, "pain": -2, "unresponsive": -3},
+        "breathing":
+            {"normal": 0, "fast": -1, "restricted": -2, "slow": -1, "none": -3},
+        "hrpmin": 
+            {"none": -3, "faint": -2, "normal": -1, "fast": 0},
+        "spo2":
+            {"none": -2, "low": -1, "normal": 0},
+        "military_paygrade":
+            {"e-1": 1,
+             "e-2": 2,
+             "e-3": 3,
+             "e-4": 4,
+             "e-5": 5,
+             "e-6": 6,
+             "e-7": 7,
+             "e-8": 8,
+             "e-9": 9,
+             "e-9 (special)": 10,
+             "w-1": 11,
+             "w-2": 12,
+             "w-3": 13,
+             "w-4": 14,
+             "w-5": 15,
+             "o-1": 21,
+             "o-2": 22,
+             "o-3": 23,
+             "o-4": 24,
+             "o-5": 25,
+             "o-6": 26,
+             "o-7": 27,
+             "o-8": 28,
+             "o-9": 29,
+             "o-10": 30}
+             
+    }
+
+def rank(val: Any, valsFound: list[Any], feature: str):
+    sortedVals = sorted(valsFound, key=functools.cmp_to_key(lambda v1, v2: local_order(v1, v2, feature)))
+    return sortedVals.index(val)
+    
+def local_order(val1: Any, val2: Any, feature: str):
+    if val1 is None and val2 is not None:
+        return -1
+    if val2 is None and val1 is not None:
+        return 1
+    if val1 is None and val2 is None:
+        return 0
+    if isinstance(val1, Real) and isinstance(val2, Real):
+        return val1 - val2
+    if feature in VALUED_FEATURES:
+        return VALUED_FEATURES[feature][val1.lower()] - VALUED_FEATURES[feature][val2.lower()]
+    raise Exception("Trying to order a feature without a known ordering.")
+    
+    
 
 def local_compare(val1: Any, val2: Any, feature: str):
     if val1 is not None and val2 is not None and feature in VALUED_FEATURES:

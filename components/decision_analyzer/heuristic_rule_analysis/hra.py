@@ -1263,6 +1263,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         analysis = {}
         for decision_complete in probe.decisions:
             decision = decision_complete.value.name
+            if decision == "MESSAGE":
+                continue
             if decision == "APPLY_TREATMENT":
                 for ele in data['treatment']['APPLY_TREATMENT']:
                     if ele in str(decision_complete.value).lower():

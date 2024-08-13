@@ -18,6 +18,8 @@ SPECIAL_SUPPLIES = [SupplyTypeEnum.BLANKET, SupplyTypeEnum.BLOOD, SupplyTypeEnum
                     SupplyTypeEnum.FENTANYL_LOLLIPOP, SupplyTypeEnum.IV_BAG, \
                     SupplyTypeEnum.PAIN_MEDICATIONS, SupplyTypeEnum.PULSE_OXIMETER]
 
+ID_LABELS = ["id", "type", "threat_type", "location"]
+
 class TA3Elaborator(Elaborator):
 
     def __init__(self, elab_to_json: bool):
@@ -45,7 +47,7 @@ class TA3Elaborator(Elaborator):
                 to_return += self._enumerate_sitrep_actions(probe.state, d)
             elif _name == ActionTypeEnum.DIRECT_MOBILE_CHARACTERS: 
                 to_return += self._enumerate_direct_actions(probe.state, d)
-            elif _name == ActionTypeEnum.CHECK_ALL_VITALS: 
+            elif _name == ActionTypeEnum.CHECK_ALL_VITALS:
                 to_return += self._enumerate_check_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_PULSE:
                 to_return += self._enumerate_check_pulse_actions(probe.state, d)
@@ -64,6 +66,8 @@ class TA3Elaborator(Elaborator):
                 to_return += self._add_move_options(probe, d)
             elif _name == ActionTypeEnum.MOVE_TO_EVAC:
                 to_return += self._add_evac_options(probe, d)
+            elif _name == ActionTypeEnum.MESSAGE:
+                to_return += self._add_message_options(probe, d)
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
 
@@ -130,6 +134,76 @@ class TA3Elaborator(Elaborator):
                     ret_decisions.append(
                         decision_copy_with_params(decision, {ParamEnum.EVAC_ID: aid['id']}))
         return ret_decisions
+
+    def _add_message_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
+        if len(probe.state.actions_performed) == 0:
+            return []
+        for state_referent in [s.strip("[] ") for s in decision.value.params["relevant_state"].split(",")]:
+            topic = self.get_topic(state_referent)
+            newCount = decision.context.get("topic_" + topic, 0) + 1
+            decision.context["topic_" + topic] = newCount
+            decision.context["val_" + topic + str(newCount)] = \
+                self.dereference(state_referent, probe.state.orig_state)
+        if decision.value.params["type"] == "justify":
+            decision.context["last_action"] = probe.state.actions_performed[-1].name
+            for (k, v) in probe.state.actions_performed[-1].params.items():
+                decision.context["last_" + k] = v
+            
+        return [decision]
+
+    def get_topic(self, referent: str):
+        if "." in referent:
+            return referent[referent.rindex(".") + 1:]
+    
+    def dereference(self, referent: str, data: dict[str, Any]):
+        assert(len(referent) > 0)
+        assert(type(data) is dict)
+        key = referent
+        rest = None
+        if "." in referent:
+            dotIndex = referent.index(".")
+            assert(dotIndex > 0)
+            key = referent[0:dotIndex]
+            rest = referent[dotIndex+1:]
+
+        valIndex = None
+        if "[" in key:
+            assert(key.endswith("]"))
+            bracketIndex = key.index("[")
+            valIndex = key[bracketIndex+1:-1]
+            key = key[0:bracketIndex]
+        
+        assert(key in data)
+        obj = data[key]
+        
+        if valIndex is not None:
+            assert(type(obj) is list)
+            foundObj = None
+            for item in obj:
+                if self.getID(item) == valIndex:
+                    foundObj = item
+                    break
+            if foundObj is None:
+                raise Exception("No item corresponding to identifier " + valIndex)
+            else:
+                obj = foundObj
+
+        if rest is None:
+            if type(obj) is list:
+                return str(obj)
+            else:
+                return obj
+        else:
+            return self.dereference(rest, obj)
+            
+                    
+    def getID(self, item: dict[str, Any]):
+        assert(type(item) is dict)
+        for label in ID_LABELS:
+            if label in item:
+                return item[label]
+        raise Exception("Attempting to dereference index of object with no ID.")
+
 
     def _add_move_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
         decisions = self._ground_casualty(probe.state.casualties, decision, unseen=True)

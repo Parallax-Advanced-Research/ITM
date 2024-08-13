@@ -3,6 +3,7 @@ from .weight_trainer import WeightTrainer, CaseModeller, XGBModeller
 
 import math
 import time
+import util
 
 class SimpleWeightTrainer(WeightTrainer):
     
@@ -10,6 +11,7 @@ class SimpleWeightTrainer(WeightTrainer):
         super().__init__(modeller, fields)
         self.data = data
         self.kdma_name = kdma_name
+        self.starter_weight_sets = []
     
     def check_standard_weight_sets(standard_weight_sets: dict[str, dict[str, float]]):
         super.check_standard_weight_sets(standard_weight_sets)
@@ -18,13 +20,13 @@ class SimpleWeightTrainer(WeightTrainer):
     def weight_train(self, last_weights: dict[str, float]):
         self.weight_error_hist = []
 
-        if last_weights is not None and type(last_weights) != str and len(last_weights) > 0 and len(last_weights) < 20:
-            self.add_to_history(last_weights, source = "last")
-            for i in range(10):
-                self.add_to_history(
-                    greedy_weight_space_search_prob(
-                        last_weights, self.modeller, self.fields)["weights"], 
-                    source = "derived last")
+        # if last_weights is not None and type(last_weights) != str and len(last_weights) > 0 and len(last_weights) < 20:
+            # self.add_to_history(last_weights, source = "last")
+            # for i in range(10):
+                # self.add_to_history(
+                    # greedy_weight_space_search_prob(
+                        # last_weights, self.modeller, self.fields)["weights"], 
+                    # source = "derived last")
 
         xgbM = XGBModeller(self.data, self.kdma_name)
         xgbM.adjust(last_weights)
@@ -99,7 +101,7 @@ def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_er
                 improvement = ((prior_error * .95) - new_error) / (prior_error * .95)
             elif change == "removed" and new_error * .95 < prior_error:
                 improvement = (prior_error - (new_error * .95)) / prior_error
-            if new_error < prior_error:
+            elif change != "added" and new_error < prior_error:
                 improvement = (prior_error - new_error) / prior_error
             else:
                 continue
@@ -109,7 +111,7 @@ def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_er
         duration = time.process_time() - start
         
         if total_wheel == 0:
-            breakpoint()
+            # breakpoint()
             break
             
         spinner = util.get_global_random_generator().uniform(0, total_wheel)

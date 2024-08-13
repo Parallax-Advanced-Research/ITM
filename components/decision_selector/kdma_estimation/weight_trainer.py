@@ -327,7 +327,7 @@ def test_file_error(cb_fname: str, weights_dict: dict[str, float], kdma_name, dr
 
 
 def make_approval_data_frame(cases: list[dict[str, Any]], kdma_name, cols=None, drop_discounts = False, entries = None) -> pandas.DataFrame:
-    cases = [dict(case) for case in cases]
+    cases = [dict(case) for case in cases if case.get(kdma_name, None) is not None]
     if drop_discounts:
         cases = [case for case in cases if integerish(10 * case[kdma_name])]
     if entries is not None:

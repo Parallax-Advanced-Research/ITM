@@ -29,11 +29,11 @@ python run-servers.py
 # Test KEDS selection, with uniform weights, a locally stored alignment target (--alignment_target),
 # a local case file (--casefile), and local weights (--weightfile), against a remote alignment 
 # target (--evaltarget). Requests alignment from TA1 server (--connect_to_ta1).
-python tad_tester.py --session_type soartech --scenario qol-dre-1-train --selector keds --training --alignment_target "soartech-dryrun-0" --casefile data/temp-soartech-qol-train-cases.csv --weightfile data/qol_weights.json --evaltarget qol-prelim-emt-d29ef563 --connect_to_ta1
+python tad_tester.py --session_type soartech --scenario qol-dre-1-train --selector keds --training --alignment_target "soartech-dryrun-0" --case_file data/temp-soartech-qol-train-cases.csv --weight_file data/qol_weights.json --evaltarget qol-prelim-emt-d29ef563 --connect_to_ta1
 
 # Test an evaluation, using KEDS, and a local case file.
 # Requires Mongo, Adept, and Soartech server to be running
-python tad_tester.py --session_type eval --selector keds --casefile data/temp-soartech-qol-train-cases.csv
+python tad_tester.py --session_type eval --selector keds --case_file data/temp-soartech-qol-train-cases.csv
 
 
 # From .deprepos\itm-evaluation-server directory, update to latest code, reapply the current patch, partially if necessary, and add the config.ini file back in, then create a new patch and commit state.
@@ -41,6 +41,7 @@ cd .deprepos\itm-evaluation-server
 git reset --hard
 git checkout development
 git pull
-git apply -v --index ..\..\repo-cfgs\itm-evaluation-server.patch  
+git apply -v --index ..\..\repo-cfgs\itm-evaluation-server.patch --reject
+<Manually apply any rejected hunks>
 cd ..\..
 python save-repo-states.py # Erases prior patch, it should have been already committed for safety

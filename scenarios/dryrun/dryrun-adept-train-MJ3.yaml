@@ -757,7 +757,7 @@ scenes:
       - action_id: victim_b
         action_type: MESSAGE
         unstructured: Patient B was chosen because they are the victim.
-        parameters: {"type": "justify", "relevant_state": "[characters[P6 Patient A].intent], [characters[P6 Patient A].directness_of_causality], [characters[P6 Patient B].intent], [characters[P6 Patient B].directness_of_causality], [characters[P6 Patient B].injuries[internal].source_character]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[P6 Patient A].intent], [characters[P6 Patient A].directness_of_causality], [characters[P6 Patient B].intent], [characters[P6 Patient B].directness_of_causality], [characters[P6 Patient B].injuries[left leg].source_character]"}
         probe_id: P6-B-1
         choice: P6-B-1-D
         kdma_association:
@@ -1383,7 +1383,7 @@ scenes:
       - action_id: victim_b
         action_type: MESSAGE
         unstructured: Patient B was chosen because they are the victim.
-        parameters: {"type": "justify", "relevant_state": "[characters[P11 Patient A].intent], [characters[P11 Patient A].directness_of_causality], [characters[P11 Patient B].intent], [characters[P11 Patient B].directness_of_causality], [characters[P11 Patient B].injuries[internal].source_character]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[P11 Patient A].intent], [characters[P11 Patient A].directness_of_causality], [characters[P11 Patient B].intent], [characters[P11 Patient B].directness_of_causality], [characters[P11 Patient B].injuries[head].source_character]"}
         probe_id: P11-B-1
         choice: P11-B-1-D
         kdma_association:
@@ -2025,7 +2025,7 @@ scenes:
       - action_id: victim_b
         action_type: MESSAGE
         unstructured: Patient B was chosen because they are the victim.
-        parameters: {"type": "justify", "relevant_state": "[characters[P16 Patient A].intent], [characters[P16 Patient A].directness_of_causality], [characters[P16 Patient B].intent], [characters[P16 Patient B].directness_of_causality], [characters[P16 Patient B].injuries[internal].source_character]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[P16 Patient A].intent], [characters[P16 Patient A].directness_of_causality], [characters[P16 Patient B].intent], [characters[P16 Patient B].directness_of_causality], [characters[P16 Patient B].injuries[right leg].source_character]"}
         probe_id: P16-B-1
         choice: P16-B-1-D
         kdma_association:
