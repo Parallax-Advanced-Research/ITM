@@ -1,3 +1,5 @@
+import json
+
 from domain.ta3 import TA3State, Casualty, TagCategory, Supply
 from domain.internal import Decision, Action, Scenario, TADProbe, make_new_action_decision, update_decision_parameters
 from components import Elaborator
@@ -5,6 +7,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Actions
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from typing import Any
+import os
 
 from domain.enum import ActionTypeEnum, SupplyTypeEnum, InjuryTypeEnum, InjuryLocationEnum, \
                         InjuryStatusEnum, ParamEnum, MentalStatusEnum, BreathingLevelEnum, \
@@ -15,7 +18,12 @@ SPECIAL_SUPPLIES = [SupplyTypeEnum.BLANKET, SupplyTypeEnum.BLOOD, SupplyTypeEnum
                     SupplyTypeEnum.FENTANYL_LOLLIPOP, SupplyTypeEnum.IV_BAG, \
                     SupplyTypeEnum.PAIN_MEDICATIONS, SupplyTypeEnum.PULSE_OXIMETER]
 
+ID_LABELS = ["id", "type", "threat_type", "location"]
+
 class TA3Elaborator(Elaborator):
+
+    def __init__(self, elab_to_json: bool):
+        self.elab_to_json = elab_to_json
 
     def elaborate(self, scenario: Scenario, probe: TADProbe) -> list[Decision[Action]]:
         d: Decision[Action]
@@ -39,15 +47,17 @@ class TA3Elaborator(Elaborator):
                 to_return += self._enumerate_sitrep_actions(probe.state, d)
             elif _name == ActionTypeEnum.DIRECT_MOBILE_CHARACTERS: 
                 to_return += self._enumerate_direct_actions(probe.state, d)
-            elif _name == ActionTypeEnum.CHECK_ALL_VITALS: 
+            elif _name == ActionTypeEnum.CHECK_ALL_VITALS:
                 to_return += self._enumerate_check_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_PULSE:
                 to_return += self._enumerate_check_pulse_actions(probe.state, d)
+            elif _name == ActionTypeEnum.CHECK_BLOOD_OXYGEN:
+                to_return += self._enumerate_check_blood_oxygen_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_RESPIRATION:
                 to_return += self._enumerate_check_resp_actions(probe.state, d)
             elif _name == ActionTypeEnum.SEARCH: 
-                pass #No good theory of the search action.
-                # to_return += [d]
+                # This one doesn't need elaboration, I think?
+                to_return += [d]
             elif _name == ActionTypeEnum.TAG_CHARACTER:
                 to_return += self._tag(probe.state.casualties, d)
             elif _name == ActionTypeEnum.END_SCENE:
@@ -56,6 +66,8 @@ class TA3Elaborator(Elaborator):
                 to_return += self._add_move_options(probe, d)
             elif _name == ActionTypeEnum.MOVE_TO_EVAC:
                 to_return += self._add_evac_options(probe, d)
+            elif _name == ActionTypeEnum.MESSAGE:
+                to_return += self._add_message_options(probe, d)
             else:
                 to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
 
@@ -65,11 +77,11 @@ class TA3Elaborator(Elaborator):
 
         #Kluge to bypass Soartech errors. In Soartech scenarios, some apply_treatments are suggested
         #that only make sense with vitals, which are not available. This workaround gets the vitals
-        if len(suggested_treats) > 0 and final_treat_count == 0 and len(suggested_checks) == 0:
-            breakpoint()
-            to_return += self._enumerate_check_actions(
-                            probe.state, 
-                            make_new_action_decision("TAD", ActionTypeEnum.CHECK_ALL_VITALS, {}, None, False))
+        # if len(suggested_treats) > 0 and final_treat_count == 0 and len(suggested_checks) == 0:
+            # breakpoint()
+            # to_return += self._enumerate_check_actions(
+                            # probe.state, 
+                            # make_new_action_decision("TAD", ActionTypeEnum.CHECK_ALL_VITALS, {}, None, False))
 
         final_list = []
         for tr in to_return:
@@ -85,9 +97,29 @@ class TA3Elaborator(Elaborator):
             breakpoint()
         final_list = remove_too_frequent_actions(probe, final_list)
         probe.decisions = final_list
+        if self.elab_to_json:
+            self._export_elab_to_json(final_list, scenario.id_)
         return final_list
 
-        
+    def _export_elab_to_json(self, final_list, scen_name):
+        file_name = os.path.join('data', 'elab_output', f'{scen_name}.json')
+        if os.path.exists(file_name):
+            # doing this check as elaborator is called many times per scene, this way the first time ran is the only
+            #  one saved
+            return
+        action_dict = []
+        for decision in final_list:
+            action = decision.value.name
+            casualty = decision.value.params.get('casualty', None)
+            location = decision.value.params.get('location', None)
+            supply = decision.value.params.get('treatment', None)
+            act_json = {'action': action, 'casualty': casualty, 'treatment': supply, 'location': location}
+            action_dict.append(act_json)
+
+        total_dict = {'Actions': action_dict}
+
+        with open(file_name, 'w') as out:
+            json.dump(total_dict, out)
 
     def _add_evac_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
         if probe.environment['decision_environment']['aid'] == None:
@@ -103,9 +135,77 @@ class TA3Elaborator(Elaborator):
                         decision_copy_with_params(decision, {ParamEnum.EVAC_ID: aid['id']}))
         return ret_decisions
 
-    def _add_move_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
-        if probe.environment['decision_environment']['aid'] == None:
+    def _add_message_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
+        if len(probe.state.actions_performed) == 0:
             return []
+        for state_referent in [s.strip("[] ") for s in decision.value.params["relevant_state"].split(",")]:
+            topic = self.get_topic(state_referent)
+            newCount = decision.context.get("topic_" + topic, 0) + 1
+            decision.context["topic_" + topic] = newCount
+            decision.context["val_" + topic + str(newCount)] = \
+                self.dereference(state_referent, probe.state.orig_state)
+        if decision.value.params["type"] == "justify":
+            decision.context["last_action"] = probe.state.actions_performed[-1].name
+            for (k, v) in probe.state.actions_performed[-1].params.items():
+                decision.context["last_" + k] = v
+            
+        return [decision]
+
+    def get_topic(self, referent: str):
+        if "." in referent:
+            return referent[referent.rindex(".") + 1:]
+    
+    def dereference(self, referent: str, data: dict[str, Any]):
+        assert(len(referent) > 0)
+        assert(type(data) is dict)
+        key = referent
+        rest = None
+        if "." in referent:
+            dotIndex = referent.index(".")
+            assert(dotIndex > 0)
+            key = referent[0:dotIndex]
+            rest = referent[dotIndex+1:]
+
+        valIndex = None
+        if "[" in key:
+            assert(key.endswith("]"))
+            bracketIndex = key.index("[")
+            valIndex = key[bracketIndex+1:-1]
+            key = key[0:bracketIndex]
+        
+        assert(key in data)
+        obj = data[key]
+        
+        if valIndex is not None:
+            assert(type(obj) is list)
+            foundObj = None
+            for item in obj:
+                if self.getID(item) == valIndex:
+                    foundObj = item
+                    break
+            if foundObj is None:
+                raise Exception("No item corresponding to identifier " + valIndex)
+            else:
+                obj = foundObj
+
+        if rest is None:
+            if type(obj) is list:
+                return str(obj)
+            else:
+                return obj
+        else:
+            return self.dereference(rest, obj)
+            
+                    
+    def getID(self, item: dict[str, Any]):
+        assert(type(item) is dict)
+        for label in ID_LABELS:
+            if label in item:
+                return item[label]
+        raise Exception("Attempting to dereference index of object with no ID.")
+
+
+    def _add_move_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
         decisions = self._ground_casualty(probe.state.casualties, decision, unseen=True)
         return decisions
 
@@ -116,26 +216,45 @@ class TA3Elaborator(Elaborator):
 
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
-            if cas.vitals.ambulatory is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.avpu is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.breathing is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.conscious is None:
-                dec_applicable.append(cur_decision)
-                continue
+            # if cas.vitals.ambulatory is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.avpu is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.breathing is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.conscious is None:
+                # dec_applicable.append(cur_decision)
+                # continue
             if cas.vitals.hrpmin is None:
                 dec_applicable.append(cur_decision)
                 continue
-            # if cas.vitals.spo2 is None:
-                # dec_applicable.append(cur_decision)
-                # continue
+            if cas.vitals.spo2 is None and TA3Elaborator._supply_available(state, SupplyTypeEnum.PULSE_OXIMETER):
+                dec_applicable.append(cur_decision)
+                continue
             if not cas.assessed:
                 dec_applicable.append(cur_decision)
+                
+        return dec_applicable
+
+    def _enumerate_check_blood_oxygen_actions(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
+        if not TA3Elaborator._supply_available(state, SupplyTypeEnum.PULSE_OXIMETER):
+            return []
+
+        # Ground the decision for all casualties
+        dec_grounded = self._ground_casualty(state.casualties, decision, injured_only = False)
+        dec_applicable = []
+
+        for cur_decision in dec_grounded:
+            cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
+            if not cas.assessed:
+                dec_applicable.append(cur_decision)
+                continue
+            if cas.vitals.spo2 is None:
+                dec_applicable.append(cur_decision)
+                continue
                 
         return dec_applicable
 
@@ -146,6 +265,9 @@ class TA3Elaborator(Elaborator):
 
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
+            if not cas.assessed:
+                dec_applicable.append(cur_decision)
+                continue
             if cas.vitals.hrpmin is None:
                 dec_applicable.append(cur_decision)
                 continue
@@ -159,7 +281,7 @@ class TA3Elaborator(Elaborator):
 
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
-            if cas.vitals.breathing is None:
+            if not cas.assessed:
                 dec_applicable.append(cur_decision)
                 continue
                 
@@ -172,20 +294,20 @@ class TA3Elaborator(Elaborator):
         
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
-            if cas.vitals.mental_status not in [None, MentalStatusEnum.CALM, MentalStatusEnum.AGONY, MentalStatusEnum.UPSET]:
-                continue
-            if cas.vitals.ambulatory is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.avpu is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.breathing is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.conscious is None:
-                dec_applicable.append(cur_decision)
-                continue
+            # if cas.vitals.mental_status not in [None, MentalStatusEnum.CALM, MentalStatusEnum.AGONY, MentalStatusEnum.UPSET]:
+                # continue
+            # if cas.vitals.ambulatory is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.avpu is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.breathing is None:
+                # dec_applicable.append(cur_decision)
+                # continue
+            # if cas.vitals.conscious is None:
+                # dec_applicable.append(cur_decision)
+                # continue
             if not cas.assessed:
                 dec_applicable.append(cur_decision)
                 continue
@@ -325,11 +447,9 @@ class TA3Elaborator(Elaborator):
                         sup_params[ParamEnum.TREATMENT] = supply.type
                         treat_grounded.append(update_decision_parameters(cas_decision, sup_params))
             else:
-                supply_needed = cas_decision.value.params.copy()[ParamEnum.TREATMENT]
-                for s in state.supplies:
-                    if s.type == supply_needed and s.quantity > 0:
-                        treat_grounded.append(cas_decision)
-                        break
+                if TA3Elaborator._supply_available(state, cas_decision.value.params[ParamEnum.TREATMENT]):
+                    treat_grounded.append(cas_decision)
+                    break
 
         # Ground the location
         grounded: list[Decision[Action]] = []
@@ -361,6 +481,13 @@ class TA3Elaborator(Elaborator):
 
         return grounded
         
+        
+    @staticmethod 
+    def _supply_available(state: TA3State, supply: str):
+        for s in state.supplies:
+            if s.type == supply and s.quantity > 0:
+                return True
+        return False
         
     
         

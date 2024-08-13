@@ -1,0 +1,13 @@
+{
+    "kdma_specific_weights": {
+        "QualityOfLife": {
+            "age": 3.434290647506714,
+            "tagged": 2.143564224243164,
+            "HRA Strategy.time-resources.take-the-best": 0.5616821646690369,
+            "entropy": 0.3397306799888611,
+            "SUPPLIES_REMAINING": 0.7851579189300537,
+            "SEVEREST_SEVERITY_CHANGE": 3.123015880584717
+        }
+    },
+    "default": 0
+}

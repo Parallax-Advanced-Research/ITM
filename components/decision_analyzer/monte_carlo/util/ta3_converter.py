@@ -1,12 +1,16 @@
+import sys
+
+from domain.internal import TADProbe
 from domain.ta3.ta3_state import (Supply as TA_SUPPLY, Demographics as TA_DEM, Vitals as TA_VIT,
                                   Injury as TA_INJ, Casualty as TA_CAS, TA3State)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Demographics, Vitals, Injury, Injuries, \
-    Casualty, Locations, Supply, Affector, InjuryAssumptuions, InferredInjury, Ta3Vitals
+    Casualty, Locations, Supply, Affector, InjuryAssumptuions, InferredInjury, Ta3Vitals, SeverityEnums
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import (AFFECCTOR_UPDATE, INITIAL_SEVERITIES,
                                                                         BodySystemEffect)
 from domain.external import Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimState
+from copy import deepcopy
 
 
 
@@ -26,6 +30,11 @@ def _convert_vitals(ta_vitals: TA_VIT) -> Vitals:
 def _reverse_convert_vitals(internal_vitals: Vitals) -> TA_VIT:
     return TA_VIT(conscious=internal_vitals.conscious, mental_status=internal_vitals.mental_status,
                   breathing=internal_vitals.breathing, heart_rate=internal_vitals.hrpmin)
+
+
+def convert_environment(probe: TADProbe) -> str:
+    injury_trigger = probe.environment['decision_environment']['injury_triggers']
+    return injury_trigger
 
 
 def get_inferred_injuries(ta_injury: TA_INJ) -> list[InferredInjury]:
@@ -108,16 +117,24 @@ def get_vital_injuries(ta_cas: TA_CAS) -> list[InferredInjury]:
         ii = InferredInjury('Character is calm', Locations.UNSPECIFIED.value, 1.0)
         ii.set_source("calm in mental status")
         injuries.append(ii)
+    if ta_cas.vitals.mental_status == Ta3Vitals.SHOCK.value:
+        ii = InferredInjury(Ta3Vitals.SHOCK.value, Locations.UNSPECIFIED, severity=1.0)
+        ii.set_source('shock is in mentakl status')
     return injuries
 
 
 def _convert_injury(ta_injury: TA_INJ) -> list[Affector]:
     if ta_injury.severity is None:
-        severe = INITIAL_SEVERITIES[ta_injury.name] if ta_injury.name in INITIAL_SEVERITIES.keys() else 0.7
+        # severe = INITIAL_SEVERITIES[ta_injury.name] if ta_injury.name in INITIAL_SEVERITIES.keys() else 0.7
+        severe = "moderate"
     else:
         severe = ta_injury.severity
     injuries = []
-    effect = AFFECCTOR_UPDATE[ta_injury.name]
+
+    severity_added_effect = AFFECCTOR_UPDATE[severe]
+    effect = deepcopy(AFFECCTOR_UPDATE[ta_injury.name])
+    effect.augment_with_severity(severity_added_effect)
+
     injury = Injury(name=ta_injury.name, location=ta_injury.location, severity=severe,
                     burning_effect=effect.burning_effect, bleeding_effect=effect.bleeding_effect,
                     breathing_effect=effect.breathing_effect)
@@ -159,10 +176,47 @@ def _reverse_convert_casualty(internal_casualty: Casualty) -> TA_CAS:
                   treatments=list())
 
 
-def convert_casualties(ta_casualties: list[TA_CAS]) -> list[Casualty]:
+def _get_environmnental_injury(environment_hazard: str) -> Injury | None:
+    if environment_hazard == Injuries.ENVIRONMENTAL_FIRE_HAZARD.value:
+        return Injury(Injuries.ENVIRONMENTAL_FIRE_HAZARD.value, Locations.UNSPECIFIED.value,
+                      severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.SEVERE.value,
+                      burning_effect=BodySystemEffect.CRITICAL.value, is_burn=False)  # is burn effects treatment
+
+    if environment_hazard == Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value:
+        return Injury(Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value, Locations.UNSPECIFIED.value,
+                      severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.MODERATE.value)
+
+    if environment_hazard == Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value:
+        return Injury(Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value, Locations.UNSPECIFIED.value,
+                      severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.SEVERE.value,
+                      burning_effect=BodySystemEffect.SEVERE.value, is_burn=False)  # is burn effects treatment
+
+    if environment_hazard == Injuries.ENVIRONMENTAL_COLLISION_HAZARD.value:
+        return Injury(Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value, Locations.UNSPECIFIED.value,
+                      severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.SEVERE.value)
+
+    if environment_hazard == Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value:
+        return Injury(Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value, Locations.UNSPECIFIED.value,
+                      severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.SEVERE.value,
+                      breathing_effect=BodySystemEffect.MODERATE.value)
+
+    if environment_hazard == Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value:
+        return Injury(Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value, Locations.UNSPECIFIED.value,
+                      severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.MODERATE.value,
+                      breathing_effect=BodySystemEffect.MODERATE.value)
+
+    print(environment_hazard)
+    sys.exit(1)
+    return None
+
+
+def convert_casualties(ta_casualties: list[TA_CAS], environment_hazard: str) -> list[Casualty]:
     casualties: list[Casualty] = []
     for cas in ta_casualties:
         casualties.append(_convert_casualty(cas))
+        environment_injury: Injury = _get_environmnental_injury(environment_hazard)
+        # if not environment_injury:
+        #     casualties.append(environment_injury)
     return casualties
 
 
@@ -189,8 +243,8 @@ def reverse_convert_supplies(internal_supplies: list[Supply]) -> list[TA_SUPPLY]
     return supplies
 
 
-def convert_state(ta3_state: TA3State) -> MedsimState:
-    cas = convert_casualties(ta3_state.casualties)
+def convert_state(ta3_state: TA3State, enviornment_hazard: str) -> MedsimState:
+    cas = convert_casualties(ta3_state.casualties, enviornment_hazard)
     sup = convert_supplies(ta3_state.supplies)
     return MedsimState(casualties=cas, supplies=sup, time=ta3_state.time_, unstructured=ta3_state.unstructured)
 

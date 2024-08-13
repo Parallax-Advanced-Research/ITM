@@ -128,6 +128,7 @@ class TA3State(State):
         self.supplies: list[Supply] = supplies
         self.actions_performed: list[Action] = actions_performed
         self.treatments: dict[str, list[str]] = treatments
+        self.orig_state: dict = {}
 
     @staticmethod
     def from_dict(data: dict) -> 'TA3State':
@@ -150,4 +151,5 @@ class TA3State(State):
         casualties = [Casualty.from_ta3(c) for c in cdatas]
         supplies = [Supply(**s) for s in sdatas]
         ta3s = TA3State(unstr, stime, casualties, supplies, actions_performed, treatments)
+        ta3s.orig_state = data
         return ta3s

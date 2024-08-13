@@ -9,10 +9,10 @@ import argparse
 
 def main():
     parser = get_default_parser()
-    parser.add_argument('--exhaustive', action=argparse.BooleanOptionalAction, default=True, help="Use exhaustive selector (default).")
-    parser.add_argument('--diverse', action=argparse.BooleanOptionalAction, default=False, help="Use diverse selector (overrides exhaustive).")
+    parser.add_argument('--exhaustive', action=argparse.BooleanOptionalAction, default=False, help="Use exhaustive selector (default).")
+    parser.add_argument('--diverse', action=argparse.BooleanOptionalAction, default=True, help="Use diverse selector (overrides exhaustive).")
     parser.add_argument('--reset', action=argparse.BooleanOptionalAction, default=False, help="Run from scratch (delete old cases).")
-    parser.add_argument('--runs', action=argparse.BooleanOptionalAction, default=None, help="How many training runs to perform (maximum).")
+    parser.add_argument('--runs', type=int, default=None, help="How many training runs to perform (maximum).")
     args = parser.parse_args()
     args.training = True
     args.keds = False
@@ -41,13 +41,13 @@ def main():
             print("TA3 server not listening. Shutting down.")
             sys.exit(-1)
             
-        if args.session_type in ["adept", "eval"] and not util.is_port_open(adept_port):
-            print("ADEPT server not listening. Shutting down.")
-            sys.exit(-1)
+        # if args.session_type in ["adept", "eval"] and not util.is_port_open(adept_port):
+            # print("ADEPT server not listening. Shutting down.")
+            # sys.exit(-1)
             
-        if args.session_type in ["soartech", "eval"] and not util.is_port_open(soartech_port):
-            print("Soartech server not listening. Shutting down.")
-            sys.exit(-1)
+        # if args.session_type in ["soartech", "eval"] and not util.is_port_open(soartech_port):
+            # print("Soartech server not listening. Shutting down.")
+            # sys.exit(-1)
         
         
     driver = TA3Driver(args)

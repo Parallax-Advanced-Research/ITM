@@ -1,7 +1,7 @@
 import json
 import os
 from components import DecisionSelector
-from domain.internal import Scenario, TADProbe, Action, KDMAs, Decision
+from domain.internal import Scenario, TADProbe, Action, AlignmentTarget, Decision
 from components.decision_selector.kdma_estimation import write_case_base, read_case_base
 from components.decision_selector.kdma_estimation.kdma_estimation_decision_selector import make_case_triage
 from typing import Any
@@ -35,7 +35,7 @@ class ExhaustiveSelector(DecisionSelector):
                 
             
         
-    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         print(f"Last actions: {[str(act) for act in self.last_actions]}")
         print(f"Final Choice: {self.choice_final}")
         print(f"Action index: {self.action_index}")

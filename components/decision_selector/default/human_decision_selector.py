@@ -1,10 +1,10 @@
 import random
-from domain.internal import Scenario, TADProbe, Decision, KDMAs
+from domain.internal import Scenario, TADProbe, Decision, AlignmentTarget
 from components import DecisionSelector
 
 
 class HumanDecisionSelector(DecisionSelector):
-    def select(self, _scenario: Scenario, probe: TADProbe, _target: KDMAs) -> (Decision, float):
+    def select(self, _scenario: Scenario, probe: TADProbe, _target: AlignmentTarget) -> (Decision, float):
         [print(f"{i}: {probe.decisions[i].value}") for i in range(len(probe.decisions))]
         decision: Decision = None
         while decision is None:

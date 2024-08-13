@@ -12,7 +12,6 @@ class EvaluationDriver(TA3Driver):
         self.estimated_kdma_opps = 0
         self.actual_kdma_vals = {}
         self.alignment = None
-        self.aggregates = None
 
     def decide(self, itm_probe: ext.ITMProbe) -> ext.Action:
         act = super().decide(itm_probe)
@@ -40,11 +39,15 @@ class EvaluationDriver(TA3Driver):
         if not final:
             return
         for (kdma, count) in self.estimated_kdma_counts.items():
+            targetVal = -1
+            for k in self.alignment_tgt.kdma_names:
+                if k.lower() == kdma:
+                    targetVal = self.alignment_tgt.getKDMAValue(k)
+                    break
             print("%s: Target: %3f Estimated: %3f Minimum: %3f Maximum: %3f" %
                   (kdma, 
-                   self.alignment_tgt.kdma_map.get(kdma, -10),
+                   targetVal,
                    self.estimated_kdmas[kdma] / count, 
                    self.estimated_min_kdmas[kdma] / count,
                    self.estimated_max_kdmas[kdma] / count))
         self.alignment = feedback.score
-        self.aggregates = {item.kdma:item.value for item in feedback.kdma_values}

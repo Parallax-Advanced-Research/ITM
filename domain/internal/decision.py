@@ -13,7 +13,7 @@ class Action:
         self.params: dict[str, typing.Any] = params
 
     def __str__(self):
-        return f"{self.name}({','.join(self.params.values())})"
+        return f"{self.name}({','.join([str(val) for val in self.params.values()])})"
 
     def to_json(self):
         d = dict()
@@ -52,6 +52,7 @@ class Decision(typing.Generic[T]):
             self.metrics.update(metrics)
         self.kdmas: KDMAs | None = kdmas
         self.intend = intend
+        self.context = {}
 
     def __repr__(self):
         return f"{self.id_}: {self.value} - {self.kdmas} - {[(dm.name, dm.value) for dm in self.metrics.values()]}"

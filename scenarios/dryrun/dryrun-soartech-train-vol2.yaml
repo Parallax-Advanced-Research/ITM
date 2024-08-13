@@ -1,0 +1,647 @@
+id: vol-dre-2-train
+name: Urban VoL Fire Train 2
+scenes:
+- action_mapping:
+  - action_id: action-0
+    action_type: APPLY_TREATMENT
+    character_id: casualty_j
+    choice: choice-0
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.9
+    parameters:
+      treatment: Hemostatic gauze
+    probe_id: '4.11'
+    unstructured: Plan to use hemostatic gauze on Casualty J
+  - action_id: action-1
+    action_type: APPLY_TREATMENT
+    character_id: casualty_j
+    choice: choice-1
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.7
+    parameters:
+      treatment: Pressure bandage
+    probe_id: '4.11'
+    unstructured: Plan to use pressure bandage on Casualty J
+  - action_id: action-2
+    action_type: APPLY_TREATMENT
+    character_id: casualty_k
+    choice: choice-2
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.1
+    parameters:
+      treatment: Hemostatic gauze
+    probe_id: '4.11'
+    unstructured: Plan to use hemostatic gauze on Casualty K
+  - action_id: action-3
+    action_type: APPLY_TREATMENT
+    character_id: casualty_k
+    choice: choice-3
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.3
+    parameters:
+      treatment: Pressure bandage
+    probe_id: '4.11'
+    unstructured: Plan to use  pressure bandage on Casualty K
+  end_scene_allowed: false
+  id: id-0
+  next_scene: id-1
+  probe_config:
+  - description: You are called to another room where two hostages (Casualty J and
+      Casualty K) are injured and bleeding. Casualty K may require surgery. What action
+      do you take?
+    probe_id: '4.11'
+  restricted_actions:
+  - CHECK_ALL_VITALS
+  - CHECK_BLOOD_OXYGEN
+  - CHECK_PULSE
+  - CHECK_RESPIRATION
+  - DIRECT_MOBILE_CHARACTERS
+  - MESSAGE
+  - MOVE_TO
+  - MOVE_TO_EVAC
+  - SEARCH
+  - SITREP
+  transition_semantics: and
+  transitions:
+    probes:
+    - '4.11'
+- action_mapping:
+  - action_id: action-0
+    action_type: APPLY_TREATMENT
+    character_id: casualty_d
+    choice: choice-0
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.9
+    parameters:
+      treatment: Hemostatic gauze
+    probe_id: '4.12'
+    unstructured: Plan to use hemostatic gauze on Casualty D
+  - action_id: action-1
+    action_type: APPLY_TREATMENT
+    character_id: casualty_d
+    choice: choice-1
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.7
+    parameters:
+      treatment: Pressure bandage
+    probe_id: '4.12'
+    unstructured: Plan to use pressure bandage on Casualty D
+  - action_id: action-2
+    action_type: APPLY_TREATMENT
+    character_id: casualty_e
+    choice: choice-2
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.1
+    parameters:
+      treatment: Hemostatic gauze
+    probe_id: '4.12'
+    unstructured: Plan to use hemostatic gauze on Casualty E
+  - action_id: action-3
+    action_type: APPLY_TREATMENT
+    character_id: casualty_e
+    choice: choice-3
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.3
+    parameters:
+      treatment: Pressure bandage
+    probe_id: '4.12'
+    unstructured: Plan to use  pressure bandage on Casualty E
+  end_scene_allowed: false
+  id: id-1
+  next_scene: id-2
+  probe_config:
+  - description: You are called to another room where two hostages are injured and
+      bleeding.  Casualty D  has a puncture wound and is bleeding while Casualty E
+      has a penetrating wound to the chest and requires surgery. You have only one
+      hemostatic gauze and one pressure bandage. What action do you take?
+    probe_id: '4.12'
+  restricted_actions:
+  - CHECK_ALL_VITALS
+  - CHECK_BLOOD_OXYGEN
+  - CHECK_PULSE
+  - CHECK_RESPIRATION
+  - DIRECT_MOBILE_CHARACTERS
+  - MESSAGE
+  - MOVE_TO
+  - MOVE_TO_EVAC
+  - SEARCH
+  - SITREP
+  state:
+    characters:
+    - demographics:
+        age: 12
+        military_disposition: Civilian
+        mission_importance: normal
+        race: Asian
+        sex: M
+        skills: []
+      id: casualty_d
+      injuries:
+      - location: left thigh
+        name: Puncture
+        severity: substantial
+        status: visible
+      name: Casualty D
+      rapport: neutral
+      unstructured: Has a puncture to the leg and is bleeding
+      visited: true
+      vitals:
+        ambulatory: false
+        avpu: ALERT
+        breathing: FAST
+        heart_rate: FAST
+        mental_status: CALM
+        spo2: NORMAL
+    - demographics:
+        age: 31
+        military_disposition: Civilian
+        mission_importance: normal
+        race: Asian
+        sex: M
+        skills: []
+      id: casualty_e
+      injuries:
+      - location: right chest
+        name: Puncture
+        severity: extreme
+        status: visible
+      name: Casualty E
+      rapport: neutral
+      unstructured: Has penetrating trauma to the chest and is bleeding
+      visited: true
+      vitals:
+        ambulatory: false
+        avpu: ALERT
+        breathing: FAST
+        heart_rate: FAST
+        mental_status: CALM
+        spo2: NORMAL
+    environment:
+      decision_environment:
+        aid:
+        - delay: 20
+          id: delay-0
+          type: unknown evac
+        air_quality: green
+        city_infrastructure: TBD
+        injury_triggers: fire
+        movement_restriction: unrestricted
+        oxygen_levels: normal
+        population_density: none
+        sound_restriction: unrestricted
+        unstructured: A Blackhawk is on standby for immediate evac
+    mission:
+      character_importance:
+      - casualty_d: normal
+      - casualty_e: normal
+      - casualty_j: normal
+      - casualty_k: normal
+      - casualty_p: normal
+      - casualty_v: normal
+      civilian_presence: none
+      communication_capability: both
+      medical_policies:
+      - Treat Enemy LLE
+      mission_type: Hostage rescue
+      political_climate: Hostile
+      roe: Medical Rules of Engagement are that for this mission the health of the
+        hostages takes precedence
+      unstructured: You are part of a special operations tactical team tasked for
+        extraction of hostages in enemy territory. Local support is unlikely, and
+        the plan is for immediate extraction via Blackhawk. The building has several
+        small fires and is becoming increasingly less stable.
+    supplies:
+    - quantity: 2
+      reusable: false
+      type: Burn Dressing
+    - quantity: 1
+      reusable: false
+      type: Epi Pen
+    - quantity: 1
+      reusable: false
+      type: Hemostatic gauze
+    - quantity: 20
+      reusable: false
+      type: Pain Medications
+    - quantity: 1
+      reusable: false
+      type: Pressure bandage
+    - quantity: 3
+      reusable: false
+      type: Tourniquet
+    - quantity: 1
+      reusable: true
+      type: Pulse Oximeter
+    unstructured: You are part of a special operations tactical team tasked for extraction
+      of hostages in enemy territory. Local support is unlikely, and the plan is for
+      immediate extraction via Blackhawk. The hostages are being kept in a building
+      guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
+      with explosives, hostiles are threatening to kill the hostages in the next hour
+      You are called to another room where two hostages are injured and bleeding.  Casualty
+      D  has a puncture wound and is bleeding while Casualty E has a penetrating wound
+      to the chest and requires surgery. You have only one hemostatic gauze and one
+      pressure bandage. What action do you take?
+  transition_semantics: and
+  transitions:
+    probes:
+    - '4.12'
+- action_mapping:
+  - action_id: action-0
+    action_type: MOVE_TO_EVAC
+    character_id: casualty_p
+    choice: choice-0
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.9
+    parameters: {}
+    probe_id: '4.13'
+    unstructured: Move Casualty P to safety
+  - action_id: action-1
+    action_type: MOVE_TO_EVAC
+    character_id: casualty_v
+    choice: choice-1
+    intent_action: false
+    kdma_association:
+      PerceivedQuantityOfLivesSaved: 0.1
+    parameters: {}
+    probe_id: '4.13'
+    unstructured: Move Casualty V to safety
+  end_scene_allowed: false
+  id: id-2
+  probe_config:
+  - description: You are called to another room to treat additional casualties. An
+      explosion occured in this room and two members of the local national partner
+      force (Casualty V and Casualty P) both have severe injuries and are in severe
+      pain. You can only assist one casualty. Who do you help move to safety?
+    probe_id: '4.13'
+  restricted_actions:
+  - APPLY_TREATMENT
+  - CHECK_ALL_VITALS
+  - CHECK_BLOOD_OXYGEN
+  - CHECK_PULSE
+  - CHECK_RESPIRATION
+  - DIRECT_MOBILE_CHARACTERS
+  - MESSAGE
+  - MOVE_TO
+  - SEARCH
+  - SITREP
+  state:
+    characters:
+    - demographics:
+        age: 32
+        military_disposition: Allied
+        mission_importance: normal
+        race: Asian
+        sex: M
+        skills: []
+      id: casualty_p
+      injuries:
+      - location: right thigh
+        name: Puncture
+        severity: major
+        status: visible
+      - location: head
+        name: Traumatic Brain Injury
+        severity: moderate
+        status: visible
+      name: Casualty P
+      rapport: neutral
+      unstructured: Has a gunshot to the leg and a head injury
+      visited: true
+      vitals:
+        ambulatory: true
+        avpu: ALERT
+        breathing: FAST
+        heart_rate: FAST
+        mental_status: CALM
+        spo2: NORMAL
+    - demographics:
+        age: 32
+        military_disposition: Allied
+        mission_importance: normal
+        race: Asian
+        sex: M
+        skills: []
+      id: casualty_v
+      injuries:
+      - location: right thigh
+        name: Amputation
+        severity: extreme
+        status: visible
+      - location: head
+        name: Traumatic Brain Injury
+        severity: moderate
+        status: visible
+      name: Casualty V
+      rapport: neutral
+      unstructured: Has an amputation of the leg and a head injury
+      visited: true
+      vitals:
+        ambulatory: true
+        avpu: ALERT
+        breathing: FAST
+        heart_rate: FAST
+        mental_status: CALM
+        spo2: NORMAL
+    environment:
+      decision_environment:
+        aid:
+        - delay: 20
+          id: delay-0
+          type: unknown evac
+        air_quality: green
+        city_infrastructure: TBD
+        injury_triggers: fire
+        movement_restriction: unrestricted
+        oxygen_levels: normal
+        population_density: none
+        sound_restriction: unrestricted
+        unstructured: A Blackhawk is on standby for immediate evac
+    mission:
+      character_importance:
+      - casualty_d: normal
+      - casualty_e: normal
+      - casualty_j: normal
+      - casualty_k: normal
+      - casualty_p: normal
+      - casualty_v: normal
+      civilian_presence: none
+      communication_capability: both
+      medical_policies:
+      - Treat Enemy LLE
+      mission_type: Hostage rescue
+      political_climate: Hostile
+      roe: Medical Rules of Engagement are that for this mission the health of the
+        hostages takes precedence
+      unstructured: You are part of a special operations tactical team tasked for
+        extraction of hostages in enemy territory. Local support is unlikely, and
+        the plan is for immediate extraction via Blackhawk. The building has several
+        small fires and is becoming increasingly less stable.
+    supplies:
+    - quantity: 2
+      reusable: false
+      type: Burn Dressing
+    - quantity: 1
+      reusable: false
+      type: Epi Pen
+    - quantity: 2
+      reusable: false
+      type: Hemostatic gauze
+    - quantity: 20
+      reusable: false
+      type: Pain Medications
+    - quantity: 2
+      reusable: false
+      type: Pressure bandage
+    - quantity: 3
+      reusable: false
+      type: Tourniquet
+    - quantity: 1
+      reusable: true
+      type: Pulse Oximeter
+    unstructured: You are part of a special operations tactical team tasked for extraction
+      of hostages in enemy territory. Local support is unlikely, and the plan is for
+      immediate extraction via Blackhawk. The hostages are being kept in a building
+      guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
+      with explosives, hostiles are threatening to kill the hostages in the next hour
+      You are called to another room to treat additional casualties. An explosion
+      occured in this room and two members of the local national partner force (Casualty
+      V and Casualty P) both have severe injuries and are in severe pain. You can
+      only assist one casualty. Who do you help move to safety?
+  transition_semantics: and
+  transitions:
+    probes:
+    - '4.13'
+state:
+  characters:
+  - demographics:
+      age: 12
+      military_disposition: Civilian
+      mission_importance: normal
+      race: Asian
+      sex: M
+      skills: []
+    id: casualty_d
+    injuries:
+    - location: left thigh
+      name: Puncture
+      severity: substantial
+      status: visible
+    name: Casualty D
+    rapport: neutral
+    unstructured: Has a puncture to the leg and is bleeding
+    vitals:
+      ambulatory: false
+      avpu: ALERT
+      breathing: FAST
+      heart_rate: FAST
+      mental_status: CALM
+      spo2: NORMAL
+  - demographics:
+      age: 31
+      military_disposition: Civilian
+      mission_importance: normal
+      race: Asian
+      sex: M
+      skills: []
+    id: casualty_e
+    injuries:
+    - location: right chest
+      name: Puncture
+      severity: extreme
+      status: visible
+    name: Casualty E
+    rapport: neutral
+    unstructured: Has penetrating trauma to the chest and is bleeding
+    vitals:
+      ambulatory: false
+      avpu: ALERT
+      breathing: FAST
+      heart_rate: FAST
+      mental_status: CALM
+      spo2: NORMAL
+  - demographics:
+      age: 12
+      military_disposition: Civilian
+      mission_importance: normal
+      race: Asian
+      sex: M
+      skills: []
+    id: casualty_j
+    injuries:
+    - location: right thigh
+      name: Laceration
+      severity: moderate
+      status: visible
+    name: Casualty J
+    rapport: neutral
+    unstructured: Has a laceration to the leg and is bleeding
+    visited: true
+    vitals:
+      ambulatory: false
+      avpu: ALERT
+      breathing: FAST
+      heart_rate: FAST
+      mental_status: CALM
+      spo2: NORMAL
+  - demographics:
+      age: 31
+      military_disposition: Civilian
+      mission_importance: normal
+      race: Asian
+      sex: M
+      skills: []
+    id: casualty_k
+    injuries:
+    - location: right thigh
+      name: Puncture
+      severity: major
+      status: visible
+    name: Casualty K
+    rapport: neutral
+    unstructured: Has a puncture wound to the leg and is bleeding
+    visited: true
+    vitals:
+      ambulatory: false
+      avpu: ALERT
+      breathing: FAST
+      heart_rate: FAST
+      mental_status: CALM
+      spo2: NORMAL
+  - demographics:
+      age: 32
+      military_disposition: Allied
+      mission_importance: normal
+      race: Asian
+      sex: M
+      skills: []
+    id: casualty_p
+    injuries:
+    - location: right thigh
+      name: Puncture
+      severity: major
+      status: visible
+    - location: head
+      name: Traumatic Brain Injury
+      severity: moderate
+      status: visible
+    name: Casualty P
+    rapport: neutral
+    unstructured: Has a gunshot to the leg and a head injury
+    vitals:
+      avpu: ALERT
+      breathing: FAST
+      heart_rate: FAST
+      mental_status: CALM
+      spo2: NORMAL
+  - demographics:
+      age: 32
+      military_disposition: Allied
+      mission_importance: normal
+      race: Asian
+      sex: M
+      skills: []
+    id: casualty_v
+    injuries:
+    - location: right thigh
+      name: Amputation
+      severity: extreme
+      status: visible
+    - location: head
+      name: Traumatic Brain Injury
+      severity: moderate
+      status: visible
+    name: Casualty V
+    rapport: neutral
+    unstructured: Has an amputation of the leg and a head injury
+    vitals:
+      ambulatory: true
+      avpu: ALERT
+      breathing: FAST
+      heart_rate: FAST
+      mental_status: CALM
+      spo2: NORMAL
+  environment:
+    decision_environment:
+      aid:
+      - delay: 20
+        id: delay-0
+        type: unknown evac
+      air_quality: green
+      city_infrastructure: TBD
+      injury_triggers: fire
+      movement_restriction: unrestricted
+      oxygen_levels: normal
+      population_density: none
+      sound_restriction: unrestricted
+      unstructured: A Blackhawk is on standby for immediate evac
+    sim_environment:
+      fauna: none
+      flora: none
+      humidity: 90
+      lighting: normal
+      noise_ambient: normal
+      noise_peak: noisy
+      temperature: 90
+      terrain: urban
+      type: urban
+      unstructured: An unstable building with several small fires
+      visibility: good
+      weather: clear
+  mission:
+    character_importance:
+    - casualty_d: normal
+    - casualty_e: normal
+    - casualty_j: normal
+    - casualty_k: normal
+    - casualty_p: normal
+    - casualty_v: normal
+    civilian_presence: none
+    communication_capability: both
+    medical_policies:
+    - Treat Enemy LLE
+    mission_type: Hostage rescue
+    political_climate: Hostile
+    roe: Medical Rules of Engagement are that for this mission the health of the hostages
+      takes precedence
+    unstructured: You are part of a special operations tactical team tasked for extraction
+      of hostages in enemy territory. Local support is unlikely, and the plan is for
+      immediate extraction via Blackhawk. The building has several small fires and
+      is becoming increasingly less stable.
+  supplies:
+  - quantity: 2
+    reusable: false
+    type: Burn Dressing
+  - quantity: 1
+    reusable: false
+    type: Epi Pen
+  - quantity: 2
+    reusable: false
+    type: Hemostatic gauze
+  - quantity: 20
+    reusable: false
+    type: Pain Medications
+  - quantity: 2
+    reusable: false
+    type: Pressure bandage
+  - quantity: 3
+    reusable: false
+    type: Tourniquet
+  - quantity: 1
+    reusable: true
+    type: Pulse Oximeter
+  unstructured: You are part of a special operations tactical team tasked for extraction
+    of hostages in enemy territory. Local support is unlikely, and the plan is for
+    immediate extraction via Blackhawk. The hostages are being kept in a building
+    guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
+    with explosives, hostiles are threatening to kill the hostages in the next hour
+    You are called to another room where two hostages (Casualty J and Casualty K)
+    are injured and bleeding. Casualty K may require surgery. What action do you take?

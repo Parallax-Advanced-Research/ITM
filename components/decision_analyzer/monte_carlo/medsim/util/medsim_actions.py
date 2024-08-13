@@ -5,6 +5,7 @@ from domain.internal import Decision
 from util import logger
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import Medical as SmolMedicalOracle
 
+
 def supply_location_match(action: MedsimAction):
     if action.supply in [Supplies.PRESSURE_BANDAGE.value, Supplies.HEMOSTATIC_GAUZE.value]:
         return action.location != Locations.UNSPECIFIED.value
@@ -160,10 +161,25 @@ def get_possible_actions(casualties: list[Casualty], supplies: list[str], aid_de
 def decision_to_medsimaction(decision: Decision) -> MedsimAction:
     dval = decision.value
     if dval.name in [Actions.CHECK_PULSE.value, Actions.CHECK_RESPIRATION.value, Actions.CHECK_ALL_VITALS.value,
-                     Actions.SITREP.value, Actions.SEARCH.value]:
+                     Actions.SITREP.value, Actions.SEARCH.value, Actions.CHECK_BLOOD_OXYGEN.value]:
         ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'] if 'casualty' in dval.params.keys() else None)
         return ma
-    if dval.name in [Actions.MOVE_TO_EVAC.value]:
+    if dval.name in [Actions.MESSAGE.value]:
+        recipient = None
+        relevant_state = None
+        casualty = None
+        if 'recipient' in dval.params:
+            recipient = dval.params['recipient']
+        if 'object' in dval.params:
+            recipient = dval.params['object']
+        if 'relevant_state' in dval.params:
+            relevant_state = dval.params['relevant_state']
+        if 'casualty' in dval.params:
+            casualty = dval.params['casualty']
+        ma = MedsimAction(action=dval.name, casualty_id=casualty, recipient=recipient,
+                          relevant_state=relevant_state, message_type=dval.params['type'])
+        return ma
+    if dval.name in [Actions.MOVE_TO_EVAC.value, Actions.MOVTE_TO.value]:
         ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'],
                           evac_id=dval.params['evac_id'] if 'evac_id' in dval.params.keys() else None)
         return ma

@@ -2,7 +2,7 @@ import csv
 import math
 from components import DecisionSelector
 from components.decision_selector.mvp_cbr.sim_tools import similarity
-from domain.internal import Scenario, TADProbe, KDMAs, Decision, Action
+from domain.internal import Scenario, TADProbe, AlignmentTarget, AlignmentTargetType, Decision, Action
 from domain.ta3 import TA3State, Supply, Casualty
 
 
@@ -25,11 +25,11 @@ class CSVDecisionSelector(DecisionSelector):
         self.variant: str = variant
         self.verbose: bool = verbose
 
-    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         """ Find the best decision from the probe by comparing to individual rows in the case base """
         
-        if target is None:
-            raise Exception("CSV Decision Selector needs an alignment target to operate correctly.")
+        if target is None or target.type != AlignmentTargetType.SCALAR:
+            raise Exception("CSV Decision Selector needs a scalar alignment target to operate correctly.")
         max_sim: float = -math.inf
         max_decision: Decision[Action] = None
 
@@ -48,7 +48,7 @@ class CSVDecisionSelector(DecisionSelector):
 
         return max_decision, max_sim
 
-    def _compute_sim(self, state: TA3State, decision: Decision[Action], target: KDMAs) -> float:
+    def _compute_sim(self, state: TA3State, decision: Decision[Action], target: AlignmentTarget) -> float:
         casualties = {cas.id: cas for cas in state.casualties}
         best_score = 0
         best_case = None
@@ -85,7 +85,7 @@ class CSVDecisionSelector(DecisionSelector):
         return best_score
 
     @staticmethod
-    def _kdma_sim(target: KDMAs, kdma_dict: dict) -> float:
+    def _kdma_sim(target: AlignmentTarget, kdma_dict: dict) -> float:
         tot_sim = 0
         tot_count = 0
         for kdma in target.kdmas:
