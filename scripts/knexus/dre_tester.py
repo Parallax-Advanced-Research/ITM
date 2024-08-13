@@ -13,16 +13,16 @@ SOARTECH_SCENARIOS = ['qol-dre-1-train', 'vol-dre-1-train', 'qol-dre-1-eval', 'v
 
 # Last scenes in qol trainer
 
-VOL_CHECK = ['qol-dre-1-train']
+VOL_CHECK = ['DryRunEval.MJ3']
 
-SKIP_SCENARIOS = []
+SKIP_SCENARIOS = ['DryRunEval.IO1', 'DryRunEval.MJ1']
 # SUCCESS_SCENARIOS = ['qol-dre-1-train']  # ['qol-dre-v2-train', 'qol-dre-v2-eval']
 # SUCCESS_SCENARIOS = ['DryRunEval.IO1', 'DryRunEval.MJ1', 'DryRunEval-MJ2-eval', 'DryRunEval-MJ4-eval']
 
 
 def moist_run(mc=True):
     args = parse_default_arguments()
-    all_scenarios = SOARTECH_SCENARIOS  # [SOARTECH_SCENARIOS]
+    all_scenarios = VOL_CHECK  # [SOARTECH_SCENARIOS]
     for scen in all_scenarios:
         if scen in SKIP_SCENARIOS:
             continue
