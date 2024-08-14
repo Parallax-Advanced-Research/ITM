@@ -2,7 +2,7 @@ import swagger_client.models as models
 import swagger_client as ta3
 import util
 from domain.external import Scenario, ITMProbe, Action
-from domain.internal import KDMA, KDMAs
+from domain.internal import AlignmentTarget, target
 
 
 class TA3Client:
@@ -18,7 +18,7 @@ class TA3Client:
         self._session_id: str = "NO_SESSION"
         self._scenario: Scenario = None
         self._requested_scenario_id: str = inputScenarioId
-        self._align_tgt: KDMAs = target
+        self._align_tgt: AlignmentTarget = target
         self._actions: dict[ta3.Action] = {}
         self._probe_count: int = 0
         self._session_type: str = None
@@ -30,7 +30,7 @@ class TA3Client:
             self._eval_target_names = list(evalTargetNames)
 
     @property
-    def align_tgt(self) -> KDMAs:
+    def align_tgt(self) -> AlignmentTarget:
         return self._align_tgt
 
     # Known arguments:
@@ -63,10 +63,9 @@ class TA3Client:
             probes=[]
         )
 
-        if self._session_type == 'eval' or self._connect_to_ta1:
+        if self._session_type == 'eval':
             at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
-            kdmas: KDMAs = KDMAs([KDMA(kdma.kdma, kdma.value) for kdma in at.kdma_values])
-            self._align_tgt = kdmas
+            self._align_tgt = target.from_ta3(at)
 
         self._scenario = scen
         self._probe_count = 0

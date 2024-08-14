@@ -187,20 +187,17 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
 
     input:
     - casualty_dict: dictionary of casualties
-    - kdma_list: list of kdmas with their values
+    - predictor_dict: list of kdmas with their values
 
     output:
     - casualty id as string
     '''
 
-    def take_the_best_priority(self, casualty_dict: dict, kdma_list: dict) -> dict:
+    def take_the_best_priority(self, casualty_dict: dict, predictor_dict: dict) -> dict:
 
         if len(casualty_dict) == 0: raise Exception("no casualties exist")
-        if type(casualty_dict) != dict or type(kdma_list) != dict: raise AttributeError("Incorrect arg types or size")
-        if len(kdma_list) == 0: raise Exception("there are no kdmas")
-
-        # get kdma with highest value
-        #max_kdma = max(zip(kdma_list.values(), kdma_list.keys()))[1]
+        if type(casualty_dict) != dict or type(predictor_dict) != dict: raise AttributeError("Incorrect arg types or size")
+        if len(predictor_dict) == 0: raise Exception("predictors empty")
 
         # create table of casualty fields to worth
 
@@ -222,12 +219,12 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
                 1.5 if info['directness_of_causality'] == 'none' else -1)
             casualty_sum[person] += 0 if info['intent'] is None else (
                 1.5 if (info['intent'] == 'no intent' or info['intent'] == 'intend minor help' or info['intent'] == 'intend major help') else -1)
-            if kdma_list['relevance']['life_impact'] == 'high':
+            if predictor_dict['relevance']['life_impact'] == 'high':
                 casualty_sum[person] += 0 if info['demographics']['rank'] is None else CASUALTY_VAL_TABLE['rank'][
                 info['demographics']['rank'].lower()]
                 casualty_sum[person] += 0 if info['demographics']['age'] is None else (
                     1 if (0 <= info['demographics']['age'] <= 10 or 65 <= info['demographics']['age'] <= 100) else 0)
-            elif kdma_list['relevance']['resources'] == 'many':
+            elif predictor_dict['relevance']['resources'] == 'many':
                 casualty_sum[person] += 0 if info['relationship'] == 'NONE' else CASUALTY_VAL_TABLE['relationship'][
                 info['relationship'].lower()]
 
@@ -1266,6 +1263,8 @@ class HeuristicRuleAnalyzer(DecisionAnalyzer):
         analysis = {}
         for decision_complete in probe.decisions:
             decision = decision_complete.value.name
+            if decision == "MESSAGE":
+                continue
             if decision == "APPLY_TREATMENT":
                 for ele in data['treatment']['APPLY_TREATMENT']:
                     if ele in str(decision_complete.value).lower():

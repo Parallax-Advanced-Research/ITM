@@ -165,9 +165,19 @@ def decision_to_medsimaction(decision: Decision) -> MedsimAction:
         ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'] if 'casualty' in dval.params.keys() else None)
         return ma
     if dval.name in [Actions.MESSAGE.value]:
-        ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'],
-                          recipient=dval.params['recipient'] if 'recipient' in set(dval.params.keys()) else dval.params['object'],
-                          message_type=dval.params['type'])
+        recipient = None
+        relevant_state = None
+        casualty = None
+        if 'recipient' in dval.params:
+            recipient = dval.params['recipient']
+        if 'object' in dval.params:
+            recipient = dval.params['object']
+        if 'relevant_state' in dval.params:
+            relevant_state = dval.params['relevant_state']
+        if 'casualty' in dval.params:
+            casualty = dval.params['casualty']
+        ma = MedsimAction(action=dval.name, casualty_id=casualty, recipient=recipient,
+                          relevant_state=relevant_state, message_type=dval.params['type'])
         return ma
     if dval.name in [Actions.MOVE_TO_EVAC.value, Actions.MOVTE_TO.value]:
         ma = MedsimAction(action=dval.name, casualty_id=dval.params['casualty'],

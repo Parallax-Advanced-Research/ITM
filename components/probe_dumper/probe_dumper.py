@@ -3,6 +3,7 @@ import os.path as osp
 import pickle as pkl
 import urllib
 
+from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import InjuryUpdate
 from domain.internal import TADProbe, Decision
 from domain.ta3 import TA3State
 from util.logger import logger
@@ -27,12 +28,16 @@ class Dump:
         self.states: list[TA3State] = list()
         self.environments: list[dict] = list()
         self.session_uuid = session_uuid
+        self.environment_hazard: None | InjuryUpdate = None
 
     def add_decisionstate(self, probe: TADProbe, decision: Decision):
         self.decisions_presented.append(probe.decisions)
         self.made_decisions.append(decision)
         self.states.append(probe.state)
         self.environments.append(probe.environment)
+
+    def add_environmental_hazard(self, haz: InjuryUpdate):
+        self.environment_hazard = haz
 
 
 class ProbeDumper:
@@ -51,7 +56,7 @@ class ProbeDumper:
             return probe_id
         return '-'.join(probe_id.split('-')[:-1])
 
-    def dump(self, probe, decision, session_uuid):
+    def dump(self, probe, decision, session_uuid, env_haz):
         opened_dump = None
         new_id = ProbeDumper.fix_probe_id(probe.id_)
         for dump_artifact in os.listdir(self.dump_path):
@@ -81,6 +86,7 @@ class ProbeDumper:
 
         opened_dump = opened_dump if opened_dump is not None else Dump(probe, session_uuid)
         opened_dump.add_decisionstate(probe, decision)
+        opened_dump.add_environmental_hazard(env_haz)
         #1 Encode as base 64 string
         #Use url
         clean_id = urllib.parse.quote_plus(new_id)

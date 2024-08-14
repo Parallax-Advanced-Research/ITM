@@ -4,7 +4,7 @@ import swagger_client as ta3
 from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
 from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
-from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback, make_new_action_decision
+from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentTarget, AlignmentFeedback, make_new_action_decision, target
 from util import logger
 import uuid
 
@@ -14,7 +14,7 @@ class Driver:
     def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer], trainer: AlignmentTrainer, dumper_config: DumpConfig = DEFAULT_DUMP):
         self.session: str = ''
         self.scenario: typing.Optional[Scenario] = None
-        self.alignment_tgt: KDMAs = KDMAs([])
+        self.alignment_tgt: AlignmentTarget = target.make_empty_alignment_target()
         # Components
         self.elaborator: Elaborator = elaborator
         self.selector: DecisionSelector = selector
@@ -32,7 +32,7 @@ class Driver:
     def new_session(self, session_id: str):
         self.session = session_id
 
-    def set_alignment_tgt(self, alignment_tgt: KDMAs):
+    def set_alignment_tgt(self, alignment_tgt: AlignmentTarget):
         self.alignment_tgt = alignment_tgt
 
     def set_scenario(self, scenario: ext.Scenario):
@@ -58,11 +58,15 @@ class Driver:
         probe = TADProbe(itm_probe.id, state, itm_probe.prompt, itm_probe.state['environment'], decisions)
         return probe
         
-    def translate_feedback(self, feedback: ta3.AlignmentResults) -> AlignmentFeedback:
+    def translate_feedback(self, results: ta3.AlignmentResults) -> AlignmentFeedback:
+        if len(results.alignment_source) != 1:
+            return None
         return AlignmentFeedback(
-                    feedback.alignment_target_id,
-                    KDMAs([KDMA(ass.kdma, ass.value) for ass in feedback.kdma_values]), 
-                    feedback.score)
+                    results.alignment_target_id,
+                    {kvo.kdma:kvo.value for kvo in results.kdma_values},
+                    results.score,
+                    results.alignment_source[0].probes
+                    )
 
     def elaborate(self, probe: TADProbe) -> list[Decision[Action]]:
         return self.elaborator.elaborate(self.scenario, probe)
@@ -97,6 +101,7 @@ class Driver:
 
     def decide(self, itm_probe: ext.ITMProbe) -> ext.Action:
         probe: TADProbe = self.translate_probe(itm_probe)
+        environmental_hazard: str = probe.get_environment_hazard()
 
         # Elaborate decisions, and analyze them
         probe.decisions = self.elaborate(probe)  # Probe.decisions changes from valid to invalid here
@@ -114,16 +119,20 @@ class Driver:
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
         if self.dumper is not None:
-            self.dumper.dump(probe, decision, self.session_uuid)
+            self.dumper.dump(probe, decision, self.session_uuid, environmental_hazard)
 
         # Extract external decision for response
         # url construction
         url = f'http://localhost:8501/?scen={probe.id_}'
         return self.respond(decision, url)
         
-    def train(self, feedback: ta3.AlignmentResults, final: bool):
-        if self.trainer is not None:
-            self.trainer.train(self.scenario, self.actions_performed, self.translate_feedback(feedback), final)
+    def train(self, feedback: ta3.AlignmentResults, final: bool, scene_end: bool, scene: str):
+        if self.trainer is None:
+            return
+        feedback = self.translate_feedback(feedback)
+        if feedback is None:
+            return
+        self.trainer.train(self.scenario, self.actions_performed, feedback, final, scene_end, scene)
 
     def _extract_state(self, dict_state: dict) -> State:
         raise NotImplementedError

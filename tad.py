@@ -10,8 +10,9 @@ from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
 from runner import MVPDriver, TA3Driver, TA3Client
 from components.decision_selector.mvp_cbr import Case
 from domain import Scenario
-from domain.internal import KDMAs, KDMA
+from domain.internal import AlignmentTarget, AlignmentTargetType
 import util
+from data import target_library
 from util import logger, LogLevel, use_simple_logger, dict_difference
 
 MVP_DIR = './data/mvp'
@@ -64,11 +65,13 @@ def parse_kdmas(kdma_args: list[str]):
     if kdma_args is None: 
         return None
 
-    kdma_lst = []
+    kdma_names = []
+    kdma_values = {}
     for kdmastr in kdma_args:
         k, v = kdmastr.replace("-", "=").split('=')
-        kdma_lst.append(KDMA(k, float(v)))
-    return KDMAs(kdma_lst)
+        kdma_names.append(k)
+        kdma_values[k] = float(v)
+    return AlignmentTarget("CmdLine", kdma_names, kdma_values, AlignmentTargetType.SCALAR)
 
 
 def ltest(args):
@@ -123,10 +126,7 @@ def api_test(args, driver = None):
     if driver is None:
         driver = TA3Driver(args)
     client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario, args.connect_to_ta1)
-    if args.training:
-        sid = client.start_session(adm_name=f'TAD', session_type=args.session_type, kdma_training=True)
-    else:
-        sid = client.start_session(f'TAD', session_type=args.session_type)
+    sid = client.start_session(adm_name=f'TAD', session_type=args.session_type, kdma_training=args.training)
         
     logger.info(f"Started Session-{sid}")
     while True:
@@ -136,11 +136,16 @@ def api_test(args, driver = None):
             break
         logger.info(f"Started Scenario-{scen.id}")
         driver.set_scenario(scen)
-        driver.set_alignment_tgt(client.align_tgt)
+        if args.alignment_target is None:
+            driver.set_alignment_tgt(client.align_tgt)
+        else:
+            driver.set_alignment_tgt(target_library.get_named_alignment_target(args.alignment_target))
+        
         logger.debug(f"-Alignment target: {client.align_tgt}")
         logger.debug(f"-Initial State: {scen.state}")
 
         probe = client.get_probe()
+        scene = probe.state["meta_info"]["scene_id"]
         while probe is not None:
             logger.info(f"Responding to probe-{probe.id}")
             action = driver.decide(probe)
@@ -153,10 +158,17 @@ def api_test(args, driver = None):
                 difference = dict_difference(new_probe.state, probe.state, {'id', 'type'})
                 difference.pop("actions_performed")
                 logger.debug(f"-State Removals: {difference}")
-            probe = new_probe
+                new_scene = new_probe.state["meta_info"]["scene_id"]
+            else:
+                new_scene = None
             if args.training:
                 for alignment in client.get_session_alignments():
-                    driver.train(alignment, probe is None)
+                    driver.train(alignment, new_probe is None, new_scene != scene, scene)
+                    logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
+                    # breakpoint()
+            probe = new_probe
+            scene = new_scene
+                        
         logger.info(f"Scenario Complete")
     
     

@@ -1,6 +1,6 @@
 import os.path
 
-from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision
+from domain.internal import Scenario, TADProbe, AlignmentTarget, Decision
 
 from components import DecisionSelector
 
@@ -16,7 +16,7 @@ class RandomProbeBasedAttributeExplorer(DecisionSelector):
             
         self.local_random = util.get_global_random_generator()
 
-    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         # for cur_decision in probe.decisions:
             # if cur_decision.kdmas is not None:
                 # cur_case = make_case(probe.state, cur_decision) | cur_decision.kdmas.kdma_map

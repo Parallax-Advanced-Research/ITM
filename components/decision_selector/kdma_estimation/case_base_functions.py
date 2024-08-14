@@ -148,3 +148,6 @@ def flatten(name, valueDict: dict[str, Any]):
 def first(seq : Sequence):
     return seq[0]
     
+
+def integerish(value: float) -> bool:
+    return -0.0001 < round(value) - value < 0.0001

@@ -6,6 +6,7 @@ import util
 import sys
 import argparse
 import time
+import requests
 from run_tests import color
 from enum import Enum
 
@@ -106,7 +107,7 @@ def update_server(dir_name: str, rebuild: bool = False) -> bool:
 
         subprocess.run(["git", "reset", "HEAD", "--hard"], cwd=ldir, check=True)
         subprocess.run(["git", "clean", "--force", "-d", "-x", "-e", "venv"], cwd=ldir, check=True)
-        p = subprocess.run(["git", "apply", "-v", os.path.join("..", "..", patching_status.patch_filename)], 
+        p = subprocess.run(["git", "apply", "-v", "--index", os.path.join("..", "..", patching_status.patch_filename)], 
                            cwd=ldir,  stdout=subprocess.PIPE, text=True, check=False)
         if p.returncode != 0:
             warning("Failed to apply patch to repo " + dir_name + ". Starting anyway.")
@@ -234,6 +235,22 @@ def start_server(dir_name: str, args: list[str], port: str, use_venv = True, ext
     # f.close()
     # stream.close()
 
+def check_alignment_targets(port: str, server_name: str) -> bool:
+    if not util.is_port_open(port):
+        return False
+    target_id_path = 'alignment_target_ids' if server_name == 'ADEPT' else 'alignment_targets'
+    try:
+        response = requests.get(f'http://localhost:{port}/api/v1/{target_id_path}')
+        if response.status_code == 200:
+            color('green', server_name + " server is now listening.")
+            return True
+        else:
+            error(server_name + " server sent a bad status code. Check for problems in error log.")
+            sys.exit(Status.ERROR.value)
+    except requests.exceptions.ConnectionError:
+        return False
+
+
 ta3_port = util.find_environment("TA3_PORT", 8080)
 adept_port = util.find_environment("ADEPT_PORT", 8081)
 soartech_port = util.find_environment("SOARTECH_PORT", 8084)
@@ -273,11 +290,11 @@ if args.soartech:
         if not update_submodules('ta1-server-mvp'):
             warning("Failed to update soartech server. Proceeding without it.")
             soartech_server_available = False
-        else:
-            docker_compose = which_docker_compose()
-            if docker_compose is None:
-                soartech_server_available = False
-                warning("Docker not found; proceeding without Soartech server.")
+        # else:
+            # docker_compose = which_docker_compose()
+            # if docker_compose is None:
+                # soartech_server_available = False
+                # warning("Docker not found; proceeding without Soartech server.")
 else:
     soartech_server_available = False
  
@@ -319,50 +336,51 @@ elif soartech_server_available:
           + '"--session_type eval" will not.')
 
 if soartech_server_available:
-    start_server("ta1-server-mvp", docker_compose + ["-f", "docker-compose-dev.yaml", "up"],
-                 str(soartech_port),
-                 use_venv = False, extra_env={"ITM_PORT": str(soartech_port)})
+    start_server("ta1-server-mvp", ["ta1_server"], str(soartech_port))
 elif adept_server_available:
     warning('Soartech server is not in use. Use the arguments '
           + '"--session_type adept" to use only the ADEPT server with ta3_training.py. The arguments '
           + '"--no-training --session_type soartech" will also work with tad_tester.py, but '
           + '"--session_type eval" will not.')
 
-if adept_server_available or soartech_server_available:
-    time.sleep(30)
-
-start_server("itm-evaluation-server", ["swagger_server"], str(ta3_port))
-
 if soartech_server_available and adept_server_available:
     color('green', "All servers in use. Both tad_tester.py and ta3_training.py should work properly.")
 
+ta1_servers_up = not adept_server_available and not soartech_server_available
+adept_verified = False
+soartech_verified = False
+wait_started = time.time()
+next_check = wait_started
+while ta1_servers_up == False and time.time() - wait_started < 90: # At least 90 seconds have passed.
+    sleep_time = next_check - time.time()
+    if (sleep_time > 0):
+        time.sleep(sleep_time)
+    next_check = time.time() + 5
+    ta1_servers_up = True
+    if adept_server_available and not adept_verified:
+        adept_verified = check_alignment_targets(adept_port, "ADEPT")
+        if not adept_verified:
+            ta1_servers_up = False
+    if soartech_server_available and not soartech_verified:
+        soartech_verified = check_alignment_targets(soartech_port, "Soartech")
+        if not soartech_verified:
+            ta1_servers_up = False
+    
+
+start_server("itm-evaluation-server", ["swagger_server"], str(ta3_port))
 
 servers_up = False
 ta3_verified = False
-adept_verified = False
-soartech_verified = False
 
 wait_started = time.time()
 
-while not servers_up and time.time() - wait_started < 30: # At least 30 seconds have passed.
+while not servers_up and time.time() - wait_started < 120: # At least 120 seconds have passed.
     time.sleep(1)
     servers_up = True
     if ta3_server_available and not ta3_verified:
         if util.is_port_open(ta3_port):
             color('green', "TA3 server is now listening.")
             ta3_verified = True
-        else:
-            servers_up = False
-    if adept_server_available and not adept_verified:
-        if util.is_port_open(adept_port):
-            color('green', "ADEPT server is now listening.")
-            adept_verified = True
-        else:
-            servers_up = False
-    if soartech_server_available and not soartech_verified:
-        if util.is_port_open(soartech_port):
-            color('green', "Soartech server is now listening.")
-            soartech_verified = True
         else:
             servers_up = False
 
@@ -374,9 +392,9 @@ if not servers_up:
     if soartech_server_available and not soartech_verified:
         old_status = status
         error("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp.err")
-        if Status.SUCCESS == old_status:
-            warning("Temporarily returning success even though Soartech isn't running. Will change once TA1 fixes it")
-            status = old_status
+        # if Status.SUCCESS == old_status:
+            # warning("Temporarily returning success even though Soartech isn't running. Will change once TA1 fixes it")
+            # status = old_status
 else:
     color('green', "Servers started successfully.")
 

@@ -206,7 +206,6 @@ def _get_environmnental_injury(environment_hazard: str) -> Injury | None:
                       severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.MODERATE.value,
                       breathing_effect=BodySystemEffect.MODERATE.value)
 
-
     logger.warning("%s not found in known environmental hazards" % environment_hazard)
     return None
 

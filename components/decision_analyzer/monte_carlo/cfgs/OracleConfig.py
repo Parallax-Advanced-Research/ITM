@@ -53,8 +53,8 @@ class Medical:
         Actions.DIRECT_MOBILE_CASUALTY.value: [60.0],
         Actions.SEARCH.value: [18.0],
         Actions.CHECK_BLOOD_OXYGEN.value: [30.0],
-        Actions.END_SCENE.value: [0.0],
-        Actions.END_SCENARIO.value: [0.0]
+        Actions.END_SCENE.value: [1.0],
+        Actions.END_SCENARIO.value: [1.0]
     }
 
     SUPPLY_INJURY_MATCH = {
@@ -192,6 +192,8 @@ AFFECCTOR_UPDATE = {
                                                breath=BodySystemEffect.MODERATE.value),
         Injuries.AMPUTATION.value: InjuryUpdate(bleed=BodySystemEffect.CRITICAL.value,
                                                 breath=BodySystemEffect.MINIMAL.value),
+        Injuries.ABRASION.value: InjuryUpdate(bleed=BodySystemEffect.MINIMAL.value,
+                                              breath=BodySystemEffect.NONE.value),
         Injuries.CHEST_COLLAPSE.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
                                                     breath=BodySystemEffect.SEVERE.value),
         Injuries.PUNCTURE.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,

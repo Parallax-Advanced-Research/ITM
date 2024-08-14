@@ -1,4 +1,4 @@
-from scripts.shared import get_default_parser
+from scripts.shared import get_default_parser, validate_args
 from scripts import analyze_data
 from runner import TA3Driver
 from components.decision_selector import DiverseSelector, ExhaustiveSelector
@@ -12,8 +12,9 @@ def main():
     parser.add_argument('--exhaustive', action=argparse.BooleanOptionalAction, default=False, help="Use exhaustive selector (default).")
     parser.add_argument('--diverse', action=argparse.BooleanOptionalAction, default=True, help="Use diverse selector (overrides exhaustive).")
     parser.add_argument('--reset', action=argparse.BooleanOptionalAction, default=False, help="Run from scratch (delete old cases).")
-    parser.add_argument('--runs', action=argparse.BooleanOptionalAction, default=None, help="How many training runs to perform (maximum).")
+    parser.add_argument('--runs', type=int, default=None, help="How many training runs to perform (maximum).")
     args = parser.parse_args()
+    validate_args(args)
     args.training = True
     args.keds = False
     args.verbose = False
@@ -51,7 +52,8 @@ def main():
         
         
     driver = TA3Driver(args)
-
+    if args.diverse:
+        driver.trainer = args.selector_object
     while not args.selector_object.is_finished() and args.runs != 0:
         tad.api_test(args, driver)
         driver.actions_performed = []
