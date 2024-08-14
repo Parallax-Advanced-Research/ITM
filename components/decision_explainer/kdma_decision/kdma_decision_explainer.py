@@ -11,6 +11,9 @@ class KDMADecisionExplainer(DecisionExplainer):
         self.decision = None
 
     def explain(self, decision: Decision):
+        # the decision is the decsision that was made when the scenario was run. It includes the action
+        # the explanation is added to the decision at runtime and stores the weights used in the similarity calculation
+        # the most similar case is the case that was most similar to the current case
         self.decision = decision        
         for explanation in self.decision.explanations:
             if explanation.decision_type == "KDMA_ESTIMATION":                
@@ -33,33 +36,22 @@ class KDMADecisionExplainer(DecisionExplainer):
 
     def extract_relevant_weights(self, weights: Dict[str, float]):
         return [k for inner_dict in weights.values() for k, v in inner_dict.items()]
-    # round attributes if they are floats, otherwise return the value
     
+    # round attributes if they are floats, otherwise return the value    
     def round_attributes(self, attributes: Dict[str, Any]):
         return {k: round(v, 2) if isinstance(v, float) else v for k, v in attributes.items()}
     
-    '''Anik's Code'''
     def convert_to_percentage(self,match):
         value = float(match.group(0)) * 100
         return f"{value:.0f}%"
 
     def return_description(self, explanation):
-        relevant_weight = self.extract_relevant_weights(explanation.params["weights"]["kdma_specific_weights"])
-        print(relevant_weight)
-        #attributes = self.round_attributes(explanation.params["attributes"])
-
-        pattern = r'\b0\.\d+'
-
-        most_similar_instance = {
-            "intent": 'False',
-            "aid_available": 'False',
-            "visited": 'False',
-            "p_death": 0.85,
-            "treatment": 'pressure bandage',
-            "category": 'delayed',
-            "injured_count": 3
-        }
-        action_most_similar = 'apply treatment'
+        # the weights used in the retrieval of the most similar case
+        relevant_weights = self.extract_relevant_weights(explanation.params["weights"]["kdma_specific_weights"])
+       
+        # these are the attributes for is the selected decision combined so that we can compare to the similar case
+        decision_action = self.decision.value # this is the action object that is associated with the decision
+        decision_metrics = self.decision.metrics # the dictionary of decicion metrics added by tad
 
         new_instance = {
             "intent": 'True',
@@ -70,7 +62,23 @@ class KDMADecisionExplainer(DecisionExplainer):
             "category": 'minor',
             "injured_count": 3
         }
-        action_new_instance = "Apply Treatment"
+        action_new_instance = decision_action.name
+
+        # return the attributes with the names of the relevant weights from explanation.params.most_similar
+        most_similar_case = explanation.params.get("most_similar")
+        
+        # if there is a matching key in most_similar and relevant_weights, return a dictionary with the key and value
+        # the result is a dictionary with just the weights used in the similarity calculation
+        most_similar_instance = {k: v for k, v in most_similar_case.items() if k in relevant_weights}
+        
+        print(most_similar_instance)
+        #attributes = self.round_attributes(explanation.params["attributes"])
+
+        pattern = r'\b0\.\d+'
+       
+        action_most_similar = decision_action.name
+
+ 
         # I selected new_instance["treatment"] because I was reminded of a similar previous cases where the treatment was old_instance["treatment"] and the aid available was old_instance["aid_available"], the probability of death was old_instance["pDeath"], the casualty old_instance["visited"]
 
         # df = pd.read_csv("data/explanation_text.csv")
