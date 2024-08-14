@@ -6,6 +6,7 @@ import util
 from typing import Any, Sequence, Callable
 from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, Decision, Action, State
 from domain.ta3 import TA3State, Casualty, Supply
+from domain.enum import ActionTypeEnum
 from components import DecisionSelector, DecisionAnalyzer
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
@@ -126,8 +127,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             possible_choices.append((cur_decision, cur_case, cur_kdma_probs))
 
         if len(possible_choices) == 1:
-            util.logger.error("Only one possible choice!")
-            breakpoint()
+            if possible_choices[0][0].value.name != ActionTypeEnum.END_SCENE:
+                util.logger.error("Only one possible choice!")
+                breakpoint()
             return possible_choices[0][0], 3.14159
         if len(possible_choices) == 0:
             breakpoint()
