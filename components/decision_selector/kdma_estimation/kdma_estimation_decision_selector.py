@@ -156,9 +156,20 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
         if not self.empty_probs(best_kdma_probs):
             self.kdma_choice_history.append((best_kdma_probs, min_kdma_probs, max_kdma_probs))
+            
+        best_decision = self.record_explanation(best_decision, best_case)
         return (best_decision, best_case["distance"])
-        
-        
+    
+    def record_explanation(self, decision: Decision, best_case: dict[str, Any]) -> Decision:
+        explanation = Explanation("KDMA_ESTIMATION",
+                                  {"decision_name": decision.value.name,
+                                   "decision_params": decision.value.params,
+                                   "weights": self.weight_settings,
+                                   "most_similar": best_case,
+                                   "nearest_neighbors": self.kdma_choice_history})
+        decision.explanations.append(explanation)
+        return decision
+                
     def update_kdma_probabilities(self, kdma_probs: dict[str, float], new_kdma_probs: dict[str, float], fn: Callable[[float, float], float] = min):
         ret_kdma_probs = dict()
         keys = set(kdma_probs.keys())
