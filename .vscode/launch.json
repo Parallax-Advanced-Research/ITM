@@ -13,12 +13,11 @@
             "args": "--session_type soartech --scenario qol-dre-1-train --selector keds --training --alignment_target \"soartech-dryrun-0\" --case_file data/qol1_cases.csv --weight_file data/qol1_weights.json --verbose --evaltarget qol-prelim-emt-d29ef563 --connect_to_ta1"
         },
         {
-            "name": "Explanation Tester (ADEPT, MD1-Urban, Moraldesert)",
+            "name": "Show explanation",
             "type": "debugpy",
             "request": "launch",
-            "program": "tad_tester.py",
+            "program": "show_explanation.py",
             "console": "integratedTerminal",
-            "args": "--session_type adept --kdma moraldesert=.84 --scenario MetricsEval.MD1-Urban --verbose --keds --dump"
         }
     ]
 }

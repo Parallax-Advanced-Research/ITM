@@ -166,7 +166,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                                    "decision_params": decision.value.params,
                                    "weights": self.weight_settings,
                                    "most_similar": best_case,
-                                   "nearest_neighbors": self.kdma_choice_history})
+                                   #"nearest_neighbors": self.kdma_choice_history
+                                   })
         decision.explanations.append(explanation)
         return decision
                 
