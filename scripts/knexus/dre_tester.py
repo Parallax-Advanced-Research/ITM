@@ -31,4 +31,5 @@ def moist_run(mc=True):
 
 
 if __name__ == '__main__':
+    print("Wakka")
     moist_run(mc=True)
