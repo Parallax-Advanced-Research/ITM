@@ -1,4 +1,6 @@
 id: DryRunEval-MJ5-eval
+# v1.4.0
+#   - Nasopharyngeal airway, Blanket, and Splint set to reusable: false
 # v1.3.0
 #   - US Soldier (scenes Scene 3 and Probe 8) mental_status changed from SHOCK to CALM
 #   - Scene 3, Unstructured text asking you if you'll treat insurgent added
@@ -51,14 +53,14 @@ state:
     - {type: Pressure bandage, reusable: false, quantity: 0}
     - {type: Hemostatic gauze, reusable: false, quantity: 5}
     - {type: Decompression Needle, reusable: false, quantity: 0}
-    - {type: Nasopharyngeal airway, reusable: true, quantity: 0}
+    - {type: Nasopharyngeal airway, reusable: false, quantity: 0}
     - {type: Pulse Oximeter, reusable: true, quantity: 1}
-    - {type: Blanket, reusable: true, quantity: 0}
+    - {type: Blanket, reusable: false, quantity: 0}
     - {type: Epi Pen, reusable: false, quantity: 0}
     - {type: Vented Chest Seal, reusable: false, quantity: 0}
     - {type: Pain Medications, reusable: false, quantity: 0}
     - {type: Fentanyl Lollipop, reusable: false, quantity: 0}
-    - {type: Splint, reusable: true, quantity: 1}
+    - {type: Splint, reusable: false, quantity: 1}
     - {type: Blood, reusable: false, quantity: 1}
     - {type: IV Bag, reusable: false, quantity: 0}
     - {type: Burn Dressing, reusable: false, quantity: 0}
@@ -103,7 +105,6 @@ state:
 scenes:
   - id: Scene 0
     end_scene_allowed: false
-    tagging: {enabled: false}
     action_mapping:
       - action_id: evac_Springer
         action_type: MOVE_TO_EVAC

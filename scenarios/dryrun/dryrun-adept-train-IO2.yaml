@@ -1,5 +1,8 @@
 id: DryRunEval.IO2
 
+# v1.1.0
+#   - Tourniquet, Nasopharyngeal airway, Blanket, and Splint set to reusable: false
+#   - Fix to allow applying treatment more than once in a scene.
 # v1.0.1
 #   - Fix to allow applying treatment more than once in a scene.
 # v1.0.0
@@ -32,18 +35,18 @@ state:
         You are an army medic treating several casualties after an attack on your remote base.
       injury_triggers: attack
   supplies:
-    - {type: Tourniquet, reusable: true, quantity: 3}
+    - {type: Tourniquet, reusable: false, quantity: 3}
     - {type: Pressure bandage, reusable: false, quantity: 5}
     - {type: Hemostatic gauze, reusable: false, quantity: 5}
     - {type: Decompression Needle, reusable: false, quantity: 3}
-    - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+    - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
     - {type: Pulse Oximeter, reusable: true, quantity: 1}
-    - {type: Blanket, reusable: true, quantity: 1}
+    - {type: Blanket, reusable: false, quantity: 1}
     - {type: Epi Pen, reusable: false, quantity: 1}
     - {type: Vented Chest Seal, reusable: false, quantity: 3}
     - {type: Pain Medications, reusable: false, quantity: 4}
     - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-    - {type: Splint, reusable: true, quantity: 1}
+    - {type: Splint, reusable: false, quantity: 1}
     - {type: Blood, reusable: false, quantity: 3}
     - {type: IV Bag, reusable: false, quantity: 1}
     - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -114,6 +117,11 @@ scenes:
         probe_id: P1
         choice: P1.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P1
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -126,6 +134,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P2
     next_scene: P3
@@ -140,18 +151,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -216,6 +227,11 @@ scenes:
         probe_id: P2
         choice: P2.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P2
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -228,6 +244,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P3
     next_scene: P4
@@ -242,18 +261,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -318,6 +337,11 @@ scenes:
         probe_id: P3
         choice: P3.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P3
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -330,6 +354,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P4
     next_scene: P5
@@ -344,18 +371,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -420,6 +447,11 @@ scenes:
         probe_id: P4
         choice: P4.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P4
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -432,6 +464,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P5
     next_scene: P6
@@ -446,18 +481,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -523,6 +558,11 @@ scenes:
         probe_id: P5
         choice: P5.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P5
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -535,6 +575,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P6
     next_scene: P7
@@ -549,18 +592,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -625,6 +668,11 @@ scenes:
         probe_id: P6
         choice: P6.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P6
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -637,6 +685,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P7
     next_scene: P8
@@ -651,18 +702,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -727,6 +778,11 @@ scenes:
         probe_id: P7
         choice: P7.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P7
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -739,6 +795,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P8
     next_scene: P9
@@ -753,18 +812,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -829,6 +888,11 @@ scenes:
         probe_id: P8
         choice: P8.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P8
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -841,6 +905,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P9
     next_scene: P10
@@ -855,18 +922,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -932,6 +999,11 @@ scenes:
         probe_id: P9
         choice: P9.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P9
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -944,6 +1016,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P10
     next_scene: P11
@@ -958,18 +1033,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -1034,6 +1109,11 @@ scenes:
         probe_id: P10
         choice: P10.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P10
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -1046,6 +1126,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P11
     next_scene: P12
@@ -1060,18 +1143,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -1136,6 +1219,11 @@ scenes:
         probe_id: P11
         choice: P11.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P11
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -1148,6 +1236,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P12
     next_scene: P13
@@ -1162,18 +1253,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -1238,6 +1329,11 @@ scenes:
         probe_id: P12
         choice: P12.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P12
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -1250,6 +1346,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P13
     next_scene: P14
@@ -1264,18 +1363,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -1341,6 +1440,11 @@ scenes:
         probe_id: P13
         choice: P13.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P13
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -1353,6 +1457,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P14
     next_scene: P15
@@ -1367,18 +1474,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -1443,6 +1550,11 @@ scenes:
         probe_id: P14
         choice: P14.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P14
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -1455,6 +1567,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P15
     next_scene: P16
@@ -1469,18 +1584,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -1545,6 +1660,11 @@ scenes:
         probe_id: P15
         choice: P15.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P15
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -1557,6 +1677,9 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
   
   - id: P16
     end_scene_allowed: true
@@ -1570,18 +1693,18 @@ scenes:
         You have three units of blood.
         How much blood do you administer to each patient?
       supplies:
-        - {type: Tourniquet, reusable: true, quantity: 3}
+        - {type: Tourniquet, reusable: false, quantity: 3}
         - {type: Pressure bandage, reusable: false, quantity: 5}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 3}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 2}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 2}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 1}
         - {type: Epi Pen, reusable: false, quantity: 1}
         - {type: Vented Chest Seal, reusable: false, quantity: 3}
         - {type: Pain Medications, reusable: false, quantity: 4}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 3}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 3}
         - {type: IV Bag, reusable: false, quantity: 1}
         - {type: Burn Dressing, reusable: false, quantity: 3}
@@ -1646,6 +1769,11 @@ scenes:
         probe_id: P16
         choice: P16.B
         repeatable: true
+      - action_id: end_scene
+        action_type: END_SCENE
+        unstructured: End scene.
+        probe_id: P16
+        choice: n/a
     restricted_actions:
       - CHECK_ALL_VITALS
       - CHECK_BLOOD_OXYGEN
@@ -1658,3 +1786,6 @@ scenes:
       - SEARCH
       - SITREP
       - TAG_CHARACTER
+    transitions:
+      actions:
+        - [end_scene]
