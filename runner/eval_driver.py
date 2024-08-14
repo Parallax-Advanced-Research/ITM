@@ -34,8 +34,8 @@ class EvaluationDriver(TA3Driver):
                 self.estimated_max_kdmas[kdma] = self.estimated_max_kdmas.get(kdma, 0) + kdmamax
         return act
     
-    def train(self, feedback: ta3.AlignmentResults, final: bool):
-        super().train(feedback, final)
+    def train(self, feedback: ta3.AlignmentResults, final: bool, scene_end: bool, scene: str):
+        super().train(feedback, final, scene_end, scene)
         if not final:
             return
         for (kdma, count) in self.estimated_kdma_counts.items():
