@@ -135,24 +135,28 @@ class TA3Elaborator(Elaborator):
         return ret_decisions
 
     def _add_message_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
+        if decision.value.params["type"] != "justify":
+            decision.context.update(decision.value.params)
+            return [decision]
         if len(probe.state.actions_performed) == 0:
             return []
-        for state_referent in [s.strip("[] ") for s in decision.value.params["relevant_state"].split(",")]:
+        for state_referent in [s.strip(" ")[1:-1] for s in decision.value.params["relevant_state"].split(",")]:
             topic = self.get_topic(state_referent)
             newCount = decision.context.get("topic_" + topic, 0) + 1
             decision.context["topic_" + topic] = newCount
             decision.context["val_" + topic + str(newCount)] = \
                 self.dereference(state_referent, probe.state.orig_state)
-        if decision.value.params["type"] == "justify":
-            decision.context["last_action"] = probe.state.actions_performed[-1].name
-            for (k, v) in probe.state.actions_performed[-1].params.items():
-                decision.context["last_" + k] = v
-            
+        decision.context["last_action"] = probe.state.actions_performed[-1].name
+        for (k, v) in probe.state.actions_performed[-1].params.items():
+            decision.context["last_" + k] = v
+        decision.context["type"] = "justify"
         return [decision]
 
     def get_topic(self, referent: str):
         if "." in referent:
             return referent[referent.rindex(".") + 1:]
+        else:
+            return referent
     
     def dereference(self, referent: str, data: dict[str, Any]):
         assert(len(referent) > 0)
@@ -396,7 +400,7 @@ class TA3Elaborator(Elaborator):
             dec_possible_treatments += new_treatments
             # dec_possible_treatments += \
                 # [t for t in new_treatments if t.value.params[ParamEnum.TREATMENT] not in cas.treatments]
-        dec_possible_treatments = decisions_if_supplied(dec_possible_treatments)
+        dec_possible_treatments = decisions_if_supplied(state, dec_possible_treatments)
         return list({consistent_decision_key(d):d for d in dec_possible_treatments}.values())
         
 
