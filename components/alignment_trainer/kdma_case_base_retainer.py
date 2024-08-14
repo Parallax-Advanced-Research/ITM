@@ -9,11 +9,15 @@ class KDMACaseBaseRetainer(AlignmentTrainer):
     
     def __init__(self):
         self.scene_kdmas = {}
+        self.final_occurred = False
         
     def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, 
               final: bool, scene_end: bool, new_scene: str):
         if not scene_end:
             return
+        if self.final_occurred:
+            self.scene_kdmas = dict()
+            self.final_occurred = False
         print(f"scenario_id: {scenario.id_}")
         print(f"feedback: {feedback}")
         print(f"new scene: {new_scene}")
@@ -44,4 +48,4 @@ class KDMACaseBaseRetainer(AlignmentTrainer):
                       outfile)
             outfile.write("\n")
         if final:
-            self.scene_kdmas = {}
+            self.final_occurred = True
