@@ -145,6 +145,7 @@ def api_test(args, driver = None):
         logger.debug(f"-Initial State: {scen.state}")
 
         probe = client.get_probe()
+        scene = probe.state["meta_info"]["scene_id"]
         while probe is not None:
             logger.info(f"Responding to probe-{probe.id}")
             action = driver.decide(probe)
@@ -157,12 +158,16 @@ def api_test(args, driver = None):
                 difference = dict_difference(new_probe.state, probe.state, {'id', 'type'})
                 difference.pop("actions_performed")
                 logger.debug(f"-State Removals: {difference}")
-            probe = new_probe
+                new_scene = new_probe.state["meta_info"]["scene_id"]
+            else:
+                new_scene = None
             if args.training:
-                if probe is None:
-                    for alignment in client.get_session_alignments():
-                        driver.train(alignment, probe is None)
-                        logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
+                for alignment in client.get_session_alignments():
+                    driver.train(alignment, new_probe is None, new_scene != scene, scene)
+                    logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
+                    # breakpoint()
+            probe = new_probe
+            scene = new_scene
                         
         logger.info(f"Scenario Complete")
     
