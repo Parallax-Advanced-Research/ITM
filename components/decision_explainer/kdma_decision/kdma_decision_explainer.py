@@ -3,7 +3,9 @@ import pandas as pd
 import re
 from domain.internal import Decision
 from components import DecisionExplainer
+from domain.internal import DecisionMetric
 from typing import Dict, Any
+
 class KDMADecisionExplainer(DecisionExplainer):
     def __init__(self):
         super().__init__()
@@ -52,19 +54,29 @@ class KDMADecisionExplainer(DecisionExplainer):
         # these are the attributes for is the selected decision combined so that we can compare to the similar case
         decision_action = self.decision.value # this is the action object that is associated with the decision
         decision_metrics = self.decision.metrics # the dictionary of decicion metrics added by tad
-
-        new_instance = {
-            "intent": 'True',
-            "aid_available": 'False',
-            "visited": 'False',
-            "p_death": 0.90,
-            "treatment": 'hemostatic gauze',
-            "category": 'minor',
-            "injured_count": 3
-        }
+        decision_attributes = {} # the dictionary of decision attributes of the chosen decision
+        
+        decision_attributes.update(decision_action.params)
+        
+        # extract the attribute key value pairs from the decision metrics objects and add them to the decision attributes
+        
+        attribute_list = []
+       # iterate through the list of decision metrics and extract the key value pairs from the decision_metrics object
+        for decision_metric in decision_metrics.items():
+            # extract the decision_metric object from the tuple
+            metric = decision_metric[1]
+            # get the name value pairs of the decision_metric object and add them to the decision_attributes dictionary
+            attribute_list.append(metric)
+        
+        # turn the list of decision_metric objects into a dictionary of key value pairs
+        for attribute in attribute_list:
+                decision_attributes.update({attribute.name: attribute.value})
+        
+       
+        new_instance = {k: v for k, v in decision_attributes.items() if k in relevant_weights}
         action_new_instance = decision_action.name
 
-        # return the attributes with the names of the relevant weights from explanation.params.most_similar
+        # return the case with attributes that is most similar to the selected decision
         most_similar_case = explanation.params.get("most_similar")
         
         # if there is a matching key in most_similar and relevant_weights, return a dictionary with the key and value
@@ -78,7 +90,7 @@ class KDMADecisionExplainer(DecisionExplainer):
        
         action_most_similar = decision_action.name
 
- 
+        ''' Anik's code to output the explanation text
         # I selected new_instance["treatment"] because I was reminded of a similar previous cases where the treatment was old_instance["treatment"] and the aid available was old_instance["aid_available"], the probability of death was old_instance["pDeath"], the casualty old_instance["visited"]
 
         # df = pd.read_csv("data/explanation_text.csv")
@@ -108,3 +120,4 @@ class KDMADecisionExplainer(DecisionExplainer):
 
         complete_desc = re.sub(pattern, self.convert_to_percentage, complete_desc)
         return complete_desc
+    '''
