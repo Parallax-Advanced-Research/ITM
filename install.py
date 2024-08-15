@@ -102,8 +102,14 @@ def install_hems() -> None:
     else:
         # Update
         os.chdir(hems_dir)
-        run_cmd_or_die([ "git", "checkout", "package.lisp" ], capture_output=False)
-        run_cmd_or_die([ "git", "pull", "--no-edit" ])
+        res = run_cmd_or_die(["git", "diff", "HEAD"], capture_output=True).trim()
+        if res == "":
+            run_cmd_or_die(["git", "reset", "--hard"])
+            run_cmd_or_die([ "git", "pull", "--no-edit" ])
+        else:
+            print("HEMS directory has local changes. Continuing without a fresh install.")
+        #run_cmd_or_die([ "git", "checkout", "package.lisp" ], capture_output=False)
+        #run_cmd_or_die([ "git", "pull", "--no-edit" ])
         os.chdir(ITM_DIR)
 
     ## Patch package.lisp
