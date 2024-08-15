@@ -57,8 +57,10 @@ class Node:
 class Edge:
     _source: Node
     _target: Node
-    def __init__(self, source: Node, target: Node):
+    _name: str
+    def __init__(self, source: Node, name: str,target: Node):
         self._source = source
+        self._name = name
         self._target = target
 
     @property
@@ -69,11 +71,15 @@ class Edge:
     def target(self):
         return self._target
 
+    @property
+    def name(self):
+        return self._name
+
     def __repr__(self):
-        return f"{self._source.name} -> {self._target.name}"
+        return f"{self._source.name} -{self._name}-> {self._target.name}"
 
     def __str__(self):
-        return f"{self._source.name} -> {self._target.name}"
+        return f"{self._source.name} -{self._name}-> {self._target.name}"
 
 class FeatureTerm:
     nodes: list[Node] = []
@@ -81,12 +87,16 @@ class FeatureTerm:
     edges: list[Edge] = []
     name = "Lame"
     _root: Node = None
+    objects: dict[Node: str] = {}
+    kdmas: set[str] = set()
     def __init__(self):
         self.nodes = []
         self.unique_nodes = {}
         self.edges = []
         self.name = "Lame"
         self._root = None
+        self.objects = {}
+        self.kdmas = set()
 
 
     def add_node(self, node: Node):
@@ -102,6 +112,8 @@ class FeatureTerm:
     def add_edge(self, source: Union[Node, Edge], target: Node=None):
         if not target:
             self.edges.append(source)
+            if source not in source.source.edges:
+                source.source.edges.append(source)
         else:
             e = Edge(source, target)
             source.add_edge(e)
@@ -130,6 +142,7 @@ class FeatureTerm:
         retval = {}
         queue = list()
         queue.append((self.root, []))
+        visited_nodes = set()
         while len(queue) > 0:
             head, keys = queue.pop()
             temp = retval
@@ -152,12 +165,14 @@ class FeatureTerm:
                     if edge.source.name not in temp:
                         temp[edge.source.name] = {}
                     elif type(temp[edge.source.name]) is not dict:
+                        if type(temp[edge.source.name]) is list:
+                            print("Here")
                         temp[edge.source.name] = {temp[edge.source.name]: None}
                     if edge.target.name == "age":
                         pass
-                    queue.append((edge.target, keys + [edge.source.name]))
-
-
+                    if edge.target not in visited_nodes:
+                        queue.append((edge.target, keys + [edge.source.name]))
+                        visited_nodes.add(edge.target)
 
 
         return retval
@@ -177,14 +192,17 @@ class FeatureTerm:
         #CURRENTLY NODES WITH SAME NAMES ARE OVERWRITTEN TODO: FIX THIS
         G = nx.DiGraph()
         labels = {}
+        edge_labels = {}
         for node in self.nodes:
             G.add_node(node.id)
             labels[node.id] = node.name
         for edge in self.edges:
-            G.add_edge(edge.source.id, edge.target.id)
+            G.add_edge(edge.source.id, edge.target.id, label=edge.name)
+            edge_labels[(edge.source.id, edge.target.id)] = edge.name
         #space out the nodes
         pos = nx.spring_layout(G)
         nx.draw(G, pos, with_labels=True, labels=labels)
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
         plt.show()
 
 
@@ -205,25 +223,32 @@ class FeatureTerm:
         for edge in self.edges:
             source = [x for x in new_term.nodes if x.id == edge.source.id][0]
             target = [x for x in new_term.nodes if x.id == edge.target.id][0]
-            new_term.add_edge(source, target)
+            e = Edge(source, edge.name, target)
+            new_term.add_edge(e)
+        for obj in self.objects:
+            n = [x for x in new_term.nodes if x.name == obj][0]
+            new_term.objects[n.name] = n
+        new_term.kdmas = self.kdmas
         return new_term
 
 def combine_nodes(x: Node, y: Node, term: FeatureTerm):
-    heads = [e.source for e in term.edges if e.target == x or e.target == y]
-    tails = [e.target for e in term.edges if e.source == x or e.source == y]
+    heads = [(e.source, e) for e in term.edges if e.target == x or e.target == y]
+    tails = [(e.target, e) for e in term.edges if e.source == x or e.source == y]
     new_node = Node(x.name)
     term.nodes = [x for x in term.nodes if x.name != new_node.name]
     term.unique_nodes.pop(new_node.name)
     term.add_node(new_node)
-    for head in heads:
+    for head, edge in heads:
         head.edges = [e for e in head.edges if e.target != x and e.target != y]
-        term.add_edge(head, new_node)
-    for tail in tails:
+        e = Edge(head, edge.name, new_node)
+        term.add_edge(e)
+    for tail, edge in tails:
         tail.edges = [e for e in tail.edges if e.source != x and e.source != y]
-        term.add_edge(new_node, tail)
-    return None
-def read_in_yaml(filename: str) -> dict[str:list[FeatureTerm]]:
-    #NEEDS TO HANDLE LOOPS BETTER TODO: FIX THIS
+        e = Edge(new_node, edge.name, tail)
+        term.add_edge(e)
+    return new_node
+
+def read_in_yaml(filename: str) -> dict[str, list[FeatureTerm]]:
     scenario = None
     with open(filename, 'r') as stream:
         try:
@@ -231,119 +256,289 @@ def read_in_yaml(filename: str) -> dict[str:list[FeatureTerm]]:
         except yaml.YAMLError as exc:
             print(exc)
     passive_term = FeatureTerm()
-    state_node = Node("state")
-    passive_term.add_node(state_node)
+
 
     state = scenario['state']
     scenes = scenario['scenes']
-
+    [s for s in scenes if s['id'] == 'P1'][0]['state'] = state
     queue = list()
-    #iterate through state, alternating from node to edge_label and back
-    for t in [t for t in state if t != "unstructured"]:  # add all state variables to the passive term
-        queue.append((state_node, t, state[t]))  # add the state variable to the queue
-    while len(queue) > 0:  # while there are items in the queue
-        head, tail, d = queue.pop()  # pop the first item off the queue
-        #if t is Node, create a new node and add it to the edge that is head
-        n = Node(tail)
-        passive_term.add_node(n)
-        passive_term.add_edge(head, n) #consider saving edges in the head node as well. This is a bit redundant but aides lookup
-        if type(d) is dict:
-            for t in [t for t in d if t != "unstructured"]:
-                piece = d[t]
-                queue.append((n, t, piece))
-        elif type(d) is list:  # UPDATE
-            for item in d:
-                if type(item) is dict:
-                    header = item.pop("id", item.pop("type", item.pop("name",None)))  #This is specific to this yaml, update for new yamls
-                    queue.append((n, header, item))
-                else: # leafs
-                    leaf = Node(item)
-                    passive_term.add_node(leaf)
-                    passive_term.add_edge(n, leaf)
-        else: # d should be a leaf, make it a node and add the edge
-            leaf = Node(d)
-            passive_term.add_node(leaf)
-            passive_term.add_edge(n, leaf)
+    # iterate through state, alternating from node to edge_label and back
+    # for t in [t for t in state if t != "unstructured"]:
+    #     queue.append((state_node, t, state[t]))
+    # while len(queue) > 0:
+    #     head, tail, d = queue.pop()
+    #     if type(d) is dict:
+    #         n = Node("")
+    #         e = Edge(head, tail, n)
+    #         passive_term.add_node(n)
+    #         passive_term.add_edge(e)
+    #         for t in [t for t in d if t != "unstructured"]:
+    #             piece = d[t]
+    #             queue.append((n, t, piece))
+    #     elif type(d) is list:
+    #         for item in d:
+    #             if type(item) is dict:
+    #                 if "id" in item:
+    #                     n = Node(item["id"])
+    #                     if n.name not in passive_term.objects:
+    #                         passive_term.objects[n.name] = n
+    #                     else:
+    #                         n = passive_term.objects[n.name]
+    #                 else:
+    #                     n = Node(tail[:-1])
+    #                 e = Edge(head, tail, n)
+    #                 passive_term.add_node(n)
+    #                 passive_term.add_edge(e)
+    #                 for t in [t for t in item if t != "unstructured"]:
+    #                     piece = item[t]
+    #                     queue.append((n, t, piece))
+    #             else:
+    #                 pass
+    #         pass
+    #     else:
+    #         n = Node(d)
+    #         e = Edge(head, tail, n)
+    #         passive_term.add_node(n)
+    #         passive_term.add_edge(e)
 
-    #passive_term.to_graphviz()
     terms = {}
     for scene in scenes:
         header = scene.pop("id")
         scene_term = FeatureTerm()
         scene_node = Node(header)
         scene_term.add_node(scene_node)
+        action_terms = []
         for t in [t for t in scene if t != "unstructured"]:  # add all state variables to the passive term
             queue.append((scene_node, t, scene[t], scene_term))  # add the state variable to the queue
         while len(queue) > 0:  # while there are items in the queue
-            head, tail, d, term = queue.pop()  # pop the first item off the queue
-            if tail == "parameters":
-                pass
-            #if t is Node, create a new node and add it to the edge that is head
+            head, tail, d, term = queue.pop()
             if tail == "kdma_association":  # save to terms with kdma as key
-                path = [head.name, tail]
-                nodes = [e.source for e in term.edges if e.target==head]
+                path = [tail]
+                nodes = [(e.source, e) for e in term.edges if e.target==head]
                 while len(nodes) == 1:
-                    temp = nodes[0]
-                    path = [temp.name] + path
-                    nodes = [e.source for e in term.edges if e.target==temp]
+                    temp, temp_e = nodes[0]
+                    path = [temp_e.name] + path
+                    nodes = [(e.source, e) for e in term.edges if e.target==temp]
                 if len(nodes) > 0:
                     raise Exception("Something went wrong")
                 for kdma in d:
-                    p = path[1:] + [kdma]
+                    p = path + [kdma]
                     p = "?>?".join(p)
                     if p not in terms:
                         terms[p] = []
-                    terms[p].append(term)
-                pass
+                    term.kdmas.add(p)
             if tail == "action_mapping":  # split term, one for each action
                 for action in d:
                     header = "action"
-                    new_term = term.deepcopy()
-                    new_head = [x for x in new_term.nodes if x.name == head.name][0]
-                    new_term.root.name = new_term.root.name + "_" + action['action_id']
+                    # new_term = term.deepcopy()
+                    # new_head = [x for x in new_term.nodes if x.name == head.name][0]
+                    # new_term.root.name = new_term.root.name + "_" + action['action_id']
+                    new_term = FeatureTerm()
+                    new_head = Node("Placeholder")
+                    action_terms.append(new_term)
+                    new_term.add_node(new_head)
+                    # for kdma in new_term.kdmas:
+                    #     if kdma not in terms:
+                    #         terms[kdma] = []
+                    #     terms[kdma].append(new_term)
+                    #     if term in terms[kdma]:
+                    #         terms[kdma].remove(term)
                     queue.append((new_head, header, action, new_term))
                 continue
-            n = Node(tail)
-            term.add_node(n)
-            if head.name == "P1":
-                pass
-            term.add_edge(head, n)
             if type(d) is dict:
+                n = Node("")
+                e = Edge(head, tail, n)
+                if head.name == "state":
+                    print("here")
+                term.add_node(n)
+                term.add_edge(e)
                 for t in [t for t in d if t != "unstructured"]:
                     piece = d[t]
                     queue.append((n, t, piece, term))
             elif type(d) is list:
                 for item in d:
                     if type(item) is dict:
-                        header = item.pop("id", item.pop("type", item.pop("name", item.pop("probe_id", None))))  #This is specific to this yaml, update for new yamls
-                        queue.append((n, header, item, term))
+                        if "id" in item:
+                            n = Node(item["id"])
+                            if n.name not in term.objects:
+                                term.objects[n.name] = n
+                            else:
+                                n = term.objects[n.name]
+                        else:
+                            n = Node(tail[:-1])
+                        e = Edge(head, tail, n)
+                        term.add_node(n)
+                        term.add_edge(e)
+                        for t in [t for t in item if t != "unstructured"]:
+                            piece = item[t]
+                            queue.append((n, t, piece, term))
                     else:
-                        leaf = Node(item)
-                        term.add_node(leaf)
-                        term.add_edge(n, leaf)
-            else: # d should be a leaf, make it a node and add the edge
-                leaf = Node(d)
-                term.add_node(leaf)
-                term.add_edge(n, leaf)
-    for kdma in terms:
+                        n = Node(item)
+                        if n.name not in term.objects:
+                            term.objects[n.name] = n
+                        else:
+                            n = term.objects[n.name]
+                        e = Edge(head, tail, n)
+                        term.add_node(n)
+                        term.add_edge(e)
+            else:
+                n = Node(d)
+                e = Edge(head, tail, n)
+                term.add_node(n)
+                term.add_edge(e)
+
+        for term in action_terms:
+            root_n, edge_n = [(x.target, x.name) for x in term.root.edges][0]
+            new_term = scene_term.deepcopy()
+            new_term_root = new_term.root
+            for node in [n for n in term.nodes if n != term.root]:
+                new_term.add_node(node)
+            for edge in [e for e in term.edges if e.source != term.root]:
+                new_term.add_edge(edge)
+            for kdma in term.kdmas:
+                new_term.kdmas.add(kdma)
+
+            new_edge = Edge(new_term_root, edge_n, root_n)
+
+
+            new_term.add_edge(new_edge)
+            new_term.root.name = new_term.root.name + "_" + pi(new_term, ['action', 'action_id'])[0][1]
+            for obj in [o for o in new_term.objects if o in [x.name for x in term.nodes]]:
+                nodes = [x for x in term.nodes if x.name == obj]
+                true_node = new_term.objects[obj]
+                for node in nodes:
+                    true_node = combine_nodes(node, true_node, new_term)
+                new_term.objects[obj] = true_node
+            for kdma in new_term.kdmas:
+                if kdma not in terms:
+                    terms[kdma] = []
+                terms[kdma].append(new_term)
         #add in passive term
-        for term in terms[kdma]:
-            root_n = term.root
-            new_passive_term = passive_term.deepcopy()
-            for node in new_passive_term.nodes:
-                node.id = node.name
-                term.add_node(node)
-            for edge in new_passive_term.edges:
-                term.add_edge(edge)
-            term.add_edge(root_n, new_passive_term.root)
-            done = []
-            matches = ['P1 Patient B', 'P1 Patient A', 'P2 Patient B', 'P2 Patient A', 'P3 Patient B', 'P3 Patient A', 'P4 Patient B', 'P4 Patient A', 'P5 Patient B', 'P5 Patient A', 'P6 Patient B', 'P6 Patient A', 'P7 Patient B', 'P7 Patient A', 'P8 Patient B', 'P8 Patient A', 'P9 Patient B', 'P9 Patient A', 'P10 Patient B', 'P10 Patient A', 'P11 Patient B', 'P11 Patient A', 'P12 Patient B', 'P12 Patient A', 'P13 Patient B', 'P13 Patient A', 'P14 Patient B', 'P14 Patient A', 'P15 Patient B', 'P15 Patient A', 'P16 Patient B', 'P16 Patient A']
-            for x, y in [(x, y) for x in term.nodes for y in term.nodes if x != y and x.name == y.name and x.name in matches]:
-                if (x, y) not in done:
-                    combine_nodes(x, y, term)
-                    done.append((y, x))
-            pass
     return terms
+# def read_in_yaml(filename: str) -> dict[str:list[FeatureTerm]]:
+#     #NEEDS TO HANDLE LOOPS BETTER TODO: FIX THIS
+#     scenario = None
+#     with open(filename, 'r') as stream:
+#         try:
+#             scenario = yaml.safe_load(stream)
+#         except yaml.YAMLError as exc:
+#             print(exc)
+#     passive_term = FeatureTerm()
+#     state_node = Node("state")
+#     passive_term.add_node(state_node)
+#
+#     state = scenario['state']
+#     scenes = scenario['scenes']
+#
+#     queue = list()
+#     #iterate through state, alternating from node to edge_label and back
+#     for t in [t for t in state if t != "unstructured"]:  # add all state variables to the passive term
+#         queue.append((state_node, t, state[t]))  # add the state variable to the queue
+#     while len(queue) > 0:  # while there are items in the queue
+#         head, tail, d = queue.pop()  # pop the first item off the queue
+#         #if t is Node, create a new node and add it to the edge that is head
+#         n = Node(tail)
+#         passive_term.add_node(n)
+#         passive_term.add_edge(head, n) #consider saving edges in the head node as well. This is a bit redundant but aides lookup
+#         if type(d) is dict:
+#             for t in [t for t in d if t != "unstructured"]:
+#                 piece = d[t]
+#                 queue.append((n, t, piece))
+#         elif type(d) is list:  # UPDATE
+#             for item in d:
+#                 if type(item) is dict:
+#                     header = item.pop("id", item.pop("type", item.pop("name",None)))  #This is specific to this yaml, update for new yamls
+#                     queue.append((n, header, item))
+#                 else: # leafs
+#                     leaf = Node(item)
+#                     passive_term.add_node(leaf)
+#                     passive_term.add_edge(n, leaf)
+#         else: # d should be a leaf, make it a node and add the edge
+#             leaf = Node(d)
+#             passive_term.add_node(leaf)
+#             passive_term.add_edge(n, leaf)
+#
+#     #passive_term.to_graphviz()
+#     terms = {}
+#     for scene in scenes:
+#         header = scene.pop("id")
+#         scene_term = FeatureTerm()
+#         scene_node = Node(header)
+#         scene_term.add_node(scene_node)
+#         for t in [t for t in scene if t != "unstructured"]:  # add all state variables to the passive term
+#             queue.append((scene_node, t, scene[t], scene_term))  # add the state variable to the queue
+#         while len(queue) > 0:  # while there are items in the queue
+#             head, tail, d, term = queue.pop()  # pop the first item off the queue
+#             if tail == "parameters":
+#                 pass
+#             #if t is Node, create a new node and add it to the edge that is head
+#             if tail == "kdma_association":  # save to terms with kdma as key
+#                 path = [head.name, tail]
+#                 nodes = [e.source for e in term.edges if e.target==head]
+#                 while len(nodes) == 1:
+#                     temp = nodes[0]
+#                     path = [temp.name] + path
+#                     nodes = [e.source for e in term.edges if e.target==temp]
+#                 if len(nodes) > 0:
+#                     raise Exception("Something went wrong")
+#                 for kdma in d:
+#                     p = path[1:] + [kdma]
+#                     p = "?>?".join(p)
+#                     if p not in terms:
+#                         terms[p] = []
+#                     terms[p].append(term)
+#                 pass
+#             if tail == "action_mapping":  # split term, one for each action
+#                 for action in d:
+#                     header = "action"
+#                     new_term = term.deepcopy()
+#                     new_head = [x for x in new_term.nodes if x.name == head.name][0]
+#                     new_term.root.name = new_term.root.name + "_" + action['action_id']
+#                     queue.append((new_head, header, action, new_term))
+#                 continue
+#             n = Node(tail)
+#             term.add_node(n)
+#             if head.name == "P1":
+#                 pass
+#             term.add_edge(head, n)
+#             if type(d) is dict:
+#                 for t in [t for t in d if t != "unstructured"]:
+#                     piece = d[t]
+#                     queue.append((n, t, piece, term))
+#             elif type(d) is list:
+#                 for item in d:
+#                     if type(item) is dict:
+#                         header = item.pop("id", item.pop("type", item.pop("name", item.pop("probe_id", None))))  #This is specific to this yaml, update for new yamls
+#                         queue.append((n, header, item, term))
+#                     else:
+#                         leaf = Node(item)
+#                         term.add_node(leaf)
+#                         term.add_edge(n, leaf)
+#             else: # d should be a leaf, make it a node and add the edge
+#                 leaf = Node(d)
+#                 term.add_node(leaf)
+#                 term.add_edge(n, leaf)
+#     for kdma in terms:
+#         #add in passive term
+#         for term in terms[kdma]:
+#             root_n = term.root
+#             new_passive_term = passive_term.deepcopy()
+#             for node in new_passive_term.nodes:
+#                 node.id = node.name
+#                 term.add_node(node)
+#             for edge in new_passive_term.edges:
+#                 term.add_edge(edge)
+#             term.add_edge(root_n, new_passive_term.root)
+#             done = []
+#             bad_types = [bool, int, float, list, dict, tuple, type(None)]
+#             bad_matches = ['visible', 'military_branch', 'military_disposition', 'race', 'sex', 'visited', 'quantity', 'reusable', 'type', 'id', 'name', 'unstructured', 'status', 'severity', 'location', 'spo2', 'heart_rate', 'breathing', 'mental_status', 'ambulatory', 'avpu', 'rapport', 'demographics', 'tag', 'injuries', 'vitals', 'probe_id', 'choice', 'kdma_association', 'action_id', 'action_type', 'character_id', 'unstructured', 'mission_type', 'medical_policies', 'sim_environment', 'decision_environment', 'supplies', 'characters', 'next_scene', 'end_scene_allowed', 'persist_characters', 'action_mapping', 'restricted_actions', 'transitions']
+#             values = ["major", "White", "US Army", 'left chest', "Chest Collapse", 'right calf', "extreme", "minor", "Allied US", "Amputation"]
+#             for x, y in [(x, y) for x in term.nodes for y in term.nodes if x != y and x.name == y.name and type(x.name) not in bad_types and not any(x.name in sublist for sublist in [bad_matches, values]) and x.name != x.name.upper()]:
+#                 if (x, y) not in done:
+#                     combine_nodes(x, y, term)
+#                     done.append((y, x))
+#             pass
+#     return terms
 
 
 
@@ -351,9 +546,9 @@ def LID(Sd, p, D, C, pred):
     try:
         if stopping_condition(Sd, C):
             c = cases(Sd)
-            return c
+            return c, D
         else:
-            fd, v = select_leaf(p, Sd, C, [pred] + [x[0] for x in D])
+            fd, v, al = select_leaf(p, Sd, C, [pred] + [x[0] for x in D])
             D_ = add_path(pi(p, fd), D)
             Sd_ = disciminatory_set(D_, Sd)
             C_ = create_solution_class(pred, Sd_)
@@ -384,9 +579,26 @@ def stopping_condition(Sd, C):
     else:
         return False
 
-def select_leaf(p, Sd, C, avoid):
+def get_leafs(p, max_depth=7): #this one is for feature terms, not dicts
     leafs = []
-    "find all leafs in dictionary p"
+    iterator = []
+    head = p.root
+    for node, edge in [(x.target, x) for x in head.edges]:
+        iterator.append(([edge.name], node))
+    while len(iterator) > 0:
+        l, p = iterator.pop()
+        if len(l) > max_depth:
+            continue
+        n = l[-1]
+        if p.edges:
+            for node, edge in [(x.target, x) for x in p.edges]:
+                iterator.append((l + [edge.name], node))
+        else: #leaf
+            leafs.append((l, p.name))
+    return leafs
+
+def get_leafs2(p): #dicts
+    leafs = []
     iterator = []
     for key in p:
         iterator.append(([key], p[key]))
@@ -395,22 +607,51 @@ def select_leaf(p, Sd, C, avoid):
         n = l[-1]
         if type(p) == dict:
             for key in p:
-                iterator.append((l+[key], p[key]))
+                iterator.append((l + [key], p[key]))
         elif type(p) == list:
             for item in p:
                 iterator.append((l, item))
         else:
-            leafs.append((l,p))
+            leafs.append((l, p))
+    return leafs
+
+def check_class(class_, fd):
+    #check that all partitions in class_ ahve the same value for pi(fd)
+    for partition in class_:
+        partition = class_[partition]
+        for case in partition['cases']:
+            case = case[[x for x in case.keys()][0]]
+            low = partition['k'][0]
+            high = partition['k'][1]
+            val = pi(case, fd)[0][1]
+            if low == high == None and val != None:
+                return False
+            elif low == high == None and val == None:
+                pass
+            elif not (partition['k'][0] <= pi(case, fd)[0][1] <= partition['k'][1]):
+                return False
+    return True
+
+def select_leaf(p, Sd, C, avoid):
+    leafs = get_leafs(p)
+    default = [['action', 'probe_id'], ['next_scene'], ['transitions', 'probes']]
+    "find all leafs in dictionary p"
 
     # find the leaf with the minimum RLM distance from the discriminatory set
     min_distance = float('inf')
     infs = []
+    all_leafs = []
     min_leaf = None
-    leafs = [l for l in leafs if l[0] not in avoid]
+    leafs = [l for l in leafs if l[0] not in avoid]#+default]
+    if not check_class(C, avoid[0]):
+        raise Exception("Class is not valid")
     for f, v in leafs:
         try:
             leaf_class = create_solution_class(f, Sd)
+            if not check_class(leaf_class, f):
+                raise Exception("Class is not valid")
             distance = compute_rlm_distance(leaf_class, C)
+            all_leafs.append((f, distance))
         except AssertionError as e:
             #logger.debug('leaf feture' + str(f) + ' is not found in the discriminatory set')
             create_solution_class(f, Sd)
@@ -424,10 +665,17 @@ def select_leaf(p, Sd, C, avoid):
     if min_leaf is None and len(infs) > 0:
         min_leaf = random.choice(infs)
     elif min_leaf is None:
+        for a in avoid:
+            vals = []
+            for case in Sd:
+                #print(pi(Sd[case], a), end=" ")
+                vals.append(pi(Sd[case], a)[0][1])
+            if len(set(vals)) > 1:
+                print(a, vals)
         raise Exception("No leafs exist")
-    return min_leaf, min_distance
+    return min_leaf, min_distance, all_leafs
 
-def pi(case, fd):
+def pi2(case, fd):
     '''returns the value of the path fd in the case'''
     orig_fd = copy.copy(fd)
     fd = copy.copy(fd)
@@ -448,6 +696,18 @@ def pi(case, fd):
             return [(orig_fd, x[1]) for x in retval]
     return [(orig_fd, case)]
 
+def pi(case, fd):
+    if type(case) is not FeatureTerm:
+        raise Exception("pi is only for feature terms")
+    head = case.root
+    counter = 0
+    while counter < len(fd):
+        heads = [x.target for x in head.edges if x.name == fd[counter]]
+        if len(heads) == 0:
+            return([(fd, None)])
+        head = heads[0]
+        counter += 1
+    return [(fd, head.name)]
 def add_path(pi, D):
     return D + pi
 
@@ -455,20 +715,26 @@ def disciminatory_set(D_, Sd):
     '''
 
     :param D_: Paths to ensure that the discriminatory set is satisfied
-    :param Sd: Previous discriminatory set
+    :param Sd_: Previous discriminatory set
     :return: New discriminatory set
 
     May need to add in tolerances instead of equality, play around with it some
 
     '''
-    Sd_ = {}
-    for case in Sd:
+    Sd_ = copy.copy(Sd)
+    bad_cases = []
+    for case in Sd_:
         for p in D_:
-            paths = pi(Sd[case], p[0])
+            paths = pi(Sd_[case], p[0])
+            found = False
             for p_ in paths:
                 if p[1] == p_[1]:
-                    Sd_[case] = Sd[case]
+                    found = True
                     break
+            if not found:
+                bad_cases.append(case)
+    for case in bad_cases:
+        Sd_.pop(case)
 
     return Sd_
 
@@ -510,6 +776,8 @@ def create_solution_class(feature, cb):
     except:
         vals = pi(cb[case], feature)
     quantiled = False
+    if len(values) == 0:
+        print("here")
     if len(set(values)) / len(values) > 1 - threshold:  # continuous
         #discretize the values using quantiles
         num_values = len(values)
@@ -627,6 +895,8 @@ def compute_rlm_distance(partition1_ : dict[Any, int], partition2_: dict[Any, in
         pass
     if objCt != len(keys2):
         pass
+    if not(objCt == len(keys2)):
+        print("here")
     assert(objCt == len(keys2))
     assert(len(set(keys1) - set(keys2)) == 0)
     assert(len(set(keys2) - set(keys1)) == 0)
@@ -644,6 +914,8 @@ def compute_rlm_distance(partition1_ : dict[Any, int], partition2_: dict[Any, in
         if item not in partition2: #Re-evaluate this
             continue
         j_s = partition2[item]
+        if len(i_s) > 1 or len(j_s) > 1:
+            print(i_s, j_s)
         for i in i_s:
             Pi[i] += slice
         for j in j_s:
@@ -653,6 +925,7 @@ def compute_rlm_distance(partition1_ : dict[Any, int], partition2_: dict[Any, in
         for i in i_s:
             for j in j_s:
                 Pij[i][j] += slice
+
     IPa = 0
     for i in range(m):
         IPa += negEntropy(Pi[i])
@@ -682,31 +955,49 @@ if __name__ == "__main__":
     prev_path = os.getcwd().split('\\')[:-1]
     added_path = ["scenarios", "dryrun", "dryrun-adept-DryRunEval.MJ1-train.yaml"]
     added_path = ["scenarios", "dryrun"]
-    print(prev_path, added_path)
     new_path = ('\\').join(prev_path + added_path)
     folder_path = ('\\').join(prev_path + added_path)
     files = os.listdir(folder_path)
-    if not os.path.exists(folder_path + "\\" + "terms.json"):
-        dict_terms = {}
-        for file in files:
-            if file.endswith(".yaml") and "train" in file:
-                yaml_id = [x for x in file.split("-") if any(char.isdigit() for char in x)][0]
-                print(yaml_id)
-                kdma_terms = read_in_yaml(folder_path + "\\" + file)
-                for kdma in kdma_terms:
-                    if kdma not in dict_terms:
-                        dict_terms[kdma] = {}
-                    terms = kdma_terms[kdma]
-                    for term in terms:
-                        d_term = term.to_dict()
-                        dict_terms[kdma][yaml_id + "_" + term.root.name] = d_term.pop(term.root.name)
-        json.dump(dict_terms, open(folder_path + "\\" + "terms.json", "w"))
-    else:
-        dict_terms = json.load(open(folder_path + "\\" + "terms.json", "r"))
-    for kdma in dict_terms:
-        kdma_partition = create_solution_class(kdma.split("?>?"), dict_terms[kdma])
-        for c in dict_terms[kdma]:
-            LID(dict_terms[kdma], dict_terms[kdma][c], [], kdma_partition, kdma.split("?>?"))
+    all_terms = {}
+    for file in files:
+        if file.endswith(".yaml") and "train" in file and "adept" in file:
+            yaml_id = [x for x in file.split("-") if any(char.isdigit() for char in x)][0]
+            print(yaml_id)
+            kdma_terms = read_in_yaml(folder_path + "\\" + file)
+            for kdma in kdma_terms: #this is where the terms are stored
+                if kdma not in all_terms:
+                    all_terms[kdma] = {}
+                terms = kdma_terms[kdma]
+                for term in terms:
+                    all_terms[kdma][yaml_id + "_" + term.root.name] = term #this is where the feature terms are stored
+            # for kdma in kdma_terms:
+            #     if kdma not in dict_terms:
+            #         dict_terms[kdma] = {}
+            #     terms = kdma_terms[kdma]
+            #     for term in terms:
+            #         d_term = term.to_dict()
+            #         dict_terms[kdma][yaml_id + "_" + term.root.name] = d_term.pop(term.root.name)
+    # json.dump(dict_terms, open(folder_path + "\\" + "terms.json", "w"))
+    descriptions = {}
+    for kdma in all_terms:
+        descriptions[kdma] = []
+        for c in all_terms[kdma]:
+            loo = {}
+            for case in all_terms[kdma]:
+                if case != c:
+                    loo[case] = all_terms[kdma][case]
+            loo_p = create_solution_class(kdma.split("?>?"), loo)
+            print(compute_rlm_distance(loo_p, loo_p))
+
+
+            ret_val = LID(loo, all_terms[kdma][c], [], loo_p, kdma.split("?>?"))
+            descriptions[kdma].append(ret_val[1])
+            print("OUT")
+            print(ret_val[1])
+            print(len(descriptions[kdma]))
+        print()
+    print(descriptions)
+    json.dump(descriptions, open(folder_path + "\\" + "descriptions.json", "w"))
     # for kdma in kdma_terms:
     #     terms = kdma_terms[kdma]
     #     kdma_partition = create_solution_class(kdma, terms)
