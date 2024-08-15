@@ -3,7 +3,6 @@ import pandas as pd
 import re
 from domain.internal import Decision
 from components import DecisionExplainer
-from domain.internal import DecisionMetric
 from typing import Dict, Any
 
 class KDMADecisionExplainer(DecisionExplainer):
@@ -56,10 +55,10 @@ class KDMADecisionExplainer(DecisionExplainer):
         decision_metrics = self.decision.metrics # the dictionary of decicion metrics added by tad
         decision_attributes = {} # the dictionary of decision attributes of the chosen decision
         
+        # start collecting the attributes of the decision
         decision_attributes.update(decision_action.params)
         
         # extract the attribute key value pairs from the decision metrics objects and add them to the decision attributes
-        
         attribute_list = []
        # iterate through the list of decision metrics and extract the key value pairs from the decision_metrics object
         for decision_metric in decision_metrics.items():
@@ -72,7 +71,8 @@ class KDMADecisionExplainer(DecisionExplainer):
         for attribute in attribute_list:
                 decision_attributes.update({attribute.name: attribute.value})
         
-       
+        # extract the attributes that are relevant to the similarity calculation    
+        # new instance is how Anik's code refers to the chosen decision
         new_instance = {k: v for k, v in decision_attributes.items() if k in relevant_weights}
         action_new_instance = decision_action.name
 
@@ -83,12 +83,22 @@ class KDMADecisionExplainer(DecisionExplainer):
         # the result is a dictionary with just the weights used in the similarity calculation
         most_similar_instance = {k: v for k, v in most_similar_case.items() if k in relevant_weights}
         
-        print(most_similar_instance)
-        #attributes = self.round_attributes(explanation.params["attributes"])
-
-        pattern = r'\b0\.\d+'
-       
+        #attributes = self.round_attributes(explanation.params["attributes"])       
         action_most_similar = decision_action.name
+
+        return self.generate_explanation_text(new_instance, decision_attributes, most_similar_instance, action_new_instance, action_most_similar)
+        
+    def generate_explanation_text(self, new_instance, decision_attributes, most_similar_instance, action_new_instance, action_most_similar):
+        pattern = r'\b0\.\d+'
+        
+        output_string = "I selected " + action_new_instance
+        # if there is a "treatment" attribute in the new_instance, add it to the output string
+        if "treatment" in decision_attributes:
+            output_string += " with " + decision_attributes["treatment"]
+        output_string += " for " + decision_attributes["casualty"] + " because I was reminded of a similar previous case where a similar decision maker decided to " + action_most_similar + "\n"
+        output_string += "selected decision attributes: " + str(new_instance) + "\n" 
+        output_string += "most similar case attributes: " + str(most_similar_instance)
+        return output_string
 
         ''' Anik's code to output the explanation text
         # I selected new_instance["treatment"] because I was reminded of a similar previous cases where the treatment was old_instance["treatment"] and the aid available was old_instance["aid_available"], the probability of death was old_instance["pDeath"], the casualty old_instance["visited"]
