@@ -108,21 +108,7 @@ def install_hems() -> None:
             run_cmd_or_die([ "git", "pull", "--no-edit" ])
         else:
             print("HEMS directory has local changes. Continuing without a fresh install.")
-        #run_cmd_or_die([ "git", "checkout", "package.lisp" ], capture_output=False)
-        #run_cmd_or_die([ "git", "pull", "--no-edit" ])
         os.chdir(ITM_DIR)
-
-    ## Patch package.lisp
-    #print("Patching HEMS")
-    #patched_file = os.path.join(ITM_DIR, "components", "decision_analyzer",
-    #    "event_based_diagnosis", "hems-package-replacement.lisp")
-    #package_file = os.path.join(hems_dir, "package.lisp")
-    #os.remove(package_file)
-    #shutil.copyfile(patched_file, package_file)
-    
-
-    # replace patched version (if it exists) with non-patched so we can pull.
-    # git checkout package.lisp 
         
 
 os.chdir(ITM_DIR)
