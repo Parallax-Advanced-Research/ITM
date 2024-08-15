@@ -1,4 +1,9 @@
 id: DryRunEval-MJ2-eval
+# v2.0.3
+#   - Action identify_by_position now has relevant_state of "[characters[Victim]]" instead of ""
+#   - Nasopharyngeal airway, Blanket, and Splint set to reusable: false
+#   - To correctly support justify probes: conditions changed to action_conditions, condition_semantics changed to action_condition_semantics
+#   - relevant_state of characters[Translator].vital corrected to characters[Translator].vitals
 # v2.0.2
 #   - Extended unstructured text to indicate quantity of gauze needed to treat Victim.
 # v2.0.1
@@ -25,6 +30,9 @@ id: DryRunEval-MJ2-eval
 #   - Fix incorrect character ids used in Probe 10
 # v1.0.0
 #   - Initial
+
+# This scenario was refered to as MD1 in eval scenario sketches.docx
+
 name: Shooter/Victim 
 first_scene: Probe 2
 state:
@@ -70,14 +78,14 @@ state:
     - {type: Pressure bandage, reusable: false, quantity: 0}
     - {type: Hemostatic gauze, reusable: false, quantity: 5}
     - {type: Decompression Needle, reusable: false, quantity: 0}
-    - {type: Nasopharyngeal airway, reusable: true, quantity: 0}
+    - {type: Nasopharyngeal airway, reusable: false, quantity: 0}
     - {type: Pulse Oximeter, reusable: true, quantity: 1}
-    - {type: Blanket, reusable: true, quantity: 0}
+    - {type: Blanket, reusable: false, quantity: 0}
     - {type: Epi Pen, reusable: false, quantity: 0}
     - {type: Vented Chest Seal, reusable: false, quantity: 0}
     - {type: Pain Medications, reusable: false, quantity: 0}
     - {type: Fentanyl Lollipop, reusable: false, quantity: 0}
-    - {type: Splint, reusable: true, quantity: 0}
+    - {type: Splint, reusable: false, quantity: 0}
     - {type: Blood, reusable: false, quantity: 0}
     - {type: IV Bag, reusable: false, quantity: 0}
     - {type: Burn Dressing, reusable: false, quantity: 0}
@@ -122,7 +130,6 @@ state:
 scenes:  
   - id: Probe 2  # includes Probe 2-F.1
     end_scene_allowed: false
-    tagging: {enabled: false}
     action_mapping:
       - action_id: intend_treat_Shooter
         action_type: APPLY_TREATMENT
@@ -131,8 +138,8 @@ scenes:
         intent_action: true
         probe_id: Probe 2 Prelim
         choice: Response 2 Prelim-AB
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 2 Prelim
       - action_id: intend_treat_Victim
@@ -142,8 +149,8 @@ scenes:
         intent_action: true
         probe_id: Probe 2 Prelim
         choice: Response 2 Prelim-CDE
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 2 Prelim
       - action_id: assess_Shooter
@@ -153,8 +160,8 @@ scenes:
         probe_id: Probe 2-F.1
         choice: Response 2-F.1-A
         next_scene: Probe 2-F.1-A.1
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 2 Prelim
       - action_id: assess_Victim
@@ -164,18 +171,18 @@ scenes:
         probe_id: Probe 2-F.1
         choice: Response 2-F.1-B
         next_scene: Probe 2-F.1-B.1
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 2 Prelim
       - action_id: identify_as_shooter
         action_type: MESSAGE
         unstructured: Identify your intended patient as the shooter.
-        parameters: {"type": "justify", "relevant_state": "[characters[Shooter].intent]"}  # Intent is probably too explicit, but best I could come up that acknowledge them as the shooter
+        parameters: {"type": "justify", "relevant_state": "[characters[Shooter].intent]"}  # Intent is probably too explicit, but best I could come up that acknowledges them as the shooter
         probe_id: Probe 2
         choice: Response 2-A
         next_scene: Probe 2-F.2-AB.1
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 2 Prelim-AB
       - action_id: identify_as_tourniquet_need
@@ -185,7 +192,7 @@ scenes:
         probe_id: Probe 2
         choice: Response 2-B
         next_scene: Probe 2-F.2-AB.1
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 2 Prelim-AB
       - action_id: identify_as_torso_wounded
@@ -195,17 +202,17 @@ scenes:
         probe_id: Probe 2
         choice: Response 2-C
         next_scene: Probe 2-F.2-CDE.1
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 2 Prelim-CDE
       - action_id: identify_by_position
         action_type: MESSAGE
         unstructured: Identify your intended patient by indicating the location of Babson.
-        parameters: {"type": "justify", "relevant_state": ""}
+        parameters: {"type": "justify", "relevant_state": "[characters[Victim]]"}
         probe_id: Probe 2
         choice: Response 2-D
         next_scene: Probe 2-F.2-CDE.1
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 2 Prelim-CDE
       - action_id: identify_as_victim
@@ -215,7 +222,7 @@ scenes:
         probe_id: Probe 2
         choice: Response 2-E
         next_scene: Probe 2-F.2-CDE.1
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 2 Prelim-CDE
     restricted_actions:
@@ -773,14 +780,14 @@ scenes:
         - {type: Pressure bandage, reusable: false, quantity: 2}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 2}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 0}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 0}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 0}
+        - {type: Blanket, reusable: false, quantity: 0}
         - {type: Epi Pen, reusable: false, quantity: 0}
         - {type: Vented Chest Seal, reusable: false, quantity: 2}
         - {type: Pain Medications, reusable: false, quantity: 0}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 0}
-        - {type: Splint, reusable: true, quantity: 0}
+        - {type: Splint, reusable: false, quantity: 0}
         - {type: Blood, reusable: false, quantity: 0}
         - {type: IV Bag, reusable: false, quantity: 0}
         - {type: Burn Dressing, reusable: false, quantity: 0}
@@ -1298,8 +1305,8 @@ scenes:
         parameters: {"aid_id": "city_hospital"}
         probe_id: Probe 6
         choice: Response 6-A
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 6
       - action_id: Evac Victim
@@ -1309,8 +1316,8 @@ scenes:
         parameters: {"aid_id": "city_hospital"}
         probe_id: Probe 6
         choice: Response 6-B
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_injury
@@ -1320,17 +1327,17 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-A
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_future_treatment
         action_type: MESSAGE
         unstructured: The patient was picked because they were the most likely to benefit from immediate treatment at the next level of care.
-        parameters: {"type": "justify", "relevant_state": "[characters[Shooter].injuries], [characters[Shooter].vitals], [characters[Victim].injuries], [characters[Victim].vital], [environment.decision_environment.aid[city_hospital]]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[Shooter].injuries], [characters[Shooter].vitals], [characters[Victim].injuries], [characters[Victim].vitals], [environment.decision_environment.aid[city_hospital]]"}
         probe_id: Probe 7
         choice: Response 7-B
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_command_guidance_and_protocol
@@ -1340,7 +1347,7 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-C
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_innocent
@@ -1350,7 +1357,7 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-D
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 6-B
     restricted_actions:
@@ -1433,8 +1440,8 @@ scenes:
         parameters: {"aid_id": "city_hospital"}
         probe_id: Probe 6
         choice: Response 6-A
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 6
       - action_id: Evac Victim
@@ -1444,8 +1451,8 @@ scenes:
         parameters: {"aid_id": "city_hospital"}
         probe_id: Probe 6
         choice: Response 6-B
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_injury
@@ -1455,17 +1462,17 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-A
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_future_treatment
         action_type: MESSAGE
         unstructured: The patient was picked because they were the most likely to benefit from immediate treatment at the next level of care.
-        parameters: {type: "justify", "relevant_state": "[characters[Shooter].injuries], [characters[Shooter].vitals], [characters[Victim].injuries], [characters[Victim].vital], [environment.decision_environment.aid[city_hospital]]"}
+        parameters: {type: "justify", "relevant_state": "[characters[Shooter].injuries], [characters[Shooter].vitals], [characters[Victim].injuries], [characters[Victim].vitals], [environment.decision_environment.aid[city_hospital]]"}
         probe_id: Probe 7
         choice: Response 7-B
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_command_guidance_and_protocol
@@ -1475,7 +1482,7 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-C
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_innocent
@@ -1485,7 +1492,7 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-D
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 6-B
     restricted_actions:
@@ -1556,8 +1563,8 @@ scenes:
         parameters: {"aid_id": "city_hospital"}
         probe_id: Probe 6
         choice: Response 6-A
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 6
       - action_id: Evac Victim
@@ -1567,8 +1574,8 @@ scenes:
         parameters: {"aid_id": "city_hospital"}
         probe_id: Probe 6
         choice: Response 6-B
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_injury
@@ -1578,17 +1585,17 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-A
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_future_treatment
         action_type: MESSAGE
         unstructured: The patient was picked because they were the most likely to benefit from immediate treatment at the next level of care.
-        parameters: {type: "justify", "relevant_state": "[characters[Shooter].injuries], [characters[Shooter].vitals], [characters[Victim].injuries], [characters[Victim].vital], [environment.decision_environment.aid[city_hospital]]"}
+        parameters: {type: "justify", "relevant_state": "[characters[Shooter].injuries], [characters[Shooter].vitals], [characters[Victim].injuries], [characters[Victim].vitals], [environment.decision_environment.aid[city_hospital]]"}
         probe_id: Probe 7
         choice: Response 7-B
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_command_guidance_and_protocol
@@ -1598,7 +1605,7 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-C
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_innocent
@@ -1608,7 +1615,7 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-D
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 6-B
     restricted_actions:
@@ -1696,8 +1703,8 @@ scenes:
         parameters: {"aid_id": "city_hospital"}
         probe_id: Probe 6
         choice: Response 6-A
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 6
       - action_id: Evac Victim
@@ -1707,10 +1714,10 @@ scenes:
         parameters: {"aid_id": "city_hospital"}
         probe_id: Probe 6
         choice: Response 6-B
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
-            - Probe 6v
+            - Probe 6
       - action_id: indicate_injury
         action_type: MESSAGE
         unstructured: The patient was picked because they were the most seriously injured.
@@ -1718,17 +1725,17 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-A
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_future_treatment
         action_type: MESSAGE
         unstructured: The patient was picked because they were the most likely to benefit from immediate treatment at the next level of care.
-        parameters: {type: "justify", "relevant_state": "[characters[Shooter].injuries], [characters[Shooter].vitals], [characters[Victim].injuries], [characters[Victim].vital], [environment.decision_environment.aid[city_hospital]]"}
+        parameters: {type: "justify", "relevant_state": "[characters[Shooter].injuries], [characters[Shooter].vitals], [characters[Victim].injuries], [characters[Victim].vitals], [environment.decision_environment.aid[city_hospital]]"}
         probe_id: Probe 7
         choice: Response 7-B
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_command_guidance_and_protocol
@@ -1738,7 +1745,7 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-C
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probes:
             - Probe 6
       - action_id: indicate_innocent
@@ -1748,7 +1755,7 @@ scenes:
         probe_id: Probe 7
         choice: Response 7-D
         next_scene: Probe 8
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 6-B
     restricted_actions:
@@ -1999,8 +2006,8 @@ scenes:
         parameters: {"aid_id": "us_medical_facility"}
         probe_id: Probe 9-A.1
         choice: Response 9-A.1-A
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 9-A.1
       - action_id: evac_lucas
@@ -2011,8 +2018,8 @@ scenes:
         parameters: {"aid_id": "us_medical_facility"}
         probe_id: Probe 9-A.1
         choice: Response 9-A.1-A
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 9-A.1
       - action_id: indicate_injury
@@ -2021,16 +2028,16 @@ scenes:
         parameters: {type: "justify", "relevant_state": "[characters[US military member].injuries], [characters[Translator].injuries]"}
         probe_id: Probe 10
         choice: Response 10-A
-        conditions:
+        action_conditions:
           probes:
             - Probe 9-A.1
       - action_id: indicate_future_treatment
         action_type: MESSAGE
         unstructured: The patient was picked because they were the most likely to benefit from immediate treatment at the next level of care.
-        parameters: {type: "justify", "relevant_state": "[characters[US military member].injuries], [characters[US military member].vitals], [characters[Translator].injuries], [characters[Translator].vital], [environment.decision_environment.aid[us_medical_facility]]"}
+        parameters: {type: "justify", "relevant_state": "[characters[US military member].injuries], [characters[US military member].vitals], [characters[Translator].injuries], [characters[Translator].vitals], [environment.decision_environment.aid[us_medical_facility]]"}
         probe_id: Probe 10
         choice: Response 10-B
-        conditions:
+        action_conditions:
           probes:
             - Probe 9-A.1
       - action_id: indicate_us
@@ -2039,7 +2046,7 @@ scenes:
         parameters: {type: "justify", "relevant_state": "[mission.character_importance], [characters[US military member].demographics.military_disposition], [characters[Translator].demographics.military_disposition]"}
         probe_id: Probe 10
         choice: Response 10-C
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 9-A.1-A
     restricted_actions:
@@ -2095,8 +2102,8 @@ scenes:
         parameters: {"aid_id": "us_medical_facility"}
         probe_id: Probe 9-B.1
         choice: Response 9-B.1-A
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 9-B.1
       - action_id: evac_lucas
@@ -2107,8 +2114,8 @@ scenes:
         parameters: {"aid_id": "us_medical_facility"}
         probe_id: Probe 9-B.1
         choice: Response 9-B.1-A
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 9-B.1
       - action_id: indicate_injury
@@ -2117,16 +2124,16 @@ scenes:
         parameters: {type: "justify", "relevant_state": "[characters[US military member].injuries], [characters[Translator].injuries]"}
         probe_id: Probe 10
         choice: Response 10-A
-        conditions:
+        action_conditions:
           probes:
             - Probe 9-B.1
       - action_id: indicate_future_treatment
         action_type: MESSAGE
         unstructured: The patient was picked because they were the most likely to benefit from immediate treatment at the next level of care.
-        parameters: {type: "justify", "relevant_state": "[characters[US military member].injuries], [characters[US military member].vitals], [characters[Translator].injuries], [characters[Translator].vital], [environment.decision_environment.aid[us_medical_facility]]"}
+        parameters: {type: "justify", "relevant_state": "[characters[US military member].injuries], [characters[US military member].vitals], [characters[Translator].injuries], [characters[Translator].vitals], [environment.decision_environment.aid[us_medical_facility]]"}
         probe_id: Probe 10
         choice: Response 10-B
-        conditions:
+        action_conditions:
           probes:
             - Probe 9-B.1
       - action_id: indicate_us
@@ -2135,7 +2142,7 @@ scenes:
         parameters: {type: "justify", "relevant_state": "[mission.character_importance], [characters[US military member].demographics.military_disposition], [characters[Translator].demographics.military_disposition]"}
         probe_id: Probe 10
         choice: Response 10-C
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 9-B.1-A
     restricted_actions:

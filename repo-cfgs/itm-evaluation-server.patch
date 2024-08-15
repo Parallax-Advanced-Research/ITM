@@ -1,6 +1,6 @@
 diff --git a/swagger_server/config.ini b/swagger_server/config.ini
 new file mode 100755
-index 0000000..446e2e6
+index 0000000..7c6a557
 --- /dev/null
 +++ b/swagger_server/config.ini
 @@ -0,0 +1,17 @@
@@ -14,7 +14,7 @@ index 0000000..446e2e6
 +
 +; Prod Default URLs
 +SOARTECH_URL=http://localhost:8084
-+ADEPT_URL=http://localhost:8080
++ADEPT_URL=http://localhost:8081
 +
 +SAVE_HISTORY=True
 +SAVE_HISTORY_TO_S3=False

@@ -6,6 +6,7 @@ import util
 import sys
 import argparse
 import time
+import requests
 from run_tests import color
 from enum import Enum
 
@@ -234,6 +235,22 @@ def start_server(dir_name: str, args: list[str], port: str, use_venv = True, ext
     # f.close()
     # stream.close()
 
+def check_alignment_targets(port: str, server_name: str) -> bool:
+    if not util.is_port_open(port):
+        return False
+    target_id_path = 'alignment_target_ids' if server_name == 'ADEPT' else 'alignment_targets'
+    try:
+        response = requests.get(f'http://localhost:{port}/api/v1/{target_id_path}')
+        if response.status_code == 200:
+            color('green', server_name + " server is now listening.")
+            return True
+        else:
+            error(server_name + " server sent a bad status code. Check for problems in error log.")
+            sys.exit(Status.ERROR.value)
+    except requests.exceptions.ConnectionError:
+        return False
+
+
 ta3_port = util.find_environment("TA3_PORT", 8080)
 adept_port = util.find_environment("ADEPT_PORT", 8081)
 soartech_port = util.find_environment("SOARTECH_PORT", 8084)
@@ -326,41 +343,44 @@ elif adept_server_available:
           + '"--no-training --session_type soartech" will also work with tad_tester.py, but '
           + '"--session_type eval" will not.')
 
-if adept_server_available or soartech_server_available:
-    time.sleep(30)
-
-start_server("itm-evaluation-server", ["swagger_server"], str(ta3_port))
-
 if soartech_server_available and adept_server_available:
     color('green', "All servers in use. Both tad_tester.py and ta3_training.py should work properly.")
 
+ta1_servers_up = not adept_server_available and not soartech_server_available
+adept_verified = False
+soartech_verified = False
+wait_started = time.time()
+next_check = wait_started
+while ta1_servers_up == False and time.time() - wait_started < 90: # At least 90 seconds have passed.
+    sleep_time = next_check - time.time()
+    if (sleep_time > 0):
+        time.sleep(sleep_time)
+    next_check = time.time() + 5
+    ta1_servers_up = True
+    if adept_server_available and not adept_verified:
+        adept_verified = check_alignment_targets(adept_port, "ADEPT")
+        if not adept_verified:
+            ta1_servers_up = False
+    if soartech_server_available and not soartech_verified:
+        soartech_verified = check_alignment_targets(soartech_port, "Soartech")
+        if not soartech_verified:
+            ta1_servers_up = False
+    
+
+start_server("itm-evaluation-server", ["swagger_server"], str(ta3_port))
 
 servers_up = False
 ta3_verified = False
-adept_verified = False
-soartech_verified = False
 
 wait_started = time.time()
 
-while not servers_up and time.time() - wait_started < 30: # At least 30 seconds have passed.
+while not servers_up and time.time() - wait_started < 120: # At least 120 seconds have passed.
     time.sleep(1)
     servers_up = True
     if ta3_server_available and not ta3_verified:
         if util.is_port_open(ta3_port):
             color('green', "TA3 server is now listening.")
             ta3_verified = True
-        else:
-            servers_up = False
-    if adept_server_available and not adept_verified:
-        if util.is_port_open(adept_port):
-            color('green', "ADEPT server is now listening.")
-            adept_verified = True
-        else:
-            servers_up = False
-    if soartech_server_available and not soartech_verified:
-        if util.is_port_open(soartech_port):
-            color('green', "Soartech server is now listening.")
-            soartech_verified = True
         else:
             servers_up = False
 
