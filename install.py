@@ -102,7 +102,7 @@ def install_hems() -> None:
     else:
         # Update
         os.chdir(hems_dir)
-        res = run_cmd_or_die(["git", "diff", "HEAD"], capture_output=True).trim()
+        res = run_cmd_or_die(["git", "diff", "HEAD"], capture_output=True).strip()
         if res == "":
             run_cmd_or_die(["git", "reset", "--hard"])
             run_cmd_or_die([ "git", "pull", "--no-edit" ])
