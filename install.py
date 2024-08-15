@@ -69,6 +69,7 @@ def run_cmd_or_die(argv: list[str], capture_output: bool = False, err_msg: str |
         p = subprocess.run(argv, check=False)
     if 0 != p.returncode:
         if err_msg is not None:
+            print(f"Command failed: `{' '.join(argv)}`")
             print(err_msg)
         sys.exit(1)
 
