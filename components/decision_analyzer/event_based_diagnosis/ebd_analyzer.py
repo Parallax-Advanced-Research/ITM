@@ -32,15 +32,14 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         self._itm_vitals_mimic_vitals_map = dict()
         
         icd9_fracture = "FRACTURES"
-        icd9_internal = "INTERNAL_INJURY"
-        icd9_chest_collapse = "CERTAIN_TRAUMATIC_COMPLICATIONS_AND_UNSPECIFIED_INJURIES"
-        icd9_tbi = "INTRACRANIAL_INJURY_EXCLUDING_THOSE_WITH_SKULL_FRACTURE"
+        icd9_internal = "INTERNAL"
+        icd9_chest_collapse = "CHEST_COLLAPSE"
+        icd9_tbi = "TRAUMATIC_BRAIN_INJURY"
         icd9_ear_bleed = "EAR_BLEED"
         icd9_open_wound = "OPEN_WOUNDS"
         icd9_amputation = "AMPUTATION"
         icd9_burn = "BURNS"
-        icd9_laceration = "LACERATIONS_AND_PIERCINGS"
-        icd9_shrapnel = "LACERATIONS_AND_PIERCINGS"
+        icd9_laceration = "LACERATION"
         icd9_puncture = "PUNCTURE"
         icd9_scrape = "SCRAPE"
 
@@ -74,15 +73,15 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         self._icd9_itm_map[icd9_amputation] = InjuryTypeEnum.AMPUTATION
         self._icd9_itm_map[icd9_burn] = InjuryTypeEnum.BURN
         self._icd9_itm_map[icd9_laceration] = InjuryTypeEnum.LACERATION
-        self._icd9_itm_map[icd9_shrapnel] = InjuryTypeEnum.SHRAPNEL
+        #self._icd9_itm_map[icd9_shrapnel] = InjuryTypeEnum.SHRAPNEL
         self._icd9_itm_map[icd9_puncture] = InjuryTypeEnum.PUNCTURE
 
-        self._itm_icdS9_map[InjuryTypeEnum.ABRASION] = icd9_scrape
+        self._itm_icd9_map[InjuryTypeEnum.ABRASION] = icd9_scrape
         self._itm_icd9_map[InjuryTypeEnum.EAR_BLEED] = icd9_ear_bleed
         self._itm_icd9_map[InjuryTypeEnum.BURN] = icd9_burn
         self._itm_icd9_map[InjuryTypeEnum.LACERATION] = icd9_laceration
         self._itm_icd9_map[InjuryTypeEnum.PUNCTURE] = icd9_puncture
-        self._itm_icd9_map[InjuryTypeEnum.SHRAPNEL] = icd9_shrapnel
+        #self._itm_icd9_map[InjuryTypeEnum.SHRAPNEL] = icd9_shrapnel
         self._itm_icd9_map[InjuryTypeEnum.CHEST_COLLAPSE] = icd9_chest_collapse
         self._itm_icd9_map[InjuryTypeEnum.AMPUTATION] = icd9_amputation
         self._itm_icd9_map[InjuryTypeEnum.INTERNAL] = icd9_internal
@@ -115,9 +114,10 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             cue = self.make_observation_from_state (probe.state, decision.value)
             if cue is None:
                 continue
-            (recollection, eltm) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, type="observation")
-            #eltm = self._hems.new_retrieve_episode(self._hems.get_eltm(), cue, False)
-            eme = eltm.car
+            #(recollection, eltm) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, type="observation")
+            episode = self._hems.create_episode(observation=cue)
+            eltm = self._hems.new_retrieve_episode(self._hems.get_eltm(), episode, False)
+            eme = eltm[0][0]
             (recollection, conditional_entropy) = self._hems.get_entropy(eme, cue)
             print(conditional_entropy)
             sdfs
@@ -236,14 +236,12 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         cas = self.find_casualty(patient, state)
         if cas is None:
             raise Exception("No casualty in state with name: " + patient)
-        print(a)
-        sadfas
         data = [
             ('PAIN', self.get_pain(cas), 'vitals'),
             ('RESPRATE', self.get_breathing(cas), 'vitals'),
             ('HEARTRATE', self.get_hrpmin(cas), 'vitals'),
             ('O2SAT', self.get_spo2(cas), 'vitals'),
-            (self._itm_icd9_map[InjuryTypeEnum.ABRASION], self.get_abrasion(cas), 'injury')
+            (self._itm_icd9_map[InjuryTypeEnum.ABRASION], self.get_abrasion(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.OPEN_ABDOMINAL_WOUND], self.get_oaw(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY], self.get_tbi(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.EAR_BLEED], self.get_ear_bleed(cas), 'injury'),
@@ -253,7 +251,8 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             (self._itm_icd9_map[InjuryTypeEnum.CHEST_COLLAPSE], self.get_chest_collapse(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.AMPUTATION], self.get_amputation(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.INTERNAL], self.get_internal(cas), 'injury'),
-            #(self._itm_resources_icd9_map[a.name], "T", 'treatment')
+            (self._itm_icd9_map[InjuryTypeEnum.BROKEN_BONE], self.get_fractures(cas), 'injury'),
+            (self.get_action_name(a), self.get_action_val(a), 'procedure')
         ]
         # TODO: Needs to make use of new stuff the server gives us. q.v. bn_analyzer:make_observation()
         
@@ -261,8 +260,22 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(bytes(cue, 'utf-8'))
             fp.seek(0)
+            print(fp.read())
+            fp.seek(0)
             return self._hems.compile_program_from_file(fp.name)
-        
+
+    def get_action_name(self, a):
+        if a.name == "TAG_CHARACTER":
+            return "TAG"
+        else:
+            print(a.name)
+            asdfaf
+            return a.name
+    def get_action_val(self, a):
+        if a.name == "TAG_CHARACTER":
+            return a.params['category'].lower()
+        else:
+            return "T"
     def get_hrpmin(self, c: Casualty | dict) -> str | None:
         if isinstance(c, dict):
             val = c['vitals']['heart_rate']
@@ -369,6 +382,15 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
                     return "T"
         return None
 
+    def get_fractures(self, c : Casualty):
+        for i in c.injuries:
+            if i.name == InjuryTypeEnum.BROKEN_BONE:
+                if i.treated == True:
+                    return None
+                if i.treated == False:
+                    return "T"
+        return None
+    
     def get_oaw(self, c : Casualty):
         for i in c.injuries:
             if i.name == InjuryTypeEnum.OPEN_ABDOMINAL_WOUND:
@@ -431,12 +453,14 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         i = 1
         ret = ""
         for d in data:
+            print(d)
             if d[1] is not None:
-                if d[2] != 'injuries':
+                if d[2] != 'injury':
                     ret += f'c{i} = (percept-node {d[0]} :value "{d[1]}")\n'
                 else:
                     ret += f'c{i} = (relation-node {d[0]} :value "{d[1]}" :kb-concept-id "INJURY")\n'
                 i += 1
+        print()
         return ret
 
     def find_casualty(self, name: str, s: State) -> Casualty | None:
