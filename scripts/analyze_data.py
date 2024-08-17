@@ -80,7 +80,8 @@ NON_NOISY_KEYS = [
     'HRA Strategy.time-resources-risk_reward_ratio-system.exhaustive', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.tallying', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.satisfactory', 
-    'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce'
+    'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce',
+    'treatment_count', 'treatment_time'
 ]
 
 NOISY_KEYS : str = [
