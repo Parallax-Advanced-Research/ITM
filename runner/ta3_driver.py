@@ -93,7 +93,7 @@ class TA3Driver(Driver):
             else:
                 character['treatments'] = list()
             # Do the state estimation over injuries
-            if self.estimator is not None:
+            if self.estimator is not None and False:
                 inferred_injuries = self.estimator.estimate_injuries(self.estimator.make_observation(character))
                 #inferred_injuries is not used, why?
         
