@@ -90,6 +90,7 @@ class Casualty:
     intent: str = ''
     directness_of_causality: str = ''
     unseen: bool = False
+    treatment_time: int = 0
 
     @staticmethod
     def from_ta3(data: dict):
@@ -106,6 +107,7 @@ class Casualty:
             relationship=data['rapport'],
             rapport=data['rapport'],
             treatments=data['treatments'],
+            treatment_time=data['treatment_time'],
             intent = data['intent'],
             directness_of_causality = data['directness_of_causality'],
             unseen = data.get('unseen', False)

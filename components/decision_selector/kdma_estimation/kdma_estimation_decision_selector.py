@@ -294,6 +294,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             return make_case_triage(probe, d)
 
 
+# See kdma_estimation.VALUED_FEATURES for the ordering of individual features.
 def add_feature_to_case_with_rank(case: dict[str, Any], feature: str, 
                                   characteristic_fn: Callable[[Casualty], Any], 
                                   c: Casualty, chrs: list[Casualty]):
@@ -346,6 +347,10 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         add_feature_to_case_with_rank(case, "disposition", lambda chr: chr.demographics.military_disposition, c, chrs)
         add_feature_to_case_with_rank(case, "directness_of_causality", 
                                     lambda chr: chr.directness_of_causality, c, chrs)
+        add_feature_to_case_with_rank(case, "treatment_count", 
+                                    lambda chr: len(chr.treatments), c, chrs)
+        add_feature_to_case_with_rank(case, "treatment_time", 
+                                    lambda chr: chr.treatment_time, c, chrs)
         case['inj_severity_rank'] = \
             min([kdma_estimation.rank(inj.severity, sevs, "inj_severity") for inj in c.injuries])
         case['unvisited_count'] = len([co for co in chrs if not co.assessed 
@@ -360,11 +365,23 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
          and len(probe.environment['decision_environment']['aid']) > 0)
     case['environment_type'] = probe.environment['sim_environment']['type']
     a: Action = d.value
-    case['questioning'] = a.name in ["SITREP"]
-    case['assessing'] = a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION"]
-    case['treating'] = a.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]
-    case['tagging'] = a.name == "TAG_CHARACTER"
-    case['leaving'] = a.name == "END_SCENE"
+    if a.name in ["SITREP"]:
+        case['action_type'] = 'questioning'
+    elif a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION"]:
+        case['action_type'] = 'assessing'
+    elif a.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]:
+        case['action_type'] = 'treating'
+    elif a.name in ["TAG_CHARACTER"]:
+        case['action_type'] = 'tagging'
+    elif a.name in ["END_SCENE"]:
+        case['action_type'] = 'leaving'
+    elif a.name in ["MESSAGE"]:
+        case['action_type'] = a.params["type"]
+    else:
+        raise Error()
+
+    case['action_name'] = a.name
+    
     if a.name == "APPLY_TREATMENT":
         case['treatment'] = a.params.get("treatment", None)
     if a.name == "TAG_CHARACTER":
@@ -375,7 +392,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         else:
             for (inner_key, inner_value) in flatten(dm.name, dm.value).items():
                 case[inner_key] = inner_value
-    # case |= d.context
+
     case["context"] = d.context
     return case
 
