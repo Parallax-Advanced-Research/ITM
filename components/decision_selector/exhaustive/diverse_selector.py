@@ -19,7 +19,7 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         self.rg = random.Random()
         self.rg.seed()
         self.case_index : int = 0
-        self.retainer = KDMACaseBaseRetainer()
+        self.retainer = KDMACaseBaseRetainer(continue_search = continue_search)
         self.cases: dict[list[dict[str, Any]]] = dict()
         self.new_cases: list[dict[str, Any]] = list()
         # self.new_cases : list[dict[str, Any]] = list()
