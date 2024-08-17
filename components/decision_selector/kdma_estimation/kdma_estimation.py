@@ -54,21 +54,15 @@ def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases:
     for pcase in cases:
         if kdma not in pcase or pcase[kdma] is None:
             continue
-        if cur_case['treating'] and not pcase['treating']:
-            continue
-        if cur_case['tagging'] and (not pcase['tagging'] or pcase['category'] != cur_case['category']):
-            continue
-        if cur_case['leaving'] and not pcase['leaving']:
-            continue
-        if cur_case['assessing'] and not pcase['assessing']:
-            continue
-        if cur_case['questioning'] and not pcase['questioning']:
+        if cur_case['action_type'] != pcase['action_type']:
             continue
         distance = calculate_distance(pcase, cur_case, weights, local_compare)
         if distance > max_distance:
             continue
         lst.append((distance, pcase))
         if len(lst) < neighbor_count:
+            continue
+        if max_distance == 0:
             continue
         lst.sort(key=first)
         max_distance = lst[neighbor_count - 1][0] * 1.01
@@ -80,11 +74,19 @@ def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases:
         guarantee_distance = max_distance * 0.99
         lst_guaranteed = []
         lst_pool = []
+        set_kdma_vals = set()
         for item in lst:
+            item_obj = item[1]
             if first(item) < guarantee_distance:
-                lst_guaranteed.append(item[1])
+                lst_guaranteed.append(item_obj)
             else:
-                lst_pool.append(item[1])
+                kdma_val = item_obj[kdma]
+                if kdma_val in set_kdma_vals:
+                    continue
+                set_kdma_vals.add(kdma_val)
+                lst_pool.append(item_obj)
+        # if len(lst_pool) + len(lst_guaranteed) > 10:
+            # print("Large distanced list: " + str(len(lst_pool) + len(lst_guaranteed)))
         lst = construct_distanced_list(lst_guaranteed, lst_pool, weights | {kdma: 10}, 
                                        neighbor_count, 
                                        lambda case1, case2, weights: 
@@ -103,24 +105,33 @@ def relevant_fields(case: dict[str, Any], weights: dict[str, Any], kdma: str):
     fields = [key for (key, val) in weights.items() if val != 0] + [kdma, "index"]
     return {key: val for (key, val) in case.items() if key in fields}
 
+def find_leave_one_out_error(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True) -> float:
+    return find_partition_error(weights, kdma, [[c] for c in cases], avg = avg)
 
-def find_leave_one_out_error(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]]) -> float:
-    new_case_list = [case for case in cases]
+def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: list[list[dict[str, Any]]], avg = True) -> float:
+    new_case_list = []
+    for part in case_partitions:
+        new_case_list.extend(part)
     error_total = 0
     case_count = 0
-    for case in cases:
-        new_case_list.remove(case)
-        if case.get(kdma) is None:
-            continue
-        # estimate = estimate_KDMA(dict(case), weights, kdma, cases = new_case_list)
-        # if estimate is None:
-            # continue
-        # error = abs(case[kdma] - estimate)
-        kdma_probs = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list)
-        error = 1 - kdma_probs.get(case[kdma], 0)
-        case_count += 1
-        error_total += error
-        new_case_list.append(case)
+    for part in case_partitions:
+        for case in part:
+            new_case_list.remove(case)
+        for case in part:
+            if case.get(kdma) is None:
+                continue
+            if avg:
+                estimate = estimate_KDMA(dict(case), weights, kdma, cases = new_case_list)
+                if estimate is None:
+                    continue
+                error = abs(case[kdma] - estimate)
+            else:
+                kdma_probs = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list)
+                error = 1 - kdma_probs.get(case[kdma], 0)
+            case_count += 1
+            error_total += error * error
+        for case in part:
+            new_case_list.append(case)
     if case_count == 0:
         return math.inf
     return error_total / case_count
@@ -197,8 +208,13 @@ def local_order(val1: Any, val2: Any, feature: str):
     raise Exception("Trying to order a feature without a known ordering.")
     
     
+CACHED_COMPARES = {}
 
 def local_compare(val1: Any, val2: Any, feature: str):
+    result = CACHED_COMPARES.get((feature, val1, val2), -12345)
+    if result != -12345:
+        return result
     if val1 is not None and val2 is not None and feature in VALUED_FEATURES:
-        return abs(VALUED_FEATURES[feature][val1.lower()] - VALUED_FEATURES[feature][val2.lower()])
-    return compare(val1, val2, feature) 
+        result = abs(VALUED_FEATURES[feature][val1.lower()] - VALUED_FEATURES[feature][val2.lower()])
+    result = compare(val1, val2, feature) 
+    CACHED_COMPARES[(feature, val1, val2)] = result
