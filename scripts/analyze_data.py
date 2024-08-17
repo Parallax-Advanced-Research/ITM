@@ -530,10 +530,20 @@ def main():
     parser.add_argument("--all_weight_file", type=str, default="all_weights.json",
                         help="A csv file with alignment data from feedback objects."
                        )
+    parser.add_argument("--error_type", type=str, default="probability", 
+                        choices = ["probability", "avgdiff"],
+                        help="How to measure the error of a case-based estimation, with the " \
+                             + "probability of neighbor error or difference to neighbor average"
+                       )
     args = parser.parse_args()
     if args.case_file is None:
         raise Error()
-    pre_cases = read_pre_cases(args.case_file)
+    do_analysis_search(args.case_file, args.feedback_file, args.kdma_case_output_file, 
+                       args.alignment_file, args.all_weight_file, args.error_type)
+        
+def do_analysis_search(case_file, feedback_file, kdma_case_output_file, alignment_file, weight_file, 
+                       all_weight_file, error_type):
+    pre_cases = read_pre_cases(case_file)
     for case in pre_cases:
         cur_keys = list(case.keys())
         for key in cur_keys:
@@ -542,10 +552,14 @@ def main():
                     case.pop(key)
                     break
     training_data = None
-    if args.feedback_file is not None:
-        training_data = read_feedback(args.feedback_file)
+    if feedback_file is not None:
+        training_data = read_feedback(feedback_file)
+        if len(training_data) == 0:
+            training_data = None
+        else:
+            write_alignment_target_cases_to_csv(alignment_file, training_data)
     kdma_cases = make_kdma_cases(pre_cases, training_data)
-    write_case_base(args.kdma_case_output_file, kdma_cases)
+    write_case_base(kdma_case_output_file, kdma_cases)
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
@@ -569,17 +583,17 @@ def main():
     for kdma_name in hint_types:
         # trainer = WeightTrainer(KEDSWithXGBModeller(kdma_cases, kdma_name.lower()), fields)
         # trainer.weight_train({key:1 for key in fields})
-        trainer = SimpleWeightTrainer(KEDSModeller(kdma_cases, kdma_name.lower()), fields, kdma_cases, kdma_name.lower())
+        trainer = SimpleWeightTrainer(
+                    KEDSModeller(kdma_cases, kdma_name.lower(), avg=(error_type == "avgdiff")), 
+                    fields, kdma_cases, kdma_name.lower())
         trainer.weight_train({key:1 for key in fields})
         new_weights[kdma_name] = trainer.get_best_weights()
-        all_weights.append({"kdma": kdma_name, "case_file": args.case_file, "weights_found": trainer.get_history()})
+        all_weights.append({"kdma": kdma_name, "case_file": case_file, "weights_found": trainer.get_history()})
     
-    with open(args.all_weight_file, "a") as awf:
+    with open(all_weight_file, "a") as awf:
         awf.write(json.dumps(all_weights, indent=2))
-    with open(args.weight_file, "w") as wf:
+    with open(weight_file, "w") as wf:
         wf.write(json.dumps({"kdma_specific_weights": new_weights, "default": 0}, indent=2))
-    if args.feedback_file is not None:
-        write_alignment_target_cases_to_csv(args.alignment_file, training_data)
     
     
 

@@ -28,12 +28,13 @@ class KEDSModeller(CaseModeller):
     last_error: float
     last_weights: dict[str, float]
 
-    def __init__(self, cases: list[dict[str, Any]], kdma_name: str, partition_count: int = 10):
+    def __init__(self, cases: list[dict[str, Any]], kdma_name: str, partition_count: int = 10, avg = True):
         self.cases = cases
         self.last_error = None
         self.last_weights = None
         self.kdma_name = kdma_name
         self.case_partitions = []
+        self.use_average_error = avg
         rcases = list(self.cases)
         util.get_global_random_generator().shuffle(rcases)
         part_size = len(rcases)//partition_count
@@ -49,7 +50,9 @@ class KEDSModeller(CaseModeller):
 
     def estimate_error(self) -> float:
         if self.last_error is None:
-            self.last_error = kdma_estimation.find_partition_error(self.last_weights, self.kdma_name, self.case_partitions)
+            self.last_error = kdma_estimation.find_leave_one_out_error(
+                                                self.last_weights, self.kdma_name, 
+                                                cases=self.cases, avg=self.use_average_error)
         return self.last_error
     
     def get_state(self) -> dict[str, Any]:
