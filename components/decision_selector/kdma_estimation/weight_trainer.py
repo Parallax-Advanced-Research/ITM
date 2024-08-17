@@ -5,6 +5,7 @@ from . import kdma_estimation
 from .case_base_functions import integerish
 
 from components.attribute_learner.xgboost import xgboost_train, data_processing
+import util
 
 
 
@@ -27,11 +28,20 @@ class KEDSModeller(CaseModeller):
     last_error: float
     last_weights: dict[str, float]
 
-    def __init__(self, cases: list[dict[str, Any]], kdma_name: str):
+    def __init__(self, cases: list[dict[str, Any]], kdma_name: str, partition_count: int = 10):
         self.cases = cases
         self.last_error = None
         self.last_weights = None
         self.kdma_name = kdma_name
+        self.case_partitions = []
+        rcases = list(self.cases)
+        util.get_global_random_generator().shuffle(rcases)
+        part_size = len(rcases)//partition_count
+        for i in range(partition_count):
+            self.case_partitions.append(rcases[i*part_size:(i+1)*(part_size)])
+        for i in range(partition_count * part_size, len(rcases)):
+            part_num = i % partition_count
+            self.case_partitions[part_num].append(rcases[i])
 
     def adjust(self, weights: dict[str, float]):
         self.last_weights = weights
@@ -39,7 +49,7 @@ class KEDSModeller(CaseModeller):
 
     def estimate_error(self) -> float:
         if self.last_error is None:
-            self.last_error = kdma_estimation.find_leave_one_out_error(self.last_weights, self.kdma_name, cases = self.cases)
+            self.last_error = kdma_estimation.find_partition_error(self.last_weights, self.kdma_name, self.case_partitions)
         return self.last_error
     
     def get_state(self) -> dict[str, Any]:
