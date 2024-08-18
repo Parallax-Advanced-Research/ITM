@@ -89,8 +89,8 @@ def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases:
             # print("Large distanced list: " + str(len(lst_pool) + len(lst_guaranteed)))
         lst = construct_distanced_list(lst_guaranteed, lst_pool, weights | {kdma: 10}, 
                                        neighbor_count, 
-                                       lambda case1, case2, weights: 
-                                            calculate_distance(case1, case2, weights, 
+                                       lambda case1, case2, wts: 
+                                            calculate_distance(case1, case2, wts, 
                                                                local_compare))
         lst = [(calculate_distance(item, cur_case, weights, local_compare), item) for item in lst]
         
@@ -218,3 +218,4 @@ def local_compare(val1: Any, val2: Any, feature: str):
         result = abs(VALUED_FEATURES[feature][val1.lower()] - VALUED_FEATURES[feature][val2.lower()])
     result = compare(val1, val2, feature) 
     CACHED_COMPARES[(feature, val1, val2)] = result
+    return result
