@@ -16,6 +16,11 @@ class DecisionSelector:
         raise NotImplementedError
 
 
+class DecisionExplainer:
+    def select(self, decision: Decision):
+        raise NotImplementedError
+
+
 class AlignmentTrainer:
     def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, final: bool, scene_end: bool, scene: str):
         raise NotImplementedError
