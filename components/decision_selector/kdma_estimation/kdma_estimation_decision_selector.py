@@ -7,7 +7,7 @@ from typing import Any, Sequence, Callable
 from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, Decision, Action, State
 from domain.ta3 import TA3State, Casualty, Supply
 from domain.enum import ActionTypeEnum
-from components import DecisionSelector, DecisionAnalyzer
+from components import DecisionSelector, DecisionAnalyzer, Assessor
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
@@ -34,9 +34,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.weight_settings = {}
         self.insert_pauses = False
         self.kdma_choice_history = []
+        self.assessors = {}
         if args is not None:
             self.initialize_with_args(args)
-        
 
     def initialize_with_args(self, args):
         self.use_drexel_format = args.selector == 'kedsd'
@@ -82,10 +82,16 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.print_neighbors = other_selector.print_neighbors
         self.weight_settings = other_selector.weight_settings
 
+    
+    def add_assessor(self, name: str, assessor: Assessor):
+        self.assessors[name] = assessor
 
     def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         if target is None:
             raise Exception("KDMA Estimation Decision Selector needs an alignment target to operate correctly.")
+        assessments = {}
+        for (name, assessor) in self.assessors:
+            assessments[name] = assessor.assess(probe)
         minDist: float = math.inf
         minDecision: Decision = None
         minDecisions: list[Decision] = []
@@ -110,16 +116,17 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 weights = {key: default_weight for key in cur_case.keys()}
                 weights = weights | self.weight_settings.get("standard_weights", {})
             
-            for act in triage_constants.BASIC_TRIAGE_CASE_TYPES:
-                if cur_case[act]:
-                    weights = weights | self.weight_settings.get("activity_weights", {}).get(act, {})
             if self.print_neighbors:
                 util.logger.info(f"Evaluating action: {cur_decision.value}")
             for kdma_name in target.kdma_names:
-                weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
-                kdmaProbs = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name, self.cb, print_neighbors = self.print_neighbors, mutable_case = True)
-                if kdmaProbs is None:
-                    continue
+                if kdma_name in assessments:
+                    assessment_val = assessments[kdma_name][cur_decision]
+                    kdmaProbs = {assessment_val: 1}
+                else:
+                    weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
+                    kdmaProbs = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name.lower(), self.cb, print_neighbors = self.print_neighbors, mutable_case = True)
+                    if kdmaProbs is None:
+                        continue
                 cur_case[kdma_name] = kdmaProbs
                 cur_kdma_probs[kdma_name] = kdmaProbs
             min_kdma_probs = self.update_kdma_probabilities(min_kdma_probs, cur_kdma_probs, min)
@@ -146,6 +153,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             best_kdma_estimates = kdma_estimation.estimate_KDMAs_from_probs(best_kdma_probs)
             util.logger.info(f"Chosen Decision: {best_decision.value} Estimates: {best_kdma_estimates} Mins: {min_kdma_probs} Maxes: {max_kdma_probs}")
             util.logger.info(f"Distance: {best_case['distance']}")
+            for name in assessments:
+                if name not in target.kdma_names:
+                    util.logger.info(f"{name}: {assessments[name][best_decision]}")
+                    
 
         if self.insert_pauses:
             breakpoint()
@@ -291,7 +302,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.use_drexel_format:
             return make_case_drexel(probe, d)
         else:
-            return make_case_triage(probe, d)
+            case = make_case_triage(probe, d)
+            case |= flatten("context", case.pop("context"))
+            return case
 
 
 # See kdma_estimation.VALUED_FEATURES for the ordering of individual features.
