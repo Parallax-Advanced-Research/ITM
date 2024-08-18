@@ -81,7 +81,7 @@ NON_NOISY_KEYS = [
     'HRA Strategy.time-resources-risk_reward_ratio-system.tallying', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.satisfactory', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce',
-    'treatment_count', 'treatment_time'
+    'treatment_count', 'treatment_time', 'treatment_count_rank', 'treatment_time_rank'
 ]
 
 NOISY_KEYS : str = [
@@ -540,7 +540,7 @@ def main():
     if args.case_file is None:
         raise Error()
     do_analysis_search(args.case_file, args.feedback_file, args.kdma_case_output_file, 
-                       args.alignment_file, args.all_weight_file, args.error_type)
+                       args.alignment_file, args.weight_file, args.all_weight_file, args.error_type)
         
 def do_analysis_search(case_file, feedback_file, kdma_case_output_file, alignment_file, weight_file, 
                        all_weight_file, error_type):
