@@ -12,6 +12,7 @@ from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnos
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from components.attribute_explorer.random_probe_based import RandomProbeBasedAttributeExplorer
+from triage import TriageCompetenceAssessor
 from components.probe_dumper.probe_dumper import DEFAULT_DUMP
 import domain.external as ext
 from .driver import Driver
@@ -51,6 +52,13 @@ class TA3Driver(Driver):
                 selector = RandomProbeBasedAttributeExplorer("temp/exploratory_case_base.csv")
             else:
                 assert False, "Can't happen. Default --selector arg should have been set"
+        
+        if args.assessors is None:
+            args.assessors = []
+            
+        for assessor in args.assessors:
+            if assessor == 'triage':
+                selector.add_assessor(TriageCompetenceAssessor())
         
         elaborator = TA3Elaborator(elab_to_json=args.elab_output)
 
