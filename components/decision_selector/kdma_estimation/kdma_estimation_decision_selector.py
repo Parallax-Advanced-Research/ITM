@@ -90,7 +90,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if target is None:
             raise Exception("KDMA Estimation Decision Selector needs an alignment target to operate correctly.")
         assessments = {}
-        for (name, assessor) in self.assessors:
+        for (name, assessor) in self.assessors.items():
             assessments[name] = assessor.assess(probe)
         minDist: float = math.inf
         minDecision: Decision = None
@@ -120,7 +120,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 util.logger.info(f"Evaluating action: {cur_decision.value}")
             for kdma_name in target.kdma_names:
                 if kdma_name in assessments:
-                    assessment_val = assessments[kdma_name][cur_decision]
+                    assessment_val = assessments[kdma_name][str(cur_decision.value)]
                     kdmaProbs = {assessment_val: 1}
                 else:
                     weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
@@ -155,7 +155,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             util.logger.info(f"Distance: {best_case['distance']}")
             for name in assessments:
                 if name not in target.kdma_names:
-                    util.logger.info(f"{name}: {assessments[name][best_decision]}")
+                    util.logger.info(f"{name}: {assessments[name][str(best_decision.value)]}")
                     
 
         if self.insert_pauses:
