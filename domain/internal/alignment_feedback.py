@@ -11,7 +11,7 @@ class AlignmentFeedback:
     def __repr__(self):
         return ("%s alignment: %f " % (self.target_name, self.alignment_score) +
                 " ".join(["%s: %f" % (kdma, value) 
-                           for (kdma, value) in self.kdma_values.items()]))
+                           for (kdma, value) in self.kdma_values.items() if value is not None]))
         
     def to_json(self):
         return {"target" : self.target_name,
