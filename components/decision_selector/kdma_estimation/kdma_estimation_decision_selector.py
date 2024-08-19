@@ -277,6 +277,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
 
             
         for (kdma, prob) in cur_kdma_probs[kdma_name].items():
+            if kdma < gmin or kdma > gmax:
+                continue
             global_norm_estimates.append(normalize(kdma, gmin, gmax))
             alignment_probs += self.compound_alignments(kde, kdma_name, global_norm_estimates, 
                                                         choice_history, gmin, gmax, prob * pprob)
