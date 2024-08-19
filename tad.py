@@ -163,7 +163,7 @@ def api_test(args, driver = None):
                     driver.reset_memory()
             else:
                 new_scene = None
-            if args.training:
+            if args.training and (args.session_type == "adept" or new_probe is None):
                 for alignment in client.get_session_alignments():
                     driver.train(alignment, new_probe is None, new_scene != scene, scene)
                     logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
