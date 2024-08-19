@@ -121,13 +121,14 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         return False
 
     def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, 
-              final: bool, scene_end: bool, new_scene: str):
-        self.retainer.train(scenario, actions, feedback, final, scene_end, new_scene)
+              final: bool, scene_end: bool, trained_scene: str):
+        self.retainer.train(scenario, actions, feedback, final, scene_end, trained_scene)
         if not scene_end:
             return
-        val = self.retainer.scene_kdmas[new_scene]
+        val = self.retainer.scene_kdmas[trained_scene]
         for case in self.new_cases:
             case["hint"] = val
+            case["scene"] = trained_scene
             self.commit_case(case)
             self.write_case(case)
         self.new_cases = list()

@@ -30,7 +30,7 @@ class DecisionExplainer:
 
 
 class AlignmentTrainer:
-    def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, final: bool, scene_end: bool, scene: str):
+    def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, final: bool, scene_end: bool, trained_scene: str):
         raise NotImplementedError
 
 
