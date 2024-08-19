@@ -59,7 +59,7 @@ class TA3Driver(Driver):
             
         for assessor in args.assessors:
             if assessor == 'triage':
-                selector.add_assessor(TriageCompetenceAssessor())
+                selector.add_assessor("competence", TriageCompetenceAssessor())
         
         elaborator = TA3Elaborator(elab_to_json=args.elab_output)
 
