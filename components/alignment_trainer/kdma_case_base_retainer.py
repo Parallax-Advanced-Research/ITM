@@ -29,8 +29,6 @@ class KDMACaseBaseRetainer(AlignmentTrainer):
         for (scene, kdma) in self.scene_kdmas.items():
             if scene not in feedback.source_probes:
                 breakpoint()
-        if new_scene not in feedback.source_probes:
-            breakpoint()
         if new_scene in self.scene_kdmas:
             breakpoint()
         self.scene_kdmas[new_scene] = dict()
@@ -41,6 +39,11 @@ class KDMACaseBaseRetainer(AlignmentTrainer):
             print(f"kdma[{kdma_name}]: {kdma_value}")
             print(f"scene kdma[{kdma_name}]: {scene_kdma}")
         
+        if new_scene not in feedback.source_probes:
+            #MCM 20240819: This happens when Soartech alignment is sent, ADEPT's probes and scenes
+            # are the same. We ignore Soartech kdmas.
+            return
+
         with open(FEEDBACK_FILE, "a") as outfile:
             json.dump({"scenario_id": scenario.id_, 
                        "feedback": feedback.to_json(), 
