@@ -135,13 +135,6 @@ class InjuryUpdate:
         self.breathing_effect = breath
         self.burning_effect = burn
 
-    # def augment_with_severity(self, severity_effector: 'InjuryUpdate'):
-    #     """
-    #     Code is self documenting
-    #     """
-    #     self.bleeding_effect = BodySystemEffect.NONE.value if self.bleeding_effect == BodySystemEffect.NONE.value\
-    #         else InjuryUpdate.calculate_new_effect(self, severity_effector)
-
     def as_dict(self) -> dict[str, str]:
         return {SmolSystems.BLEEDING.value: self.bleeding_effect, SmolSystems.BREATHING.value: self.breathing_effect,
                 SmolSystems.BURNING.value: self.burning_effect}
@@ -269,14 +262,33 @@ AFFECCTOR_UPDATE = {
                                                    breath=SeverityEnums.MODERATE.value,
                                                    burn=SeverityEnums.MODERATE.value),
         SeverityEnums.MAJOR.value: InjuryUpdate(bleed=SeverityEnums.MAJOR.value,
-                                                   breath=SeverityEnums.MAJOR.value,
-                                                   burn=SeverityEnums.MAJOR.value),
+                                                breath=SeverityEnums.MAJOR.value,
+                                                burn=SeverityEnums.MAJOR.value),
         SeverityEnums.SUBSTANTIAL.value: InjuryUpdate(bleed=SeverityEnums.SUBSTANTIAL.value,
-                                                   breath=SeverityEnums.SUBSTANTIAL.value,
-                                                   burn=SeverityEnums.SUBSTANTIAL.value),
+                                                      breath=SeverityEnums.SUBSTANTIAL.value,
+                                                      burn=SeverityEnums.SUBSTANTIAL.value),
         SeverityEnums.EXTREME.value: InjuryUpdate(bleed=SeverityEnums.EXTREME.value,
-                                                   breath=SeverityEnums.EXTREME.value,
-                                                   burn=SeverityEnums.EXTREME.value)
+                                                  breath=SeverityEnums.EXTREME.value,
+                                                  burn=SeverityEnums.EXTREME.value),
+        Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value: InjuryUpdate(bleed=BodySystemEffect.MODERATE.value,
+                                                                breath=BodySystemEffect.MODERATE.value,
+                                                                burn=BodySystemEffect.NONE.value),
+        Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                                  breath=BodySystemEffect.MODERATE.value,
+                                                                  burn=BodySystemEffect.NONE.value),
+        Injuries.ENVIRONMENTAL_COLLISION_HAZARD.value: InjuryUpdate(bleed=BodySystemEffect.SEVERE.value,
+                                                                    breath=BodySystemEffect.NONE.value,
+                                                                    burn=BodySystemEffect.NONE.value),
+        Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                                    breath=BodySystemEffect.SEVERE.value,
+                                                                    burn=BodySystemEffect.SEVERE.value),
+        Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                                 breath=BodySystemEffect.MODERATE.value,
+                                                                 burn=BodySystemEffect.NONE.value),
+        Injuries.ENVIRONMENTAL_FIRE_HAZARD.value: InjuryUpdate(bleed=BodySystemEffect.NONE.value,
+                                                               breath=BodySystemEffect.SEVERE.value,
+                                                               burn=BodySystemEffect.CRITICAL.value)
+
 }
 
 INITIAL_SEVERITIES = {Injuries.FOREHEAD_SCRAPE.value: 0.1, Injuries.PUNCTURE.value: .3, Injuries.SHRAPNEL.value: .4,
