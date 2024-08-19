@@ -80,7 +80,8 @@ NON_NOISY_KEYS = [
     'HRA Strategy.time-resources-risk_reward_ratio-system.exhaustive', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.tallying', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.satisfactory', 
-    'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce'
+    'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce',
+    'treatment_count', 'treatment_time', 'treatment_count_rank', 'treatment_time_rank'
 ]
 
 NOISY_KEYS : str = [
@@ -113,8 +114,31 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
                     # case[key] = str(case[key])
                     # case["context"][key] = case[key]
         case["state-hash"] = case_state_hash(case)
-        context = case.pop("context")
-        case |= flatten("context", context)
+        if "context" in case:
+            context = case.pop("context")
+            case |= flatten("context", context)
+        if "questioning" in case:
+            case.pop("questioning")
+            case.pop("assessing")
+            case.pop("treating")
+            case.pop("tagging")
+            case.pop("leaving")
+        a = case["actions"][-1]
+        if a['name'] in ["SITREP"]:
+            case['action_type'] = 'questioning'
+        elif a['name'] in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION"]:
+            case['action_type'] = 'assessing'
+        elif a['name'] in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]:
+            case['action_type'] = 'treating'
+        elif a['name'] in ["TAG_CHARACTER"]:
+            case['action_type'] = 'tagging'
+        elif a['name'] in ["END_SCENE"]:
+            case['action_type'] = 'leaving'
+        elif a['name'] in ["MESSAGE"]:
+            case['action_type'] = a['params']['type']
+        else:
+            raise Error()
+        case['action_name'] = a['name']
     last_action_len : int = 1
     last_hints : dict[str, float] = {}
     last_pre_action_string = ""
@@ -131,7 +155,7 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
         else:
             for (key, val) in last_hints.items():
                 last_hints[key] = val * .99
-        cur_case["dhint"] = dict(last_hints)
+                cur_case["dhint"] = dict(last_hints)
         
     return cases
 
@@ -322,15 +346,14 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
         for hint_name in hint_names:
             vals = set([case.get("hint", {}).get(hint_name, None) for case in case_list]) - {None}
             if len(vals) > 0:
-                new_case["hint." + hint_name] = statistics.mean(vals)
+                new_case[hint_name.lower()] = statistics.mean(vals)
                 # if len(vals) > 1:
                     # breakpoint()
         if "dhint" in new_case:
             for key in new_case["dhint"].keys():
                 hint_val : float = -1
                 if key in hint_names:
-                    hint_val = new_case.get("hint." + key, -1)
-                    new_case[key.lower()] = hint_val
+                    hint_val = new_case.get(key.lower(), -1)
                 if hint_val == -1:
                     hint_val = statistics.mean([case.get("dhint", {}).get(key, None) for case in case_list])
                     hint_val = (hint_val + 1.0) / 2
@@ -480,7 +503,7 @@ def case_state_hash(case: dict[str, Any]) -> int:
     val_list = []
     for key in NON_NOISY_KEYS:
         val_list.append(case.get(key, None))
-    for key in sorted(case["context"].keys()):
+    for key in sorted(case.get("context", {}).keys()):
         val_list.append(key)
         val_list.append(str(case["context"][key]))
     val_list.append(str(case.get("hint", None)))
@@ -505,10 +528,23 @@ def main():
     parser.add_argument("--weight_file", type=str, default="kdma_weights.json",
                         help="A csv file with alignment data from feedback objects."
                        )
+    parser.add_argument("--all_weight_file", type=str, default="all_weights.json",
+                        help="A csv file with alignment data from feedback objects."
+                       )
+    parser.add_argument("--error_type", type=str, default="probability", 
+                        choices = ["probability", "avgdiff"],
+                        help="How to measure the error of a case-based estimation, with the " \
+                             + "probability of neighbor error or difference to neighbor average"
+                       )
     args = parser.parse_args()
     if args.case_file is None:
         raise Error()
-    pre_cases = read_pre_cases(args.case_file)
+    do_analysis_search(args.case_file, args.feedback_file, args.kdma_case_output_file, 
+                       args.alignment_file, args.weight_file, args.all_weight_file, args.error_type)
+        
+def do_analysis_search(case_file, feedback_file, kdma_case_output_file, alignment_file, weight_file, 
+                       all_weight_file, error_type):
+    pre_cases = read_pre_cases(case_file)
     for case in pre_cases:
         cur_keys = list(case.keys())
         for key in cur_keys:
@@ -517,16 +553,21 @@ def main():
                     case.pop(key)
                     break
     training_data = None
-    if args.feedback_file is not None:
-        training_data = read_feedback(args.feedback_file)
+    if feedback_file is not None:
+        training_data = read_feedback(feedback_file)
+        if len(training_data) == 0:
+            training_data = None
+        else:
+            write_alignment_target_cases_to_csv(alignment_file, training_data)
     kdma_cases = make_kdma_cases(pre_cases, training_data)
-    write_case_base(args.kdma_case_output_file, kdma_cases)
+    write_case_base(kdma_case_output_file, kdma_cases)
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
     patterns = triage_constants.IGNORE_PATTERNS
     patterns.append("bprop.")
     for case in kdma_cases:
+        case.pop("action")
         cur_keys = list(case.keys())
         for key in cur_keys:
             for pattern in patterns:
@@ -539,17 +580,21 @@ def main():
     for kdma_name in hint_types:
         fields.remove(kdma_name.lower())
         
+    all_weights = []
     for kdma_name in hint_types:
         # trainer = WeightTrainer(KEDSWithXGBModeller(kdma_cases, kdma_name.lower()), fields)
         # trainer.weight_train({key:1 for key in fields})
-        trainer = SimpleWeightTrainer(KEDSModeller(kdma_cases, kdma_name.lower()), fields, kdma_cases, kdma_name.lower())
+        trainer = SimpleWeightTrainer(
+                    KEDSModeller(kdma_cases, kdma_name.lower(), avg=(error_type == "avgdiff")), 
+                    fields, kdma_cases, kdma_name.lower())
         trainer.weight_train({key:1 for key in fields})
         new_weights[kdma_name] = trainer.get_best_weights()
+        all_weights.append({"kdma": kdma_name, "case_file": case_file, "weights_found": trainer.get_history()})
     
-    with open(args.weight_file, "w") as wf:
-        wf.write(json.dumps({"kdma_specific_weights": new_weights, "default": 0}))
-    if args.feedback_file is not None:
-        write_alignment_target_cases_to_csv(args.alignment_file, training_data)
+    with open(all_weight_file, "a") as awf:
+        awf.write(json.dumps(all_weights, indent=2))
+    with open(weight_file, "w") as wf:
+        wf.write(json.dumps({"kdma_specific_weights": new_weights, "default": 0}, indent=2))
     
     
 

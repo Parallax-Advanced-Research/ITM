@@ -159,6 +159,8 @@ def api_test(args, driver = None):
                 difference.pop("actions_performed")
                 logger.debug(f"-State Removals: {difference}")
                 new_scene = new_probe.state["meta_info"]["scene_id"]
+                if new_scene != scene:
+                    driver.reset_memory()
             else:
                 new_scene = None
             if args.training:

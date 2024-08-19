@@ -117,7 +117,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 35
@@ -144,11 +144,11 @@ scenes:
       unstructured: Penetrating wound to the abdomen
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -216,7 +216,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       Due to the close proximity you go to the location of Casualty O first, where
       you also discover Casualty N. What action do you take?
   transition_semantics: and
@@ -234,7 +234,7 @@ scenes:
     parameters:
       treatment: Nasopharyngeal airway
     probe_id: qol-dre-3-eval-Probe-3
-    unstructured: Treat Casualty U
+    unstructured: Treat Casualty U with nasopharyngeal airway
   - action_id: action-1
     action_type: APPLY_TREATMENT
     character_id: casualty_w
@@ -245,7 +245,7 @@ scenes:
     parameters:
       treatment: Tourniquet
     probe_id: qol-dre-3-eval-Probe-3
-    unstructured: Treat Casualty W
+    unstructured: Treat Casualty W with tourniquet
   end_scene_allowed: false
   id: id-2
   next_scene: id-3
@@ -295,7 +295,7 @@ scenes:
         avpu: UNRESPONSIVE
         breathing: NONE
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: UNRESPONSIVE
         spo2: NORMAL
     - demographics:
         age: 30
@@ -322,7 +322,7 @@ scenes:
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -393,7 +393,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       You are now at the location of Casualty U who is unresponsive where you identify
       a second casualty, Casualty W. What action do you take?
   transition_semantics: and
@@ -470,7 +470,7 @@ scenes:
         avpu: UNRESPONSIVE
         breathing: NONE
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: UNRESPONSIVE
         spo2: NORMAL
     - demographics:
         age: 30
@@ -497,7 +497,7 @@ scenes:
         avpu: UNRESPONSIVE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: UNRESPONSIVE
         spo2: NORMAL
     environment:
       decision_environment:
@@ -570,7 +570,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       Casualty W loses consciousness. The fire is spreading and you are only able
       to assist one casualty to safety. Who do you help?
   transition_semantics: and
@@ -636,11 +636,11 @@ scenes:
       unstructured: Has penetrating trauma to the abdomen and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 68
@@ -664,11 +664,11 @@ scenes:
       unstructured: Has a puncture to the arm and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -736,7 +736,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       You are notified of two additional casualties in separate rooms. Who do you
       plan to treat first?
   transition_semantics: and
@@ -830,11 +830,11 @@ scenes:
       unstructured: Has a puncture wound to the leg and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 68
@@ -858,11 +858,11 @@ scenes:
       unstructured: Has a puncture to the arm and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -930,7 +930,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       While moving towards Casualty Y  you find another casualty, Casualty X. What
       action do you take?
   transition_semantics: and
@@ -1020,11 +1020,11 @@ scenes:
       unstructured: Has penetrating trauma to the abdomen and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 73
@@ -1044,11 +1044,11 @@ scenes:
       unstructured: Has a puncture to the leg and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1116,7 +1116,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       Upon entering the room with Casualty G you identify a second casualty, Casualty
       H. What action do you take?
   transition_semantics: and
@@ -1183,11 +1183,11 @@ scenes:
       unstructured: Has penetrating trauma to the abdomen and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 73
@@ -1207,11 +1207,11 @@ scenes:
       unstructured: Has a puncture to the leg and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1284,7 +1284,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       The room is becoming unstable from damage to the building. You are worried the
       floor may collapse. You can only move one casualty to safety. Which casualty
       do you assist?
@@ -1360,7 +1360,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 30
@@ -1388,7 +1388,7 @@ scenes:
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1456,7 +1456,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       There are two rooms remaining with known casualties. One room with Casualty
       Z and the other with Casualty L. Which casualty do you plan to treat first?
   transition_semantics: and
@@ -1474,7 +1474,7 @@ scenes:
     parameters:
       treatment: Tourniquet
     probe_id: qol-dre-3-eval-Probe-10
-    unstructured: Treat Casualty Z
+    unstructured: Treat Casualty Z with tourniquet
   - action_id: action-1
     action_type: CHECK_ALL_VITALS
     character_id: casualty_z
@@ -1495,7 +1495,7 @@ scenes:
     parameters:
       treatment: Burn Dressing
     probe_id: qol-dre-3-eval-Probe-10
-    unstructured: Treat Casualty A
+    unstructured: Treat Casualty A with burn dressing
   - action_id: action-3
     action_type: CHECK_ALL_VITALS
     character_id: casualty_a
@@ -1551,7 +1551,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 30
@@ -1579,7 +1579,7 @@ scenes:
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1647,7 +1647,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       You enter the room with Casualty Z and identify another casualty (Casualty A).
       What action do you take?
   transition_semantics: and
@@ -1665,7 +1665,7 @@ scenes:
     parameters:
       treatment: Burn Dressing
     probe_id: qol-dre-3-eval-Probe-11
-    unstructured: Treat Casualty L
+    unstructured: Treat Casualty L with burn dressing
   - action_id: action-1
     action_type: APPLY_TREATMENT
     character_id: casualty_m
@@ -1676,7 +1676,7 @@ scenes:
     parameters:
       treatment: Tourniquet
     probe_id: qol-dre-3-eval-Probe-11
-    unstructured: Treat Casualty M
+    unstructured: Treat Casualty M with tourniquet
   end_scene_allowed: false
   id: id-10
   next_scene: id-11
@@ -1723,7 +1723,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 27
@@ -1747,11 +1747,11 @@ scenes:
       unstructured: Has bilateral amputation of both legs
       visited: true
       vitals:
-        ambulatory: true
+        ambulatory: false
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1819,7 +1819,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       You arrive in the final room where you encounter two casualties, Casualty L
       and Casualty M. What action do you take?
   transition_semantics: and
@@ -1903,7 +1903,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 27
@@ -1927,11 +1927,11 @@ scenes:
       unstructured: Has bilateral amputation of both legs
       visited: true
       vitals:
-        ambulatory: true
+        ambulatory: false
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1999,7 +1999,7 @@ scenes:
       of hostages in enemy territory. Local support is unlikely, and the plan is for
       immediate extraction via Blackhawk. The hostages are being kept in a building
       guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-      with explosives, hostiles are threatening to kill the hostages in the next hour
+      with explosives, hostiles are threatening to kill the hostages in the next hour.
       You only have enough pain medication to treat one person. Do you give it to
       Casualty L, Casualty M , or save it for potential future needs?
   transition_semantics: and
@@ -2008,163 +2008,6 @@ scenes:
     - qol-dre-3-eval-Probe-12
 state:
   characters:
-  - demographics:
-      age: 26
-      military_disposition: Military Adversary
-      mission_importance: normal
-      race: Black
-      sex: M
-      skills: []
-    id: casualty_a
-    injuries:
-    - location: left thigh
-      name: Burn
-      severity: major
-      status: visible
-    - location: left calf
-      name: Burn
-      severity: major
-      status: visible
-    name: Casualty A
-    rapport: neutral
-    unstructured: Has a 30% body surface area burn
-    vitals:
-      ambulatory: true
-      avpu: VOICE
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 23
-      military_disposition: Civilian
-      mission_importance: normal
-      race: Black
-      sex: M
-      skills: []
-    id: casualty_g
-    injuries:
-    - location: right stomach
-      name: Puncture
-      severity: major
-      status: visible
-    name: Casualty G
-    rapport: neutral
-    unstructured: Has penetrating trauma to the abdomen and is bleeding
-    vitals:
-      ambulatory: false
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 73
-      military_disposition: Civilian
-      mission_importance: normal
-      race: Black
-      sex: M
-      skills: []
-    id: casualty_h
-    injuries:
-    - location: right thigh
-      name: Puncture
-      severity: major
-      status: visible
-    name: Casualty H
-    rapport: neutral
-    unstructured: Has a puncture to the leg and is bleeding
-    vitals:
-      ambulatory: false
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 35
-      military_disposition: Military Adversary
-      mission_importance: normal
-      race: Black
-      sex: M
-      skills: []
-    id: casualty_l
-    injuries:
-    - location: right side
-      name: Burn
-      severity: major
-      status: visible
-    - location: left thigh
-      name: Burn
-      severity: extreme
-      status: visible
-    name: Casualty L
-    rapport: neutral
-    unstructured: Has a 50% body surface area burn
-    vitals:
-      ambulatory: true
-      avpu: VOICE
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 27
-      military_disposition: Military Adversary
-      mission_importance: normal
-      race: Black
-      sex: M
-      skills: []
-    id: casualty_m
-    injuries:
-    - location: left thigh
-      name: Amputation
-      severity: extreme
-      status: visible
-    - location: right calf
-      name: Amputation
-      severity: extreme
-      status: visible
-    name: Casualty M
-    rapport: neutral
-    unstructured: Has bilateral amputation of both legs
-    vitals:
-      ambulatory: true
-      avpu: VOICE
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 30
-      military_branch: US Marine Corps
-      military_disposition: Allied US
-      mission_importance: normal
-      race: Hispanic
-      rank: E-4
-      rank_title: Corporal
-      sex: F
-      skills: []
-    id: casualty_n
-    injuries:
-    - location: left thigh
-      name: Amputation
-      severity: extreme
-      status: visible
-    - location: left stomach
-      name: Laceration
-      severity: minor
-      status: visible
-    name: Casualty N
-    rapport: neutral
-    unstructured: Has an amputation of the leg
-    vitals:
-      ambulatory: false
-      avpu: VOICE
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
   - demographics:
       age: 35
       military_branch: US Marine Corps
@@ -2190,11 +2033,11 @@ state:
     unstructured: Penetrating wound to the abdomen
     visited: true
     vitals:
-      ambulatory: false
+      ambulatory: true
       avpu: VOICE
       breathing: FAST
       heart_rate: FAST
-      mental_status: CALM
+      mental_status: AGONY
       spo2: NORMAL
   - demographics:
       age: 26
@@ -2225,114 +2068,7 @@ state:
       avpu: UNRESPONSIVE
       breathing: NONE
       heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 30
-      military_branch: US Marine Corps
-      military_disposition: Allied US
-      mission_importance: normal
-      race: Hispanic
-      rank: E-4
-      rank_title: Corporal
-      sex: F
-      skills: []
-    id: casualty_w
-    injuries:
-    - location: left thigh
-      name: Puncture
-      severity: major
-      status: visible
-    name: Casualty W
-    rapport: neutral
-    unstructured: Has a gunshot wound to the leg with severe bleeding
-    vitals:
-      ambulatory: true
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 27
-      military_disposition: Civilian
-      mission_importance: normal
-      race: Black
-      sex: M
-      skills: []
-    id: casualty_x
-    injuries:
-    - location: left thigh
-      name: Puncture
-      severity: substantial
-      status: visible
-    - location: right calf
-      name: Shrapnel
-      severity: minor
-      status: visible
-    name: Casualty X
-    rapport: neutral
-    unstructured: Has a puncture wound to the leg and is bleeding
-    vitals:
-      ambulatory: false
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 68
-      military_disposition: Civilian
-      mission_importance: normal
-      race: Black
-      sex: M
-      skills: []
-    id: casualty_y
-    injuries:
-    - location: right shoulder
-      name: Puncture
-      severity: substantial
-      status: visible
-    - location: left forearm
-      name: Laceration
-      severity: minor
-      status: visible
-    name: Casualty Y
-    rapport: neutral
-    unstructured: Has a puncture to the arm and is bleeding
-    vitals:
-      ambulatory: false
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 30
-      military_disposition: Military Adversary
-      mission_importance: normal
-      race: Black
-      sex: M
-      skills: []
-    id: casualty_z
-    injuries:
-    - location: right forearm
-      name: Laceration
-      severity: major
-      status: visible
-    - location: right calf
-      name: Laceration
-      severity: major
-      status: visible
-    name: Casualty Z
-    rapport: neutral
-    unstructured: Has lacerations to both arms and legs
-    vitals:
-      ambulatory: true
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
+      mental_status: UNRESPONSIVE
       spo2: NORMAL
   environment:
     decision_environment:
@@ -2413,7 +2149,7 @@ state:
     of hostages in enemy territory. Local support is unlikely, and the plan is for
     immediate extraction via Blackhawk. The hostages are being kept in a building
     guarded by 25 hostile narco-terrorists. Intel suggests the building may be wired
-    with explosives, hostiles are threatening to kill the hostages in the next hour
+    with explosives, hostiles are threatening to kill the hostages in the next hour.
     Upon entering the building you are immediately notified of two casualties in different
     locations. Casualty O has a penetrating wound to the abdomen and Casualty U is
     unresponsive. Who do you treat first?

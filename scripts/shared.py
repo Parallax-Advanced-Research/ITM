@@ -106,6 +106,7 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, implies --training.")
     parser.add_argument('--selector', default='random', choices=['keds', 'kedsd', 'csv', 'human', 'random'], help="Sets the decision selector") # TODO: add details of what each option does
     parser.add_argument('--selector-object', default=None, help=argparse.SUPPRESS)
+    parser.add_argument('--assessor', dest='assessors', type=str, action='append', choices=['triage'], help="Adds an assessor to a list to be used in assessing actions at runtime.")
     parser.add_argument('--seed', type=int, default=None, help="Changes the random seed to be used during this run; must be an integer")
     parser.add_argument('--case_file', type=str, default=None, 
                         help="Provides cases to be used in making decisions by the decision "\

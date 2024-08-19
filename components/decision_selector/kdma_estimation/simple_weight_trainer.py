@@ -46,7 +46,7 @@ class SimpleWeightTrainer(WeightTrainer):
             record = greedy_weight_space_search_prob({}, self.modeller, self.fields)
             self.add_to_history(record["weights"], source = "derived empty")
             
-def weight_space_extend(weight_dict: dict[str, float], fields: list[str] = []) -> list[dict[str, float]]:
+def weight_space_extend(weight_dict: dict[str, float], fields: list[str] = [], last_adds: list[str] = []) -> list[dict[str, float]]:
     node_list = []
     for (feature, weight) in weight_dict.items():
         node_list.append(dict(weight_dict))
@@ -61,12 +61,16 @@ def weight_space_extend(weight_dict: dict[str, float], fields: list[str] = []) -
         node_list[-1].pop(feature)
         node_list[-1]["change"] = "removed"
         node_list[-1]["feature"] = feature
+    
     for field in fields:
-        if field not in weight_dict:
-            node_list.append(dict(weight_dict))
-            node_list[-1][field] = 1
-            node_list[-1]["change"] = "added"
-            node_list[-1]["feature"] = field
+        if field in weight_dict:
+            continue
+        if field not in last_adds and util.get_global_random_generator().uniform(0, 10) > 1:
+            continue
+        node_list.append(dict(weight_dict))
+        node_list[-1][field] = 1
+        node_list[-1]["change"] = "added"
+        node_list[-1]["feature"] = field
     return node_list
 
 
@@ -87,18 +91,22 @@ def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_er
     prior_choice = "Beginning"
     total_wheel = 1
     past_choices = []
+    last_adds = [(0, field) for field in fields]
+    added_feature = None
     while total_wheel > .0001:
         total_wheel = 0
         choices = []
         error_has_improved = False
-        node_list = weight_space_extend(prior_weights, fields)
+        node_list = weight_space_extend(prior_weights, fields, [add[1] for add in last_adds])
         start = time.process_time()
+        last_adds = []
         for node in node_list:
             change = node.pop("change")
             feature_changed = node.pop("feature")
             new_error = estimate_error(node)
             if change == "added" and new_error < prior_error * .95:
                 improvement = ((prior_error * .95) - new_error) / (prior_error * .95)
+                last_adds.append((improvement, feature_changed))
             elif change == "removed" and new_error * .95 < prior_error:
                 improvement = (prior_error - (new_error * .95)) / prior_error
             elif change != "added" and new_error < prior_error:
@@ -109,7 +117,7 @@ def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_er
                             feature_changed if change == "removed" else False))
             total_wheel += improvement
         duration = time.process_time() - start
-        
+
         if total_wheel == 0:
             # breakpoint()
             break
@@ -130,6 +138,14 @@ def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_er
         prior_error = chosen[1]
         if chosen[4]:
             fields.remove(chosen[4])
+        last_adds.sort(key=lambda tuple: tuple[0], reverse=True)
+        if (len(last_adds) > 5):
+            last_adds = last_adds[:5]
+        if prior_choice.startswith("added"):
+            added_feature = prior_choice[6:]
+            last_adds = [(0, feature) for (_, feature) in last_adds if feature != added_feature]
+        else:
+            added_feature = None
         print(f"Change selected: {prior_choice} New error: {prior_error:.3f}, {len(prior_weights)} weights, {duration:.4f} secs, rand = {spinner/total_wheel:.2f}")
 
     for past_choice in past_choices:

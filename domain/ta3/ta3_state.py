@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from domain.internal import State, Action
+from domain.enum import TagEnum, InjuryTypeEnum
 # TODO: Needed to comment this out *twice*, because `type` is a built-in, and
 # specifically, `type: str` as a comment is the old way of declaring a type.
 # Was confusing mypy. Need to rename that.
@@ -50,7 +51,7 @@ class Vitals:
 class Injury:
     location: str
     name: str
-    severity: float
+    severity: str
     treated: bool
     status: str
     source_character: str
@@ -68,8 +69,23 @@ Locations = {"right forearm", "left forearm", "right calf", "left calf", "right 
              "left stomach", "right bicep", "left bicep", "right shoulder", "left shoulder", "right side", "left side",
              "right chest", "left chest", "right wrist", "left wrist", "left face", "right face", "left neck",
              "right neck", "unspecified"}
-Injuries = {"Forehead Scrape", "Ear Bleed", "Asthmatic", "Laceration", "Puncture", "Shrapnel", "Chest Collapse", "Amputation", "Burn"}
-TagCategory = {"MINIMAL", "DELAYED", "IMMEDIATE", "EXPECTANT"}
+Injuries = {"Forehead Scrape", 
+            InjuryTypeEnum.EAR_BLEED, 
+            InjuryTypeEnum.ASTHMATIC, 
+            InjuryTypeEnum.LACERATION, 
+            InjuryTypeEnum.PUNCTURE, 
+            InjuryTypeEnum.SHRAPNEL,
+            InjuryTypeEnum.CHEST_COLLAPSE,
+            InjuryTypeEnum.AMPUTATION, 
+            InjuryTypeEnum.BURN,
+            # Below are in Injury type enum but have not been included yet.
+            # InjuryTypeEnum.ABRASION,
+            # InjuryTypeEnum.BROKEN_BONE,
+            # InjuryTypeEnum.INTERNAL,
+            # InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY,
+            # InjuryTypeEnum.OPEN_ABDOMINAL_WOUND
+           }
+TagCategory = {TagEnum.MINIMAL, TagEnum.DELAYED, TagEnum.IMMEDIATE, TagEnum.EXPECTANT}
 
 
 # Casualty
@@ -90,6 +106,7 @@ class Casualty:
     intent: str = ''
     directness_of_causality: str = ''
     unseen: bool = False
+    treatment_time: int = 0
 
     @staticmethod
     def from_ta3(data: dict):
@@ -106,6 +123,7 @@ class Casualty:
             relationship=data['rapport'],
             rapport=data['rapport'],
             treatments=data['treatments'],
+            treatment_time=data['treatment_time'],
             intent = data['intent'],
             directness_of_causality = data['directness_of_causality'],
             unseen = data.get('unseen', False)

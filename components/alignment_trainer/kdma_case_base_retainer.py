@@ -7,9 +7,13 @@ FEEDBACK_FILE="temp/feedback.json"
 
 class KDMACaseBaseRetainer(AlignmentTrainer):
     
-    def __init__(self):
+    def __init__(self, continue_search = True):
         self.scene_kdmas = {}
         self.final_occurred = False
+        if not continue_search:
+            with open(FEEDBACK_FILE, "w") as outfile:
+                outfile.write("")
+
         
     def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, 
               final: bool, scene_end: bool, new_scene: str):
