@@ -1,0 +1,209 @@
+[
+  {
+    "kdma": "QualityOfLife",
+    "case_file": "temp/pretraining_cases.json",
+    "weights_found": [
+      {
+        "weights": {
+          "age": 1.1826144456863403,
+          "military_paygrade": 0.006177749950438738,
+          "disposition": 0.012960260733962059,
+          "treatment": 1.2940574884414673,
+          "Take-The-Best Priority": 1.9934459924697876,
+          "SEVERITY": 0.189674973487854,
+          "AVERAGE_TIME_USED": 0.6701705455780029,
+          "MEDSIM_P_DEATH": 0.1049114391207695,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 2.309835910797119,
+          "STANDARD_TIME_SEVERITY": 0.008747991174459457,
+          "ACTION_TARGET_SEVERITY": 0.11249126493930817,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.00613830192014575,
+          "SEVEREST_SEVERITY": 0.045822564512491226,
+          "SMOL_MEDICAL_SOUNDNESS": 0.03502288833260536,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.0975673720240593
+        },
+        "error": 0.06814276288818054,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.045822564512491226
+        },
+        "error": 0.030381100274522736,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 1.1826144456863403,
+          "Take-The-Best Priority": 15.9475679397583,
+          "AVERAGE_TIME_USED": 0.33508527278900146
+        },
+        "error": 0.03038063520837497,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 2.3652288913726807,
+          "Take-The-Best Priority": 127.5805435180664,
+          "SEVERITY": 0.0474187433719635
+        },
+        "error": 0.031005396423206582,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 63.7902717590332,
+          "SEVERITY": 0.02370937168598175
+        },
+        "error": 0.03100525106059577,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.045822564512491226
+        },
+        "error": 0.030381100274522736,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 31.8951358795166,
+          "SEVERITY": 0.011854685842990875
+        },
+        "error": 0.031005396423206582,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 1.1826144456863403,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.09164512902498245
+        },
+        "error": 0.03038201188757759,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 2.3652288913726807,
+          "Take-The-Best Priority": 31.8951358795166,
+          "AVERAGE_TIME_USED": 0.6701705455780029
+        },
+        "error": 0.03038063520837497,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.045822564512491226
+        },
+        "error": 0.030381100274522736,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.045822564512491226
+        },
+        "error": 0.030381100274522736,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.125,
+          "treatment": 1,
+          "Tallying Priority": 1
+        },
+        "error": 0.030327015902914367,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "treatment": 1,
+          "One-Bounce Priority": 1,
+          "age": 0.125
+        },
+        "error": 0.030327015902914367,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS": 1,
+          "age": 0.25,
+          "Tallying Priority": 16
+        },
+        "error": 0.030624378219521114,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-risk_reward_ratio-system.tallying": 2,
+          "age": 0.25,
+          "One-Bounce Priority": 1
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources.satisfactory": 2,
+          "age": 0.25,
+          "Take-The-Best Priority": 1
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources-system.tallying": 2,
+          "Take-The-Best Priority": 1,
+          "age": 0.25
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources-risk_reward_ratio-system.take-the-best": 2,
+          "age": 0.125,
+          "Tallying Priority": 1
+        },
+        "error": 0.030311230344017243,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources.exhaustive": 2,
+          "age": 0.25,
+          "Exhaustive Priority": 1
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-system.tallying": 2,
+          "age": 0.25,
+          "Take-The-Best Priority": 1
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS": 2,
+          "One-Bounce Priority": 8,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.03125
+        },
+        "error": 0.03116818094414775,
+        "source": "derived empty"
+      }
+    ]
+  }
+]

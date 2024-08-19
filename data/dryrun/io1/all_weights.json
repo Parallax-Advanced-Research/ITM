@@ -1,0 +1,147 @@
+[
+  {
+    "kdma": "Ingroup Bias",
+    "case_file": "temp/pretraining_cases.json",
+    "weights_found": [
+      {
+        "weights": {
+          "conscious": 2.9705073833465576,
+          "mental_status": 4.997538089752197,
+          "mental_status_rank": 2.0390961170196533,
+          "breathing": 3.349452495574951,
+          "breathing_rank": 1.195291519165039,
+          "hrpmin_rank": 6.299530506134033,
+          "avpu": 0.6741328835487366,
+          "avpu_rank": 0.025720074772834778,
+          "relationship": 5.490086555480957,
+          "disposition": 3.677659273147583,
+          "disposition_rank": 1.5023131370544434,
+          "treatment": 0.05140912905335426,
+          "HRA Strategy.time-system.exhaustive": 7.088168621063232,
+          "Take-The-Best Priority": 7.322854042053223,
+          "Exhaustive Priority": 6.592073440551758,
+          "pDeath": 0.013188496232032776,
+          "pPain": 0.009437858127057552,
+          "pInternalBleeding": 12.634011268615723,
+          "SEVERITY": 0.07991668581962585,
+          "AVERAGE_TIME_USED": 0.06664448976516724,
+          "DAMAGE_PER_SECOND": 0.49929067492485046,
+          "MEDSIM_P_DEATH": 0.11132993549108505,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.07003548741340637,
+          "STANDARD_TIME_SEVERITY": 0.06887418031692505,
+          "SEVERITY_CHANGE": 0.08449398726224899,
+          "ACTION_TARGET_SEVERITY": 0.04007960110902786,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.04913928359746933,
+          "SEVEREST_SEVERITY": 0.0486796572804451,
+          "SEVEREST_SEVERITY_CHANGE": 0.044116776436567307,
+          "WEIGHTED_RESOURCE_SCORE": 0.010589465498924255,
+          "SMOL_MEDICAL_SOUNDNESS": 0.15569496154785156,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.07830594480037689
+        },
+        "error": 0.015462155759655028,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "mental_status_rank": 0.5,
+          "pDeath": 1,
+          "relationship_rank": 1,
+          "disposition": 0.5,
+          "HRA Strategy.risk_reward_ratio-system.satisfactory": 1,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.5
+        },
+        "error": 0.003090514865691251,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "DAMAGE_PER_SECOND": 1,
+          "entropy": 2
+        },
+        "error": 0.02182521654446307,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pDeath": 0.5,
+          "disposition_rank": 1,
+          "hrpmin_rank": 1
+        },
+        "error": 0.014086131489842014,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pInternalBleeding": 2
+        },
+        "error": 0.022992263920240792,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "avpu_rank": 1,
+          "entropy": 2,
+          "disposition_rank": 1,
+          "breathing_rank": 1
+        },
+        "error": 0.01239485358665664,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pDeath": 1,
+          "disposition": 1,
+          "disposition_rank": 1
+        },
+        "error": 0.009996708051166293,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY_CHANGE": 0.5,
+          "Tallying Priority": 4,
+          "disposition": 0.25,
+          "disposition_rank": 4,
+          "breathing_rank": 2,
+          "WEIGHTED_RESOURCE_SCORE": 0.03125
+        },
+        "error": 0.004553228627133235,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "relationship": 0.5,
+          "pAirwayBlocked": 0.25,
+          "hrpmin_rank": 1,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 1
+        },
+        "error": 0.014916056600179034,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "avpu": 16,
+          "disposition": 1,
+          "HRA Strategy.time-resources-risk_reward_ratio.one-bounce": 1,
+          "SEVERITY_CHANGE": 0.0625,
+          "relationship": 2,
+          "mental_status_rank": 2
+        },
+        "error": 0.0033633748480222992,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pAirwayBlocked": 0.5,
+          "mental_status_rank": 2,
+          "disposition_rank": 1,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.5,
+          "disposition": 0.5,
+          "Exhaustive Priority": 1
+        },
+        "error": 0.0030866027233927046,
+        "source": "derived empty"
+      }
+    ]
+  }
+]

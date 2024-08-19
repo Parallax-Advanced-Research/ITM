@@ -1,0 +1,11 @@
+{
+  "kdma_specific_weights": {
+    "Moral judgement": {
+      "DAMAGE_PER_SECOND": 0.125,
+      "context.val_intent1": 4,
+      "context.topic_source_character": 1,
+      "directness_of_causality": 8
+    }
+  },
+  "default": 0
+}

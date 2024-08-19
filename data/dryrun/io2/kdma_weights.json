@@ -1,0 +1,11 @@
+{
+  "kdma_specific_weights": {
+    "Ingroup Bias": {
+      "pDeath": 1,
+      "disposition_rank": 0.5,
+      "SUPPLIES_REMAINING": 1,
+      "disposition": 1
+    }
+  },
+  "default": 0
+}

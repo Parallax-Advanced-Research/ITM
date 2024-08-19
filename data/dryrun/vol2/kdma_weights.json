@@ -1,0 +1,9 @@
+{
+  "kdma_specific_weights": {
+    "PerceivedQuantityOfLivesSaved": {
+      "inj_severity_rank": 3.8082947731018066,
+      "HRA Strategy.time-system.one-bounce": 1
+    }
+  },
+  "default": 0
+}

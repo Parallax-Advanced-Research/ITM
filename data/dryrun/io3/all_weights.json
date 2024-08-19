@@ -1,0 +1,172 @@
+[
+  {
+    "kdma": "Ingroup Bias",
+    "case_file": "temp/pretraining_cases.json",
+    "weights_found": [
+      {
+        "weights": {
+          "conscious": 2.571716547012329,
+          "mental_status": 4.605910301208496,
+          "mental_status_rank": 1.579650640487671,
+          "breathing": 3.7922873497009277,
+          "breathing_rank": 4.130556106567383,
+          "hrpmin_rank": 6.950470924377441,
+          "avpu": 0.28426283597946167,
+          "avpu_rank": 0.02307545579969883,
+          "relationship": 4.3717756271362305,
+          "disposition": 3.7738754749298096,
+          "disposition_rank": 1.5891305208206177,
+          "treatment": 0.07524853199720383,
+          "HRA Strategy.time-system.exhaustive": 5.417112350463867,
+          "Take-The-Best Priority": 6.969600677490234,
+          "Exhaustive Priority": 2.2557103633880615,
+          "pPain": 0.0008766495157033205,
+          "pInternalBleeding": 5.732201099395752,
+          "SEVERITY": 0.08586809784173965,
+          "SUPPLIES_REMAINING": 0.05871378257870674,
+          "AVERAGE_TIME_USED": 0.07481373846530914,
+          "DAMAGE_PER_SECOND": 0.48339566588401794,
+          "MEDSIM_P_DEATH": 0.12073486298322678,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.21425305306911469,
+          "STANDARD_TIME_SEVERITY": 0.07123243808746338,
+          "SEVERITY_CHANGE": 0.04939226061105728,
+          "ACTION_TARGET_SEVERITY": 0.05065227672457695,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.04821322485804558,
+          "SEVEREST_SEVERITY": 0.03582952171564102,
+          "SEVEREST_SEVERITY_CHANGE": 0.04148281738162041,
+          "WEIGHTED_RESOURCE_SCORE": 0.016582565382122993,
+          "SMOL_MEDICAL_SOUNDNESS": 0.10565509647130966,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.0775536596775055,
+          "context.topic_injuries": 1.6142208576202393,
+          "context.val_injuries1": 0.09289345890283585,
+          "context.val_injuries2": 0.34259459376335144,
+          "context.val_supplies1": 0.6051940321922302,
+          "context.last_casualty": 5.398034572601318,
+          "context.last_treatment": 0.13286811113357544,
+          "context.last_location": 0.025480635464191437,
+          "context.val_rapport1": 0.652043342590332
+        },
+        "error": 0.012407553009431025,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "pBrainInjury": 2,
+          "context.last_casualty": 0.5,
+          "context.topic_injuries": 1,
+          "disposition": 0.5,
+          "relationship": 8,
+          "HRA Strategy.resources-risk_reward_ratio.one-bounce": 2,
+          "MEDSIM_P_DEATH": 0.5,
+          "SEVEREST_SEVERITY_CHANGE": 1.0
+        },
+        "error": 0.004020281020639621,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "disposition_rank": 1,
+          "entropyDeath": 2
+        },
+        "error": 0.05372645897043827,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pInternalBleeding": 0.25,
+          "context.last_casualty": 1,
+          "disposition_rank": 1,
+          "hrpmin_rank": 2,
+          "context.topic_rapport": 2,
+          "Exhaustive Priority": 1
+        },
+        "error": 0.01040652768184668,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pInternalBleeding": 0.5,
+          "disposition": 2,
+          "context.topic_rapport": 0.5,
+          "context.last_casualty": 1,
+          "relationship": 1,
+          "HRA Strategy.time-resources-risk_reward_ratio.tallying": 1,
+          "mental_status_rank": 1
+        },
+        "error": 0.005814765894735992,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pDeath": 0.5,
+          "context.val_supplies1": 1
+        },
+        "error": 0.046413719279852286,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "context.topic_injuries": 2,
+          "disposition_rank": 1,
+          "DAMAGE_PER_SECOND": 0.0625,
+          "hrpmin": 16,
+          "disposition": 1,
+          "relationship_rank": 2,
+          "avpu_rank": 2,
+          "context.last_casualty": 2,
+          "context.topic_supplies": 1
+        },
+        "error": 0.002071437544765599,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pAirwayBlocked": 1,
+          "disposition_rank": 1,
+          "context.last_casualty": 1,
+          "disposition": 1,
+          "context.val_rapport1": 1,
+          "Take-The-Best Priority": 0.5,
+          "hrpmin_rank": 1,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 1
+        },
+        "error": 0.0025026728578308073,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY_CHANGE": 0.5,
+          "pDeath": 1,
+          "context.val_injuries2": 2,
+          "disposition": 1,
+          "context.last_casualty": 2,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.5,
+          "relationship_rank": 1,
+          "Take-The-Best Priority": 1
+        },
+        "error": 0.0034309868724441066,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "entropy": 1,
+          "context.last_casualty": 2,
+          "context.val_rapport1": 1,
+          "hrpmin_rank": 0.5,
+          "disposition": 1
+        },
+        "error": 0.008853183325928656,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVERITY": 1,
+          "pAirwayBlocked": 1,
+          "context.last_location": 1
+        },
+        "error": 0.04870411276660216,
+        "source": "derived empty"
+      }
+    ]
+  }
+]
