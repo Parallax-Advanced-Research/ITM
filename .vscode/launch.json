@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Adept test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type adept"
+        },
+        {
             "name": "Test Explanation",
             "type": "debugpy",
             "request": "launch",

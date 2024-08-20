@@ -12,10 +12,12 @@ class KDMADecisionExplainer(DecisionExplainer):
     def explain(self, decision: Decision):
         # the list of explanation items is added by the decision selector at runtime and stores the values used in the decide method
         self.decision = decision        
-        for explanation_item in self.decision.explanations:            
-            if explanation_item.explanation_type == "kdma_estimation":                
-                self.explanation = explanation_item
-                return self.return_description(self.explanation)            
+        for explanation_item in self.decision.explanations:
+            # if it is not a list
+            if not isinstance(explanation_item, list):            
+                if explanation_item.decision_type == "kdma_estimation":                
+                    self.explanation = explanation_item
+                    return self.return_description(self.explanation)            
         return None
        
     def return_description(self, explanation):
