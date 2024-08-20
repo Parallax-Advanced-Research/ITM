@@ -3,7 +3,7 @@ import json
 from components.decision_selector.exhaustive import exhaustive_selector
 from components.alignment_trainer import kdma_case_base_retainer
 from components.decision_selector.kdma_estimation \
-    import write_case_base, triage_constants, \
+    import read_case_base, write_case_base, triage_constants, \
            WeightTrainer, SimpleWeightTrainer, \
            KEDSModeller, KEDSWithXGBModeller
 from typing import Any
@@ -402,7 +402,10 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
 def get_hint_types(cases):
     hint_names = set()
     for case in cases:
-        hint_names |= set(case.get("hint", {}).keys())
+        hint_val = case.get("hint", {})
+        if not isinstance(hint_val, dict):
+            hint_val = eval(hint_val)
+        hint_names |= set(hint_val.keys())
     return hint_names
 
     
@@ -519,7 +522,7 @@ def main():
                         help="A json file full of feedback objects, written out by KDMA Case " +
                              "Base Retainer."
                        )
-    parser.add_argument("--kdma_case_output_file", type=str, default="kdma_cases.csv",
+    parser.add_argument("--kdma_case_file", type=str, default="kdma_cases.csv",
                         help="A csv file with KDMA data from feedback added to state cases."
                        )
     parser.add_argument("--alignment_file", type=str, default="alignment_target_cases.csv",
@@ -536,14 +539,25 @@ def main():
                         help="How to measure the error of a case-based estimation, with the " \
                              + "probability of neighbor error or difference to neighbor average"
                        )
+    parser.add_argument("--analyze_only", action=argparse.BooleanOptionalAction, default=False, 
+                        help="Generate kdma cases, but do not search for weights.")
+    parser.add_argument("--search_only", action=argparse.BooleanOptionalAction, default=False, 
+                        help="Search for weights from existing kdma case file.")
     args = parser.parse_args()
     if args.case_file is None:
         raise Error()
-    do_analysis_search(args.case_file, args.feedback_file, args.kdma_case_output_file, 
-                       args.alignment_file, args.weight_file, args.all_weight_file, args.error_type)
+    
+    if args.search_only:
+        source_file = args.kdma_case_file
+        kdma_cases = read_case_base(args.kdma_case_file)
+    else:
+        source_file = args.case_file
+        kdma_cases = analyze_pre_cases(args.case_file, args.feedback_file, args.kdma_case_file, 
+                                       args.alignment_file)
+    if not args.analyze_only:
+        do_weight_search(kdma_cases, args.weight_file, args.all_weight_file, args.error_type, source_file)
         
-def do_analysis_search(case_file, feedback_file, kdma_case_output_file, alignment_file, weight_file, 
-                       all_weight_file, error_type):
+def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment_file):
     pre_cases = read_pre_cases(case_file)
     for case in pre_cases:
         cur_keys = list(case.keys())
@@ -561,6 +575,9 @@ def do_analysis_search(case_file, feedback_file, kdma_case_output_file, alignmen
             write_alignment_target_cases_to_csv(alignment_file, training_data)
     kdma_cases = make_kdma_cases(pre_cases, training_data)
     write_case_base(kdma_case_output_file, kdma_cases)
+    return kdma_cases
+ 
+def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, source_file):
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
@@ -589,7 +606,7 @@ def do_analysis_search(case_file, feedback_file, kdma_case_output_file, alignmen
                     fields, kdma_cases, kdma_name.lower())
         trainer.weight_train({key:1 for key in fields})
         new_weights[kdma_name] = trainer.get_best_weights()
-        all_weights.append({"kdma": kdma_name, "case_file": case_file, "weights_found": trainer.get_history()})
+        all_weights.append({"kdma": kdma_name, "case_file": source_file, "weights_found": trainer.get_history()})
     
     with open(all_weight_file, "a") as awf:
         awf.write(json.dumps(all_weights, indent=2))
