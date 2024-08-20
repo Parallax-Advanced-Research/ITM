@@ -1,4 +1,4 @@
-from scripts.shared import get_default_parser
+from scripts.shared import get_default_parser, validate_args
 from scripts import analyze_data
 from runner import TA3Driver
 from components.decision_selector import DiverseSelector, ExhaustiveSelector
@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--reset', action=argparse.BooleanOptionalAction, default=False, help="Run from scratch (delete old cases).")
     parser.add_argument('--runs', type=int, default=None, help="How many training runs to perform (maximum).")
     args = parser.parse_args()
+    validate_args(args)
     args.training = True
     args.keds = False
     args.verbose = False
@@ -51,13 +52,17 @@ def main():
         
         
     driver = TA3Driver(args)
-
+    if args.diverse:
+        driver.trainer = args.selector_object
     while not args.selector_object.is_finished() and args.runs != 0:
         tad.api_test(args, driver)
         driver.actions_performed = []
         driver.treatments = {}
         args.runs -= 1
-    output_training_cases()
+    analyze_data.do_analysis_search(
+        "temp/pretraining_cases.json", None, "temp/kdma_cases.csv", 
+        "temp/alignment_target_cases.csv", "temp/kdma_weights.json", "temp/all_weights.json", 
+        "probability" if args.session_type == "soartech" else "avgdiff")
     
 def output_training_cases():
     (cases, training_data) = analyze_data.read_training_data()

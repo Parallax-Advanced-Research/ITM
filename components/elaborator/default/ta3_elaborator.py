@@ -82,7 +82,6 @@ class TA3Elaborator(Elaborator):
             # to_return += self._enumerate_check_actions(
                             # probe.state, 
                             # make_new_action_decision("TAD", ActionTypeEnum.CHECK_ALL_VITALS, {}, None, False))
-
         final_list = []
         for tr in to_return:
             if tr.value.name == ActionTypeEnum.DIRECT_MOBILE_CHARACTERS and ParamEnum.CASUALTY in tr.value.params:
@@ -95,7 +94,7 @@ class TA3Elaborator(Elaborator):
         final_list.sort(key=str)
         if len(final_list) == 0:
             breakpoint()
-        final_list = remove_too_frequent_actions(probe, final_list)
+        # final_list = remove_too_frequent_actions(probe, final_list)
         probe.decisions = final_list
         if self.elab_to_json:
             self._export_elab_to_json(final_list, scenario.id_)
@@ -136,24 +135,28 @@ class TA3Elaborator(Elaborator):
         return ret_decisions
 
     def _add_message_options(self, probe: TADProbe, decision: Decision[Action]) -> list[Decision[Action]]:
+        if decision.value.params["type"] != "justify":
+            decision.context.update(decision.value.params)
+            return [decision]
         if len(probe.state.actions_performed) == 0:
             return []
-        for state_referent in [s.strip("[] ") for s in decision.value.params["relevant_state"].split(",")]:
+        for state_referent in [s.strip(" ")[1:-1] for s in decision.value.params["relevant_state"].split(",")]:
             topic = self.get_topic(state_referent)
             newCount = decision.context.get("topic_" + topic, 0) + 1
             decision.context["topic_" + topic] = newCount
             decision.context["val_" + topic + str(newCount)] = \
                 self.dereference(state_referent, probe.state.orig_state)
-        if decision.value.params["type"] == "justify":
-            decision.context["last_action"] = probe.state.actions_performed[-1].name
-            for (k, v) in probe.state.actions_performed[-1].params.items():
-                decision.context["last_" + k] = v
-            
+        decision.context["last_action"] = probe.state.actions_performed[-1].name
+        for (k, v) in probe.state.actions_performed[-1].params.items():
+            decision.context["last_" + k] = v
+        decision.context["action_type"] = "justify"
         return [decision]
 
     def get_topic(self, referent: str):
         if "." in referent:
             return referent[referent.rindex(".") + 1:]
+        else:
+            return referent
     
     def dereference(self, referent: str, data: dict[str, Any]):
         assert(len(referent) > 0)
@@ -326,14 +329,14 @@ class TA3Elaborator(Elaborator):
         if (ParamEnum.TREATMENT in decision.value.params 
               and ParamEnum.CASUALTY in decision.value.params
               and ParamEnum.LOCATION in decision.value.params):
-            return [decision]
+            return decisions_if_supplied(state, [decision])
             
         # If it's already mostly grounded, don't second-guess the server
         if (ParamEnum.TREATMENT in decision.value.params 
               and ParamEnum.CASUALTY in decision.value.params
               and decision.value.params[ParamEnum.TREATMENT] in SPECIAL_SUPPLIES):
             decision.value.params[ParamEnum.LOCATION] = InjuryLocationEnum.UNSPECIFIED
-            return [decision]
+            return decisions_if_supplied(state, [decision])
 
         # Ground the decision for all casualties with injuries
         dec_grounded = self._ground_treatments(state, decision, tag_available=tag_available)
@@ -397,9 +400,9 @@ class TA3Elaborator(Elaborator):
             dec_possible_treatments += new_treatments
             # dec_possible_treatments += \
                 # [t for t in new_treatments if t.value.params[ParamEnum.TREATMENT] not in cas.treatments]
+        dec_possible_treatments = decisions_if_supplied(state, dec_possible_treatments)
         return list({consistent_decision_key(d):d for d in dec_possible_treatments}.values())
         
-
 
     def _tag(self, casualties: list[Casualty], decision: Decision[Action]) -> list[Decision[Action]]:
         action = decision.value
@@ -529,6 +532,15 @@ class TA3Elaborator(Elaborator):
         if not supply_location_match(medact): 
             return False
         return True
+
+
+def decisions_if_supplied(state: TA3State, decisions: list[Decision]):
+    ret = []
+    for decision in decisions:
+        if TA3Elaborator._supply_available(state, decision.value.params[ParamEnum.TREATMENT]):
+            ret.append(decision)
+    return ret
+
         
 def consistent_decision_key(dec : Decision) -> str:
     return (dec.value.name + "(" + dec.value.params.get(ParamEnum.CASUALTY, "") + ","

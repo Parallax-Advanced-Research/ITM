@@ -1,0 +1,148 @@
+[
+  {
+    "kdma": "Moral judgement",
+    "case_file": "temp/pretraining_cases.json",
+    "weights_found": [
+      {
+        "weights": {
+          "mental_status": 0.418348491191864,
+          "mental_status_rank": 0.4289912283420563,
+          "breathing": 1.143954873085022,
+          "hrpmin": 1.7452659606933594,
+          "hrpmin_rank": 17.58039665222168,
+          "avpu": 0.3337600529193878,
+          "intent": 2.063361883163452,
+          "intent_rank": 3.3270621299743652,
+          "disposition": 0.6406211853027344,
+          "directness_of_causality": 2.0524332523345947,
+          "directness_of_causality_rank": 0.5699464678764343,
+          "treatment": 0.046035319566726685,
+          "pDeath": 2.078885316848755,
+          "pBrainInjury": 1.657158613204956,
+          "pInternalBleeding": 0.19962473213672638,
+          "entropy": 0.03280329331755638,
+          "SEVERITY": 0.04895259439945221,
+          "AVERAGE_TIME_USED": 0.10934833437204361,
+          "DAMAGE_PER_SECOND": 0.04734404385089874,
+          "MEDSIM_P_DEATH": 0.08782587945461273,
+          "STANDARD_TIME_SEVERITY": 0.0970526710152626,
+          "SEVERITY_CHANGE": 0.08293531090021133,
+          "ACTION_TARGET_SEVERITY": 0.42814821004867554,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.050147201865911484,
+          "SEVEREST_SEVERITY": 0.1632872074842453,
+          "SEVEREST_SEVERITY_CHANGE": 1.4710816144943237,
+          "SMOL_MEDICAL_SOUNDNESS": 0.07500606775283813,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.06119263172149658
+        },
+        "error": 0.01659017327185847,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "intent_rank": 1,
+          "pDeath": 4.0,
+          "directness_of_causality": 0.25,
+          "HRA Strategy.time-system.tallying": 1
+        },
+        "error": 0.00105672694939631,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pInternalBleeding": 2.0,
+          "directness_of_causality": 1,
+          "intent": 1.0,
+          "intent_rank": 1,
+          "HRA Strategy.time-system.exhaustive": 2,
+          "avpu": 1
+        },
+        "error": 0.0004931097253571659,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "breathing": 0.5,
+          "pBrainInjury": 0.5,
+          "directness_of_causality": 1,
+          "intent_rank": 1,
+          "HRA Strategy.time-resources-system.tallying": 1
+        },
+        "error": 0.0010719407624660974,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "entropyDeath": 4,
+          "intent_rank": 0.5,
+          "directness_of_causality": 0.5,
+          "intent": 0.5,
+          "HRA Strategy.time-resources-system.exhaustive": 1
+        },
+        "error": 0.00048691107101715204,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "entropyDeath": 4,
+          "directness_of_causality": 0.5,
+          "intent_rank": 2,
+          "HRA Strategy.resources-risk_reward_ratio.exhaustive": 2,
+          "intent": 0.5
+        },
+        "error": 0.000488914982054535,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pInternalBleeding": 2,
+          "intent_rank": 1,
+          "directness_of_causality_rank": 2,
+          "intent": 0.5,
+          "HRA Strategy.time-resources.satisfactory": 2,
+          "breathing": 1
+        },
+        "error": 0.0004761985610675815,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "directness_of_causality_rank": 1.0,
+          "HRA Strategy.resources-system.satisfactory": 1.0,
+          "intent": 0.25,
+          "intent_rank": 0.5,
+          "pAirwayBlocked": 1,
+          "entropy": 1
+        },
+        "error": 0.00046345003847416506,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.resources-risk_reward_ratio-system.one-bounce": 1,
+          "entropyDeath": 4,
+          "directness_of_causality": 0.5,
+          "intent_rank": 0.5,
+          "intent": 0.5
+        },
+        "error": 0.00048691107101715204,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pBrainInjury": 4,
+          "WEIGHTED_RESOURCE_SCORE": 1
+        },
+        "error": 0.013011589874857794,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "entropy": 1.0,
+          "directness_of_causality": 0.5
+        },
+        "error": 0.004993835709413351,
+        "source": "derived empty"
+      }
+    ]
+  }
+]

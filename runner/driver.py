@@ -1,7 +1,7 @@
 import typing
 import domain as ext
 import swagger_client as ta3
-from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer, DecisionExplainer
+from components import Elaborator, DecisionSelector, DecisionAnalyzer, DecisionExplainer, AlignmentTrainer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
 from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
 from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentTarget, AlignmentFeedback, make_new_action_decision, target, Explanation
@@ -59,11 +59,15 @@ class Driver:
         probe = TADProbe(itm_probe.id, state, itm_probe.prompt, itm_probe.state['environment'], decisions)
         return probe
         
-    def translate_feedback(self, feedback: ta3.AlignmentResults) -> AlignmentFeedback:
+    def translate_feedback(self, results: ta3.AlignmentResults) -> AlignmentFeedback:
+        if len(results.alignment_source) != 1:
+            return None
         return AlignmentFeedback(
-                    feedback.alignment_target_id,
-                    KDMAs([]),
-                    feedback.score)
+                    results.alignment_target_id,
+                    {kvo.kdma:kvo.value for kvo in results.kdma_values},
+                    results.score,
+                    results.alignment_source[0].probes
+                    )
 
     def elaborate(self, probe: TADProbe) -> list[Decision[Action]]:
         return self.elaborator.elaborate(self.scenario, probe)
@@ -74,13 +78,13 @@ class Driver:
             this_analysis = analyzer.analyze(self.scenario, probe)
             analysis.update(this_analysis)
         return analysis
-    
+
     def explain_decision(self, decision: Decision):
         decision_explanations = []
         for explainer in self.explainers:
             this_explanation = explainer.explain(decision)
             decision_explanations.append(this_explanation)    
-        return decision_explanations    
+        return decision_explanations
 
     def select(self, probe: TADProbe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
@@ -134,9 +138,13 @@ class Driver:
         url = f'http://localhost:8501/?scen={probe.id_}'
         return self.respond(decision, url)
         
-    def train(self, feedback: ta3.AlignmentResults, final: bool):
-        if self.trainer is not None:
-            self.trainer.train(self.scenario, self.actions_performed, self.translate_feedback(feedback), final)
+    def train(self, feedback: ta3.AlignmentResults, final: bool, scene_end: bool, scene: str):
+        if self.trainer is None:
+            return
+        feedback = self.translate_feedback(feedback)
+        if feedback is None:
+            return
+        self.trainer.train(self.scenario, self.actions_performed, feedback, final, scene_end, scene)
 
     def _extract_state(self, dict_state: dict) -> State:
         raise NotImplementedError

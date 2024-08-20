@@ -36,8 +36,19 @@ def validate_args(args: argparse.Namespace) -> None:
         sys.stderr.write("\x1b[93mPlease do not supply your own KDMAs in evaluation mode.\x1b[0m\n")
         sys.exit(1)
 
-    # if args.eval_targets is not None and len(args.eval_targets) > 0 and not args.training:
-        # args.training = True
+    if args.eval_targets is not None and len(args.eval_targets) > 0:
+        if args.training == False:
+            sys.stderr.write("It is an error to attempt to use evaluation targets outside of training mode.")
+        if args.connect_to_ta1 == False:
+            sys.stderr.write("It is an error to attempt to use evaluation targets without TA1 connection.")
+        args.training = True
+        args.connect_to_ta1 = True
+    
+    if args.training is None:
+        args.training = True
+    
+    if args.connect_to_ta1 is None:
+        args.connect_to_ta1 = False
 
     if args.session_type == 'eval' and args.training:
         sys.stderr.write("\x1b[93mCannot perform training in evaluation mode.\x1b[0m\n")
@@ -82,19 +93,20 @@ def get_default_parser() -> argparse.ArgumentParser:
     parser.add_argument('--rollouts', type=int, default=256, help="Monte Carlo rollouts to perform")
     parser.add_argument('--endpoint', type=str, help="The URL of the TA3 api", default=None)
     parser.add_argument('--variant', type=str, help="TAD variant", default="aligned", choices=["aligned", "misaligned", "baseline", "severity-baseline"])
-    parser.add_argument('--session_type', type=str, default='eval',
+    parser.add_argument('--session_type', type=str, default='adept',
         help="Modifies the server session type. possible values are 'soartech', 'adept', and 'eval'. Default is 'eval'.",
         choices = ["soartech", "adept", "eval"])
     parser.add_argument('--scenario', type=str, default=None, help="ID of a scenario that TA3 can play back.")
     parser.add_argument('--kdma', dest='kdmas', type=str, action='append', help="Adds a KDMA value to alignment target for selection purposes. Format is <kdma_name>-<kdma_value>")
-    parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=False, help="Asks for KDMA associations to actions")
-    parser.add_argument('--connect_to_ta1', action=argparse.BooleanOptionalAction, default=False,
-                        help="Sets up pathway to TA1 server for alignment scoring.")
+    parser.add_argument('--training', action=argparse.BooleanOptionalAction, default=None, help="Asks for KDMA associations to actions. (Defaults to on.)")
+    parser.add_argument('--connect_to_ta1', action=argparse.BooleanOptionalAction, default=None,
+                        help="Sets up pathway to TA1 server for alignment scoring. (Defaults to off.)")
     parser.add_argument('--alignment_target', type=str, default=None,
                         help="Names an alignment target that must be found in data.target_library.")
     parser.add_argument('--evaltarget', dest='eval_targets', type=str, action='append', help="Adds an alignment target name to request evaluation on. Must match TA1 capabilities, implies --training.")
     parser.add_argument('--selector', default='random', choices=['keds', 'kedsd', 'csv', 'human', 'random'], help="Sets the decision selector") # TODO: add details of what each option does
     parser.add_argument('--selector-object', default=None, help=argparse.SUPPRESS)
+    parser.add_argument('--assessor', dest='assessors', type=str, action='append', choices=['triage'], help="Adds an assessor to a list to be used in assessing actions at runtime.")
     parser.add_argument('--seed', type=int, default=None, help="Changes the random seed to be used during this run; must be an integer")
     parser.add_argument('--case_file', type=str, default=None, 
                         help="Provides cases to be used in making decisions by the decision "\

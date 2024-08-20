@@ -4,9 +4,10 @@ import math
 import statistics
 import util
 from typing import Any, Sequence, Callable
-from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, Decision, Action, State, Explanation
+from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, Decision, Action, State, Explanation, update_decision_parameters
 from domain.ta3 import TA3State, Casualty, Supply
-from components import DecisionSelector, DecisionAnalyzer
+from domain.enum import ActionTypeEnum
+from components import DecisionSelector, DecisionAnalyzer, Assessor
 from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
 from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
 from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
@@ -29,13 +30,14 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.variant = "baseline"
         self.index = 0
         self.print_neighbors = True
+        self.record_explanations = True
         self.record_considered_decisions = False
         self.weight_settings = {}
         self.insert_pauses = False
         self.kdma_choice_history = []
+        self.assessors = {}
         if args is not None:
             self.initialize_with_args(args)
-        
 
     def initialize_with_args(self, args):
         self.use_drexel_format = args.selector == 'kedsd'
@@ -81,10 +83,16 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.print_neighbors = other_selector.print_neighbors
         self.weight_settings = other_selector.weight_settings
 
+    
+    def add_assessor(self, name: str, assessor: Assessor):
+        self.assessors[name] = assessor
 
     def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         if target is None:
             raise Exception("KDMA Estimation Decision Selector needs an alignment target to operate correctly.")
+        assessments = {}
+        for (name, assessor) in self.assessors.items():
+            assessments[name] = assessor.assess(probe)
         minDist: float = math.inf
         minDecision: Decision = None
         minCase = None
@@ -111,16 +119,17 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 weights = {key: default_weight for key in cur_case.keys()}
                 weights = weights | self.weight_settings.get("standard_weights", {})
             
-            for act in triage_constants.BASIC_TRIAGE_CASE_TYPES:
-                if cur_case[act]:
-                    weights = weights | self.weight_settings.get("activity_weights", {}).get(act, {})
             if self.print_neighbors:
                 util.logger.info(f"Evaluating action: {cur_decision.value}")
             for kdma_name in target.kdma_names:
-                weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
-                kdmaProbs = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name, self.cb, print_neighbors = self.print_neighbors, mutable_case = True)
-                if kdmaProbs is None:
-                    continue
+                if kdma_name in assessments:
+                    assessment_val = assessments[kdma_name][str(cur_decision.value)]
+                    kdmaProbs = {assessment_val: 1}
+                else:
+                    weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
+                    kdmaProbs = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name.lower(), self.cb, print_neighbors = self.print_neighbors, mutable_case = True)
+                    if kdmaProbs is None:
+                        continue
                 cur_case[kdma_name] = kdmaProbs
                 cur_kdma_probs[kdma_name] = kdmaProbs
             min_kdma_probs = self.update_kdma_probabilities(min_kdma_probs, cur_kdma_probs, min)
@@ -128,8 +137,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             possible_choices.append((cur_decision, cur_case, cur_kdma_probs))
 
         if len(possible_choices) == 1:
-            util.logger.error("Only one possible choice!")
-            breakpoint()
+            if possible_choices[0][0].value.name != ActionTypeEnum.END_SCENE:
+                util.logger.error("Only one possible choice!")
+                breakpoint()
             return possible_choices[0][0], 3.14159
         if len(possible_choices) == 0:
             breakpoint()
@@ -146,6 +156,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             best_kdma_estimates = kdma_estimation.estimate_KDMAs_from_probs(best_kdma_probs)
             util.logger.info(f"Chosen Decision: {best_decision.value} Estimates: {best_kdma_estimates} Mins: {min_kdma_probs} Maxes: {max_kdma_probs}")
             util.logger.info(f"Distance: {best_case['distance']}")
+            for name in assessments:
+                if name not in target.kdma_names:
+                    util.logger.info(f"{name}: {assessments[name][str(best_decision.value)]}")
+                    
 
         if self.insert_pauses:
             breakpoint()
@@ -157,20 +171,21 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if not self.empty_probs(best_kdma_probs):
             self.kdma_choice_history.append((best_kdma_probs, min_kdma_probs, max_kdma_probs))
             
-        best_decision = self.record_explanation(best_decision, best_case)
+        if self.record_explanations:
+            # assessors
+            explanation = Explanation("kdma_estimation",
+                                      {"best_case": best_case, 
+                                       "weight_settings": self.weight_settings,
+                                      })
+            
+            best_decision.explanations = [explanation]
+            
+        
         return (best_decision, best_case["distance"])
-    
-    def record_explanation(self, decision: Decision, best_case: dict[str, Any]) -> Decision:
-        explanation = Explanation("KDMA_ESTIMATION",
-                                  {"decision_name": decision.value.name,
-                                   "decision_params": decision.value.params,
-                                   "weights": self.weight_settings,
-                                   "most_similar": best_case,
-                                   #"nearest_neighbors": self.kdma_choice_history
-                                   })
-        decision.explanations.append(explanation)
-        return decision
-                
+        
+    def record_explanation_itmes(self, best_decision, best_case, best_kdma_probs):
+        pass
+        
     def update_kdma_probabilities(self, kdma_probs: dict[str, float], new_kdma_probs: dict[str, float], fn: Callable[[float, float], float] = min):
         ret_kdma_probs = dict()
         keys = set(kdma_probs.keys())
@@ -278,6 +293,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
 
             
         for (kdma, prob) in cur_kdma_probs[kdma_name].items():
+            if kdma < gmin or kdma > gmax:
+                continue
             global_norm_estimates.append(normalize(kdma, gmin, gmax))
             alignment_probs += self.compound_alignments(kde, kdma_name, global_norm_estimates, 
                                                         choice_history, gmin, gmax, prob * pprob)
@@ -303,9 +320,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.use_drexel_format:
             return make_case_drexel(probe, d)
         else:
-            return make_case_triage(probe, d)
+            case = make_case_triage(probe, d)
+            case |= flatten("context", case.pop("context"))
+            return case
 
 
+# See kdma_estimation.VALUED_FEATURES for the ordering of individual features.
 def add_feature_to_case_with_rank(case: dict[str, Any], feature: str, 
                                   characteristic_fn: Callable[[Casualty], Any], 
                                   c: Casualty, chrs: list[Casualty]):
@@ -358,6 +378,10 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         add_feature_to_case_with_rank(case, "disposition", lambda chr: chr.demographics.military_disposition, c, chrs)
         add_feature_to_case_with_rank(case, "directness_of_causality", 
                                     lambda chr: chr.directness_of_causality, c, chrs)
+        add_feature_to_case_with_rank(case, "treatment_count", 
+                                    lambda chr: len(chr.treatments), c, chrs)
+        add_feature_to_case_with_rank(case, "treatment_time", 
+                                    lambda chr: chr.treatment_time, c, chrs)
         case['inj_severity_rank'] = \
             min([kdma_estimation.rank(inj.severity, sevs, "inj_severity") for inj in c.injuries])
         case['unvisited_count'] = len([co for co in chrs if not co.assessed 
@@ -372,11 +396,23 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
          and len(probe.environment['decision_environment']['aid']) > 0)
     case['environment_type'] = probe.environment['sim_environment']['type']
     a: Action = d.value
-    case['questioning'] = a.name in ["SITREP"]
-    case['assessing'] = a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION"]
-    case['treating'] = a.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]
-    case['tagging'] = a.name == "TAG_CHARACTER"
-    case['leaving'] = a.name == "END_SCENE"
+    if a.name in ["SITREP"]:
+        case['action_type'] = 'questioning'
+    elif a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION"]:
+        case['action_type'] = 'assessing'
+    elif a.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]:
+        case['action_type'] = 'treating'
+    elif a.name in ["TAG_CHARACTER"]:
+        case['action_type'] = 'tagging'
+    elif a.name in ["END_SCENE"]:
+        case['action_type'] = 'leaving'
+    elif a.name in ["MESSAGE"]:
+        case['action_type'] = a.params["type"]
+    else:
+        raise Error()
+
+    case['action_name'] = a.name
+    
     if a.name == "APPLY_TREATMENT":
         case['treatment'] = a.params.get("treatment", None)
     if a.name == "TAG_CHARACTER":
@@ -387,7 +423,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         else:
             for (inner_key, inner_value) in flatten(dm.name, dm.value).items():
                 case[inner_key] = inner_value
-    # case |= d.context
+
     case["context"] = d.context
     return case
 

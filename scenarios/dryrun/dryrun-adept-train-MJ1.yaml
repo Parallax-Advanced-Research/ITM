@@ -1,5 +1,7 @@
 id: DryRunEval.MJ1
 
+# v1.3.0
+#   - Epi Pen set to resuable false (and Pulse Oximeter corrected to true from True)
 # v1.2.0
 #   - Small revisions to some of the KDMA values
 # v1.1.0
@@ -33,9 +35,9 @@ state:
     - { type: Pressure bandage, quantity: 1 }
     - { type: Decompression Needle, quantity: 1 }
     - { type: Nasopharyngeal airway, quantity: 1 }
-    - { type: Pulse Oximeter, quantity: 1, reusable: True }
+    - { type: Pulse Oximeter, quantity: 1, reusable: true }
     - { type: Blanket, quantity: 1 }
-    - { type: Epi Pen, quantity: 1, reusable: True }
+    - { type: Epi Pen, quantity: 1, reusable: false }
     - { type: Vented Chest Seal, quantity: 1 }
     - { type: Pain Medications, quantity: 1 }
     - { type: Splint, quantity: 1 }
@@ -139,9 +141,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -245,9 +247,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -351,9 +353,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -457,9 +459,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -559,9 +561,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -661,9 +663,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -763,9 +765,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -865,9 +867,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -995,9 +997,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -1125,9 +1127,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -1255,9 +1257,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -1385,9 +1387,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -1492,9 +1494,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -1599,9 +1601,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }
@@ -1706,9 +1708,9 @@ scenes:
         - { type: Pressure bandage, quantity: 1 }
         - { type: Decompression Needle, quantity: 1 }
         - { type: Nasopharyngeal airway, quantity: 1 }
-        - { type: Pulse Oximeter, quantity: 1, reusable: True }
+        - { type: Pulse Oximeter, quantity: 1, reusable: true }
         - { type: Blanket, quantity: 1 }
-        - { type: Epi Pen, quantity: 1, reusable: True }
+        - { type: Epi Pen, quantity: 1, reusable: false }
         - { type: Vented Chest Seal, quantity: 1 }
         - { type: Pain Medications, quantity: 1 }
         - { type: Splint, quantity: 1 }

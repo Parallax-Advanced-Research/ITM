@@ -88,11 +88,18 @@ def htmlify_casualty(casualty: Casualty):
         return '|%s| None | N/A | N/A| N/A | N/A| N/A |\n' % casualty.id
     lines = ''
     for injury in casualty.injuries:
+        suffix_hash = {'fire': 'Environmental Hazard (Fire)',
+                       'attack': 'Environmental Hazard (Under Attack)',
+                       'fight': 'Environmental Hazard (Fighting)',
+                       'firearm': 'Environmental Hazard (Firearm)',
+                       'collision': 'Environmental Hazard (Post Collision)',
+                       'explosion': 'Environmental Hazard (Explosion)'}
+        qualified_name = injury.name if injury.name not in set(suffix_hash.keys()) else suffix_hash[injury.name]
         injury_effect = AFFECCTOR_UPDATE[injury.name]
         bleed = f'{injury_effect.bleeding_effect} ({DAMAGE_PER_SECOND[injury_effect.bleeding_effect]})'
         breath = f'{injury_effect.breathing_effect} ({DAMAGE_PER_SECOND[injury_effect.breathing_effect]})'
         burn = f'{injury_effect.burning_effect} ({DAMAGE_PER_SECOND[injury_effect.burning_effect]})'
-        lines += '|%s|%s|%s|%s|%s|%s|%s|\n' % (casualty.id, injury.name, injury.location, injury.treated, bleed, breath, burn)
+        lines += '|%s|%s|%s|%s|%s|%s|%s|\n' % (casualty.id, qualified_name, injury.location, injury.treated, bleed, breath, burn)
     return lines
 
 
@@ -103,6 +110,16 @@ def get_casualty_table(scenario):
     for casualty in scenario.casualties:
         lines += htmlify_casualty(casualty)
     return '''%s%s<hr>''' % (header, lines)
+
+
+def get_env_hazard_table(hazard):
+    env_hazard_info = AFFECCTOR_UPDATE[hazard]
+    effect_table = f'''|Body Effect|Severity (DPS)|
+|---|---|
+|Bleed|{env_hazard_info.bleeding_effect} ({DAMAGE_PER_SECOND[env_hazard_info.bleeding_effect]})|
+|Breath|{env_hazard_info.breathing_effect} ({DAMAGE_PER_SECOND[env_hazard_info.breathing_effect]})|
+|Burn|{env_hazard_info.burning_effect} ({DAMAGE_PER_SECOND[env_hazard_info.burning_effect]})|'''
+    return effect_table
 
 
 def htmlify_supply(supply: Supply, make_pink=False):
@@ -423,18 +440,20 @@ if __name__ == '__main__':
 
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
     environment = scenario_pkls[chosen_scenario].environments[chosen_decision - 1]
+    env_hazard = environment['decision_environment']['injury_triggers']
     environment_table_1, environment_table_2 = construct_environment_table(environment)
     if environment_table_2 is not None:
         notes = '##### CONTEXT: '
         notes += environment['decision_environment']['unstructured']
         st.markdown(notes)
-        env_hazard = '##### Environment Hazard: '
-        env_hazard += environment['decision_environment']['injury_triggers']
-        st.markdown(env_hazard)
+        env_hazard_description = '##### Environment Hazard: '
+        env_hazard_description += env_hazard
+        st.markdown(env_hazard_description)
     st.caption("The pink decision in the table below is the chosen decision.")
 
     decision_table_html, supply_used = construct_decision_table(analysis_df, metric_choices, sort_metric=sort_by)
     casualty_html = get_casualty_table(state)
+    env_hazard_html = get_env_hazard_table(env_hazard)
     supply_html = get_supplies_table(state, supply_used)
     previous_action_table = get_previous_actions(state)
     st.markdown(decision_table_html, unsafe_allow_html=True)
@@ -460,5 +479,8 @@ if __name__ == '__main__':
         st.markdown(previous_action_table, unsafe_allow_html=True)
     with col3:
         st.header('Characters')
+        st.markdown(f'Environment Hazard: {env_hazard}')
+        st.markdown(env_hazard_html, unsafe_allow_html=True)
+        st.markdown('<br>Character Breakdown', unsafe_allow_html=True)
         st.markdown(casualty_html, unsafe_allow_html=True)
 

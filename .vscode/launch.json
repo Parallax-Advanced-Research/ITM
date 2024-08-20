@@ -5,19 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "qol-dre-1",
+            "name": "Test Explanation",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "test_explanation.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python Debugger: Current File with Arguments",
             "type": "debugpy",
             "request": "launch",
             "program": "tad_tester.py",
             "console": "integratedTerminal",
-            "args": "--session_type soartech --scenario qol-dre-1-train --selector keds --training --alignment_target \"soartech-dryrun-0\" --case_file data/qol1_cases.csv --weight_file data/qol1_weights.json --verbose --evaltarget qol-prelim-emt-d29ef563 --connect_to_ta1"
-        },
-        {
-            "name": "Show explanation",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "show_explanation.py",
-            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-dre-1-train --selector keds --training --alignment_target soartech-dryrun-0 --verbose --evaltarget qol-prelim-emt-d29ef563 --verbose --dump"
         }
     ]
 }

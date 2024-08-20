@@ -1,0 +1,132 @@
+[
+  {
+    "kdma": "Ingroup Bias",
+    "case_file": "temp/pretraining_cases.json",
+    "weights_found": [
+      {
+        "weights": {
+          "visited": 0.05772531405091286,
+          "conscious": 0.12744539976119995,
+          "mental_status": 0.11244472861289978,
+          "breathing": 0.09573034197092056,
+          "avpu": 0.13294722139835358,
+          "relationship": 0.028136422857642174,
+          "disposition": 0.2295711785554886,
+          "disposition_rank": 0.17875532805919647,
+          "treatment_count": 0.00861147791147232,
+          "treatment_count_rank": 0.023144468665122986,
+          "unvisited_count": 0.019167231395840645,
+          "injured_count": 0.056468408554792404,
+          "Exhaustive Priority": 0.6067157983779907,
+          "pDeath": 0.13898789882659912,
+          "pPain": 0.13148640096187592,
+          "pBrainInjury": 0.14729399979114532,
+          "pAirwayBlocked": 0.0054187048226594925,
+          "pInternalBleeding": 0.11943870782852173,
+          "pExternalBleeding": 0.08478507399559021,
+          "entropy": 0.10760620981454849,
+          "SEVERITY": 0.05476346239447594,
+          "SUPPLIES_REMAINING": 0.01904582418501377,
+          "DAMAGE_PER_SECOND": 0.3761090040206909,
+          "ACTION_TARGET_SEVERITY": 0.04780442640185356,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.1074758842587471,
+          "mental_status_rank": 0.025252243503928185,
+          "breathing_rank": 0.029088767245411873,
+          "avpu_rank": 0.02006857842206955
+        },
+        "error": 0.05765907479555051,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "entropy": 0.5,
+          "SUPPLIES_REMAINING": 0.5,
+          "relationship": 1.0
+        },
+        "error": 0.05709549786457543,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "STANDARD_TIME_SEVERITY": 1,
+          "mental_status": 4,
+          "relationship_rank": 1
+        },
+        "error": 0.06266322676155277,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pDeath": 1,
+          "disposition_rank": 0.5,
+          "SUPPLIES_REMAINING": 1,
+          "disposition": 1
+        },
+        "error": 0.05613287729716583,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVERITY": 2,
+          "mental_status": 1,
+          "disposition": 1
+        },
+        "error": 0.06853137339477673,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY": 2,
+          "pBrainInjury": 1,
+          "disposition_rank": 1
+        },
+        "error": 0.066166826988938,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY": 1,
+          "pBrainInjury": 2,
+          "disposition": 1
+        },
+        "error": 0.06493583882571248,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVERITY_CHANGE": 2,
+          "avpu": 4,
+          "relationship": 1
+        },
+        "error": 0.06377957226295332,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "STANDARD_TIME_SEVERITY": 0.25,
+          "pAirwayBlocked": 1,
+          "relationship_rank": 1
+        },
+        "error": 0.06364959379425253,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVERITY": 1.0,
+          "entropyDeath": 0.5
+        },
+        "error": 0.06954710641152223,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "Take-The-Best Priority": 1,
+          "pDeath": 2,
+          "relationship_rank": 1
+        },
+        "error": 0.06754813355222639,
+        "source": "derived empty"
+      }
+    ]
+  }
+]

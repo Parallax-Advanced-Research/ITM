@@ -1,4 +1,11 @@
 id: DryRunEval-MJ4-eval
+# v2.1.1
+#   - US soldier injury moved from shoulder to bicep
+#   - Kicker mental_status of UNRESPONSIVE changed to SHOCK
+#   - Passerby had a broken shoulder that is revealed midway through the scenario.  We have now added that injury to earlier scenes, but marked it as hidden.
+#   - Nasopharyngeal airway, Blanket, and Splint set to reusable: false
+#   - In Scene 4 (for Probe 7), the Passerby's shrapnel injury has been changed to treated.
+#   - To correctly support justify probes: conditions changed to action_conditions, condition_semantics changed to action_condition_semantics
 # v2.1.0
 #   - Kicker mental_status of SHOCK changed to CONFUSED (shock means physiological shock, not surprised)
 #   - Remove ability to treat in scene Scene 4 because that is meant for scene Probe 8
@@ -54,14 +61,14 @@ state:
     - {type: Pressure bandage, reusable: false, quantity: 0}
     - {type: Hemostatic gauze, reusable: false, quantity: 5}
     - {type: Decompression Needle, reusable: false, quantity: 0}
-    - {type: Nasopharyngeal airway, reusable: true, quantity: 0}
+    - {type: Nasopharyngeal airway, reusable: false, quantity: 0}
     - {type: Pulse Oximeter, reusable: true, quantity: 1}
-    - {type: Blanket, reusable: true, quantity: 0}
+    - {type: Blanket, reusable: false, quantity: 0}
     - {type: Epi Pen, reusable: false, quantity: 0}
     - {type: Vented Chest Seal, reusable: false, quantity: 0}
     - {type: Pain Medications, reusable: false, quantity: 0}
     - {type: Fentanyl Lollipop, reusable: false, quantity: 0}
-    - {type: Splint, reusable: true, quantity: 1}
+    - {type: Splint, reusable: false, quantity: 1}
     - {type: Blood, reusable: false, quantity: 1}
     - {type: IV Bag, reusable: false, quantity: 0}
     - {type: Burn Dressing, reusable: false, quantity: 0}
@@ -96,6 +103,7 @@ state:
         military_disposition: Civilian
       injuries:
         - {name: Shrapnel, location: left face, severity: moderate, status: visible, source_character: Kicker}
+        - {name: Broken Bone, location: right shoulder, severity: moderate, status: hidden, source_character: Kicker}
       vitals:
         avpu: ALERT
         ambulatory: true
@@ -107,7 +115,6 @@ state:
 scenes:
   - id: Scene 1
     end_scene_allowed: false
-    tagging: {enabled: false}
     action_mapping:
       - action_id: assess_Kicker
         action_type: CHECK_ALL_VITALS
@@ -466,6 +473,7 @@ scenes:
             military_disposition: Civilian
           injuries:
             - {name: Shrapnel, location: left face, severity: moderate, status: visible, source_character: Kicker}
+            - {name: Broken Bone, location: right shoulder, severity: moderate, status: hidden, source_character: Kicker}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -489,8 +497,8 @@ scenes:
               severity: low
         probe_id: Probe 3
         choice: Response 3-A
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 3
       - action_id: evac_Passerby
@@ -501,8 +509,8 @@ scenes:
         intent_action: true
         probe_id: Probe 3
         choice: Response 3-B
-        condition_semantics: not
-        conditions:
+        action_condition_semantics: not
+        action_conditions:
           probes:
             - Probe 3
       - action_id: more_injured
@@ -512,7 +520,7 @@ scenes:
         probe_id: Probe 3-A.1
         choice: Response 3-A.1-A
         next_scene: Transition to Scene 2
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 3-A
       - action_id: question_about_plan
@@ -522,7 +530,7 @@ scenes:
         probe_id: Probe 3-A.1
         choice: Response 3-A.1-B
         next_scene: Transition to Scene 2
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 3-A
       - action_id: innocent_victim
@@ -532,7 +540,7 @@ scenes:
         probe_id: Probe 3-B.1
         choice: Response 3-B.1-B
         next_scene: Transition to Scene 2
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 3-B
       - action_id: hidden_weapon
@@ -542,7 +550,7 @@ scenes:
         probe_id: Probe 3-B.1
         choice: Response 3-B.1-A
         next_scene: Transition to Scene 2
-        conditions:
+        action_conditions:
           probe_responses:
             - Response 3-B
     restricted_actions:
@@ -591,7 +599,7 @@ scenes:
             military_disposition: Allied US
             military_branch: US Army
           injuries:
-            - {name: Puncture, location: left shoulder, severity: moderate, status: visible}
+            - {name: Puncture, location: left bicep, severity: moderate, status: visible}
           vitals: 
             avpu: ALERT
             ambulatory: true
@@ -733,7 +741,7 @@ scenes:
           visited: true
           unstructured: >
             A civilian who had heard the shouting and paused to look back at the scene and was subsequently injured with some bleeding from shrapnel.
-            The bleeding has begun to be treated but not completely.
+            The shrapnel injury has been treated.
             He also mentions that he feels dizzy and his shoulder hurts a lot.
           intent: no intent
           demographics:
@@ -741,7 +749,7 @@ scenes:
             race: White
             military_disposition: Civilian
           injuries:
-            - {name: Shrapnel, location: left face, severity: moderate, status: visible, source_character: Kicker}
+            - {name: Shrapnel, location: left face, severity: moderate, status: treated, source_character: Kicker}
             - {name: Broken Bone, location: right shoulder, severity: moderate, status: discoverable, source_character: Kicker}
           vitals:
             avpu: ALERT
@@ -759,7 +767,7 @@ scenes:
             military_disposition: Allied US
             military_branch: US Army
           injuries:
-            - {name: Puncture, location: left shoulder, severity: moderate, status: visible}
+            - {name: Puncture, location: left bicep, severity: moderate, status: visible}
           vitals: 
             avpu: ALERT
             ambulatory: true
@@ -903,14 +911,14 @@ scenes:
         - {type: Pressure bandage, reusable: false, quantity: 0}
         - {type: Hemostatic gauze, reusable: false, quantity: 5}
         - {type: Decompression Needle, reusable: false, quantity: 0}
-        - {type: Nasopharyngeal airway, reusable: true, quantity: 0}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 0}
         - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: true, quantity: 0}
+        - {type: Blanket, reusable: false, quantity: 0}
         - {type: Epi Pen, reusable: false, quantity: 0}
         - {type: Vented Chest Seal, reusable: false, quantity: 0}
         - {type: Pain Medications, reusable: false, quantity: 0}
         - {type: Fentanyl Lollipop, reusable: false, quantity: 0}
-        - {type: Splint, reusable: true, quantity: 1}
+        - {type: Splint, reusable: false, quantity: 1}
         - {type: Blood, reusable: false, quantity: 1}
         - {type: IV Bag, reusable: false, quantity: 0}
         - {type: Burn Dressing, reusable: false, quantity: 0}
@@ -936,7 +944,7 @@ scenes:
           vitals:
             avpu: PAIN
             ambulatory: false
-            mental_status: UNRESPONSIVE
+            mental_status: SHOCK
             breathing: FAST
             heart_rate: FAST
             spo2: LOW
@@ -1039,7 +1047,7 @@ scenes:
           visited: true
           unstructured: >
             A civilian who had heard the shouting and paused to look back at the scene and was subsequently injured with some bleeding from shrapnel.
-            The bleeding has begun to be treated but not completely.
+            The shrapnel injury has been treated.
             He has fainted.
           intent: no intent
           demographics:
@@ -1047,7 +1055,7 @@ scenes:
             race: White
             military_disposition: Civilian
           injuries:
-            - {name: Shrapnel, location: left face, severity: moderate, status: visible, source_character: Kicker}
+            - {name: Shrapnel, location: left face, severity: moderate, status: treated, source_character: Kicker}
             - {name: Broken Bone, location: right shoulder, severity: moderate, status: discoverable, source_character: Kicker}
           vitals:
             avpu: UNRESPONSIVE
