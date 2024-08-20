@@ -21,9 +21,7 @@ NON_NOISY_KEYS = [
     'mental_status', 'breathing', 'hrpmin', 'avpu', 'intent', 'directness_of_causality', 
     'unvisited_count', 'injured_count', 'others_tagged_or_uninjured', 'aid_available', 
     'environment_type', 'questioning', 'assessing', 'treating', 'tagging', 'leaving', 
-    'category', 'SEVERITY', 'SEVERITY_CHANGE', 
-    'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE', 'AVERAGE_TIME_USED', 
-    'SUPPLIES_REMAINING', 'disposition',
+    'category', 'SUPPLIES_REMAINING', 'disposition',
     'Take-The-Best Priority', 'Exhaustive Priority', 'Tallying Priority', 
     'Satisfactory Priority', 'One-Bounce Priority',
     'HRA Strategy.time-resources.take-the-best', 
@@ -87,7 +85,10 @@ NON_NOISY_KEYS = [
 NOISY_KEYS : str = [
     "SMOL_MEDICAL_SOUNDNESS", "SMOL_MEDICAL_SOUNDNESS_V2", "MEDSIM_P_DEATH", "entropy", "entropyDeath", 
     'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding', 
-    'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER'
+    'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER', 'SEVEREST_SEVERITY', 
+    'SEVERITY', 'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
+    'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE',
+    'STANDARD_TIME_SEVERITY', 'DAMAGE_PER_SECOND'
 ]
      
 ALL_KEYS = NON_NOISY_KEYS + NOISY_KEYS
