@@ -33,6 +33,8 @@ class KDMACaseBaseRetainer(AlignmentTrainer):
             breakpoint()
         self.scene_kdmas[trained_scene] = dict()
         for (kdma_name, kdma_value) in feedback.kdma_values.items():
+            if kdma_value is None:
+                continue
             total_so_far = sum([val.get(kdma_name, 0) for val in self.scene_kdmas.values()])
             scene_kdma = kdma_value * len(feedback.source_probes) - total_so_far
             self.scene_kdmas[trained_scene][kdma_name] = scene_kdma
