@@ -3,7 +3,7 @@ import json
 from components.decision_selector.exhaustive import exhaustive_selector
 from components.alignment_trainer import kdma_case_base_retainer
 from components.decision_selector.kdma_estimation \
-    import write_case_base, triage_constants, \
+    import read_case_base, write_case_base, triage_constants, \
            WeightTrainer, SimpleWeightTrainer, \
            KEDSModeller, KEDSWithXGBModeller
 from typing import Any
@@ -402,7 +402,10 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
 def get_hint_types(cases):
     hint_names = set()
     for case in cases:
-        hint_names |= set(case.get("hint", {}).keys())
+        hint_val = case.get("hint", {})
+        if not isinstance(hint_val, dict):
+            hint_val = eval(hint_val)
+        hint_names |= set(hint_val.keys())
     return hint_names
 
     
@@ -536,9 +539,9 @@ def main():
                         help="How to measure the error of a case-based estimation, with the " \
                              + "probability of neighbor error or difference to neighbor average"
                        )
-    parser.add_argument("--analyze_only", type=argparse.BooleanOptionalAction, default=False, 
+    parser.add_argument("--analyze_only", action=argparse.BooleanOptionalAction, default=False, 
                         help="Generate kdma cases, but do not search for weights.")
-    parser.add_argument("--search_only", type=argparse.BooleanOptionalAction, default=False, 
+    parser.add_argument("--search_only", action=argparse.BooleanOptionalAction, default=False, 
                         help="Search for weights from existing kdma case file.")
     args = parser.parse_args()
     if args.case_file is None:
@@ -572,7 +575,7 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
     write_case_base(kdma_case_output_file, kdma_cases)
     return kdma_cases
  
-def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type)
+def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type):
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
