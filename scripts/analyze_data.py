@@ -548,12 +548,14 @@ def main():
         raise Error()
     
     if args.search_only:
+        source_file = args.kdma_case_file
         kdma_cases = read_case_base(args.kdma_case_file)
     else:
+        source_file = args.case_file
         kdma_cases = analyze_pre_cases(args.case_file, args.feedback_file, args.kdma_case_file, 
                                        args.alignment_file)
     if not args.analyze_only:
-        do_weight_search(kdma_cases, args.weight_file, args.all_weight_file, args.error_type)
+        do_weight_search(kdma_cases, args.weight_file, args.all_weight_file, args.error_type, source_file)
         
 def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment_file):
     pre_cases = read_pre_cases(case_file)
@@ -575,7 +577,7 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
     write_case_base(kdma_case_output_file, kdma_cases)
     return kdma_cases
  
-def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type):
+def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, source_file):
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
@@ -604,7 +606,7 @@ def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type):
                     fields, kdma_cases, kdma_name.lower())
         trainer.weight_train({key:1 for key in fields})
         new_weights[kdma_name] = trainer.get_best_weights()
-        all_weights.append({"kdma": kdma_name, "case_file": case_file, "weights_found": trainer.get_history()})
+        all_weights.append({"kdma": kdma_name, "case_file": source_file, "weights_found": trainer.get_history()})
     
     with open(all_weight_file, "a") as awf:
         awf.write(json.dumps(all_weights, indent=2))
