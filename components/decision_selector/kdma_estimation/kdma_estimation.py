@@ -29,7 +29,7 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
     kdma = kdma.lower()
     topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors)
     if len(topk) == 0:
-        return {}
+        return {},{}
 
     dists = [max(dist, 0.01) for (dist, case) in topk]
     total = sum(dists)
@@ -44,7 +44,7 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
         if mutable_case:
             cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
 
-    return kdma_probs
+    return kdma_probs, topk
 
 def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], neighbor_count: int = -1, print_neighbors: bool = False) -> list[dict[str, Any]]:
     if neighbor_count < 0:

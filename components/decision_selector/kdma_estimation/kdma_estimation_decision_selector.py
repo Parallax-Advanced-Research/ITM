@@ -93,14 +93,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         assessments = {}
         for (name, assessor) in self.assessors.items():
             assessments[name] = assessor.assess(probe)
-        minDist: float = math.inf
-        minDecision: Decision = None
-        minCase = None
-        minTopNeighbors = None
-        minDecisions: list[Decision] = []
         new_cases: list[dict[str, Any]] = list()
         self.index += 1
-        best_kdmas = None
+        topK = None
         possible_choices = []
         min_kdma_probs = {}
         max_kdma_probs = {}
@@ -127,7 +122,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     kdmaProbs = {assessment_val: 1}
                 else:
                     weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
-                    kdmaProbs = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name.lower(), self.cb, print_neighbors = self.print_neighbors, mutable_case = True)
+                    kdmaProbs, topK = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name.lower(), self.cb, print_neighbors = self.print_neighbors, mutable_case = True)
                     if kdmaProbs is None:
                         continue
                 cur_case[kdma_name] = kdmaProbs
@@ -176,15 +171,13 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             explanation = Explanation("kdma_estimation",
                                       {"best_case": best_case, 
                                        "weight_settings": self.weight_settings,
+                                       "similar_cases": topK,
                                       })
             
             best_decision.explanations = [explanation]
             
         
-        return (best_decision, best_case["distance"])
-        
-    def record_explanation_itmes(self, best_decision, best_case, best_kdma_probs):
-        pass
+        return (best_decision, best_case["distance"])        
         
     def update_kdma_probabilities(self, kdma_probs: dict[str, float], new_kdma_probs: dict[str, float], fn: Callable[[float, float], float] = min):
         ret_kdma_probs = dict()

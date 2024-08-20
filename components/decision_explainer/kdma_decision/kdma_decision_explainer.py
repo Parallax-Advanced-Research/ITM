@@ -1,3 +1,4 @@
+import ast
 from domain.internal import Decision, Explanation
 from components import DecisionExplainer
 from typing import Dict, Any
@@ -14,13 +15,14 @@ class KDMADecisionExplainer(DecisionExplainer):
         self.decision = decision        
         for explanation_item in self.decision.explanations:
             # if it is not a list
-            if not isinstance(explanation_item, list):            
-                if explanation_item.decision_type == "kdma_estimation":                
+            if isinstance(explanation_item, Explanation):            
+                if explanation_item.explanation_type == "kdma_estimation":                
                     self.explanation = explanation_item
                     return self.return_description(self.explanation)            
         return None
        
     def return_description(self, explanation):
+        output = "Could not generate explanation"
         # the attributes used in the retrieval of the most similar case
         weight_settings = explanation.params["weight_settings"]["kdma_specific_weights"]
         
@@ -29,34 +31,52 @@ class KDMADecisionExplainer(DecisionExplainer):
         
         # top 5 by value in weights
         relevant_attributes = [k for k, v in sorted(weights.items(), key=lambda item: item[1], reverse=True)][:5]
-       
+               
+        '''
+        selected decision
+        '''
         # these are the attributes for is the selected decision combined so that we can compare to the similar case
         decision_action = self.decision.value # this is the action object that is associated with the decision        
         decision_attributes = {} # a dictionary to hold the decision attributes of the chosen decision to comare to the similar case
         # start collecting the attributes of the decision
-        decision_attributes.update(decision_action.params)
-        decision_attributes.update(explanation.params["best_case"])
-        
-        # these are the attributes for the most similar case     
-        similar_case_attributes = explanation.params.get("best_case", {})
-        
-        
-        # extract the attributes that are relevant to the similarity calculation    
-        # new instance is how Anik's code refers to the chosen decision
-        new_instance = {k: v for k, v in decision_attributes.items() if k in relevant_attributes}
+        decision_attributes.update(explanation.params["best_case"])        
+        # create a sparse new_instance dictionary representing the selected decision for Anik's code
+        new_instance = {k: v for k, v in decision_attributes.items() if k in relevant_attributes} # only select the attributes that have weights that were used in the similarity calculation
+        new_instance.update(decision_action.params)
         action_new_instance = decision_action.name
+        
+        '''
+        most similar case
+        '''       
+        # most similar cases saved from decision selector     
+        similar_cases = explanation.params.get("similar_cases")
+        # sort the similar cases by distance
+        # if there are no similar cases skip this loop
+        if similar_cases:
+                
+            similar_cases.sort(key=lambda x: x[0])
+            
+            # similar_case_attributtes is the dictionary in the tuple
+            similar_case_attributes = similar_cases[0][1] # the first tuple in the sorted list is the most similar case
+            
+            # see if similar_case_attributes has an action key
+            if "action" in similar_case_attributes:                
+                similar_case_action = similar_case_attributes.pop("action") # remove the action from the similar case attributes and append it to the similar_case_action_params so it matches the new_instance
 
-        # return the case with attributes that is most similar to the selected decision
-        most_similar_case = similar_case_attributes
-        
-        # if there is a matching key in most_similar and relevant_weights, return a dictionary with the key and value
-        # the result is a dictionary with just the weights used in the similarity calculation
-        most_similar_instance = {k: v for k, v in most_similar_case.items() if k in relevant_attributes}
-        
-        #attributes = self.round_attributes(explanation.params["attributes"])       
-        action_most_similar = most_similar_case["action_name"]
-        # explanation_text = generate_explanation_text(new_instance, most_similar_instance, action_new_instance, action_most_similar)
-        
-        return new_instance, action_new_instance, most_similar_instance, action_most_similar
+                #interpret similar_case_action_params as a dictionary
+                similar_case_action_params = ast.literal_eval(similar_case_action) # this was stored as a string so convert to a dictionary
+                similar_case_action_name = similar_case_action_params["name"]
+                #similar_case_attributes.update(similar_case_action_params["params"])
+                
+                # extract the attributes that are relevant to the similarity calculation    
+                most_similar_instance = {k: v for k, v in similar_case_attributes.items() if k in relevant_attributes}
+                most_similar_instance.update(similar_case_action_params["params"])
+                action_most_similar = similar_case_action_name
+                
+                output = generate_explanation_text(new_instance, most_similar_instance, action_new_instance, action_most_similar)
+        else:
+            output = "No similar cases found"
+        print(output)
+        return output
 
 

@@ -29,19 +29,9 @@ with open(input_file, 'rb') as f:
         most_similar_instance = dict(sorted(most_similar_instance.items(), key=lambda x: x[0].lower()))
         
         
-        df = pd.concat([df, pd.DataFrame([{"new_instance": new_instance, "most_similar_instance": most_similar_instance}])], ignore_index=True)
+        #df = pd.concat([df, pd.DataFrame([{"new_instance": new_instance, "most_similar_instance": most_similar_instance}])], ignore_index=True)
 
         
-    # Determine the filename with increment if necessary
-    base_filename = "instance_comparison"
-    extension = ".csv"
-    filename = base_filename + extension
-    counter = 1
-    while os.path.exists(filename):
-        filename = f"components/decision_explainer/kdma_decision/tmp/{base_filename}_{counter}{extension}"
-        counter += 1
-        
-    # write to csv
-    df.to_csv(filename, index=False)
+
         
         

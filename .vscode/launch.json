@@ -20,7 +20,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python Debugger: Current File with Arguments",
+            "name": "qol-dre-1-train",
             "type": "debugpy",
             "request": "launch",
             "program": "tad_tester.py",
