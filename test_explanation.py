@@ -22,11 +22,11 @@ with open(input_file, 'rb') as f:
         # add action_new_instance to the new_instance dictionary
         new_instance["action_name"] = action_new_instance
         # sort the new_instance dictionary
-        new_instance = dict(sorted(new_instance.items()))        
+        new_instance = dict(sorted(new_instance.items(), key=lambda x: x[0].lower()))        
         # add action_most_similar to the most_similar_instance dictionary
         most_similar_instance["action_name"] = action_most_similar
         # sort the most_similar_instance dictionary
-        most_similar_instance = dict(sorted(most_similar_instance.items()))
+        most_similar_instance = dict(sorted(most_similar_instance.items(), key=lambda x: x[0].lower()))
         
         
         df = pd.concat([df, pd.DataFrame([{"new_instance": new_instance, "most_similar_instance": most_similar_instance}])], ignore_index=True)
@@ -38,7 +38,7 @@ with open(input_file, 'rb') as f:
     filename = base_filename + extension
     counter = 1
     while os.path.exists(filename):
-        filename = f"{base_filename}_{counter}{extension}"
+        filename = f"components/decision_explainer/kdma_decision/tmp/{base_filename}_{counter}{extension}"
         counter += 1
         
     # write to csv
