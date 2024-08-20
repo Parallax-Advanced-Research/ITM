@@ -64,6 +64,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             self.weight_settings = {}
         else:
             self.initialize_weights(weight_filename)
+        self.training = args.training
 
 
     def initialize_weights(self, weight_filename):
@@ -125,6 +126,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     kdmaProbs, topK = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name.lower(), self.cb, print_neighbors = self.print_neighbors, mutable_case = True)
                     if kdmaProbs is None:
                         continue
+                    if self.print_neighbors and cur_decision.kdmas is not None:
+                        error = 1-kdmaProbs.get(cur_decision.kdmas[kdma_name], 0)
+                        if error > 0.1:
+                            util.logger.warning("Probabilities off by " + str(error))
+                            breakpoint()
                 cur_case[kdma_name] = kdmaProbs
                 cur_kdma_probs[kdma_name] = kdmaProbs
             min_kdma_probs = self.update_kdma_probabilities(min_kdma_probs, cur_kdma_probs, min)
@@ -418,6 +424,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
                 case[inner_key] = inner_value
 
     case["context"] = d.context
+    case['scene'] = probe.state.orig_state.get('meta_info', {}).get('scene_id', None)
     return case
 
 

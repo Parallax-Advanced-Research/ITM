@@ -25,9 +25,9 @@ def estimate_value_from_probability_dict(probability_dict: dict[float, float]) -
         estimated_value += prob * value
     return estimated_value
         
-def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False, mutable_case: bool = False) -> float:
+def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False, mutable_case: bool = False, reject_same_scene=False) -> float:
     kdma = kdma.lower()
-    topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors)
+    topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors, reject_same_scene = reject_same_scene)
     if len(topk) == 0:
         return {},{}
 
@@ -46,7 +46,7 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
 
     return kdma_probs, topk
 
-def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], neighbor_count: int = -1, print_neighbors: bool = False) -> list[dict[str, Any]]:
+def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], neighbor_count: int = -1, print_neighbors: bool = False, reject_same_scene = False) -> list[dict[str, Any]]:
     if neighbor_count < 0:
         neighbor_count = triage_constants.DEFAULT_NEIGHBOR_COUNT
     lst = []
@@ -55,6 +55,8 @@ def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases:
         if kdma not in pcase or pcase[kdma] is None:
             continue
         if cur_case['action_type'] != pcase['action_type']:
+            continue
+        if reject_same_scene and cur_case['scene'] == pcase['scene']:
             continue
         distance = calculate_distance(pcase, cur_case, weights, local_compare)
         if distance > max_distance:
