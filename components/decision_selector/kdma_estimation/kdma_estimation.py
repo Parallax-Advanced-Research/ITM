@@ -128,6 +128,8 @@ def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: 
             else:
                 kdma_probs = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list)
                 error = 1 - kdma_probs.get(case[kdma], 0)
+                if error > 0.9: error = error * 4
+                elif error > 0.5: error = error * 2
             case_count += 1
             error_total += error * error
         for case in part:
