@@ -2,7 +2,7 @@ import typing
 from util.dict_tools import Dict_No_Overwrite
 from .decision_metric import DecisionMetrics, DecisionName, DecisionMetric
 from .justification import Justification
-from .explanation import ExplanationItem
+from .explanation import Explanation
 from .kdmas import KDMAs
 
 T = typing.TypeVar('T')
@@ -41,14 +41,14 @@ class Decision(typing.Generic[T]):
     ## decisions.
     def __init__(self, id_: str, value: T,
                  justifications: list[Justification],
-                 explanations: list[ExplanationItem],
+                 explanations: list[Explanation],
                  metrics: typing.Mapping[DecisionName, DecisionMetric],
                  kdmas: KDMAs,
                  intend: bool):
         self.id_: str = id_
         self.value: T = value
         self.justifications: list[Justification] = justifications,
-        self.explanations: list[ExplanationItem] = explanations,
+        self.explanations: list[Explanation] = explanations,
         self.metrics: DecisionMetrics = Dict_No_Overwrite()
         self.selected = False
         if metrics:

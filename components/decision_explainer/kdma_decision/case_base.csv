@@ -1,0 +1,91 @@
+﻿attribute,text_value,description,type
+p_death,,the probability of death was,continuous
+pDeath.stdev,,the standard deviation of the probability of death was,continuous
+perceivedquantityoflivessaved,,the perceived quantity of lives saved was,continuous
+pExternalBleeding,,the probability of external bleeding was,continuous
+pExternalBleeding.stdev,,the standard deviation of the probability of  external bleeding was,continuous
+pInternalBleeding,,the probability of internal bleeding was,continuous
+pInternalBleeding.stdev,,the standard deviation of the probability of  internal bleeding was,continuous
+pPain,,the probability of pain was,continuous
+pPain.stdev,,the standard deviation of the probability of pain was,continuous
+pAirwayBlocked,,the probability that the airway was blocked,continuous
+pAirwayBlocked.stdev,,the standard deviation of the probability that the airway was blocked,continuous
+pBrainInjury,,the probability of brain damage was,continuous
+pBrainInjury.stdev,,the standard deviation of the probability of brain damage was,continuous
+qualityoflife,,the quality of life of was,continuous
+rank,,the rank of the casualty was,categorical
+relationship,,the relationship of the decision maker to the casualty was,categorical
+visited,TRUE,the patient had been visted,boolean
+visited,FALSE,the patient had not been visited,boolean
+aid_available,TRUE,aid was available,boolean
+aid_available,FALSE,aid was not available,boolean
+intent,TRUE,the casualty selected for treatment did intend to cause harm,boolean
+intent,FALSE,the casualty selected for treatment did not intend to cause harm,boolean
+treatment,,the treatment was,categorical
+directness_of_causality,DIRECT,the casualty was the direct cause of the harm,multicategorical
+directness_of_causality,INDIRECT,the casualty was the indirect cause of the harm,multicategorical
+directness_of_causality,FALSE,the casualty was not the cause of the harm,multicategorical
+category,,the casualty was tagged as ,categorical
+unvisited_count,,the number of unvisited casualties was,continuous
+injured_count,,the number of injured was,continuous
+others_tagged_or_injured,,the number of others tagged or injured was,continuous
+others_tagged_or_uninjured,,the number of others tagged or uninjured was,continuous
+WEIGHTED_RESOURCE_SCORE,,the weighted resource score was,continuous
+environment_type,,the type of environment was ,categorical
+SUPPLIES_REMAINING,,the quantity of supplies remaining was,continuous
+SUPPLIES_USED,,the quantity of supplies used was,continuous
+SEVEREST_SEVERITY,,the most severe severity was,continuous
+SEVEREST_SEVERITY_CHANGE,,the change in the most severe severity was,continuous
+CASUALTY_SEVERITY,,the severity of casualty #name# was $value$,categorical-continuous
+CASUALTY_P_DEATH,,the probability of death for casualty #name# was $value$,categorical-continuous
+CASUALTY_DAMAGE_PER_SECOND,,the damage per second for casualty #name# was $value$,categorical-continuous
+breathing,NORMAL,the casualty breathing was  normal,multicategorical
+breathing,FAST,the casualty breathing was fast,multicategorical
+breathing,RESTRICTED,the casualty breathing was restricted,multicategorical
+breathing,SLOW,the casualty breathing was slow,multicategorical
+breathing,NONE,the casualty was not breathing,multicategorical
+tagged,MINIMAL,the casualty was tagged as Minimal (Green),multicategorical
+tagged,DELAYED,the casualty was tagged as Delayed (Yellow),multicategorical
+tagged,IMMEDIATE,the casualty was tagged as Immediate (Red),multicategorical
+tagged,EXPECTANT,the casualty was tagged as Expectant (Black),multicategorical
+avpu,ALERT,the casualty's level of response was,multicategorical
+avpu,VOICE,the casualty could speak  (AVPU Voice),multicategorical
+avpu,PAIN,the casualty exhibited pain (AVPU Pain),multicategorical
+avpu,UNRESPONSIVE,the casualty was unresponsive (AVPU Unresponsive),multicategorical
+Take-The-Best Priority,0,the take the best priority was not considered,binary
+Take-The-Best Priority,1,the take the best priority was considered,binary
+HRA Strategy.time-resources.take-the-best,0,the time resource take the best priority was not considered,binary
+HRA Strategy.time-resources.take-the-best,1,the time resource take the best priority was considered,binary
+Tallying Priority,0,the tallying priority was not considered,binary
+Tallying Priority,1,the tallying priority was considered,binary
+One-Bounce Priority,0,the one bounce priority was taken into account,binary
+One-Bounce Priority,1,the one bounce priority was not taken into account,binary
+Satisfactory Priority,0,the satisfactory priority was not taken into account,binary
+Satisfactory Priority,1,the satisfactory priority was taken into account,binary
+SEVERITY,,the severity of the injury was,continuous
+SEVERITY_CHANGE,,the change in severity of the injury was,continuous
+sex,,the sex of the casualty was,categorical
+SMOL_MEDICAL_SOUNDNESS,,the medical soundness score of the decision was,continuous
+SMOL_MEDICAL_SOUNDNESS.stdev,,the standard deviation of the medical soundness score was,continuous
+STANDARD_TIME_SEVERITY,,the standard time severity was,continuous
+SUPPLIES_REMAINING,,the quantity of supplies remaining was,continuous
+SUPPLIES_USED,,the quantity of supplies used was,continuous
+age,,the casualty's age was,continuous
+ACTION_TARGET_SEVERITY,,the action target severity was,continuous
+ACTION_TARGET_SEVERITY_CHANGE,,the action target severity change was,continuous
+AVERAGE_TIME_USED,,the average time used was,continuous
+bprop.perceivedquantityoflivessaved,,the perceived quantity of lives saved was,continuous
+bprop.qualityoflife,,the quality of life was,continuous
+DAMAGE_PER_SECOND,,the damage per second was,continuous
+hrpmin,,the casualty's heart rate per minute was,continuous
+INFORMATION_GAINED,,the information gained  from the action was,continuous
+ingroup bias,,the ingroup bias of the decision maker was,continuous
+MEDSIM_P_DEATH,,the simulated probability of death was,continuous
+MEDSIM_P_DEATH.stdev,,the standard deviation of the simulated probability of death was,continuous
+MEDSIM_P_DEATH_ONE_MIN_LATER,,the simulated probability of death one minute later was,continuous
+MEDSIM_P_DEATH_ONE_MIN_LATER.stdev,,the standard deviation of the simulated probability of death one minute later was,continuous
+mental_status,,the mental status of the casualty was,categorical
+moral judgement,,the moral judgement of the decision maker was,continuous
+context,,the context was,categorical
+conscious,TRUE,the casualty was conscious,boolean
+conscious,FALSE,the casualty was not conscious,boolean

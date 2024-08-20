@@ -4,7 +4,7 @@ import math
 import statistics
 import util
 from typing import Any, Sequence, Callable
-from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, Decision, Action, State
+from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, Decision, Action, State, Explanation, update_decision_parameters
 from domain.ta3 import TA3State, Casualty, Supply
 from domain.enum import ActionTypeEnum
 from components import DecisionSelector, DecisionAnalyzer, Assessor
@@ -30,6 +30,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.variant = "baseline"
         self.index = 0
         self.print_neighbors = True
+        self.record_explanations = True
         self.record_considered_decisions = False
         self.weight_settings = {}
         self.insert_pauses = False
@@ -167,8 +168,21 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
         if not self.empty_probs(best_kdma_probs):
             self.kdma_choice_history.append((best_kdma_probs, min_kdma_probs, max_kdma_probs))
+            
+        if self.record_explanations:
+            # assessors
+            explanation = Explanation("kdma_estimation",
+                                      {"best_case": best_case, 
+                                       "weight_settings": self.weight_settings,
+                                      })
+            
+            best_decision.explanations = [explanation]
+            
+        
         return (best_decision, best_case["distance"])
         
+    def record_explanation_itmes(self, best_decision, best_case, best_kdma_probs):
+        pass
         
     def update_kdma_probabilities(self, kdma_probs: dict[str, float], new_kdma_probs: dict[str, float], fn: Callable[[float, float], float] = min):
         ret_kdma_probs = dict()
