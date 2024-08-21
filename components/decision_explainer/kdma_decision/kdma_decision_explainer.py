@@ -29,7 +29,9 @@ class KDMADecisionExplainer(DecisionExplainer):
         if most_similar_instance:
             output = generate_explanation_text(new_instance, most_similar_instance, action_new_instance, action_most_similar)
         else:
-            output = "Could not generate explanation."
+            output = "Could not generate explanation"
+
+
         return output
 
     def get_relevant_attributes(self, explanation):
@@ -57,6 +59,11 @@ class KDMADecisionExplainer(DecisionExplainer):
             similar_case_action_name = similar_case_action_params["name"]
             most_similar_instance = {k: v for k, v in similar_case_attributes.items() if k in relevant_attributes}
             most_similar_instance.update(similar_case_action_params["params"])
-            return most_similar_instance, similar_case_action_name
+            
+        elif "action_name" in similar_case_attributes:
+            similar_case_action_name = similar_case_attributes.get("action_name")            
+            most_similar_instance = {k: v for k, v in similar_case_attributes.items() if k in relevant_attributes}
+            most_similar_instance.update({"treatment": similar_case_attributes.get("treatment")})
         else:
             return None, None
+        return most_similar_instance, similar_case_action_name
