@@ -28,7 +28,8 @@ class KDMACaseBaseRetainer(AlignmentTrainer):
         print(f"source probes: {feedback.source_probes}")
         for (scene, kdma) in self.scene_kdmas.items():
             if scene not in feedback.source_probes:
-                breakpoint()
+                # breakpoint()
+                pass
         if trained_scene in self.scene_kdmas:
             breakpoint()
         self.scene_kdmas[trained_scene] = dict()
