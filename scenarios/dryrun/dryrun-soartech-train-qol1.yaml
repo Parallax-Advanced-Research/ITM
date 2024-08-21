@@ -113,7 +113,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 32
@@ -136,11 +136,11 @@ scenes:
       unstructured: Penetrating wound to the abdomen
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -226,7 +226,7 @@ scenes:
     parameters:
       treatment: Nasopharyngeal airway
     probe_id: '4.3'
-    unstructured: Treat Casualty U
+    unstructured: Treat Casualty U with nasopharyngeal airway
   - action_id: action-1
     action_type: APPLY_TREATMENT
     character_id: casualty_w
@@ -237,7 +237,7 @@ scenes:
     parameters:
       treatment: Tourniquet
     probe_id: '4.3'
-    unstructured: Treat Casualty W
+    unstructured: Treat Casualty W with tourniquet
   end_scene_allowed: false
   id: id-2
   next_scene: id-3
@@ -283,7 +283,7 @@ scenes:
         avpu: UNRESPONSIVE
         breathing: NONE
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: UNRESPONSIVE
         spo2: NORMAL
     - demographics:
         age: 34
@@ -310,7 +310,7 @@ scenes:
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -454,7 +454,7 @@ scenes:
         avpu: UNRESPONSIVE
         breathing: NONE
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: UNRESPONSIVE
         spo2: NORMAL
     - demographics:
         age: 34
@@ -481,7 +481,7 @@ scenes:
         avpu: UNRESPONSIVE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: UNRESPONSIVE
         spo2: NORMAL
     environment:
       decision_environment:
@@ -620,11 +620,11 @@ scenes:
       unstructured: Has penetrating trauma to the abdomen and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 72
@@ -644,11 +644,11 @@ scenes:
       unstructured: Has a puncture to the leg and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -806,11 +806,11 @@ scenes:
       unstructured: Has a puncture wound to the leg and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 72
@@ -830,11 +830,11 @@ scenes:
       unstructured: Has a puncture to the leg and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -992,11 +992,11 @@ scenes:
       unstructured: Has penetrating trauma to the abdomen and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 72
@@ -1016,11 +1016,11 @@ scenes:
       unstructured: Has a puncture to the leg and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1155,11 +1155,11 @@ scenes:
       unstructured: Has penetrating trauma to the abdomen and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 72
@@ -1179,11 +1179,11 @@ scenes:
       unstructured: Has a puncture to the leg and is bleeding
       visited: true
       vitals:
-        ambulatory: false
+        ambulatory: true
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1328,7 +1328,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 34
@@ -1356,7 +1356,7 @@ scenes:
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1442,7 +1442,7 @@ scenes:
     parameters:
       treatment: Tourniquet
     probe_id: '4.10'
-    unstructured: Treat Casualty Z
+    unstructured: Treat Casualty Z with tourniquet
   - action_id: action-1
     action_type: CHECK_ALL_VITALS
     character_id: casualty_z
@@ -1463,7 +1463,7 @@ scenes:
     parameters:
       treatment: Burn Dressing
     probe_id: '4.10'
-    unstructured: Treat Casualty A
+    unstructured: Treat Casualty A with burn dressing
   - action_id: action-3
     action_type: CHECK_ALL_VITALS
     character_id: casualty_a
@@ -1515,7 +1515,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 34
@@ -1543,7 +1543,7 @@ scenes:
         avpu: ALERT
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1629,7 +1629,7 @@ scenes:
     parameters:
       treatment: Burn Dressing
     probe_id: qol-dre-train2-Probe-11
-    unstructured: Treat Casualty L
+    unstructured: Treat Casualty L with burn dressing
   - action_id: action-1
     action_type: APPLY_TREATMENT
     character_id: casualty_m
@@ -1640,7 +1640,7 @@ scenes:
     parameters:
       treatment: Tourniquet
     probe_id: qol-dre-train2-Probe-11
-    unstructured: Treat Casualty M
+    unstructured: Treat Casualty M with tourniquet
   end_scene_allowed: false
   id: id-10
   next_scene: id-11
@@ -1683,7 +1683,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 28
@@ -1707,11 +1707,11 @@ scenes:
       unstructured: Has bilateral amputation of both legs
       visited: true
       vitals:
-        ambulatory: true
+        ambulatory: false
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1859,7 +1859,7 @@ scenes:
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     - demographics:
         age: 28
@@ -1883,11 +1883,11 @@ scenes:
       unstructured: Has bilateral amputation of both legs
       visited: true
       vitals:
-        ambulatory: true
+        ambulatory: false
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
-        mental_status: CALM
+        mental_status: AGONY
         spo2: NORMAL
     environment:
       decision_environment:
@@ -1965,151 +1965,6 @@ scenes:
 state:
   characters:
   - demographics:
-      age: 28
-      military_disposition: Military Adversary
-      mission_importance: normal
-      race: Asian
-      sex: M
-      skills: []
-    id: casualty_a
-    injuries:
-    - location: left thigh
-      name: Burn
-      severity: major
-      status: visible
-    name: Casualty A
-    rapport: neutral
-    unstructured: Has a 40% body surface area burn
-    vitals:
-      ambulatory: true
-      avpu: VOICE
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 25
-      military_disposition: Civilian
-      mission_importance: normal
-      race: Asian
-      sex: M
-      skills: []
-    id: casualty_g
-    injuries:
-    - location: right stomach
-      name: Puncture
-      severity: major
-      status: visible
-    name: Casualty G
-    rapport: neutral
-    unstructured: Has penetrating trauma to the abdomen and is bleeding
-    vitals:
-      ambulatory: false
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 72
-      military_disposition: Civilian
-      mission_importance: normal
-      race: Asian
-      sex: M
-      skills: []
-    id: casualty_h
-    injuries:
-    - location: right thigh
-      name: Puncture
-      severity: major
-      status: visible
-    name: Casualty H
-    rapport: neutral
-    unstructured: Has a puncture to the leg and is bleeding
-    vitals:
-      ambulatory: false
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 34
-      military_disposition: Military Adversary
-      mission_importance: normal
-      race: Asian
-      sex: M
-      skills: []
-    id: casualty_l
-    injuries:
-    - location: right side
-      name: Burn
-      severity: extreme
-      status: visible
-    name: Casualty L
-    rapport: neutral
-    unstructured: Has a 50% body surface area burn
-    vitals:
-      ambulatory: true
-      avpu: VOICE
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 28
-      military_disposition: Military Adversary
-      mission_importance: normal
-      race: Asian
-      sex: M
-      skills: []
-    id: casualty_m
-    injuries:
-    - location: left thigh
-      name: Amputation
-      severity: extreme
-      status: visible
-    - location: right thigh
-      name: Amputation
-      severity: extreme
-      status: visible
-    name: Casualty M
-    rapport: neutral
-    unstructured: Has bilateral amputation of both legs
-    vitals:
-      ambulatory: true
-      avpu: VOICE
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 29
-      military_branch: US Marine Corps
-      military_disposition: Allied US
-      mission_importance: normal
-      race: Black
-      rank: E-4
-      rank_title: Corporal
-      sex: F
-      skills: []
-    id: casualty_n
-    injuries:
-    - location: left thigh
-      name: Amputation
-      severity: extreme
-      status: visible
-    name: Casualty N
-    rapport: neutral
-    unstructured: Has an amputation of the leg
-    vitals:
-      ambulatory: false
-      avpu: VOICE
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
       age: 32
       military_branch: US Marine Corps
       military_disposition: Allied US
@@ -2130,11 +1985,11 @@ state:
     unstructured: Penetrating wound to the abdomen
     visited: true
     vitals:
-      ambulatory: false
+      ambulatory: true
       avpu: VOICE
       breathing: FAST
       heart_rate: FAST
-      mental_status: CALM
+      mental_status: AGONY
       spo2: NORMAL
   - demographics:
       age: 31
@@ -2161,106 +2016,7 @@ state:
       avpu: UNRESPONSIVE
       breathing: NONE
       heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 34
-      military_branch: US Marine Corps
-      military_disposition: Allied US
-      mission_importance: normal
-      race: Black
-      rank: E-4
-      rank_title: Corporal
-      sex: F
-      skills: []
-    id: casualty_w
-    injuries:
-    - location: left thigh
-      name: Puncture
-      severity: major
-      status: visible
-    name: Casualty W
-    rapport: neutral
-    unstructured: Has a gunshot wound to the leg with severe bleeding
-    vitals:
-      ambulatory: true
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 25
-      military_disposition: Civilian
-      mission_importance: normal
-      race: Asian
-      sex: M
-      skills: []
-    id: casualty_x
-    injuries:
-    - location: left thigh
-      name: Puncture
-      severity: substantial
-      status: visible
-    name: Casualty X
-    rapport: neutral
-    unstructured: Has a puncture wound to the leg and is bleeding
-    vitals:
-      ambulatory: false
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 72
-      military_disposition: Civilian
-      mission_importance: normal
-      race: Asian
-      sex: M
-      skills: []
-    id: casualty_y
-    injuries:
-    - location: right thigh
-      name: Puncture
-      severity: substantial
-      status: visible
-    name: Casualty Y
-    rapport: neutral
-    unstructured: Has a puncture to the leg and is bleeding
-    vitals:
-      ambulatory: false
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
-      spo2: NORMAL
-  - demographics:
-      age: 34
-      military_disposition: Military Adversary
-      mission_importance: normal
-      race: Asian
-      sex: M
-      skills: []
-    id: casualty_z
-    injuries:
-    - location: left forearm
-      name: Laceration
-      severity: major
-      status: visible
-    - location: right calf
-      name: Laceration
-      severity: major
-      status: visible
-    name: Casualty Z
-    rapport: neutral
-    unstructured: Has lacerations to both arms and legs
-    vitals:
-      ambulatory: true
-      avpu: ALERT
-      breathing: FAST
-      heart_rate: FAST
-      mental_status: CALM
+      mental_status: UNRESPONSIVE
       spo2: NORMAL
   environment:
     decision_environment:

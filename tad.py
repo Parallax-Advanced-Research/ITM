@@ -159,9 +159,11 @@ def api_test(args, driver = None):
                 difference.pop("actions_performed")
                 logger.debug(f"-State Removals: {difference}")
                 new_scene = new_probe.state["meta_info"]["scene_id"]
+                if new_scene != scene:
+                    driver.reset_memory()
             else:
                 new_scene = None
-            if args.training:
+            if args.training and (args.session_type == "adept" or new_probe is None):
                 for alignment in client.get_session_alignments():
                     driver.train(alignment, new_probe is None, new_scene != scene, scene)
                     logger.info(f"{alignment.alignment_target_id}: {alignment.score}")

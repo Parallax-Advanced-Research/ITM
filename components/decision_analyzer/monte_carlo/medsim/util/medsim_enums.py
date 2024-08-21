@@ -27,7 +27,7 @@ class Affector:
     PREFIX = 'ACTIVE '
 
     def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
-                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False, is_env: bool = False):
         self.name = name
         self.location = location
         self.severity = 0.0
@@ -62,8 +62,9 @@ class Affector:
 
 class Injury(Affector):
     def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
-                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
-        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn)
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False, is_env=False):
+        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn,
+                         is_env)
 
 
 class HealingItem(Affector):
@@ -376,6 +377,11 @@ class Injuries(Enum):
     ENVIRONMENTAL_COLLISION_HAZARD = 'collision'
     ENVIRONMENTAL_FIREARM_HAZARD = 'firearm'
     ENVIRONMENTAL_FIGHT_HAZARD = 'fight'
+
+
+ENVIRONMENTAL_HAZARDS = [Injuries.ENVIRONMENTAL_FIRE_HAZARD.value, Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value,
+                         Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value, Injuries.ENVIRONMENTAL_COLLISION_HAZARD.value,
+                         Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value, Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value]
 
 
 class Metric(Enum):

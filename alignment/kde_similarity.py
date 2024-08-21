@@ -38,6 +38,8 @@ def _normalize_2feature(x, y, z):
     
     # Normalize z by the computed area
     pdf = z / area
+    if area == 0.0:
+        breakpoint()
 
     return pdf
 

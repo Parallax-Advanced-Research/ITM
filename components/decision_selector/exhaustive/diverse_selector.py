@@ -19,7 +19,7 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         self.rg = random.Random()
         self.rg.seed()
         self.case_index : int = 0
-        self.retainer = KDMACaseBaseRetainer()
+        self.retainer = KDMACaseBaseRetainer(continue_search = continue_search)
         self.cases: dict[list[dict[str, Any]]] = dict()
         self.new_cases: list[dict[str, Any]] = list()
         # self.new_cases : list[dict[str, Any]] = list()
@@ -43,6 +43,7 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         new_case["index"] = self.case_index
         new_case["actions"] = ([act.to_json() for act in probe.state.actions_performed] 
                                 + [cur_decision.value.to_json()])
+        new_case["scene"] = probe.state.orig_state["meta_info"]["scene_id"]
         if cur_decision.kdmas is not None and cur_decision.kdmas.kdma_map is not None:
             new_case["hint"] = cur_decision.kdmas.kdma_map
             self.commit_case(new_case)
@@ -121,11 +122,11 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         return False
 
     def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, 
-              final: bool, scene_end: bool, new_scene: str):
-        self.retainer.train(scenario, actions, feedback, final, scene_end, new_scene)
+              final: bool, scene_end: bool, trained_scene: str):
+        self.retainer.train(scenario, actions, feedback, final, scene_end, trained_scene)
         if not scene_end:
             return
-        val = self.retainer.scene_kdmas[new_scene]
+        val = self.retainer.scene_kdmas[trained_scene]
         for case in self.new_cases:
             case["hint"] = val
             self.commit_case(case)

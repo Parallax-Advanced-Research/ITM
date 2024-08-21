@@ -1,0 +1,771 @@
+[
+  {
+    "kdma": "QualityOfLife",
+    "case_file": "temp/pretraining_cases.json",
+    "weights_found": [
+      {
+        "weights": {
+          "age": 1.1826144456863403,
+          "military_paygrade": 0.006177749950438738,
+          "disposition": 0.012960260733962059,
+          "treatment": 1.2940574884414673,
+          "Take-The-Best Priority": 1.9934459924697876,
+          "SEVERITY": 0.189674973487854,
+          "AVERAGE_TIME_USED": 0.6701705455780029,
+          "MEDSIM_P_DEATH": 0.1049114391207695,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 2.309835910797119,
+          "STANDARD_TIME_SEVERITY": 0.008747991174459457,
+          "ACTION_TARGET_SEVERITY": 0.11249126493930817,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.00613830192014575,
+          "SEVEREST_SEVERITY": 0.045822564512491226,
+          "SMOL_MEDICAL_SOUNDNESS": 0.03502288833260536,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.0975673720240593
+        },
+        "error": 0.06814276288818054,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.045822564512491226
+        },
+        "error": 0.030381100274522736,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 1.1826144456863403,
+          "Take-The-Best Priority": 15.9475679397583,
+          "AVERAGE_TIME_USED": 0.33508527278900146
+        },
+        "error": 0.03038063520837497,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 2.3652288913726807,
+          "Take-The-Best Priority": 127.5805435180664,
+          "SEVERITY": 0.0474187433719635
+        },
+        "error": 0.031005396423206582,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 63.7902717590332,
+          "SEVERITY": 0.02370937168598175
+        },
+        "error": 0.03100525106059577,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.045822564512491226
+        },
+        "error": 0.030381100274522736,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 31.8951358795166,
+          "SEVERITY": 0.011854685842990875
+        },
+        "error": 0.031005396423206582,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 1.1826144456863403,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.09164512902498245
+        },
+        "error": 0.03038201188757759,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 2.3652288913726807,
+          "Take-The-Best Priority": 31.8951358795166,
+          "AVERAGE_TIME_USED": 0.6701705455780029
+        },
+        "error": 0.03038063520837497,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.045822564512491226
+        },
+        "error": 0.030381100274522736,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.5913072228431702,
+          "Take-The-Best Priority": 3.986891984939575,
+          "SEVEREST_SEVERITY": 0.045822564512491226
+        },
+        "error": 0.030381100274522736,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.125,
+          "treatment": 1,
+          "Tallying Priority": 1
+        },
+        "error": 0.030327015902914367,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "treatment": 1,
+          "One-Bounce Priority": 1,
+          "age": 0.125
+        },
+        "error": 0.030327015902914367,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS": 1,
+          "age": 0.25,
+          "Tallying Priority": 16
+        },
+        "error": 0.030624378219521114,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-risk_reward_ratio-system.tallying": 2,
+          "age": 0.25,
+          "One-Bounce Priority": 1
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources.satisfactory": 2,
+          "age": 0.25,
+          "Take-The-Best Priority": 1
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources-system.tallying": 2,
+          "Take-The-Best Priority": 1,
+          "age": 0.25
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources-risk_reward_ratio-system.take-the-best": 2,
+          "age": 0.125,
+          "Tallying Priority": 1
+        },
+        "error": 0.030311230344017243,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources.exhaustive": 2,
+          "age": 0.25,
+          "Exhaustive Priority": 1
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-system.tallying": 2,
+          "age": 0.25,
+          "Take-The-Best Priority": 1
+        },
+        "error": 0.030314240563202463,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS": 2,
+          "One-Bounce Priority": 8,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.03125
+        },
+        "error": 0.03116818094414775,
+        "source": "derived empty"
+      }
+    ]
+  }
+][
+  {
+    "kdma": "QualityOfLife",
+    "case_file": "temp/pretraining_cases.json",
+    "weights_found": [
+      {
+        "weights": {
+          "age": 1.173693299293518,
+          "military_paygrade": 0.01321902684867382,
+          "disposition": 0.012481189332902431,
+          "treatment": 0.8140748143196106,
+          "Take-The-Best Priority": 1.7970235347747803,
+          "SEVERITY": 0.07578501850366592,
+          "AVERAGE_TIME_USED": 0.08312180638313293,
+          "MEDSIM_P_DEATH": 0.09132173657417297,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 2.848172903060913,
+          "STANDARD_TIME_SEVERITY": 0.0076814149506390095,
+          "ACTION_TARGET_SEVERITY": 0.39692002534866333,
+          "SEVEREST_SEVERITY": 0.049022357910871506,
+          "SMOL_MEDICAL_SOUNDNESS": 0.201291024684906,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.026759497821331024
+        },
+        "error": 0.08120111953650777,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.586846649646759,
+          "Take-The-Best Priority": 3.5940470695495605,
+          "AVERAGE_TIME_USED": 0.08312180638313293
+        },
+        "error": 0.02948914151487306,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.14671166241168976,
+          "treatment": 1.6281496286392212,
+          "Take-The-Best Priority": 1.7970235347747803
+        },
+        "error": 0.02943435882666739,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.586846649646759,
+          "Take-The-Best Priority": 3.5940470695495605,
+          "AVERAGE_TIME_USED": 0.08312180638313293
+        },
+        "error": 0.02948914151487306,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.586846649646759,
+          "Take-The-Best Priority": 57.50475311279297,
+          "SEVERITY": 0.01894625462591648
+        },
+        "error": 0.030114677087147063,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.586846649646759,
+          "Take-The-Best Priority": 3.5940470695495605,
+          "SEVEREST_SEVERITY": 0.024511178955435753
+        },
+        "error": 0.029488207944011614,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 1.173693299293518,
+          "Take-The-Best Priority": 3.5940470695495605,
+          "SEVEREST_SEVERITY": 0.049022357910871506
+        },
+        "error": 0.02948894111144269,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 1.173693299293518,
+          "Take-The-Best Priority": 7.188094139099121,
+          "SEVEREST_SEVERITY": 0.049022357910871506
+        },
+        "error": 0.029488207944011614,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.07335583120584488,
+          "Take-The-Best Priority": 1.7970235347747803,
+          "SMOL_MEDICAL_SOUNDNESS": 0.201291024684906
+        },
+        "error": 0.02971853665729117,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.586846649646759,
+          "Take-The-Best Priority": 3.5940470695495605,
+          "AVERAGE_TIME_USED": 0.08312180638313293
+        },
+        "error": 0.02948914151487306,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.586846649646759,
+          "Take-The-Best Priority": 3.5940470695495605,
+          "AVERAGE_TIME_USED": 0.08312180638313293
+        },
+        "error": 0.02948914151487306,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "avpu": 1,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 1,
+          "HRA Strategy.time-system.satisfactory": 1
+        },
+        "error": 0.09114765769658476,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources-risk_reward_ratio.tallying": 1,
+          "Exhaustive Priority": 0.5,
+          "Satisfactory Priority": 1
+        },
+        "error": 0.02943936850541337,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources-risk_reward_ratio.take-the-best": 1,
+          "age": 1
+        },
+        "error": 0.09778620667922244,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "treatment": 1,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 1,
+          "Tallying Priority": 1
+        },
+        "error": 0.032325439810382134,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.03125,
+          "SMOL_MEDICAL_SOUNDNESS": 2,
+          "Exhaustive Priority": 8
+        },
+        "error": 0.030234219310680613,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "MEDSIM_P_DEATH": 8,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.00390625,
+          "One-Bounce Priority": 2
+        },
+        "error": 0.029737251155507693,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 0.25,
+          "HRA Strategy.time-system.take-the-best": 2,
+          "Tallying Priority": 1
+        },
+        "error": 0.02942264525252005,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-risk_reward_ratio.one-bounce": 2,
+          "age": 0.25,
+          "Tallying Priority": 1
+        },
+        "error": 0.02942264525252005,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS": 0.5,
+          "age": 0.25,
+          "One-Bounce Priority": 4
+        },
+        "error": 0.029719095841543693,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources-risk_reward_ratio.tallying": 1,
+          "age": 1
+        },
+        "error": 0.09778620667922244,
+        "source": "derived empty"
+      }
+    ]
+  }
+][
+  {
+    "kdma": "QualityOfLife",
+    "case_file": "temp/pretraining_cases.csv",
+    "weights_found": [
+      {
+        "weights": {
+          "SEVERITY": 0.19086290895938873,
+          "AVERAGE_TIME_USED": 0.3664594888687134,
+          "DAMAGE_PER_SECOND": 0.04490699991583824,
+          "SEVEREST_SEVERITY": 0.004540892317891121,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.11378283053636551,
+          "age": 0.6807037591934204,
+          "disposition": 0.08412225544452667,
+          "pDeath": 0.0048185731284320354,
+          "entropy": 0.004896734841167927,
+          "ACTION_TARGET_SEVERITY": 0.03818446397781372
+        },
+        "error": 8.60809046220592,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY": 0.009081784635782242,
+          "age": 2.7228150367736816
+        },
+        "error": 5.225047351270207,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.22756566107273102
+        },
+        "error": 7.620387614454713,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.45513132214546204,
+          "age": 0.6807037591934204
+        },
+        "error": 5.095993744077249,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.22756566107273102,
+          "age": 0.3403518795967102
+        },
+        "error": 5.095993744077249,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.22756566107273102,
+          "age": 0.3403518795967102
+        },
+        "error": 5.095993744077249,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "SEVERITY": 0.04771572723984718,
+          "age": 10.891260147094727
+        },
+        "error": 6.320699962886014,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.45513132214546204,
+          "age": 0.6807037591934204
+        },
+        "error": 5.095993744077249,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY": 0.004540892317891121,
+          "age": 1.3614075183868408
+        },
+        "error": 5.225047351270207,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY": 0.0022704461589455605,
+          "age": 0.6807037591934204
+        },
+        "error": 5.225047351270207,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.45513132214546204,
+          "age": 0.6807037591934204
+        },
+        "error": 5.095993744077249,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "conscious": 1
+        },
+        "error": 5.59106333387604,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "ACTION_TARGET_SEVERITY_CHANGE": 1
+        },
+        "error": 9.18531000228454,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "avpu": 2
+        },
+        "error": 5.590977643338846,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "avpu": 2
+        },
+        "error": 5.591020488607443,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "avpu": 2
+        },
+        "error": 5.590977643338846,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "conscious": 2
+        },
+        "error": 5.591020488607443,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY": 1
+        },
+        "error": 8.066862229907658,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "WEIGHTED_RESOURCE_SCORE": 1
+        },
+        "error": 5.59106333387604,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "conscious": 2
+        },
+        "error": 5.591020488607443,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVERITY_CHANGE": 1
+        },
+        "error": 8.930214225842393,
+        "source": "derived empty"
+      }
+    ]
+  }
+][
+  {
+    "kdma": "QualityOfLife",
+    "case_file": "temp/pretraining_cases.csv",
+    "weights_found": [
+      {
+        "weights": {
+          "age": 0.9368105530738831,
+          "military_paygrade": 0.032164689153432846,
+          "disposition": 0.017412839457392693,
+          "severity_rank": 0.010496302507817745,
+          "treatment": 0.6185290217399597,
+          "pDeath": 0.007120802067220211,
+          "entropy": 0.013512017205357552,
+          "SEVERITY": 0.03218895196914673,
+          "AVERAGE_TIME_USED": 1.1523857116699219,
+          "DAMAGE_PER_SECOND": 0.05713675171136856,
+          "ACTION_TARGET_SEVERITY": 0.028901120647788048,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.5251448154449463,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.005022777244448662
+        },
+        "error": 1.6169100750047365,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "age": 3.7472422122955322,
+          "AVERAGE_TIME_USED": 1.1523857116699219
+        },
+        "error": 0.537366371151731,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 1.8736211061477661,
+          "AVERAGE_TIME_USED": 0.5761928558349609
+        },
+        "error": 0.537366371151731,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.05855065956711769,
+          "treatment": 9.896464347839355
+        },
+        "error": 0.5349855890458082,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.9368105530738831,
+          "AVERAGE_TIME_USED": 1.1523857116699219
+        },
+        "error": 0.5451146985900931,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 3.7472422122955322,
+          "AVERAGE_TIME_USED": 1.1523857116699219
+        },
+        "error": 0.537366371151731,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.9368105530738831
+        },
+        "error": 0.6121948875648664,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 3.7472422122955322,
+          "AVERAGE_TIME_USED": 1.1523857116699219
+        },
+        "error": 0.537366371151731,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.9368105530738831,
+          "AVERAGE_TIME_USED": 1.1523857116699219
+        },
+        "error": 0.5451146985900931,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.9368105530738831,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.020091108977794647
+        },
+        "error": 0.5531687982612037,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.46840527653694153,
+          "AVERAGE_TIME_USED": 0.5761928558349609
+        },
+        "error": 0.5451146985900931,
+        "source": "derived xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.03125,
+          "treatment": 4
+        },
+        "error": 0.5349928725571019,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 1,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.5
+        },
+        "error": 0.5514350403684619,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "treatment": 8,
+          "age": 0.0625
+        },
+        "error": 0.5349928725571019,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "treatment": 4,
+          "age": 0.03125
+        },
+        "error": 0.5349928725571019,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 0.0625,
+          "treatment": 8
+        },
+        "error": 0.5349928725571019,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "treatment": 8,
+          "age": 0.0625
+        },
+        "error": 0.5349928725571019,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 0.25,
+          "treatment": 32
+        },
+        "error": 0.5349928725571019,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "treatment": 8,
+          "age": 0.0625
+        },
+        "error": 0.5349928725571019,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "treatment": 32,
+          "age": 0.25
+        },
+        "error": 0.5349928725571019,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 0.015625,
+          "treatment": 2
+        },
+        "error": 0.5349928725571019,
+        "source": "derived empty"
+      }
+    ]
+  }
+]

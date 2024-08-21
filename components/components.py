@@ -11,13 +11,26 @@ class DecisionAnalyzer:
         pass
 
 
+class Assessor:
+    def assess(self, probe: TADProbe) -> dict[Decision, float]:
+        raise NotImplementedError
+    
+
 class DecisionSelector:
     def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
+        raise NotImplementedError
+        
+    def add_assessor(self, name: str, assessor: Assessor):
+        raise NotImplementedError
+        
+
+class DecisionExplainer:
+    def explain(self, decision: Decision):
         raise NotImplementedError
 
 
 class AlignmentTrainer:
-    def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, final: bool, scene_end: bool, scene: str):
+    def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, final: bool, scene_end: bool, trained_scene: str):
         raise NotImplementedError
 
 
@@ -34,3 +47,4 @@ class CaseGenerator:
 
     def train(self, team_id: str, scenario: Scenario, probe: TADProbe):
         raise NotImplementedError
+        

@@ -59,7 +59,13 @@ def main():
         driver.actions_performed = []
         driver.treatments = {}
         args.runs -= 1
-    output_training_cases()
+    kdma_cases = analyze_data.analyze_pre_cases(
+        "temp/pretraining_cases.json", None, "temp/kdma_cases.csv", 
+        "temp/alignment_target_cases.csv")
+    analyze_data.do_weight_search(
+        kdma_cases, "temp/kdma_weights.json", "temp/all_weights.json", 
+        "probability" if args.session_type == "soartech" else "avgdiff", 
+        "temp/pretraining_cases.csv")
     
 def output_training_cases():
     (cases, training_data) = analyze_data.read_training_data()

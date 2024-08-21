@@ -1,6 +1,6 @@
 import random
 from domain.internal import Scenario, TADProbe, Decision, AlignmentTarget
-from components import DecisionSelector
+from components import DecisionSelector, Assessor
 
 
 class HumanDecisionSelector(DecisionSelector):
@@ -20,3 +20,6 @@ class HumanDecisionSelector(DecisionSelector):
             else:
                 print("Did not understand input: " + text)
         return decision, 1
+
+    def add_assessor(assessor: Assessor):
+        pass

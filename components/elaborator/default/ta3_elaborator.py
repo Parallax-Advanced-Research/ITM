@@ -149,7 +149,7 @@ class TA3Elaborator(Elaborator):
         decision.context["last_action"] = probe.state.actions_performed[-1].name
         for (k, v) in probe.state.actions_performed[-1].params.items():
             decision.context["last_" + k] = v
-        decision.context["type"] = "justify"
+        decision.context["action_type"] = "justify"
         return [decision]
 
     def get_topic(self, referent: str):
