@@ -45,10 +45,23 @@ class TriageCompetenceAssessor(Assessor):
                     ret_assessments[dec_key] = 0.8
                 else:
                     ret_assessments[dec_key] = 1
-            elif dec.value.name in [ActionTypeEnum.APPLY_TREATMENT, ActionTypeEnum.MOVE_TO_EVAC]:
+            elif is_treatment_action(dec.value):
                 char1 = get_target_patient(probe, dec)
                 cur_tag = max(get_tags(char1), key=neediness)
                 if cur_tag != neediest_tag:
+                    if cur_tag == TagEnum.MINIMAL:
+                        ret_assessments[dec_key] = 0.2
+                    elif cur_tag == TagEnum.DELAYED:
+                        ret_assessments[dec_key] = 0.5
+                    elif cur_tag == TagEnum.EXPECTANT:
+                        ret_assessments[dec_key] = 0.7
+                else:
+                    ret_assessments[dec_key] = 1
+            elif dec.value.name == ActionTypeEnum.MOVE_TO_EVAC:
+                char1 = get_target_patient(probe, dec)
+                cur_tag = max(get_tags(char1), key=neediness)
+                nt_tag = get_neediest_transfer_tag(probe)
+                if cur_tag != nt_tag:
                     if cur_tag == TagEnum.MINIMAL:
                         ret_assessments[dec_key] = 0.2
                     elif cur_tag == TagEnum.DELAYED:
@@ -91,6 +104,13 @@ def get_neediest_tag(probe: TADProbe):
             neediest_tag = ch_tag
     return neediest_tag
 
+def get_neediest_transfer_tag(probe: TADProbe): 
+    neediest_tag = TagEnum.MINIMAL
+    for ch in probe.state.casualties:
+        ch_tag = max(get_tags(ch), key=neediness)
+        if neediness(ch_tag) >= neediness(neediest_tag):
+            neediest_tag = ch_tag
+    return neediest_tag
 
 def patient_treatable(probe: TADProbe, ch: Casualty):
     return id_treatable(probe, ch.id)
