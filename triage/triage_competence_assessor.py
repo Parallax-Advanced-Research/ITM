@@ -31,6 +31,20 @@ class TriageCompetenceAssessor(Assessor):
                     ret_assessments[dec_key] = 0.5
                 else:
                     ret_assessments[dec_key] = 1
+            elif is_painmed_action(dec.value):
+                char1 = get_target_patient(probe, dec)
+                if not char1.vitals.mental_status != MentalStatusEnum.AGONY:
+                    ret_assessments[dec_key] = 0.2
+                elif patient_treatable(probe, char1):
+                    ret_assessments[dec_key] = 0.6
+                elif neediest_tag == TagEnum.IMMEDIATE:
+                    ret_assessments[dec_key] = 0.4
+                elif check_available > 0:
+                    ret_assessments[dec_key] = 0.5
+                elif treatment_available > 0:
+                    ret_assessments[dec_key] = 0.8
+                else:
+                    ret_assessments[dec_key] = 1
             elif dec.value.name in [ActionTypeEnum.APPLY_TREATMENT, ActionTypeEnum.MOVE_TO_EVAC]:
                 char1 = get_target_patient(probe, dec)
                 cur_tag = max(get_tags(char1), key=neediness)
@@ -56,20 +70,6 @@ class TriageCompetenceAssessor(Assessor):
             elif is_check_action(dec.value):
                 if neediest_tag == TagEnum.IMMEDIATE:
                     ret_assessments[dec_key] = 0.5
-                else:
-                    ret_assessments[dec_key] = 1
-            elif is_painmed_action(dec.value):
-                char1 = get_target_patient(probe, dec)
-                if not char1.vitals.mental_status != MentalStatusEnum.AGONY:
-                    ret_assessments[dec_key] = 0.2
-                elif patient_treatable(probe, char1):
-                    ret_assessments[dec_key] = 0.6
-                elif neediest_tag == TagEnum.IMMEDIATE:
-                    ret_assessments[dec_key] = 0.4
-                elif check_available > 0:
-                    ret_assessments[dec_key] = 0.5
-                elif treatment_available > 0:
-                    ret_assessments[dec_key] = 0.8
                 else:
                     ret_assessments[dec_key] = 1
             elif dec.value.name in [ActionTypeEnum.MOVE_TO, ActionTypeEnum.SEARCH]:
