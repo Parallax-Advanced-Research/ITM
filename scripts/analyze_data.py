@@ -586,6 +586,7 @@ def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, sourc
     fields = set()
     patterns = triage_constants.IGNORE_PATTERNS
     patterns.append("bprop.")
+    patterns.remove("scene")
     for case in kdma_cases:
         case.pop("action")
         cur_keys = list(case.keys())
@@ -596,7 +597,8 @@ def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, sourc
                     break
             if key in case:
                 fields |= {key,}
-        
+    
+    fields.remove("scene")
     for kdma_name in hint_types:
         fields.remove(kdma_name.lower())
         
