@@ -116,6 +116,10 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
                 continue
             #(recollection, eltm) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, type="observation")
             episode = self._hems.create_episode(observation=cue)
+
+            print(self._hems.episode_parent(episode))
+            if self._hems.episode_parent(episode) == ():
+                continue
             eltm = self._hems.new_retrieve_episode(self._hems.get_eltm(), episode, False)
             eme = eltm[0][0]
             (recollection, conditional_entropy) = self._hems.get_entropy(eme, cue)
@@ -251,31 +255,33 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             (self._itm_icd9_map[InjuryTypeEnum.CHEST_COLLAPSE], self.get_chest_collapse(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.AMPUTATION], self.get_amputation(cas), 'injury'),
             (self._itm_icd9_map[InjuryTypeEnum.INTERNAL], self.get_internal(cas), 'injury'),
-            (self._itm_icd9_map[InjuryTypeEnum.BROKEN_BONE], self.get_fractures(cas), 'injury'),
-            (self.get_action_name(a), self.get_action_val(a), 'procedure')
-        ]
+            (self._itm_icd9_map[InjuryTypeEnum.BROKEN_BONE], self.get_fractures(cas), 'injury') ]
+        if self.get_action_name(a) is not None:
+            data.append((self.get_action_name(a), self.get_action_val(a), 'procedure')) 
         # TODO: Needs to make use of new stuff the server gives us. q.v. bn_analyzer:make_observation()
         
         cue = self.get_cue_string(data)
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(bytes(cue, 'utf-8'))
             fp.seek(0)
-            print(fp.read())
-            fp.seek(0)
+            #print(fp.read())
+            #fp.seek(0)
             return self._hems.compile_program_from_file(fp.name)
 
     def get_action_name(self, a):
         if a.name == "TAG_CHARACTER":
             return "TAG"
         else:
-            print(a.name)
-            asdfaf
-            return a.name
+            if a.params['treatment'] in self._itm_resources_icd9_map.keys():
+                return self._itm_resources_icd9_map[a.params['treatment']][0]
+            return None
+        
     def get_action_val(self, a):
         if a.name == "TAG_CHARACTER":
             return a.params['category'].lower()
         else:
             return "T"
+        
     def get_hrpmin(self, c: Casualty | dict) -> str | None:
         if isinstance(c, dict):
             val = c['vitals']['heart_rate']
