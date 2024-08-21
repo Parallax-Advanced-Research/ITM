@@ -1,12 +1,10 @@
 {
   "kdma_specific_weights": {
     "QualityOfLife": {
-      "age": 8.0,
-      "SEVEREST_SEVERITY_CHANGE": 0.5,
-      "WEIGHTED_RESOURCE_SCORE": 4,
-      "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.25,
-      "SUPPLIES_REMAINING": 1.0,
-      "treatment_time": 0.001953125
+      "age": 2,
+      "inj_severity_rank": 2.0,
+      "SUPPLIES_REMAINING": 0.015625,
+      "treatment": 0.5
     }
   },
   "default": 0

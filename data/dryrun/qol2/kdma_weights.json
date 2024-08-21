@@ -1,9 +1,8 @@
 {
   "kdma_specific_weights": {
     "QualityOfLife": {
-      "HRA Strategy.time-resources-risk_reward_ratio-system.take-the-best": 2,
-      "age": 0.125,
-      "Tallying Priority": 1
+      "age": 0.05855065956711769,
+      "treatment": 9.896464347839355
     }
   },
   "default": 0

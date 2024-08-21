@@ -1,12 +1,11 @@
 {
   "kdma_specific_weights": {
     "Ingroup Bias": {
-      "pAirwayBlocked": 0.5,
-      "mental_status_rank": 2,
+      "relationship": 1,
+      "entropyDeath": 0.5,
       "disposition_rank": 1,
-      "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.5,
-      "disposition": 0.5,
-      "Exhaustive Priority": 1
+      "mental_status_rank": 1,
+      "disposition": 2
     }
   },
   "default": 0

@@ -1,12 +1,12 @@
 {
   "kdma_specific_weights": {
     "Moral judgement": {
-      "directness_of_causality_rank": 1.0,
-      "HRA Strategy.resources-system.satisfactory": 1.0,
-      "intent": 0.25,
-      "intent_rank": 0.5,
-      "pAirwayBlocked": 1,
-      "entropy": 1
+      "pBrainInjury": 4,
+      "intent_rank": 4,
+      "directness_of_causality": 1,
+      "entropy": 0.5,
+      "disposition": 1,
+      "SEVEREST_SEVERITY_CHANGE": 0.25
     }
   },
   "default": 0

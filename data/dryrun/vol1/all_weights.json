@@ -5,143 +5,402 @@
     "weights_found": [
       {
         "weights": {
-          "age": 0.007383344694972038,
-          "tagged": 2.4533047676086426,
-          "mental_status": 0.8020232319831848,
-          "mental_status_rank": 0.4926048517227173,
-          "breathing": 2.964891195297241,
-          "avpu": 0.3149023652076721,
-          "disposition": 0.0383898988366127,
-          "treatment_time": 0.33169302344322205,
-          "inj_severity_rank": 6.385552406311035,
-          "action_name": 0.6661313772201538,
-          "treatment": 1.1307848691940308,
-          "HRA Strategy.time-resources.take-the-best": 0.07484114915132523,
-          "HRA Strategy.time-resources.one-bounce": 4.210371017456055,
-          "HRA Strategy.time-system.exhaustive": 0.08475977927446365,
-          "HRA Strategy.resources-system.exhaustive": 0.6468601822853088,
-          "pBrainInjury": 0.1572534739971161,
-          "pAirwayBlocked": 1.09687340259552,
-          "pInternalBleeding": 0.05040004849433899,
-          "entropy": 0.7757368683815002,
-          "SEVERITY": 0.10013410449028015,
-          "SUPPLIES_REMAINING": 0.6530488729476929,
-          "AVERAGE_TIME_USED": 0.2020552158355713,
-          "DAMAGE_PER_SECOND": 0.007985766045749187,
-          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.0964098572731018,
-          "STANDARD_TIME_SEVERITY": 0.07263924926519394,
-          "SEVERITY_CHANGE": 0.003735029138624668,
-          "ACTION_TARGET_SEVERITY": 0.13786780834197998,
-          "ACTION_TARGET_SEVERITY_CHANGE": 0.06513871997594833,
-          "SEVEREST_SEVERITY_CHANGE": 2.0239291191101074,
-          "SMOL_MEDICAL_SOUNDNESS_V2": 0.12480837851762772
+          "age": 0.0809025838971138,
+          "tagged": 2.524667978286743,
+          "mental_status": 1.0440059900283813,
+          "breathing": 3.669010639190674,
+          "breathing_rank": 0.2578458786010742,
+          "avpu": 0.29985690116882324,
+          "disposition": 0.040852032601833344,
+          "treatment_time": 0.33017826080322266,
+          "inj_severity_rank": 6.000723361968994,
+          "action_name": 0.9153246283531189,
+          "treatment": 0.6737363338470459,
+          "HRA Strategy.time-resources.take-the-best": 0.23788504302501678,
+          "HRA Strategy.time-resources.one-bounce": 4.740481376647949,
+          "HRA Strategy.resources-system.exhaustive": 0.6202784180641174,
+          "pBrainInjury": 0.1475963145494461,
+          "pAirwayBlocked": 0.9016122817993164,
+          "pInternalBleeding": 0.3236653208732605,
+          "entropy": 0.8050165176391602,
+          "SEVERITY": 0.12227258086204529,
+          "SUPPLIES_REMAINING": 0.8565036654472351,
+          "AVERAGE_TIME_USED": 0.24203896522521973,
+          "DAMAGE_PER_SECOND": 0.4628388583660126,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.08706876635551453,
+          "STANDARD_TIME_SEVERITY": 0.08779539167881012,
+          "SEVERITY_CHANGE": 0.0071981120854616165,
+          "ACTION_TARGET_SEVERITY": 0.17517928779125214,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.12850798666477203,
+          "SEVEREST_SEVERITY": 0.09213809669017792,
+          "SEVEREST_SEVERITY_CHANGE": 2.0419647693634033,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.09833472222089767
         },
-        "error": 0.05033624144437167,
+        "error": 0.08881766020402318,
         "source": "xgboost last"
       },
       {
         "weights": {
-          "MEDSIM_P_DEATH_ONE_MIN_LATER": 1,
-          "HRA Strategy.time-resources.take-the-best": 0.25,
-          "entropy": 2,
-          "age": 0.0625,
-          "inj_severity_rank": 1,
-          "SUPPLIES_USED": 1
+          "ACTION_TARGET_SEVERITY": 0.5,
+          "SUPPLIES_REMAINING": 4.0,
+          "age": 64
         },
-        "error": 0.0070740773637192845,
+        "error": 0.024706096837929986,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "treatment": 0.5,
+          "age": 0.25,
+          "entropy": 1,
+          "pBrainInjury": 1,
+          "HRA Strategy.risk_reward_ratio-system.exhaustive": 1
+        },
+        "error": 0.00601776609539626,
         "source": "derived empty"
       },
       {
         "weights": {
           "ACTION_TARGET_SEVERITY": 0.25,
-          "age": 2,
-          "SMOL_MEDICAL_SOUNDNESS_V2": 0.5,
-          "inj_severity_rank": 4
+          "age": 32,
+          "SUPPLIES_REMAINING": 2
         },
-        "error": 0.032857215144979676,
+        "error": 0.024706096837929986,
         "source": "derived empty"
       },
       {
         "weights": {
-          "HRA Strategy.time-resources-system.take-the-best": 2,
-          "SEVEREST_SEVERITY_CHANGE": 4,
-          "ACTION_TARGET_SEVERITY_CHANGE": 0.5,
-          "treatment": 2,
-          "avpu": 0.5
-        },
-        "error": 0.02228565270315515,
-        "source": "derived empty"
-      },
-      {
-        "weights": {
-          "HRA Strategy.time-resources-risk_reward_ratio.one-bounce": 2.0,
           "ACTION_TARGET_SEVERITY_CHANGE": 1,
-          "SUPPLIES_REMAINING": 0.5,
-          "SMOL_MEDICAL_SOUNDNESS": 1,
-          "Exhaustive Priority": 8
+          "DAMAGE_PER_SECOND": 1,
+          "age": 4,
+          "AVERAGE_TIME_USED": 1
         },
-        "error": 0.02085799337082024,
+        "error": 0.027403520771738486,
         "source": "derived empty"
       },
       {
         "weights": {
-          "ACTION_TARGET_SEVERITY_CHANGE": 0.125,
-          "SUPPLIES_REMAINING": 8,
-          "age": 1,
-          "SMOL_MEDICAL_SOUNDNESS": 0.5,
-          "pPain": 8
-        },
-        "error": 0.010507701687655933,
-        "source": "derived empty"
-      },
-      {
-        "weights": {
-          "SEVEREST_SEVERITY": 0.25,
-          "entropy": 16,
-          "age": 4
-        },
-        "error": 0.036280705566273205,
-        "source": "derived empty"
-      },
-      {
-        "weights": {
-          "age": 2.0,
-          "SEVEREST_SEVERITY": 0.5,
-          "ACTION_TARGET_SEVERITY_CHANGE": 8
-        },
-        "error": 0.0338415835214392,
-        "source": "derived empty"
-      },
-      {
-        "weights": {
-          "HRA Strategy.time-resources.satisfactory": 4,
-          "SEVEREST_SEVERITY": 0.125,
-          "entropy": 8,
-          "Satisfactory Priority": 2,
-          "treatment_time": 1
-        },
-        "error": 0.047987409968067274,
-        "source": "derived empty"
-      },
-      {
-        "weights": {
-          "HRA Strategy.time-resources-system.satisfactory": 0.5,
+          "SUPPLIES_REMAINING": 1.0,
           "inj_severity_rank": 1,
-          "pDeath": 1,
-          "treatment": 0.5,
-          "military_paygrade": 0.5
+          "pBrainInjury": 1,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 1
         },
-        "error": 0.006127109577212248,
+        "error": 0.0067742653092541846,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY_CHANGE": 0.25,
+          "breathing_rank": 1.0,
+          "pDeath": 16,
+          "treatment": 0.5,
+          "Tallying Priority": 2,
+          "HRA Strategy.risk_reward_ratio-system.satisfactory": 2,
+          "HRA Strategy.resources-risk_reward_ratio.exhaustive": 1
+        },
+        "error": 0.010700985871738108,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pInternalBleeding": 8,
+          "age": 0.25,
+          "SUPPLIES_REMAINING": 0.5,
+          "MEDSIM_P_DEATH": 1
+        },
+        "error": 0.007785405927561988,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "HRA Strategy.time-resources-system.one-bounce": 4,
+          "SEVEREST_SEVERITY": 0.25,
+          "age": 2,
+          "pBrainInjury": 8,
+          "inj_severity_rank": 1
+        },
+        "error": 0.044037986869662746,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY": 0.125,
+          "age": 0.5,
+          "ACTION_TARGET_SEVERITY_CHANGE": 2
+        },
+        "error": 0.03825264632855147,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SEVEREST_SEVERITY_CHANGE": 0.25,
+          "entropyDeath": 8,
+          "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.125,
+          "tagged": 2,
+          "Tallying Priority": 1.0
+        },
+        "error": 0.011421521544890147,
+        "source": "derived empty"
+      }
+    ]
+  }
+][
+  {
+    "kdma": "PerceivedQuantityOfLivesSaved",
+    "case_file": "temp/pretraining_cases.csv",
+    "weights_found": [
+      {
+        "weights": {
+          "age": 0.40456628799438477,
+          "tagged": 0.35896655917167664,
+          "military_paygrade": 0.0002444721758365631,
+          "mental_status": 0.9112322926521301,
+          "breathing": 3.2821149826049805,
+          "breathing_rank": 0.2023543119430542,
+          "avpu": 0.5107024908065796,
+          "disposition": 0.025692254304885864,
+          "inj_severity_rank": 3.190006971359253,
+          "action_name": 0.09902877360582352,
+          "treatment": 0.13012294471263885,
+          "pDeath": 0.5975250005722046,
+          "pBrainInjury": 0.6657013893127441,
+          "pAirwayBlocked": 0.5242162346839905,
+          "pInternalBleeding": 0.24557046592235565,
+          "entropy": 0.4160476624965668,
+          "SEVERITY": 0.1386840045452118,
+          "SUPPLIES_REMAINING": 0.7874397039413452,
+          "AVERAGE_TIME_USED": 0.2902652621269226,
+          "STANDARD_TIME_SEVERITY": 0.1807902604341507,
+          "ACTION_TARGET_SEVERITY": 0.42725396156311035,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.14482344686985016,
+          "SEVEREST_SEVERITY": 0.08816112577915192,
+          "SEVEREST_SEVERITY_CHANGE": 0.22630636394023895,
+          "WEIGHTED_RESOURCE_SCORE": 0.017679214477539062,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.09921394288539886
+        },
+        "error": 1.9356753562341824,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "age": 0.25,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.5,
+          "SEVEREST_SEVERITY_CHANGE": 1
+        },
+        "error": 0.6527492925681871,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 0.25,
+          "ACTION_TARGET_SEVERITY_CHANGE": 1
+        },
+        "error": 0.8973243746286064,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "tagged": 0.5,
+          "entropyDeath": 8,
+          "SEVEREST_SEVERITY_CHANGE": 1
+        },
+        "error": 0.48743879023411796,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "tagged": 0.0625,
+          "SEVEREST_SEVERITY_CHANGE": 1,
+          "pDeath": 8
+        },
+        "error": 0.49019679695829904,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "military_paygrade": 2,
+          "ACTION_TARGET_SEVERITY_CHANGE": 1
+        },
+        "error": 1.1834247353006104,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "pDeath": 16,
+          "inj_severity_rank": 1,
+          "SEVEREST_SEVERITY_CHANGE": 2
+        },
+        "error": 0.48752862762561205,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "ACTION_TARGET_SEVERITY_CHANGE": 2,
+          "age": 0.5
+        },
+        "error": 0.8973243746286064,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "conscious": 0.5,
+          "inj_severity_rank": 0.25,
+          "SEVEREST_SEVERITY_CHANGE": 0.5,
+          "pAirwayBlocked": 1
+        },
+        "error": 0.4870175936740761,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "ACTION_TARGET_SEVERITY_CHANGE": 4,
+          "age": 1
+        },
+        "error": 0.8973243746286064,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 0.5,
+          "ACTION_TARGET_SEVERITY_CHANGE": 1,
+          "SEVEREST_SEVERITY_CHANGE": 2
+        },
+        "error": 0.6527492925681871,
+        "source": "derived empty"
+      }
+    ]
+  }
+][
+  {
+    "kdma": "PerceivedQuantityOfLivesSaved",
+    "case_file": "temp/pretraining_cases.csv",
+    "weights_found": [
+      {
+        "weights": {
+          "age": 1.8977380990982056,
+          "tagged": 2.1610028743743896,
+          "mental_status_rank": 1.17840576171875,
+          "breathing": 3.1833033561706543,
+          "breathing_rank": 2.3987019062042236,
+          "avpu": 0.2843030095100403,
+          "disposition": 0.0225149467587471,
+          "treatment_count": 0.0022814832627773285,
+          "treatment_time": 0.21472565829753876,
+          "inj_severity_rank": 3.126940965652466,
+          "severity_rank": 0.0989195853471756,
+          "action_name": 0.14720085263252258,
+          "treatment": 0.8802090883255005,
+          "pDeath": 1.783210039138794,
+          "pBrainInjury": 0.01172628439962864,
+          "pInternalBleeding": 0.2161647230386734,
+          "entropy": 2.8318774700164795,
+          "SEVERITY": 0.3612267076969147,
+          "SUPPLIES_REMAINING": 0.23064899444580078,
+          "AVERAGE_TIME_USED": 0.009199583902955055,
+          "DAMAGE_PER_SECOND": 0.6999877691268921,
+          "ACTION_TARGET_SEVERITY": 1.459476351737976,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.06895946711301804,
+          "SEVEREST_SEVERITY": 0.06467382609844208,
+          "SEVEREST_SEVERITY_CHANGE": 2.519951343536377,
+          "SMOL_MEDICAL_SOUNDNESS_V2": 0.10246454924345016
+        },
+        "error": 0.28688751238688087,
+        "source": "xgboost last"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS": 1,
+          "age": 2,
+          "pPain": 2,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.5,
+          "severity_rank": 0.5
+        },
+        "error": 0.11186879999254534,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 0.25,
+          "SUPPLIES_REMAINING": 1,
+          "ACTION_TARGET_SEVERITY_CHANGE": 2,
+          "treatment": 4
+        },
+        "error": 0.11177537556759663,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 0.5,
+          "SMOL_MEDICAL_SOUNDNESS": 1,
+          "ACTION_TARGET_SEVERITY_CHANGE": 1
+        },
+        "error": 0.1391389279386559,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "inj_severity_rank": 8,
+          "ACTION_TARGET_SEVERITY_CHANGE": 1,
+          "age": 1,
+          "treatment": 2
+        },
+        "error": 0.1111485005415397,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS": 1,
+          "ACTION_TARGET_SEVERITY_CHANGE": 1,
+          "age": 0.5
+        },
+        "error": 0.1391389279386559,
         "source": "derived empty"
       },
       {
         "weights": {
           "pBrainInjury": 1,
-          "SUPPLIES_REMAINING": 1,
-          "treatment": 1,
-          "inj_severity_rank": 2
+          "age": 0.5,
+          "SEVEREST_SEVERITY_CHANGE": 0.5,
+          "treatment": 2
         },
-        "error": 0.0059906180574108535,
+        "error": 0.11633402564795786,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS": 1,
+          "ACTION_TARGET_SEVERITY_CHANGE": 1,
+          "age": 0.5
+        },
+        "error": 0.1391389279386559,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 2.0,
+          "ACTION_TARGET_SEVERITY_CHANGE": 2.0,
+          "SUPPLIES_REMAINING": 1,
+          "treatment": 2
+        },
+        "error": 0.11311407431354785,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "age": 1.0,
+          "ACTION_TARGET_SEVERITY_CHANGE": 1,
+          "DAMAGE_PER_SECOND": 1
+        },
+        "error": 0.13173387039586693,
+        "source": "derived empty"
+      },
+      {
+        "weights": {
+          "SMOL_MEDICAL_SOUNDNESS": 1,
+          "ACTION_TARGET_SEVERITY_CHANGE": 1,
+          "age": 0.5
+        },
+        "error": 0.1391389279386559,
         "source": "derived empty"
       }
     ]

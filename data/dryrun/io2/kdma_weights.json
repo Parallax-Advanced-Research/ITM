@@ -1,10 +1,31 @@
 {
   "kdma_specific_weights": {
     "Ingroup Bias": {
-      "pDeath": 1,
-      "disposition_rank": 0.5,
-      "SUPPLIES_REMAINING": 1,
-      "disposition": 1
+      "visited": 0.06863801181316376,
+      "conscious": 0.10627928376197815,
+      "mental_status": 0.10979294031858444,
+      "breathing": 0.054498229175806046,
+      "relationship": 0.02490868791937828,
+      "disposition": 0.22767479717731476,
+      "disposition_rank": 0.16666962206363678,
+      "treatment_count": 0.010026288218796253,
+      "treatment_count_rank": 0.020535429939627647,
+      "severity_rank": 0.03842530772089958,
+      "unvisited_count": 0.03841282054781914,
+      "injured_count": 0.06981725245714188,
+      "pDeath": 0.1583901047706604,
+      "pPain": 0.10049457103013992,
+      "pBrainInjury": 0.13789315521717072,
+      "pInternalBleeding": 0.1688966453075409,
+      "pExternalBleeding": 0.13793186843395233,
+      "entropy": 0.10016803443431854,
+      "SEVERITY": 0.0946429893374443,
+      "SUPPLIES_REMAINING": 0.021223556250333786,
+      "DAMAGE_PER_SECOND": 0.28851431608200073,
+      "ACTION_TARGET_SEVERITY": 0.11001475155353546,
+      "SMOL_MEDICAL_SOUNDNESS_V2": 0.064048171043396,
+      "mental_status_rank": 0.04342956095933914,
+      "breathing_rank": 0.03678007796406746
     }
   },
   "default": 0

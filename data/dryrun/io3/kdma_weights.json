@@ -1,14 +1,12 @@
 {
   "kdma_specific_weights": {
     "Ingroup Bias": {
-      "context.topic_injuries": 2,
-      "disposition_rank": 1,
-      "DAMAGE_PER_SECOND": 0.0625,
-      "hrpmin": 16,
-      "disposition": 1,
-      "relationship_rank": 2,
-      "avpu_rank": 2,
-      "context.last_casualty": 2,
+      "context.last_casualty": 1,
+      "entropy": 1,
+      "context.val_injuries2": 1,
+      "avpu_rank": 0.25,
+      "disposition": 0.5,
+      "relationship_rank": 1,
       "context.topic_supplies": 1
     }
   },

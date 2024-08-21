@@ -1,10 +1,10 @@
 {
   "kdma_specific_weights": {
     "PerceivedQuantityOfLivesSaved": {
-      "pBrainInjury": 1,
-      "SUPPLIES_REMAINING": 1,
-      "treatment": 1,
-      "inj_severity_rank": 2
+      "inj_severity_rank": 8,
+      "ACTION_TARGET_SEVERITY_CHANGE": 1,
+      "age": 1,
+      "treatment": 2
     }
   },
   "default": 0
