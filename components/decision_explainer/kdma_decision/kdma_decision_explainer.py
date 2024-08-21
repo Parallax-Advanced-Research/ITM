@@ -31,7 +31,7 @@ class KDMADecisionExplainer(DecisionExplainer):
         else:
             output = "Could not generate explanation"
 
-        print(output)
+
         return output
 
     def get_relevant_attributes(self, explanation):
@@ -49,7 +49,6 @@ class KDMADecisionExplainer(DecisionExplainer):
     def get_most_similar_instance(self, explanation, relevant_attributes):
         similar_cases = explanation.params.get("similar_cases")
         if not similar_cases:
-            print("No similar cases found")
             return None, None
 
         similar_cases.sort(key=lambda x: x[0])
@@ -60,6 +59,11 @@ class KDMADecisionExplainer(DecisionExplainer):
             similar_case_action_name = similar_case_action_params["name"]
             most_similar_instance = {k: v for k, v in similar_case_attributes.items() if k in relevant_attributes}
             most_similar_instance.update(similar_case_action_params["params"])
-            return most_similar_instance, similar_case_action_name
+            
+        elif "action_name" in similar_case_attributes:
+            similar_case_action_name = similar_case_attributes.get("action_name")            
+            most_similar_instance = {k: v for k, v in similar_case_attributes.items() if k in relevant_attributes}
+            most_similar_instance.update({"treatment": similar_case_attributes.get("treatment")})
         else:
             return None, None
+        return most_similar_instance, similar_case_action_name
