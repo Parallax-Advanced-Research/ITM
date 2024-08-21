@@ -196,7 +196,10 @@ VALUED_FEATURES = {
 
 def rank(val: Any, valsFound: list[Any], feature: str):
     sortedVals = sorted(valsFound, key=functools.cmp_to_key(lambda v1, v2: local_order(v1, v2, feature)))
-    return sortedVals.index(val)
+    first_index = sortedVals.index(val)
+    sortedVals.reverse()
+    last_index = len(sortedVals) - sortedVals.index(val) - 1
+    return (first_index + last_index) / 2
     
 def local_order(val1: Any, val2: Any, feature: str):
     if val1 is None and val2 is not None:
