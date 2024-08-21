@@ -17,7 +17,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         super().__init__()
         
         # get a handle to the lisp subprocess with quicklisp loaded.
-        self._lisp = cl4py.Lisp(cmd=('sbcl', '--dynamic-space-size', '30000', '--script'), quicklisp=True, backtrace=True)
+        self._lisp = cl4py.Lisp(cmd=('sbcl', '--dynamic-space-size', '30000', '--control-stack-size', '1000', '--script'), quicklisp=True, backtrace=True)
         
         # Start quicklisp and import HEMS package
         self._lisp.find_package('QL').quickload('HEMS')
@@ -39,8 +39,10 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         icd9_open_wound = "OPEN_WOUNDS"
         icd9_amputation = "AMPUTATION"
         icd9_burn = "BURNS"
-        icd9_laceration = "LACERATION"
-        icd9_puncture = "PUNCTURE"
+        #icd9_laceration = "LACERATION"
+        #icd9_puncture = "PUNCTURE"
+        icd9_laceration = "OPEN_WOUNDS"
+        icd9_puncture = "OPEN_WOUNDS"
         icd9_scrape = "SCRAPE"
 
         mimic_pain = "PAIN"
@@ -108,24 +110,21 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         self._hems.load_eltm_from_file("components/decision_analyzer/event_based_diagnosis/eltm.txt")
         
     def analyze(self, _: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
-        analysis = dict()
+        analysis: dict[str, DecisionMetrics] = {}
 
         for decision in probe.decisions:
             cue = self.make_observation_from_state (probe.state, decision.value)
             if cue is None:
                 continue
-            #(recollection, eltm) = self._hems.remember(self._hems.get_eltm(), cue, Symbol('+', 'HEMS'), 1, True, type="observation")
+            
             episode = self._hems.create_episode(observation=cue)
-
-            print(self._hems.episode_parent(episode))
-            if self._hems.episode_parent(episode) == ():
-                continue
             eltm = self._hems.new_retrieve_episode(self._hems.get_eltm(), episode, False)
             eme = eltm[0][0]
+
+            if self._hems.episode_parent(eme) == ():
+                continue
+
             (recollection, conditional_entropy) = self._hems.get_entropy(eme, cue)
-            print(conditional_entropy)
-            sdfs
-            spreads = []
             
             just = dict()
             for cpd in recollection:
@@ -168,24 +167,18 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
                             rule_dict['body'] = body
                             rule_id = self._hems.rule_id(rule)
                             just[rule_id] = rule_dict
-                        
-            avg_spread = mean(spreads)
-            std_spread = pstdev(spreads)
 
-            # TODO: These need descriptions
-            avgspread = DecisionMetric[float]("AvgSpread", "", avg_spread)
-            stdspread = DecisionMetric[float]("StdSpread", "", std_spread)
-            entropy = DecisionMetric[float]("Entropy", "", conditional_entropy)
-            justifications = DecisionMetric[dict]("Justifications", "", just)
+            entropy = DecisionMetric[float]("EBD_Entropy", "Entropy of the state given the decision", conditional_entropy)
+            justifications = DecisionMetric[dict]("EBD_Justifications", "Relevant domain knowledge that justify the decison", just)
             #print(conditional_entropy)
-            #print(just)
-            print(json.dumps(just, indent=4))
-            if bool(just):
-                sfsf
-            #metrics = {avgspread.name: avgspread, stdspread.name: stdspread, entropy.name: entropy, justifications.name: justifications}
-            metrics = {avgspread.name: avgspread, stdspread.name: stdspread, justifications.name: justifications}
+            #print(json.dumps(just, indent=4))
+
+            metrics = DecisionMetrics()
+            metrics[entropy.name] = entropy
+            metrics[justifications.name] = entropy
+
             decision.metrics.update(metrics)
-            analysis[decision.id_] = metrics
+            analysis["EBD_" + decision.id_] = metrics
         return analysis
     
     def estimate_injuries(self, cue_bn):
@@ -272,8 +265,9 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         if a.name == "TAG_CHARACTER":
             return "TAG"
         else:
-            if a.params['treatment'] in self._itm_resources_icd9_map.keys():
-                return self._itm_resources_icd9_map[a.params['treatment']][0]
+            if 'treatment' in a.params.keys():
+                if a.params['treatment'] in self._itm_resources_icd9_map.keys():
+                    return self._itm_resources_icd9_map[a.params['treatment']][0]
             return None
         
     def get_action_val(self, a):
@@ -458,15 +452,20 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
     def get_cue_string(self, data : list[tuple]):
         i = 1
         ret = ""
+        relation_list = []
+        percept_list = []
         for d in data:
-            print(d)
             if d[1] is not None:
                 if d[2] != 'injury':
                     ret += f'c{i} = (percept-node {d[0]} :value "{d[1]}")\n'
+                    percept_list.append(i)
                 else:
                     ret += f'c{i} = (relation-node {d[0]} :value "{d[1]}" :kb-concept-id "INJURY")\n'
+                    relation_list.append(i)
                 i += 1
-        print()
+        for rel in relation_list:
+            for perc in percept_list:
+                ret += f"c{rel} -> c{perc}\n"
         return ret
 
     def find_casualty(self, name: str, s: State) -> Casualty | None:
