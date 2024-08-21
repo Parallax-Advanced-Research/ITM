@@ -119,6 +119,8 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             
             if self.print_neighbors:
                 util.logger.info(f"Evaluating action: {cur_decision.value}")
+                for name in assessments:
+                    print(f"{name}: {assessments[name][str(cur_decision.value)]}")
             for kdma_name in target.kdma_names:
                 if kdma_name in assessments:
                     assessment_val = assessments[kdma_name][str(cur_decision.value)]
@@ -129,10 +131,20 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     if kdmaProbs is None:
                         continue
                     if self.print_neighbors and cur_decision.kdmas is not None:
-                        error = 1-kdmaProbs.get(cur_decision.kdmas[kdma_name], 0)
+                        error = 0
+                        truth = cur_decision.kdmas[kdma_name]
+                        if target.type == AlignmentTargetType.SCALAR:
+                            est = 0
+                            for (kdma, prob) in kdmaProbs.items():
+                                est += kdma * prob
+                            error = abs(est - truth)
+                            print(f"Truth: {truth} Estimate: {est} Error: {error}")
+                        else:
+                            error = 1-kdmaProbs.get(cur_decision.kdmas[kdma_name], 0)
+                            print(f"Truth: {truth} Probabilities: {kdmaProbs} Error: {error}")
                         if error > 0.1:
                             util.logger.warning("Probabilities off by " + str(error))
-                            breakpoint()
+                            # breakpoint()
                 cur_case[kdma_name] = kdmaProbs
                 cur_kdma_probs[kdma_name] = kdmaProbs
             min_kdma_probs = self.update_kdma_probabilities(min_kdma_probs, cur_kdma_probs, min)
@@ -153,7 +165,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         else:
             raise Error()
 
-        (best_decision, best_case, best_kdma_probs) = self.minimize_distance(possible_choices)
+        (best_decision, best_case, best_kdma_probs) = self.minimize_distance(possible_choices, assessments)
         
         if self.print_neighbors:
             best_kdma_estimates = kdma_estimation.estimate_KDMAs_from_probs(best_kdma_probs)
@@ -201,15 +213,25 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 ret_probs[winner] = ret_probs.get(winner, 0) + (prob1 * prob2)
         return ret_probs
 
-    def minimize_distance(self, possible_choices):
-        minDist = min([case["distance"] for (decision, case, ests) in possible_choices if not self.empty_probs(ests)], default = -1)
+    def minimize_distance(self, possible_choices, assessments: dict[str, dict[str, float]]):
+        valued_decisions = [(self.judge_distance(decision, case, ests, assessments), decision, case, ests) for (decision, case, ests) in possible_choices]
+        minDist = min(valued_decisions, key=first, default=-1)[0]
         if minDist < 0:
             minDecisions = possible_choices
         else:
-            minDecisions = [(decision, case, ests) for (decision, case, ests) in possible_choices if case["distance"] == minDist]
+            minDecisions = [(decision, case, ests) for (dist, decision, case, ests) in valued_decisions if dist == minDist]
         if len(minDecisions) > 1:
             minDecision = [util.get_global_random_generator().choice(minDecisions)]
         return minDecisions[0]
+        
+    def judge_distance(self, decision: Decision, case: dict[str, Any], ests: dict[str, dict[str, float]], assessments: dict[str, dict[str, float]]):
+        if self.empty_probs(ests):
+            dist = 0
+        else:
+            dist = case["distance"]
+        for name in assessments:
+            dist += 1 - (assessments[name][str(decision.value)])
+        return dist
     
     def empty_probs(self, estimates: dict[str, dict[str, float]]):
         for value in estimates.values():
@@ -374,6 +396,8 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
                                     lambda chr: chr.treatment_time, c, chrs)
         case['inj_severity_rank'] = \
             min([kdma_estimation.rank(inj.severity, sevs, "inj_severity") for inj in c.injuries])
+        case['severity_rank'] = \
+            kdma_estimation.rank(d.metrics['SEVERITY'].value, [dec.metrics['SEVERITY'].value for dec in probe.decisions], None)
         case['unvisited_count'] = len([co for co in chrs if not co.assessed 
                                                                     and not co.id == c.id])
         case['injured_count'] = len([co for co in chrs if len(co.injuries) > 0 
