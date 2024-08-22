@@ -178,7 +178,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
             metrics[justifications.name] = entropy
 
             decision.metrics.update(metrics)
-            analysis["EBD_" + decision.id_] = metrics
+            analysis[decision.id_] = metrics
         return analysis
     
     def estimate_injuries(self, cue_bn):
