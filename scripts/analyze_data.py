@@ -80,7 +80,7 @@ NON_NOISY_KEYS = [
     'HRA Strategy.time-resources-risk_reward_ratio-system.satisfactory', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce',
     'treatment_count', 'treatment_time', 'treatment_count_rank', 'treatment_time_rank',
-    'scene', 'severity_rank'
+    'scene'
 ]
 
 NOISY_KEYS : str = [
@@ -90,7 +90,9 @@ NOISY_KEYS : str = [
     'SEVERITY', 'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
     'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 
     'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE',
-    'STANDARD_TIME_SEVERITY', 'DAMAGE_PER_SECOND'
+    'STANDARD_TIME_SEVERITY', 'DAMAGE_PER_SECOND', 'severity_rank', 'damage_per_second_rank',
+    'original_severity', 'original_severity_rank', 'action_target_severity_rank', 
+    'action_target_severity_change_rank'
 ]
      
 ALL_KEYS = NON_NOISY_KEYS + NOISY_KEYS
