@@ -167,7 +167,6 @@ def api_test(args, driver = None):
                 for alignment in client.get_session_alignments():
                     driver.train(alignment, new_probe is None, new_scene != scene, scene)
                     logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
-                    # breakpoint()
             probe = new_probe
             scene = new_scene
                         

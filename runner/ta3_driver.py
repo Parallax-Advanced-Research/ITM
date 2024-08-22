@@ -116,3 +116,4 @@ class TA3Driver(Driver):
     
     def reset_memory(self):
         self.treatment_times = {}
+        self.treatments = {}
