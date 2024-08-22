@@ -27,9 +27,9 @@ class Medical:
     CHECK_PULSE_TIME = 20.0
     CHECK_RESPIRATION_TIME = 25.0
     TIME_TAKEN = {
-        Supplies.PRESSURE_BANDAGE.value: [30.0, 30.0, 30.0, 42.5, 50.0],
-        Supplies.HEMOSTATIC_GAUZE.value: [150.0, 150.0, 200.0],
-        Supplies.TOURNIQUET.value: [90.0],
+        Supplies.PRESSURE_BANDAGE.value: [150.0, 150.0, 200.0],
+        Supplies.HEMOSTATIC_GAUZE.value: [30.0, 30.0, 30.0, 42.5, 50.0],
+        Supplies.TOURNIQUET.value: [20.0],
         Supplies.DECOMPRESSION_NEEDLE.value: [60.0, 75.0],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [35.0],
         Supplies.FENTANYL_LOLLIPOP.value: [36.0],
