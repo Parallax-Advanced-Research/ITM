@@ -168,7 +168,7 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
                             rule_id = self._hems.rule_id(rule)
                             just[rule_id] = rule_dict
 
-            entropy = DecisionMetric[float]("EBD_Entropy", "Entropy of the state given the decision", conditional_entropy)
+            entropy = DecisionMetric[float]("EBD_Entropy", "Entropy of the state given the decision", conditional_entropy.astype(float))
             justifications = DecisionMetric[dict]("EBD_Justifications", "Relevant domain knowledge that justify the decison", just)
             #print(conditional_entropy)
             #print(json.dumps(just, indent=4))
