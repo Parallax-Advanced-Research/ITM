@@ -449,6 +449,9 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     
     if a.name == "APPLY_TREATMENT":
         case['treatment'] = a.params.get("treatment", None)
+        case['target_resource_level'] = \
+            supplies = sum([supply.quantity for supply in probe.state.supplies 
+                             if supply.type == case['treatment'] and not supply.reusable])
     if a.name == "TAG_CHARACTER":
         case['category'] = a.params.get("category", None)
     for dm in d.metrics.values():
