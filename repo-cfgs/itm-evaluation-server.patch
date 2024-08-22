@@ -54,10 +54,10 @@ index 1b133b0..0af74ee 100644
          self.parent_scenario :ITMScenario = None
  
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index 3fd6544..1d712b3 100644
+index f47733b..30b071a 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -85,7 +85,8 @@ class ITMSession:
+@@ -96,7 +96,8 @@ class ITMSession:
              ITMSession.init_ta1_data(ta1_names)
              ITMSession.ta1_connected = True
              logging.info("Done.")
@@ -67,7 +67,7 @@ index 3fd6544..1d712b3 100644
              logging.warning("Could not initialize TA1 data. Running standalone with local alignment targets.")
  
          # If we couldn't use data from TA1, initialize with local data.
-@@ -442,7 +443,7 @@ class ITMSession:
+@@ -460,7 +461,7 @@ class ITMSession:
          else:
              ta1_names.append(self.session_type)
          if kdma_training:
