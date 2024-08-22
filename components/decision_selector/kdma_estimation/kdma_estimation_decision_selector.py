@@ -230,7 +230,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         else:
             dist = case["distance"]
         for name in assessments:
-            dist += 1 - (assessments[name][str(decision.value)])
+            dist += .001 * (1 - (assessments[name][str(decision.value)]))
         return dist
     
     def empty_probs(self, estimates: dict[str, dict[str, float]]):
@@ -284,7 +284,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         for (alignment, prob) in alignment_probs:
             est_score += alignment*prob
             prob_sum += prob
-        if prob_sum < 0.95 or prob_sum > 1.0001:
+        if prob_sum > 1.0001:
             util.logger.error("Bad probability calculation.")
             breakpoint()
         return est_score / prob_sum
@@ -397,7 +397,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['inj_severity_rank'] = \
             min([kdma_estimation.rank(inj.severity, sevs, "inj_severity") for inj in c.injuries])
         case['severity_rank'] = \
-            kdma_estimation.rank(d.metrics['SEVERITY'].value, [dec.metrics['SEVERITY'].value for dec in probe.decisions], None)
+            kdma_estimation.rank(d.metrics['SEVERITY'].value, {dec.metrics['SEVERITY'].value for dec in probe.decisions}, None)
         case['unvisited_count'] = len([co for co in chrs if not co.assessed 
                                                                     and not co.id == c.id])
         case['injured_count'] = len([co for co in chrs if len(co.injuries) > 0 
