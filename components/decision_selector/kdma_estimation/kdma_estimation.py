@@ -191,8 +191,10 @@ VALUED_FEATURES = {
              "o-8": 28,
              "o-9": 29,
              "o-10": 30}
-             
     }
+    
+def get_feature_valuation(feature: str) -> Callable[[str], int | None]:
+    return lambda val: VALUED_FEATURES[feature].get(val, None)
 
 def rank(val: Any, valsFound: list[Any], feature: str):
     sortedVals = sorted(valsFound, key=functools.cmp_to_key(lambda v1, v2: local_order(v1, v2, feature)))

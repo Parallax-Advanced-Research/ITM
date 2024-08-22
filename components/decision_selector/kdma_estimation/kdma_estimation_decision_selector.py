@@ -340,13 +340,26 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
 # See kdma_estimation.VALUED_FEATURES for the ordering of individual features.
 def add_feature_to_case_with_rank(case: dict[str, Any], feature: str, 
                                   characteristic_fn: Callable[[Casualty], Any], 
-                                  c: Casualty, chrs: list[Casualty]):
+                                  c: Casualty, chrs: list[Casualty], feature_type: str = None):
+    if feature_type is None: 
+        feature_type = feature
     case[feature] = characteristic_fn(c)
     if case[feature] is not None:
         case[feature + '_rank'] = \
-            kdma_estimation.rank(case[feature], [characteristic_fn(chr) for chr in chrs], feature)
-        if case[feature + '_rank'] > 5:
-            breakpoint()
+            kdma_estimation.rank(case[feature], [characteristic_fn(chr) for chr in chrs], feature_type)
+
+def add_decision_feature_to_case_with_rank(case: dict[str, Any], feature: str, 
+                                           characteristic_fn: Callable[[Casualty], Any], 
+                                           cur_decision: Decision, decisions: list[Decision]):
+    case[feature] = characteristic_fn(cur_decision)
+    if case[feature] is not None:
+        case[feature + '_rank'] = kdma_estimation.rank(case[feature], {characteristic_fn(dec) for dec in decisions}, None)
+
+def add_ranked_metric_to_case(case: dict[str, Any], feature: str, decisions: list[Decision]):
+    if feature not in case:
+        return
+    case[feature.lower() + '_rank'] = kdma_estimation.rank(case[feature], {dec.metrics[feature].value for dec in decisions if feature in dec.metrics}, None)
+
     
 def get_casualty_by_id(cid: str, casualties: list[Casualty]) -> Casualty:
     if cid is None: 
@@ -358,6 +371,15 @@ def get_casualties_in_probe(probe: TADProbe) -> list[Casualty]:
     if None in cids:
         cids.remove(None)
     return [get_casualty_by_id(cid, probe.state.casualties) for cid in cids]
+
+    
+def original_severity(dec: Decision) -> float | None:
+    if 'ACTION_TARGET_SEVERITY_CHANGE' not in dec.metrics:
+        return None
+    return dec.metrics['ACTION_TARGET_SEVERITY'].value - dec.metrics['ACTION_TARGET_SEVERITY_CHANGE'].value
+
+def worst_injury_severity(chr: Casualty) -> str | None:
+    return min([inj.severity for inj in chr.injuries], key=kdma_estimation.get_feature_valuation("inj_severity"), default=None)
 
 def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     case = {}
@@ -394,10 +416,8 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
                                     lambda chr: len(chr.treatments), c, chrs)
         add_feature_to_case_with_rank(case, "treatment_time", 
                                     lambda chr: chr.treatment_time, c, chrs)
-        case['inj_severity_rank'] = \
-            min([kdma_estimation.rank(inj.severity, sevs, "inj_severity") for inj in c.injuries])
-        case['severity_rank'] = \
-            kdma_estimation.rank(d.metrics['SEVERITY'].value, {dec.metrics['SEVERITY'].value for dec in probe.decisions}, None)
+        add_feature_to_case_with_rank(case, 'worst_injury_severity', worst_injury_severity, c, chrs, feature_type="inj_severity")
+        add_decision_feature_to_case_with_rank(case, 'original_severity', original_severity, d, probe.decisions)
         case['unvisited_count'] = len([co for co in chrs if not co.assessed 
                                                                     and not co.id == c.id])
         case['injured_count'] = len([co for co in chrs if len(co.injuries) > 0 
@@ -437,6 +457,10 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         else:
             for (inner_key, inner_value) in flatten(dm.name, dm.value).items():
                 case[inner_key] = inner_value
+    add_ranked_metric_to_case(case, 'SEVERITY', probe.decisions)
+    add_ranked_metric_to_case(case, 'DAMAGE_PER_SECOND', probe.decisions)
+    add_ranked_metric_to_case(case, 'ACTION_TARGET_SEVERITY', probe.decisions)
+    add_ranked_metric_to_case(case, 'ACTION_TARGET_SEVERITY_CHANGE', probe.decisions)
 
     case["context"] = d.context
     case['scene'] = probe.state.orig_state.get('meta_info', {}).get('scene_id', None)
