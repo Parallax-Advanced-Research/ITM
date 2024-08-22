@@ -33,7 +33,7 @@ class TriageCompetenceAssessor(Assessor):
                     ret_assessments[dec_key] = 1
             elif is_painmed_action(dec.value):
                 char1 = get_target_patient(probe, dec)
-                if not char1.vitals.mental_status != MentalStatusEnum.AGONY:
+                if char1.vitals.mental_status != MentalStatusEnum.AGONY:
                     ret_assessments[dec_key] = 0.2
                 elif patient_treatable(probe, char1):
                     ret_assessments[dec_key] = 0.6
