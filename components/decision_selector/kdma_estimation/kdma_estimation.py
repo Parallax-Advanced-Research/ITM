@@ -203,9 +203,9 @@ def get_feature_valuation(feature: str) -> Callable[[str], int | None]:
 
 def rank(val: Any, valsFound: list[Any], feature: str):
     if feature in VALUED_FEATURES:
-        map = VALUED_FEATURES[val.lower()]
-        val = map[val]
-        valsFound = [map[x.lower()] for x in valsFound]
+        map = VALUED_FEATURES.get(feature, None)
+        val = map[val.lower()]
+        valsFound = [map[x.lower()] if x is not None else None for x in valsFound]
     sortedVals = sorted(valsFound, key=functools.cmp_to_key(lambda v1, v2: local_order(v1, v2, feature)))
     first_index = sortedVals.index(val)
     sortedVals.reverse()
