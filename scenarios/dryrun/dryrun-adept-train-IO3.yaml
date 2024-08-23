@@ -1,5 +1,7 @@
 id: DryRunEval.IO3
 
+# v1.0.1
+#   - Fixed P6 incorrectly using relevant_state of characters with name P1 instead of P6.
 # v1.0.0
 #   - copied from IO1 (v1.4.0), but with "why?" justification questions added
 

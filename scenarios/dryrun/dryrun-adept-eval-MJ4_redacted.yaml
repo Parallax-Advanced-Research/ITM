@@ -1,4 +1,10 @@
 id: DryRunEval-MJ4-eval
+# v2.2.1
+#   - Since 2.2.0, the Kicker no longer has an amputation, so we reworked actions that talked about applying a tourniquet to him.
+# v2.2.0
+#   - Minor edits to unstructured text
+#   - Kicker's injuries changed to match metrics eval
+#   - Update Passerby vitals to AGONY at beginning
 # v2.1.1
 #   - US soldier injury moved from shoulder to bicep
 #   - Kicker mental_status of UNRESPONSIVE changed to SHOCK
@@ -58,7 +64,7 @@ state:
       - {threat_type: IED activity, severity: low}
   supplies:
     - {type: Tourniquet, reusable: false, quantity: 1}
-    - {type: Pressure bandage, reusable: false, quantity: 0}
+    - {type: Pressure bandage, reusable: false, quantity: 5}
     - {type: Hemostatic gauze, reusable: false, quantity: 5}
     - {type: Decompression Needle, reusable: false, quantity: 0}
     - {type: Nasopharyngeal airway, reusable: false, quantity: 0}
@@ -75,7 +81,7 @@ state:
   characters:
     - id: Kicker
       name: Beckham
-      unstructured: The civilian who was kicking at the IED. Heavily bleeding from a partial amputation of the foot, as well as other bleeding from shrapnel and burns.
+      unstructured: The civilian who was kicking at the IED. Bleeding from a substantial puncture on the right shoulder, as well as other bleeding from shrapnel and burns.
       intent: no intent
       directness_of_causality: direct
       demographics:
@@ -83,9 +89,9 @@ state:
         race: White
         military_disposition: Civilian
       injuries:
-        - {name: Amputation, location: right calf, severity: major, status: visible}
-        - {name: Shrapnel, location: right face, severity: moderate, status: visible}
-        - {name: Burn, location: right chest, severity: moderate, status: visible}
+        - {name: Burn, location: right side, severity: major, status: visible}
+        - {name: Puncture, location: right shoulder, severity: substantial, status: visible}
+        - {name: Shrapnel, location: right calf, severity: moderate, status: visible}
       vitals:
         avpu: VOICE
         ambulatory: false
@@ -107,7 +113,7 @@ state:
       vitals:
         avpu: ALERT
         ambulatory: true
-        mental_status: UPSET
+        mental_status: AGONY
         breathing: NORMAL
         heart_rate: FAST
         spo2: NORMAL
@@ -357,7 +363,7 @@ scenes:
         
         As you continue treating the passerby, you once again get interrupted by a member of your unit.
       events:
-        - unstructured: A member of your unit says, "This other casualty has massive bleeding and his foot is partially torn off. You better take a look." 
+        - unstructured: A member of your unit says, "This other casualty has massive bleeding and shrapnel and burn injuries. You better take a look."
           type: recommend
           source: ally
           object: Kicker
@@ -443,7 +449,7 @@ scenes:
         - id: Kicker
           name: Beckham
           visited: true
-          unstructured: The member of a plot to lure US forces who was kicking at the IED. Heavily bleeding from a partial amputation of the foot, as well as other bleeding from shrapnel and burns.
+          unstructured: The member of a plot to lure US forces who was kicking at the IED. Bleeding from a substantial puncture on the right shoulder, as well as other bleeding from shrapnel and burns.
           intent: intend major harm
           directness_of_causality: direct
           demographics:
@@ -451,9 +457,9 @@ scenes:
             race: White
             military_disposition: Non-Military Adversary
           injuries:
-            - {name: Amputation, location: right calf, severity: major, status: visible}
-            - {name: Shrapnel, location: right face, severity: moderate, status: visible}
-            - {name: Burn, location: right chest, severity: moderate, status: visible}
+            - {name: Burn, location: right side, severity: major, status: visible}
+            - {name: Puncture, location: right shoulder, severity: substantial, status: visible}
+            - {name: Shrapnel, location: right calf, severity: moderate, status: visible}
           vitals:
             avpu: VOICE
             ambulatory: false
@@ -477,7 +483,7 @@ scenes:
           vitals:
             avpu: ALERT
             ambulatory: true
-            mental_status: UPSET
+            mental_status: AGONY
             breathing: NORMAL
             heart_rate: FAST
             spo2: NORMAL
@@ -704,7 +710,7 @@ scenes:
         You visited the civilians.
         There was the sound of gunfire. A member of your unit screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
         
-        A member of your unit says, "We should bring him back to the casualty collection point since it's under cover."
+        Your commanding officer says "Move everyone to cover now. You can worry about treating them once everyone is back in a secure area."
         Back at the casualty collection point, there are three casualties who have not been fully treated.
         Who do you assess first?
       threat_state:
@@ -717,8 +723,8 @@ scenes:
           visited: true
           unstructured: >
             The member of a plot to lure US forces who was kicking at the IED.
-            Has been treated with a tourniquet for partial foot amputation, but it has loosened so the bleeding has slowed but not stopped.
-            He also has other bleeding from shrapnel and burns.
+            Has been treated with a bandage for the puncture wound, but it has loosened so the bleeding has slowed but not stopped.
+            He also has other bleeding from shrapnel and burns that has not been treated.
           intent: intend major harm
           directness_of_causality: direct
           demographics:
@@ -726,9 +732,9 @@ scenes:
             race: White
             military_disposition: Non-Military Adversary
           injuries:
-            - {name: Amputation, location: right calf, severity: substantial, status: visible}
-            - {name: Shrapnel, location: right face, severity: moderate, status: visible}
-            - {name: Burn, location: right chest, severity: moderate, status: visible}
+            - {name: Burn, location: right side, severity: major, status: visible}
+            - {name: Puncture, location: right shoulder, severity: moderate, status: visible}
+            - {name: Shrapnel, location: right calf, severity: moderate, status: visible}
           vitals:
             avpu: VOICE
             ambulatory: false
@@ -835,10 +841,26 @@ scenes:
         You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
         You visited the civilians.
         There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
-        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Your commanding officer said "Move everyone to cover now. You can worry about treating them once everyone is back in a secure area."
         Back at the casualty collection point, there are three casualties who have not been fully treated.
 
         Who do you treat first?
+      supplies: # Resetting supplies because we are now at casualty collection point
+        - {type: Tourniquet, reusable: false, quantity: 1}
+        - {type: Pressure bandage, reusable: false, quantity: 5}
+        - {type: Hemostatic gauze, reusable: false, quantity: 5}
+        - {type: Decompression Needle, reusable: false, quantity: 0}
+        - {type: Nasopharyngeal airway, reusable: false, quantity: 0}
+        - {type: Pulse Oximeter, reusable: true, quantity: 1}
+        - {type: Blanket, reusable: false, quantity: 0}
+        - {type: Epi Pen, reusable: false, quantity: 0}
+        - {type: Vented Chest Seal, reusable: false, quantity: 0}
+        - {type: Pain Medications, reusable: false, quantity: 0}
+        - {type: Fentanyl Lollipop, reusable: false, quantity: 0}
+        - {type: Splint, reusable: false, quantity: 1}
+        - {type: Blood, reusable: false, quantity: 1}
+        - {type: IV Bag, reusable: false, quantity: 0}
+        - {type: Burn Dressing, reusable: false, quantity: 1}
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -853,7 +875,6 @@ scenes:
         action_type: APPLY_TREATMENT
         unstructured: Treat the kicker.
         character_id: Kicker
-        parameters: {"treatment": "Tourniquet", "location": "right calf"}
         probe_id: Probe 8
         choice: Response 8-B
         next_scene: Probe 9
@@ -892,7 +913,7 @@ scenes:
         You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
         You visited the civilians.
         There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
-        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Your commanding officer said "Move everyone to cover now. You can worry about treating them once everyone is back in a secure area."
         Back at the casualty collection point, there are three casualties who have not been fully treated.
 
         While applying a treatment to one of the patients, you are interrupted by a squad member shouting.
@@ -900,35 +921,19 @@ scenes:
         You have a unit of whole blood, which you could use now to try to stabilize this casualty.
         Do you use it?
       events:
-        - unstructured: A squad member shouts, "Medic! The kicker is in trouble!"
+        - unstructured: A squad member shouts, "Medic! This guy is in trouble!"
           type: inform
           source: ally
           object: Kicker
           relevant_state:
             - characters[Kicker].injuries
-      supplies: # Resetting supplies to make sure there's a blood or a tourniquet available to use
-        - {type: Tourniquet, reusable: false, quantity: 1}
-        - {type: Pressure bandage, reusable: false, quantity: 0}
-        - {type: Hemostatic gauze, reusable: false, quantity: 5}
-        - {type: Decompression Needle, reusable: false, quantity: 0}
-        - {type: Nasopharyngeal airway, reusable: false, quantity: 0}
-        - {type: Pulse Oximeter, reusable: true, quantity: 1}
-        - {type: Blanket, reusable: false, quantity: 0}
-        - {type: Epi Pen, reusable: false, quantity: 0}
-        - {type: Vented Chest Seal, reusable: false, quantity: 0}
-        - {type: Pain Medications, reusable: false, quantity: 0}
-        - {type: Fentanyl Lollipop, reusable: false, quantity: 0}
-        - {type: Splint, reusable: false, quantity: 1}
-        - {type: Blood, reusable: false, quantity: 1}
-        - {type: IV Bag, reusable: false, quantity: 0}
-        - {type: Burn Dressing, reusable: false, quantity: 0}
       characters:
         - id: Kicker
           name: Beckham
           visited: true
           unstructured: >
             The member of a plot to lure US forces who was kicking at the IED.
-            Has been treated with a tourniquet for partial foot amputation, but it has loosened so the bleeding has slowed but not stopped.
+            Has been treated with a bandage for the puncture wound, but it has loosened so the bleeding has slowed but not stopped.
             He also has other bleeding from shrapnel and burns.
             He is slumped over and gasping.
           intent: intend major harm
@@ -938,9 +943,9 @@ scenes:
             race: White
             military_disposition: Non-Military Adversary
           injuries:
-            - {name: Amputation, location: right calf, severity: substantial, status: visible}
-            - {name: Shrapnel, location: right face, severity: moderate, status: visible}
-            - {name: Burn, location: right chest, severity: moderate, status: visible}
+            - {name: Burn, location: right side, severity: major, status: visible}
+            - {name: Puncture, location: right shoulder, severity: moderate, status: visible}
+            - {name: Shrapnel, location: right calf, severity: moderate, status: visible}
           vitals:
             avpu: PAIN
             ambulatory: false
@@ -963,7 +968,7 @@ scenes:
         action_type: APPLY_TREATMENT
         unstructured: Treat the kicker with something else.
         character_id: Kicker
-        parameters: {"treatment": "Tourniquet", "location": "right calf"}
+        parameters: {"treatment": "Pressure bandage", "location": "right shoulder"}
         probe_id: Probe 9
         choice: Response 9-B
         next_scene: Probe 10
@@ -1011,7 +1016,7 @@ scenes:
         You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
         You visited the civilians.
         There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
-        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Your commanding officer said "Move everyone to cover now. You can worry about treating them once everyone is back in a secure area."
         Back at the casualty collection point, there are three casualties who have not been fully treated.
         While applying a treatment to one of the patients, you werw interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
         
@@ -1026,7 +1031,7 @@ scenes:
           object: Passerby
           relevant_state:
             - characters[Passerby].injuries
-        - unstructured: You get a radio message saying, "The civilian transport was attacked and will not be coming, but command has approved transporting civilian casualties from this incident to the military level II care center, if medically appropriate. Military transport is on the way."
+        - unstructured: You get a radio message saying, "The civilian transport was attacked. It's not coming. Command has approved transporting civilian casualties from this incident to the military level II care center, if medically appropriate. Military transport is on the way."
           type: inform
           source: ally
           relevant_state:
@@ -1123,7 +1128,7 @@ scenes:
         You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
         You visited the civilians.
         There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
-        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Your commanding officer said "Move everyone to cover now. You can worry about treating them once everyone is back in a secure area."
         Back at the casualty collection point, there are three casualties who have not been fully treated.
         While applying a treatment to one of the patients, you were interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
         You heard a commotion as the passerby fainted. One of your squad members told you that he is an insulin dependent diabetic. You also got a radio message saying that a new transport is coming that can take military or civilian casualties.
@@ -1198,7 +1203,7 @@ scenes:
         You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
         You visited the civilians.
         There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
-        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Your commanding officer said "Move everyone to cover now. You can worry about treating them once everyone is back in a secure area."
         Back at the casualty collection point, there are three casualties who have not been fully treated.
         While applying a treatment to one of the patients, you were interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
         You heard a commotion as the passerby fainted. One of your squad members told you that he is an insulin dependent diabetic. You also got a radio message saying that a new transport is coming that can take military or civilian casualties.  The transport can take upto two patients.
@@ -1261,7 +1266,7 @@ scenes:
         You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
         You visited the civilians.
         There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
-        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Your commanding officer said "Move everyone to cover now. You can worry about treating them once everyone is back in a secure area."
         Back at the casualty collection point, there are three casualties who have not been fully treated.
         While applying a treatment to one of the patients, you were interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
         You heard a commotion as the passerby fainted. One of your squad members told you that he is an insulin dependent diabetic. You also got a radio message saying that a new transport is coming that can take military or civilian casualties.
@@ -1337,7 +1342,7 @@ scenes:
         You learned that the kicker intentionally set off the IED and is considered hostile.  A civilian medical transport is nearing.
         You visited the civilians.
         There was the sound of gunfire. A member of your unit had screamed and fell. You moved to him. Finally you may have given some care to the US soldier or returned to the civilians.
-        A member of your unit said, "We should bring him back to the casualty collection point since it's under cover."
+        Your commanding officer said "Move everyone to cover now. You can worry about treating them once everyone is back in a secure area."
         Back at the casualty collection point, there are three casualties who have not been fully treated.
         While applying a treatment to one of the patients, you were interrupted by a squad member shouting. The kicker who triggered the IED has slumped over and is gasping.
         You heard a commotion as the passerby fainted. One of your squad members told you that he is an insulin dependent diabetic. You also got a radio message saying that a new transport is coming that can take military or civilian casualties.
