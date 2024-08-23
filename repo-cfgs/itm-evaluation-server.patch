@@ -1,9 +1,9 @@
 diff --git a/swagger_server/config.ini b/swagger_server/config.ini
 new file mode 100755
-index 0000000..7c6a557
+index 0000000..3277e84
 --- /dev/null
 +++ b/swagger_server/config.ini
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,70 @@
 +; Copy over this template file and rename it to config.ini
 +; Replace the default configurations below with the desired values
 +
@@ -21,6 +21,59 @@ index 0000000..7c6a557
 +
 +HISTORY_DIRECTORY=itm_history_output
 +HISTORY_S3_BUCKET=itm-ui-assets
++
++EVAL_NAME=Dry Run Evaluation
++EVAL_NUMBER=4
++
++SOARTECH_EVAL_FILENAMES=dryrun-soartech-eval-qol1.yaml,
++    dryrun-soartech-eval-qol2.yaml,
++    dryrun-soartech-eval-qol3.yaml,
++    dryrun-soartech-eval-vol1.yaml, 
++    dryrun-soartech-eval-vol2.yaml, 
++    dryrun-soartech-eval-vol3.yaml
++
++SOARTECH_TRAIN_FILENAMES=dryrun-soartech-train-qol1.yaml,
++    dryrun-soartech-train-qol2.yaml,
++    dryrun-soartech-train-vol1.yaml,
++    dryrun-soartech-train-vol2.yaml
++
++SOARTECH_EVAL_QOL_SCENARIOS=qol-dre-1-eval,qol-dre-2-eval,qol-dre-3-eval
++SOARTECH_EVAL_VOL_SCENARIOS=vol-dre-1-eval,vol-dre-2-eval,vol-dre-3-eval
++
++SOARTECH_TRAIN_QOL_SCENARIOS=qol-dre-1-train,qol-dre-2-train
++SOARTECH_TRAIN_VOL_SCENARIOS=vol-dre-1-train,vol-dre-2-train
++
++SOARTECH_QOL_ALIGNMENT_TARGETS=qol-human-8022671-SplitLowMulti,
++    qol-human-1774519-SplitEvenBinary,
++    qol-human-6403274-SplitHighBinary,
++    qol-human-3043871-SplitHighBinary,
++    qol-human-2932740-HighExtreme,
++    qol-human-6349649-SplitHighMulti,
++    qol-human-9157688-SplitEvenBinary,
++    qol-human-5032922-SplitLowMulti,
++    qol-human-3447902-SplitHighMulti,
++    qol-human-0000001-SplitEvenMulti,
++    qol-human-7040555-SplitHighMulti,
++    qol-synth-LowExtreme,
++    qol-synth-HighExtreme,
++    qol-synth-HighCluster,
++    qol-synth-LowCluster,
++    qol-synth-SplitLowBinary
++
++SOARTECH_VOL_ALIGNMENT_TARGETS=vol-human-8022671-SplitHighMulti,
++    vol-human-1774519-SplitHighMulti,
++    vol-human-6403274-SplitEvenBinary,
++    vol-human-8478698-SplitLowMulti,
++    vol-human-3043871-SplitLowMulti,
++    vol-human-2637411-SplitEvenMulti,
++    vol-human-2932740-SplitEvenMulti,
++    vol-human-5032922-SplitLowMulti,
++    vol-human-7040555-SplitEvenBinary,
++    vol-synth-LowExtreme,
++    vol-synth-HighExtreme,
++    vol-synth-HighCluster,
++    vol-synth-LowCluster,
++    vol-synth-SplitLowBinary
 diff --git a/swagger_server/controllers/itm_ta2_eval_controller.py b/swagger_server/controllers/itm_ta2_eval_controller.py
 index 9c36cfc..1ee902a 100644
 --- a/swagger_server/controllers/itm_ta2_eval_controller.py
@@ -54,7 +107,7 @@ index 1b133b0..0af74ee 100644
          self.parent_scenario :ITMScenario = None
  
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index f47733b..30b071a 100644
+index f47733b..5d26c54 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
 @@ -96,7 +96,8 @@ class ITMSession:
@@ -76,3 +129,16 @@ index f47733b..30b071a 100644
              self.return_scenario_history = True
          if session_type == 'test':
              self.ta1_integration = False
+@@ -499,8 +500,11 @@ class ITMSession:
+             alignment_targets = [target for target in ITMSession.alignment_data[ta1_name]]
+             ta1_scenarios = []
+             for scenario in scenarios:
++                yaml_path=f'{path}{scenario}'
++                if not os.path.exists(yaml_path):
++                    continue
+                 itm_scenario = \
+-                    ITMScenario(yaml_path=f'{path}{scenario}',
++                    ITMScenario(yaml_path=yaml_path,
+                                 session=self, training=self.kdma_training)
+                 itm_scenario.generate_scenario_data()
+                 ta1_scenarios.append(itm_scenario)
