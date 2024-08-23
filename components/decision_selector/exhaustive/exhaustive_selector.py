@@ -11,11 +11,12 @@ CASE_FILE: str = "temp/pretraining_cases.json"
 
 class ExhaustiveSelector(DecisionSelector):
     
-    def __init__(self, continue_search = True):
+    def __init__(self, continue_search = True, output_case_file = CASE_FILE):
         self.last_actions : list[Action] = list()
         self.action_index : int = 0
         self.choice_final : list[bool] = []
         self.case_index : int = 0
+        self.output_case_file = output_case_file
         # self.new_cases : list[dict[str, Any]] = list()
         if continue_search and os.path.exists(STATE_FILE):
             try:
@@ -23,13 +24,13 @@ class ExhaustiveSelector(DecisionSelector):
                     self.last_actions = read_actions(json.loads(infile.readline()))
                     self.choice_final = json.loads(infile.readline())
                 # self.new_cases = read_case_base(CASE_FILE)
-                with open(CASE_FILE, "r") as infile:
+                with open(self.output_case_file, "r") as infile:
                     while infile.readline():
                         self.case_index += 1
             except json.JSONDecodeError:
                 print(f"Error in {STATE_FILE} format; starting from beginning.")
         else:
-            with open(CASE_FILE, "w") as outfile:
+            with open(self.output_case_file, "w") as outfile:
                 outfile.write("")
                 
                 
@@ -87,7 +88,7 @@ class ExhaustiveSelector(DecisionSelector):
         self.case_index += 1
         new_case["actions"] = [act.to_json() for act in probe.state.actions_performed] + [cur_decision.value.to_json()]
         new_case["index"] = self.case_index
-        with open(CASE_FILE, "a") as outfile:
+        with open(self.output_case_file, "a") as outfile:
             json.dump(new_case, outfile)
             outfile.write("\n")
         

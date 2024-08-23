@@ -13,6 +13,7 @@ def main():
     parser.add_argument('--diverse', action=argparse.BooleanOptionalAction, default=True, help="Use diverse selector (overrides exhaustive).")
     parser.add_argument('--reset', action=argparse.BooleanOptionalAction, default=False, help="Run from scratch (delete old cases).")
     parser.add_argument('--runs', type=int, default=None, help="How many training runs to perform (maximum).")
+    parser.add_argument('--output_dir', type=str, default='temp' help="directory to store training and weight data, relative to CWD")
     args = parser.parse_args()
     validate_args(args)
     args.training = True
@@ -21,11 +22,11 @@ def main():
     args.dump = False
 
     if args.diverse:
-        args.selector_object = DiverseSelector(not args.reset)
+        args.selector_object = DiverseSelector(not args.reset, args.output_dir + "/pretraining_cases.json")
         if args.runs is None:
             args.runs = 1000
     elif args.exhaustive:
-        args.selector_object = ExhaustiveSelector(not args.reset)
+        args.selector_object = ExhaustiveSelector(not args.reset, args.output_dir + "/pretraining_cases.json")
         if args.runs is None:
             args.runs = -1
     
@@ -60,12 +61,12 @@ def main():
         driver.treatments = {}
         args.runs -= 1
     kdma_cases = analyze_data.analyze_pre_cases(
-        "temp/pretraining_cases.json", None, "temp/kdma_cases.csv", 
-        "temp/alignment_target_cases.csv")
+        args.output_dir + "/pretraining_cases.json", None, args.output_dir + "/kdma_cases.csv", 
+        args.output_dir + "/alignment_target_cases.csv")
     analyze_data.do_weight_search(
-        kdma_cases, "temp/kdma_weights.json", "temp/all_weights.json", 
+        kdma_cases, args.output_dir + "/kdma_weights.json", args.output_dir + "/all_weights.json", 
         "probability" if args.session_type == "soartech" else "avgdiff", 
-        "temp/pretraining_cases.csv")
+        args.output_dir + "/pretraining_cases.csv")
     
 def output_training_cases():
     (cases, training_data) = analyze_data.read_training_data()

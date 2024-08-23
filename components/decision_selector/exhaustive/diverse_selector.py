@@ -15,22 +15,23 @@ KDMA_WEIGHT = 0.25
 
 class DiverseSelector(DecisionSelector, AlignmentTrainer):
 
-    def __init__(self, continue_search = True):
+    def __init__(self, continue_search = True, output_case_file = CASE_FILE):
         self.rg = random.Random()
         self.rg.seed()
         self.case_index : int = 0
         self.retainer = KDMACaseBaseRetainer(continue_search = continue_search)
         self.cases: dict[list[dict[str, Any]]] = dict()
         self.new_cases: list[dict[str, Any]] = list()
+        self.output_case_file = output_case_file
         # self.new_cases : list[dict[str, Any]] = list()
-        if continue_search and os.path.exists(CASE_FILE):
-            with open(CASE_FILE, "r") as infile:
+        if continue_search and os.path.exists(self.output_case_file):
+            with open(self.output_case_file, "r") as infile:
                 old_cases = [json.loads(line) for line in infile]
             for case in old_cases:
                 self.cases[case["hash"]] = case
             self.case_index = len(old_cases)
         else:
-            with open(CASE_FILE, "w") as outfile:
+            with open(self.output_case_file, "w") as outfile:
                 outfile.write("")
         
     def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
@@ -62,7 +63,7 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         hash_list.append(new_case)
         
     def write_case(self, case: dict[str, Any]):
-        with open(CASE_FILE, "a") as outfile:
+        with open(self.output_case_file, "a") as outfile:
             json.dump(case, outfile)
             outfile.write("\n")
         
