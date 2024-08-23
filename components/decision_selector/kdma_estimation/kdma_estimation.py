@@ -157,9 +157,9 @@ VALUED_FEATURES = {
         "directness_of_causality": 
             {"none": 0.0, "indirect": 0.25, "somewhat indirect": 0.5, "somewhat direct": 0.75, "direct": 1.0},
         "threat_severity":
-            {"low": -1, "moderate": -2, "substantial": -3, "severe": -4, "extreme": -5},
+            {"low":   -1, "moderate": -2, "substantial": -3, "severe": -4, "extreme": -5},
         "inj_severity":
-            {"minor": -1, "moderate": -2, "substantial": -3, "major": -4, "extreme": -5},
+            {"minor": -1, "moderate": -2, "substantial": -3, "major":  -4, "extreme": -5},
         "mental_status":
             {"agony": -3, "calm": 0, "confused": -1, "shock": -2, "upset": -1, "unresponsive": -3},
         "avpu":
@@ -202,6 +202,10 @@ def get_feature_valuation(feature: str) -> Callable[[str], int | None]:
     return lambda val: VALUED_FEATURES[feature].get(val, None)
 
 def rank(val: Any, valsFound: list[Any], feature: str):
+    if feature in VALUED_FEATURES:
+        map = VALUED_FEATURES[val.lower()]
+        val = map[val]
+        valsFound = [map[x.lower()] for x in valsFound]
     sortedVals = sorted(valsFound, key=functools.cmp_to_key(lambda v1, v2: local_order(v1, v2, feature)))
     first_index = sortedVals.index(val)
     sortedVals.reverse()
