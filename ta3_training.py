@@ -6,6 +6,7 @@ import tad
 import util
 import sys
 import argparse
+import os
 
 def main():
     parser = get_default_parser()
@@ -13,13 +14,17 @@ def main():
     parser.add_argument('--diverse', action=argparse.BooleanOptionalAction, default=True, help="Use diverse selector (overrides exhaustive).")
     parser.add_argument('--reset', action=argparse.BooleanOptionalAction, default=False, help="Run from scratch (delete old cases).")
     parser.add_argument('--runs', type=int, default=None, help="How many training runs to perform (maximum).")
-    parser.add_argument('--output_dir', type=str, default='temp' help="directory to store training and weight data, relative to CWD")
+    parser.add_argument('--output_dir', type=str, default='temp', help="directory to store training and weight data, relative to CWD")
+    parser.add_argument('--analyze', action=argparse.BooleanOptionalAction, default=True, help="Create kdma cases and weights after training completes.")
     args = parser.parse_args()
     validate_args(args)
     args.training = True
     args.keds = False
     args.verbose = False
     args.dump = False
+    
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
 
     if args.diverse:
         args.selector_object = DiverseSelector(not args.reset, args.output_dir + "/pretraining_cases.json")
@@ -60,13 +65,14 @@ def main():
         driver.actions_performed = []
         driver.treatments = {}
         args.runs -= 1
-    kdma_cases = analyze_data.analyze_pre_cases(
-        args.output_dir + "/pretraining_cases.json", None, args.output_dir + "/kdma_cases.csv", 
-        args.output_dir + "/alignment_target_cases.csv")
-    analyze_data.do_weight_search(
-        kdma_cases, args.output_dir + "/kdma_weights.json", args.output_dir + "/all_weights.json", 
-        "probability" if args.session_type == "soartech" else "avgdiff", 
-        args.output_dir + "/pretraining_cases.csv")
+    if args.analyze:
+        kdma_cases = analyze_data.analyze_pre_cases(
+            args.output_dir + "/pretraining_cases.json", None, args.output_dir + "/kdma_cases.csv", 
+            args.output_dir + "/alignment_target_cases.csv")
+        analyze_data.do_weight_search(
+            kdma_cases, args.output_dir + "/kdma_weights.json", args.output_dir + "/all_weights.json", 
+            "probability" if args.session_type == "soartech" else "avgdiff", 
+            args.output_dir + "/pretraining_cases.csv")
     
 def output_training_cases():
     (cases, training_data) = analyze_data.read_training_data()
