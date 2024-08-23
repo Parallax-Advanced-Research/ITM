@@ -3,6 +3,7 @@ import swagger_client as ta3
 import util
 from domain.external import Scenario, ITMProbe, Action
 from domain.internal import AlignmentTarget, target
+from data import target_library
 
 
 class TA3Client:
@@ -65,7 +66,10 @@ class TA3Client:
 
         if self._session_type == 'eval':
             at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
-            self._align_tgt = target.from_ta3(at)
+            try:
+                self._align_tgt = target.from_ta3(at)
+            except:
+                self._align_tgt = target_library.get_named_alignment_target(at.id)
 
         self._scenario = scen
         self._probe_count = 0
