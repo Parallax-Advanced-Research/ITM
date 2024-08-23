@@ -1,47 +1,28 @@
 {
   "kdma_specific_weights": {
     "Ingroup Bias": {
-      "pAirwayBlocked": 0.5,
-      "mental_status_rank": 2,
-      "disposition_rank": 1,
-      "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.5,
-      "disposition": 0.5,
-      "Exhaustive Priority": 1,
-      "pDeath": 1,
-      "SUPPLIES_REMAINING": 1,
-      "context.topic_injuries": 2,
-      "DAMAGE_PER_SECOND": 0.0625,
-      "hrpmin": 16,
+      "pDeath": 2,
+      "SEVERITY_CHANGE": 0.5,
       "relationship_rank": 2,
-      "avpu_rank": 2,
-      "context.last_casualty": 2,
-      "context.topic_supplies": 1
+      "disposition": 1,
+      "SUPPLIES_REMAINING": 2,
+      "context.topic_injuries": 2
     },
     "Moral judgement": {
-      "directness_of_causality_rank": 1.0,
-      "intent": 0.25,
-      "intent_rank": 0.5,
-      "pAirwayBlocked": 1,
-      "entropy": 1,
       "DAMAGE_PER_SECOND": 0.125,
-      "context.val_intent1": 4,
-      "context.topic_source_character": 1,
-      "directness_of_causality": 8
+      "directness_of_causality": 8,
+      "context.val_directness_of_causality2": 1,
+      "context.val_source_character1": 2
     },
     "QualityOfLife": {
-      "SEVEREST_SEVERITY_CHANGE": 0.5,
-      "WEIGHTED_RESOURCE_SCORE": 4,
-      "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.25,
-      "SUPPLIES_REMAINING": 1.0,
-      "treatment_time": 0.001953125,
       "age": 1,
-      "Tallying Priority": 1
+      "aid_available": 0.5,
+      "inj_severity_rank": 1
     },
     "PerceivedQuantityOfLivesSaved": {
-      "pBrainInjury": 1,
-      "SUPPLIES_REMAINING": 1,
-      "treatment": 1,
-      "inj_severity_rank": 2
+      "SUPPLIES_USED": 0.5,
+      "avpu_rank": 1,
+      "tagged": 1
     }
   },
   "default": 0
