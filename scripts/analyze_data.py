@@ -396,9 +396,14 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
             for key in keys:
                 vals = set([str(case.get(key, None)) for case in case_list])
                 if len(vals) > 1:
-                    print(f"Multiple values for key {key}: {vals}")
-                    breakpoint()
-                    break
+                    if key == 'breathing_rank' and new_case["breathing"] in ["FAST", "SLOW"]:
+                        new_case[key] = statistics.mean([float(val) for val in vals])
+                    elif key == 'mental_status_rank' and new_case["mental_status"] in ["AGONY", "UNRESPONSIVE", "CONFUSED", "UPSET"]:
+                        new_case[key] = statistics.mean([float(val) for val in vals])
+                    else:
+                        print(f"Multiple values for key {key}: {vals}")
+                        breakpoint()
+                        break
         ret_cases.append(new_case)
         index = index + 1
         
