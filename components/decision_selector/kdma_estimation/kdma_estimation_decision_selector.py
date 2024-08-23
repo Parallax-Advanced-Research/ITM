@@ -226,7 +226,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         
     def judge_distance(self, decision: Decision, case: dict[str, Any], ests: dict[str, dict[str, float]], assessments: dict[str, dict[str, float]]):
         if self.empty_probs(ests):
-            dist = 0
+            dist = 1
         else:
             dist = case["distance"]
         for name in assessments:
@@ -432,7 +432,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     a: Action = d.value
     if a.name in ["SITREP"]:
         case['action_type'] = 'questioning'
-    elif a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION"]:
+    elif a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION", "MOVE_TO"]:
         case['action_type'] = 'assessing'
     elif a.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]:
         case['action_type'] = 'treating'

@@ -51,10 +51,15 @@ def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases:
         neighbor_count = triage_constants.DEFAULT_NEIGHBOR_COUNT
     lst = []
     max_distance = 10000
+    cur_act_type = cur_case['action_type']
+    is_char_act = cur_act_type in ['treating', 'assessing']
     for pcase in cases:
         if kdma not in pcase or pcase[kdma] is None:
             continue
-        if cur_case['action_type'] != pcase['action_type']:
+        pcase_act_type = pcase['action_type']
+        if is_char_act and pcase_act_type not in ['treating', 'assessing']:
+            continue
+        if not is_char_act and cur_act_type != pcase_act_type:
             continue
         if reject_same_scene and cur_case['scene'] == pcase['scene']:
             continue
