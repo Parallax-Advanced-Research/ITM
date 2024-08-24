@@ -23,6 +23,9 @@ class DecisionSelector:
     def add_assessor(self, name: str, assessor: Assessor):
         raise NotImplementedError
         
+    def new_scenario(Self):
+        pass
+        
 
 class DecisionExplainer:
     def explain(self, decision: Decision):

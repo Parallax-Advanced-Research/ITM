@@ -80,6 +80,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.assessors = {}
         if args is not None:
             self.initialize_with_args(args)
+            
+    def new_scenario(self):
+        self.possible_kdma_choices = {}
+        self.kdma_choice_history = []
+        self.index = 0
+        
 
     def initialize_with_args(self, args):
         self.use_drexel_format = args.selector == 'kedsd'
@@ -486,6 +492,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
                                                        for co in chrs])
     else:
         case['age'] = c.demographics.age
+        case['age_difference'] = statistics.stdev([chr.demographics.age for chr in chrs])
         case['tagged'] = c.tag is not None
         case['visited'] = c.assessed
         case['conscious'] = c.vitals.conscious

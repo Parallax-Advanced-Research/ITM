@@ -41,6 +41,7 @@ class Driver:
         self.scenario = Scenario(scenario.id, state)
         self.session_uuid = uuid.uuid4()
         self.actions_performed = []
+        self.selector.new_scenario()
 
     def translate_probe(self, itm_probe: ext.ITMProbe) -> TADProbe:
         # Translate probe external state into internal state
