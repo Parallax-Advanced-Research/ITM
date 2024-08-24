@@ -72,7 +72,12 @@ def js_similarity_2feature(kde1, kde2, grid_size=100):
     pdf_kde1 = _kde_to_pdf_2feature(kde1, grid_size)
     pdf_kde2 = _kde_to_pdf_2feature(kde2, grid_size)
 
-    js = jensenshannon(pdf_kde1, pdf_kde2)
+    try:
+        js = jensenshannon(pdf_kde1, pdf_kde2)
+    except:
+        total_dist = sum(pdf_kde1 - pdf_kde2)
+        if total_dist < 0.00001 and total_dist > -0.00001:
+            return 1
 
     # We invert the value because the spec agreed to with the other ITM performs has
     # 0 = unaligned, 1 = full aligned which is the opposite of what Jensenshannon produces. 
