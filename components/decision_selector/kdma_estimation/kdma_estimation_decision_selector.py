@@ -492,8 +492,9 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
                                                        for co in chrs])
     else:
         case['age'] = c.demographics.age
-        if len(chrs) > 1:
-            case['age_difference'] = statistics.stdev([chr.demographics.age for chr in chrs])
+        ages = [chr.demographics.age for chr in chrs if chr.demographics.age is not None]
+        if len(ages) > 1:
+            case['age_difference'] = statistics.stdev(ages)
         case['tagged'] = c.tag is not None
         case['visited'] = c.assessed
         case['conscious'] = c.vitals.conscious
