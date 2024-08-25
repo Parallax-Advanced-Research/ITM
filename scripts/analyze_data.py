@@ -595,7 +595,6 @@ def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, sourc
     patterns.append("bprop.")
     patterns.remove("scene")
     for case in kdma_cases:
-        case.pop("action")
         cur_keys = list(case.keys())
         for key in cur_keys:
             for pattern in patterns:
@@ -605,6 +604,7 @@ def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, sourc
             if key in case:
                 fields |= {key,}
     
+    fields.remove("action")
     fields.remove("scene")
     for kdma_name in hint_types:
         fields.remove(kdma_name.lower())
