@@ -129,6 +129,8 @@ def get_default_parser() -> argparse.ArgumentParser:
                         help="Outputs the elaborator actions into json file (used to help compare to llm).")
     parser.add_argument('--record_considered_decisions', action=argparse.BooleanOptionalAction, default=False, 
                         help="Causes a decision selector to log the decisions it considered.")
+    parser.add_argument('--bypass_server_check', action=argparse.BooleanOptionalAction, default=False, 
+                        help="Allow TAD to start without looking for servers first.")
 
 
 
