@@ -225,7 +225,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             util.logger.info(f"Distance: {best_case['distance']}")
             for name in assessments:
                 if name not in target.kdma_names:
-                    util.logger.info(f"{name}: {assessments[name][str(best_decision.value)]}.4f")
+                    util.logger.info(f"{name}: {assessments[name][str(best_decision.value)]:.4f}")
                     
 
         if self.insert_pauses:
@@ -529,7 +529,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     a: Action = d.value
     if a.name in ["SITREP"]:
         case['action_type'] = 'questioning'
-    elif a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION", "MOVE_TO"]:
+    elif a.name in ["CHECK_ALL_VITALS", "CHECK_PULSE", "CHECK_RESPIRATION", "CHECK_BLOOD_OXYGEN", "MOVE_TO"]:
         case['action_type'] = 'assessing'
     elif a.name in ["APPLY_TREATMENT", "MOVE_TO_EVAC"]:
         case['action_type'] = 'treating'
@@ -540,7 +540,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     elif a.name in ["MESSAGE"]:
         case['action_type'] = a.params["type"]
     else:
-        raise Error()
+        raise Exception("Novel action name: " + a.name)
 
     case['action_name'] = a.name
     
