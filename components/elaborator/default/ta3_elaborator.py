@@ -94,7 +94,7 @@ class TA3Elaborator(Elaborator):
         final_list.sort(key=str)
         if len(final_list) == 0:
             breakpoint()
-        # final_list = remove_too_frequent_actions(probe, final_list)
+        final_list = remove_too_frequent_actions(probe, final_list)
         probe.decisions = final_list
         if self.elab_to_json:
             self._export_elab_to_json(final_list, scenario.id_)
@@ -558,6 +558,19 @@ def supply_filter(supplies: list[Supply]):
         
 def remove_too_frequent_actions(probe, dec_list):
     action_counts = {}
-    for act in probe.state.actions_performed:
-        action_counts[str(act)] = action_counts.get(str(act), 0) + 1
-    return [d for d in dec_list if action_counts.get(str(d.value), 0) < 5]
+    bad_actions = []
+    last_action = None
+    last_action_count = 5
+    for i in range(len(probe.state.actions_performed)):
+        act = probe.state.actions_performed[-(i+1)]
+        if act == last_action:
+            last_action_count += 1
+        elif last_action_count < 5:
+            break
+        else:
+            bad_actions.append(str(act))
+            last_action = act
+            last_action_count = 1
+    if last_action is not None and last_action_count >= 5:
+        bad_actions.append(last_action)
+    return [d for d in dec_list if str(d.value) not in bad_actions]
