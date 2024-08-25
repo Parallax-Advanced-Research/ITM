@@ -25,9 +25,14 @@ def estimate_value_from_probability_dict(probability_dict: dict[float, float]) -
         estimated_value += prob * value
     return estimated_value
         
-def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False, mutable_case: bool = False, reject_same_scene=False) -> float:
+def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, 
+                           cases: list[dict[str, Any]], print_neighbors: bool = False, 
+                           mutable_case: bool = False, reject_same_scene=False, 
+                           reject_same_scene_and_kdma = None) -> float:
     kdma = kdma.lower()
-    topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors, reject_same_scene = reject_same_scene)
+    topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors, 
+                 reject_same_scene = reject_same_scene,
+                 reject_same_scene_and_kdma = reject_same_scene_and_kdma)
     if len(topk) == 0:
         return {}
 
@@ -46,10 +51,32 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
 
     return kdma_probs
 
-def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], neighbor_count: int = -1, print_neighbors: bool = False, reject_same_scene = False) -> list[dict[str, Any]]:
+def sorted_distances(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], reject_same_scene = False) -> list[dict[str, Any]]:
+    lst = []
+    cur_act_type = cur_case['action_type']
+    is_char_act = cur_act_type in ['treating', 'assessing']
+    for pcase in cases:
+        if kdma not in pcase or pcase[kdma] is None:
+            continue
+        pcase_act_type = pcase['action_type']
+        if is_char_act and pcase_act_type not in ['treating', 'assessing']:
+            continue
+        if not is_char_act and cur_act_type != pcase_act_type:
+            continue
+        if reject_same_scene and cur_case['scene'] == pcase['scene']:
+            continue
+        distance = calculate_distance(pcase, cur_case, weights, local_compare)
+        lst.append((distance, pcase))
+        lst.sort(key=first)
+    return lst
+
+def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases: list[dict[str, Any]],
+          neighbor_count: int = -1, print_neighbors: bool = False, reject_same_scene = False,
+          reject_same_scene_and_kdma = None) -> list[dict[str, Any]]:
     if neighbor_count < 0:
         neighbor_count = triage_constants.DEFAULT_NEIGHBOR_COUNT
     lst = []
+    weights = {k: w for (k, w) in oweights.items() if w != 0}
     max_distance = 10000
     cur_act_type = cur_case['action_type']
     is_char_act = cur_act_type in ['treating', 'assessing']
@@ -62,6 +89,9 @@ def top_K(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases:
         if not is_char_act and cur_act_type != pcase_act_type:
             continue
         if reject_same_scene and cur_case['scene'] == pcase['scene']:
+            continue
+        if reject_same_scene_and_kdma is not None and cur_case['scene'] == pcase['scene'] \
+                and reject_same_scene_and_kdma == pcase[kdma]:
             continue
         distance = calculate_distance(pcase, cur_case, weights, local_compare)
         if distance > max_distance:
@@ -133,7 +163,8 @@ def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: 
                     continue
                 error = abs(case[kdma] - estimate)
             else:
-                kdma_probs = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list, reject_same_scene = True)
+                kdma_probs = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list) 
+                                                    # reject_same_scene_and_kdma=case[kdma])
                 error = 1 - kdma_probs.get(case[kdma], 0)
                 if error > 0.9: error = error * 4
                 elif error > 0.5: error = error * 2
