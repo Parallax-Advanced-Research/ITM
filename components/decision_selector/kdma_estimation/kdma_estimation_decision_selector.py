@@ -235,7 +235,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
             write_case_base(fname, new_cases)
         
-        if not self.empty_probs(best_kdma_probs):
+        if target.type == AlignmentTargetType.KDE and not self.empty_probs(best_kdma_probs):
             self.kdma_choice_history.append((best_kdma_probs, min_kdma_probs, max_kdma_probs))
             for (kdma_name, kdma_probs) in best_kdma_probs.items():
                 self.possible_kdma_choices[kdma_name] = self.get_updated_kdma_choices(kdma_probs, kdma_name)
