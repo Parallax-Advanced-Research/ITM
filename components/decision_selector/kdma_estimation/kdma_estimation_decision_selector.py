@@ -204,7 +204,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             possible_choices.append((cur_decision, cur_case, cur_kdma_probs))
 
         if len(possible_choices) == 1:
-            if possible_choices[0][0].value.name != ActionTypeEnum.END_SCENE:
+            if possible_choices[0][0].value.name != ActionTypeEnum.END_SCENE and len(probe.decisions) > 1:
                 util.logger.error("Only one possible choice!")
                 breakpoint()
             return possible_choices[0][0], 3.14159
