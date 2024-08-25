@@ -145,7 +145,7 @@ class TA3Elaborator(Elaborator):
             newCount = decision.context.get("topic_" + topic, 0) + 1
             decision.context["topic_" + topic] = newCount
             decision.context["val_" + topic + str(newCount)] = \
-                self.dereference(state_referent, probe.state.orig_state)
+                self.dereference(state_referent.replace("Vicitim", "Victim"), probe.state.orig_state)
         decision.context["last_action"] = probe.state.actions_performed[-1].name
         for (k, v) in probe.state.actions_performed[-1].params.items():
             decision.context["last_" + k] = v
