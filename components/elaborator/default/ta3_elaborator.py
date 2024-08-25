@@ -231,14 +231,12 @@ class TA3Elaborator(Elaborator):
             # if cas.vitals.conscious is None:
                 # dec_applicable.append(cur_decision)
                 # continue
-            if cas.vitals.hrpmin is None:
-                dec_applicable.append(cur_decision)
-                continue
-            if cas.vitals.spo2 is None and TA3Elaborator._supply_available(state, SupplyTypeEnum.PULSE_OXIMETER):
-                dec_applicable.append(cur_decision)
-                continue
             if not cas.assessed:
                 dec_applicable.append(cur_decision)
+                continue
+            if cas.vitals.hrpmin is None and cas.vitals.spo2 is None and TA3Elaborator._supply_available(state, SupplyTypeEnum.PULSE_OXIMETER):
+                dec_applicable.append(cur_decision)
+                continue
                 
         return dec_applicable
 
@@ -252,9 +250,9 @@ class TA3Elaborator(Elaborator):
 
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
-            if not cas.assessed:
-                dec_applicable.append(cur_decision)
-                continue
+            # if not cas.assessed:
+                # dec_applicable.append(cur_decision)
+                # continue
             if cas.vitals.spo2 is None:
                 dec_applicable.append(cur_decision)
                 continue
@@ -268,9 +266,9 @@ class TA3Elaborator(Elaborator):
 
         for cur_decision in dec_grounded:
             cas = get_casualty_by_id(cur_decision.value.params[ParamEnum.CASUALTY], state.casualties)
-            if not cas.assessed:
-                dec_applicable.append(cur_decision)
-                continue
+            # if not cas.assessed:
+                # dec_applicable.append(cur_decision)
+                # continue
             if cas.vitals.hrpmin is None:
                 dec_applicable.append(cur_decision)
                 continue
