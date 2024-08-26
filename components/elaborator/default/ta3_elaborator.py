@@ -94,7 +94,7 @@ class TA3Elaborator(Elaborator):
         final_list.sort(key=str)
         if len(final_list) == 0:
             breakpoint()
-        final_list = remove_too_frequent_actions(probe, final_list)
+        final_list = remove_loops(probe, final_list)
         probe.decisions = final_list
         if self.elab_to_json:
             self._export_elab_to_json(final_list, scenario.id_)
@@ -571,6 +571,26 @@ def decision_copy_with_params(dec: Decision[Action], params: dict[str, Any]):
 
 def supply_filter(supplies: list[Supply]):
     return [s for s in supplies if s.type not in SPECIAL_SUPPLIES]
+
+def remove_loops(probe, dec_list):
+    acts = [str(a) for a in probe.state.actions_performed]
+    longest_loop = 0
+    for i in range(1, (len(acts)//5) + 1):
+        recent_acts = acts[-i:]
+        loop = True
+        for j in range(2, 6):
+            past_acts = acts[-j*i:-(j-1)*i]
+            if str(past_acts) != str(recent_acts):
+                loop = False
+                break
+        if loop:
+            longest_loop = i
+    if longest_loop == 0:
+        return dec_list
+    bad_actions = acts[-longest_loop:]
+    breakpoint()
+    return [d for d in dec_list if str(d.value) not in bad_actions]
+
         
 def remove_too_frequent_actions(probe, dec_list):
     action_counts = {}
@@ -579,7 +599,7 @@ def remove_too_frequent_actions(probe, dec_list):
     last_action_count = 5
     for i in range(len(probe.state.actions_performed)):
         act = probe.state.actions_performed[-(i+1)]
-        if act == last_action:
+        if str(act) == str(last_action):
             last_action_count += 1
         elif last_action_count < 5:
             break
