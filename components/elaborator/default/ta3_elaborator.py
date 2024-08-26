@@ -1,6 +1,6 @@
 import json
 
-from domain.ta3 import TA3State, Casualty, TagCategory, Supply
+from domain.ta3 import TA3State, Casualty, TagCategory, Supply, Injury
 from domain.internal import Decision, Action, Scenario, TADProbe, make_new_action_decision, update_decision_parameters
 from components import Elaborator
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import supply_injury_match, supply_location_match
@@ -535,10 +535,22 @@ class TA3Elaborator(Elaborator):
 def decisions_if_supplied(state: TA3State, decisions: list[Decision]):
     ret = []
     for decision in decisions:
-        if TA3Elaborator._supply_available(state, decision.value.params[ParamEnum.TREATMENT]):
-            ret.append(decision)
+        if injury_treated(state, decision.value.params[ParamEnum.CASUALTY], decision.value.params[ParamEnum.LOCATION]):
+            continue
+        if not TA3Elaborator._supply_available(state, decision.value.params[ParamEnum.TREATMENT]):
+            continue
+        ret.append(decision)
     return ret
 
+def injury_treated(state: TA3State, cas_id: str, loc_id: str):
+    cas = get_casualty_by_id(cas_id, state.casualties)
+    injs = get_injuries_by_location(loc_id, cas.injuries)
+    for inj in injs:
+        if inj.treated or inj.status == 'treated':
+            return True
+    return False
+            
+    
         
 def consistent_decision_key(dec : Decision) -> str:
     return (dec.value.name + "(" + dec.value.params.get(ParamEnum.CASUALTY, "") + ","
@@ -548,6 +560,10 @@ def consistent_decision_key(dec : Decision) -> str:
 
 def get_casualty_by_id(id: str, casualties: list[Casualty]) -> Casualty:
     return [c for c in casualties if c.id == id][0]
+
+def get_injuries_by_location(loc_id: str, injuries: list[Injury]) -> Injury:
+    return [inj for inj in injuries if inj.location == loc_id]
+        
 
 def decision_copy_with_params(dec: Decision[Action], params: dict[str, Any]):
     pcopy = dec.value.params.copy() | params
@@ -568,9 +584,13 @@ def remove_too_frequent_actions(probe, dec_list):
         elif last_action_count < 5:
             break
         else:
-            bad_actions.append(str(act))
+            if last_action is not None:
+                bad_actions.append(str(last_action))
+                breakpoint()
             last_action = act
             last_action_count = 1
     if last_action is not None and last_action_count >= 5:
-        bad_actions.append(last_action)
+        bad_actions.append(str(last_action))
+    if len(bad_actions) > 0:
+        breakpoint()
     return [d for d in dec_list if str(d.value) not in bad_actions]
