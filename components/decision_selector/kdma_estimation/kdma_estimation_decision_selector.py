@@ -4,7 +4,7 @@ import math
 import statistics
 import util
 from typing import Any, Sequence, Callable
-from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, Decision, Action, State
+from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, Decision, Action, State, Explanation
 from domain.ta3 import TA3State, Casualty, Supply
 from domain.enum import ActionTypeEnum
 from components import DecisionSelector, DecisionAnalyzer, Assessor
@@ -72,6 +72,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.variant = "baseline"
         self.index = 0
         self.print_neighbors = True
+        self.record_explanations = True
         self.record_considered_decisions = False
         self.weight_settings = {}
         self.insert_pauses = False
@@ -145,9 +146,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         for kdma_name in target.kdma_names:
             if self.possible_kdma_choices.get(kdma_name, None) is None:
                 self.possible_kdma_choices[kdma_name] = [KDMACountLikelihood()]
-        minDist: float = math.inf
-        minDecision: Decision = None
-        minDecisions: list[Decision] = []
+        topk = None
         new_cases: list[dict[str, Any]] = list()
         self.index += 1
         best_kdmas = None
@@ -179,7 +178,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     kdmaProbs = {assessment_val: 1}
                 else:
                     weights = weights | self.weight_settings.get("kdma_specific_weights", {}).get(kdma_name, {})
-                    kdmaProbs = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name.lower(), self.cb, print_neighbors = self.print_neighbors, mutable_case = True, reject_same_scene = self.training)
+                    kdmaProbs, topK = kdma_estimation.get_KDMA_probabilities(cur_case, weights, kdma_name.lower(), self.cb, print_neighbors = self.print_neighbors, mutable_case = True, reject_same_scene = self.training)
                     if kdmaProbs is None:
                         continue
                     if self.print_neighbors and cur_decision.kdmas is not None:
@@ -234,6 +233,15 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.record_considered_decisions:
             fname = f"temp/live_cases{str(self.index)}-{os.getpid()}.csv"
             write_case_base(fname, new_cases)
+            
+        if self.record_explanations:
+            explanation = Explanation("kdma_estimation",
+            {"best_case": best_case, 
+            "weight_settings": self.weight_settings,
+            "similar_cases": topK,
+            })
+            
+            best_decision.explanations = [explanation]
         
         if target.type == AlignmentTargetType.KDE and not self.empty_probs(best_kdma_probs):
             self.kdma_choice_history.append((best_kdma_probs, min_kdma_probs, max_kdma_probs))
