@@ -158,7 +158,9 @@ class TA3State(State):
         for c in cdatas:
             for ci in c['injuries']:
                 if 'treated' not in ci.keys():
-                    ci['treated'] = False  # An addition so we can treat injuries
+                    ci['treated'] = (ci['status'] == 'treated') # An addition so we can treat injuries
+            
+                    
         actions_performed: list[Action] = []
         treatments: dict[str, list[str]] = {}
         if 'actions_performed' in data.keys():
