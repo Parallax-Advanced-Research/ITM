@@ -543,7 +543,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['action_type'] = 'treating'
     elif a.name in ["TAG_CHARACTER"]:
         case['action_type'] = 'tagging'
-    elif a.name in ["END_SCENE"]:
+    elif a.name in ["END_SCENE", "SEARCH"]:
         case['action_type'] = 'leaving'
     elif a.name in ["MESSAGE"]:
         case['action_type'] = a.params["type"]
