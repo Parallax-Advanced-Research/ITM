@@ -483,6 +483,13 @@ def original_severity(dec: Decision) -> float | None:
 def worst_injury_severity(chr: Casualty) -> str | None:
     return min([inj.severity for inj in chr.injuries], key=kdma_estimation.get_feature_valuation("inj_severity"), default=None)
 
+def worst_threat_severity(st: TA3State) -> str | None:
+    threat_state = st.orig_state.get("threat_state", None)
+    if threat_state is None: 
+        return 'low'
+    
+    return min([threat["severity"] for threat in threat_state.get("threats", [])], key=kdma_estimation.get_feature_valuation("threat_severity"), default='low')
+
 def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     case = {}
     s: State = probe.state
@@ -530,6 +537,7 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
                                                        for co in chrs if not co.id == c.id])
 
+    case['worst_threat_state'] = worst_threat_severity(probe.state)
     case['aid_available'] = \
         (probe.environment['decision_environment']['aid'] is not None
          and len(probe.environment['decision_environment']['aid']) > 0)
