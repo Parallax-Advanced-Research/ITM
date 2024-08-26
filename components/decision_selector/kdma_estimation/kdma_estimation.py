@@ -34,7 +34,7 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
                  reject_same_scene = reject_same_scene,
                  reject_same_scene_and_kdma = reject_same_scene_and_kdma)
     if len(topk) == 0:
-        return {}
+        return {},{}
 
     dists = [max(dist, 0.01) for (dist, case) in topk]
     total = sum(dists)
@@ -49,7 +49,7 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
         if mutable_case:
             cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
 
-    return kdma_probs
+    return kdma_probs, topk
 
 def sorted_distances(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], reject_same_scene = False) -> list[dict[str, Any]]:
     lst = []
