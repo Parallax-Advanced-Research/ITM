@@ -349,6 +349,8 @@ def make_approval_data_frame(cases: list[dict[str, Any]], kdma_name, cols=None, 
     table = pandas.DataFrame.from_dict(cleaned_experiences, orient='index')
     if cols is not None:
         table = pandas.DataFrame(data=table, columns=cols)
+    if "action" in table.columns:
+        table = table.drop(columns=["action"])
     for col in table.columns:
         if col in category_labels:
             table[col] = table[col].astype('category')
