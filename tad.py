@@ -25,14 +25,16 @@ def check_for_servers(args):
     if not util.is_port_open(ta3_port):
         util.logger.error("TA3 server not listening. Shutting down.")
         sys.exit(1)
+    if args.bypass_server_check:
+        return
     check_adept = False
     check_soartech = False
     if args.session_type == 'eval':
         check_adept = True
         check_soartech = True
-    if args.connect_to_ta1 and args.session_type == 'adept':
+    elif args.connect_to_ta1 and args.session_type == 'adept':
         check_adept = True
-    if args.connect_to_ta1 and args.session_type == 'soartech':
+    elif args.connect_to_ta1 and args.session_type == 'soartech':
         check_soartech = True
         
     if check_adept:

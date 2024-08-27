@@ -8,7 +8,7 @@ from scripts.shared import parse_default_arguments
 
 def main():
     args = parse_default_arguments()
-    if args.endpoint is None and not args.bypass_server_check:
+    if args.endpoint is None:
         tad.check_for_servers(args)
 
     if args.session_type == 'adept':
