@@ -1,5 +1,37 @@
 {
   "kdma_specific_weights": {
+    "Moral judgement": {
+      "context.last_casualty": 0.25,
+      "intent_rank": 4,
+      "directness_of_causality_rank": 4.0,
+      "worst_injury_severity_rank": 2,
+      "breathing": 4,
+      "intent": 0.5,
+      "context.val_source_character1": 2,
+      "hrpmin_rank": 1
+    },
+    "QualityOfLife": {
+          "age": 0.4614342749118805,
+          "tagged": 16.288803100585938,
+          "military_paygrade": 0.4126615524291992,
+          "mental_status": 0.28004682064056396,
+          "avpu": 2.029209613800049,
+          "avpu_rank": 50.99212646484375,
+          "pDeath": 0.07872632890939713,
+          "pAirwayBlocked": 12.737411499023438,
+          "entropy": 0.8108482360839844,
+          "ACTION_TARGET_SEVERITY_CHANGE": 0.06236608326435089,
+          "SEVEREST_SEVERITY_CHANGE": 0.18230803310871124,
+          "severity_rank": 3.832721471786499,
+          "damage_per_second_rank": 0.47461873292922974    
+    },
+    "PerceivedQuantityOfLivesSaved": {
+          "tagged": 1.6518068313598633,
+          "worst_injury_severity_rank": 1.3103928565979004,
+          "treatment": 0.27874594926834106,
+          "pBrainInjury": 2.283722400665283,
+          "action_target_severity_rank": 0.04502410814166069
+    },
     "Ingroup Bias": {
       "pDeath": 2,
       "SEVERITY_CHANGE": 0.5,
@@ -7,22 +39,6 @@
       "disposition": 1,
       "SUPPLIES_REMAINING": 2,
       "context.topic_injuries": 2
-    },
-    "Moral judgement": {
-      "DAMAGE_PER_SECOND": 0.125,
-      "directness_of_causality": 8,
-      "context.val_directness_of_causality2": 1,
-      "context.val_source_character1": 2
-    },
-    "QualityOfLife": {
-      "age": 1,
-      "aid_available": 0.5,
-      "inj_severity_rank": 1
-    },
-    "PerceivedQuantityOfLivesSaved": {
-      "SUPPLIES_USED": 0.5,
-      "avpu_rank": 1,
-      "tagged": 1
     }
   },
   "default": 0
