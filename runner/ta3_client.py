@@ -118,7 +118,7 @@ class TA3Client:
             action_type=action.type,
             character_id=action.casualty,
             parameters=action.params,
-            justification="No justification given.",
+            justification=action.explanation,
             intent_action=action.intend
         )
         if action.intend:

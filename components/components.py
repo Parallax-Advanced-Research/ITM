@@ -28,7 +28,7 @@ class DecisionSelector:
         
 
 class DecisionExplainer:
-    def explain(self, decision: Decision):
+    def explain(self, decision: Decision) -> str | None:
         raise NotImplementedError
 
 

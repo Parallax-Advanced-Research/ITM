@@ -17,6 +17,7 @@ class Action:
     params: dict = field(default_factory={})
     intend: bool = False
     url: str = ''
+    explanation: str = ''
 
 
 @dataclass

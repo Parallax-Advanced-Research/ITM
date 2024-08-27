@@ -237,7 +237,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.record_explanations:
             explanation = Explanation("kdma_estimation",
             {"best_case": best_case, 
-            "weight_settings": self.weight_settings,
+            "weights": weights,
             "similar_cases": topK,
             })
             

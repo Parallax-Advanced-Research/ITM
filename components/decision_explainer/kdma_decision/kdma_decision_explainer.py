@@ -10,7 +10,7 @@ class KDMADecisionExplainer(DecisionExplainer):
         self.decision = None
         self.explanation = None
 
-    def explain(self, decision: Decision):
+    def explain(self, decision: Decision) -> str | None:
         self.decision = decision
         self.explanation = self.get_explanation()
         return self.return_description(self.explanation) if self.explanation else None
@@ -35,8 +35,7 @@ class KDMADecisionExplainer(DecisionExplainer):
         return output
 
     def get_relevant_attributes(self, explanation):
-        weight_settings = explanation.params["weight_settings"]["kdma_specific_weights"]
-        weights = {k: v for inner_dict in weight_settings.values() for k, v in inner_dict.items()}
+        weights = explanation.params["weights"]
         return sorted(weights, key=weights.get, reverse=True)[:5]
 
     def get_new_instance(self, explanation, relevant_attributes):

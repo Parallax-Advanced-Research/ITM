@@ -52,7 +52,8 @@ def get_attribute_type(df, attribute):
     return attribute_types.values[0] if not attribute_types.empty else None
 
 def get_boolean_descriptions(df, attribute, value):
-    value = value.lower() == 'true'
+    if isinstance(value, str):
+        value = value.lower() == 'true'
     filtered_df = df[(df['attribute'] == attribute) & (df['text_value'] == value)]
     return filtered_df['description'].tolist() if not filtered_df.empty else []
 
