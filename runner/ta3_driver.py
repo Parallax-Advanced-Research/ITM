@@ -26,6 +26,7 @@ class TA3Driver(Driver):
         self.treatments: dict[str, list[str]] = {}
         self.treatment_times: dict[str, int] = {}
         self.elapsed_time = 0
+        self.estimator = None
 
         elaborator = TA3Elaborator(elab_to_json=args.elab_output)
 
@@ -60,8 +61,6 @@ class TA3Driver(Driver):
         for assessor in args.assessors:
             if assessor == 'triage':
                 selector.add_assessor("competence", TriageCompetenceAssessor())
-        
-        elaborator = TA3Elaborator(elab_to_json=args.elab_output)
 
         if args.dump:
             dump_config = DEFAULT_DUMP
