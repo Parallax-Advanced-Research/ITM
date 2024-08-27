@@ -588,7 +588,6 @@ def remove_loops(probe, dec_list):
     if longest_loop == 0:
         return dec_list
     bad_actions = acts[-longest_loop:]
-    breakpoint()
     return [d for d in dec_list if str(d.value) not in bad_actions]
 
         
