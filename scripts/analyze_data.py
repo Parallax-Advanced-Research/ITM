@@ -118,6 +118,7 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
                 # if key.startswith("topic") or key.startswith("val_"):
                     # case[key] = str(case[key])
                     # case["context"][key] = case[key]
+
         case["state-hash"] = case_state_hash(case)
         if "context" in case:
             context = case.pop("context")
@@ -391,6 +392,7 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
             keys = [key for key in new_case.keys() if key not in NOISY_KEYS]
             keys = [key for key in keys if not key.startswith("NONDETERMINISM")]
             keys.remove("index")
+            keys.remove("hint")
 
             
             for key in keys:
@@ -519,7 +521,11 @@ def case_state_hash(case: dict[str, Any]) -> int:
     for key in sorted(case.get("context", {}).keys()):
         val_list.append(key)
         val_list.append(str(case["context"][key]))
-    val_list.append(str(case.get("hint", None)))
+    for (k, v) in case.get("hint", {}).items():
+        val_list.append(k)
+        if not isinstance(v, float):
+            raise Exception()
+        val_list.append(int(10000 * v))
     return hash(tuple(val_list))
 
 def main():
