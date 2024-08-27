@@ -163,7 +163,7 @@ def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: 
                     continue
                 error = abs(case[kdma] - estimate)
             else:
-                kdma_probs = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list) 
+                kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list) 
                                                     # reject_same_scene_and_kdma=case[kdma])
                 error = 1 - kdma_probs.get(case[kdma], 0)
                 if error > 0.9: error = error * 4
