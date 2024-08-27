@@ -1,9 +1,9 @@
 diff --git a/swagger_server/config.ini b/swagger_server/config.ini
 new file mode 100755
-index 0000000..3277e84
+index 0000000..2e9fab3
 --- /dev/null
 +++ b/swagger_server/config.ini
-@@ -0,0 +1,70 @@
+@@ -0,0 +1,78 @@
 +; Copy over this template file and rename it to config.ini
 +; Replace the default configurations below with the desired values
 +
@@ -12,9 +12,17 @@ index 0000000..3277e84
 +EVALUATION_TYPE=dryrun
 +SCENARIO_DIRECTORY=../../scenarios/%(EVALUATION_TYPE)s/
 +
++; Local Default URLs 
++; ADEPT_URL=http://localhost:8081
++; SOARTECH_URL=http://localhost:8084
++
++; AWS TA1 Default URLs
++ADEPT_URL=https://darpaitm.caci.com/adept
++SOARTECH_URL=https://darpaitm.caci.com/soartech
++
 +; Prod Default URLs
-+SOARTECH_URL=http://localhost:8084
-+ADEPT_URL=http://localhost:8081
++; SOARTECH_URL=http://10.216.38.125:8084
++; ADEPT_URL=http://10.216.38.101:8080
 +
 +SAVE_HISTORY=True
 +SAVE_HISTORY_TO_S3=False
@@ -107,7 +115,7 @@ index 1b133b0..0af74ee 100644
          self.parent_scenario :ITMScenario = None
  
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index f47733b..5d26c54 100644
+index f47733b..cc64a55 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
 @@ -96,7 +96,8 @@ class ITMSession:
@@ -120,7 +128,21 @@ index f47733b..5d26c54 100644
              logging.warning("Could not initialize TA1 data. Running standalone with local alignment targets.")
  
          # If we couldn't use data from TA1, initialize with local data.
-@@ -460,7 +461,7 @@ class ITMSession:
+@@ -125,7 +126,12 @@ class ITMSession:
+         for ta1_name in ta1_names:
+             ITMSession.alignment_data[ta1_name] = [
+                 alignment_target for alignment_target in ITMTa1Controller.get_alignment_data(ta1_name)
+-                    if 'train' not in alignment_target.id
++            ]
++            ITMSession.alignment_data[ta1_name] = [
++                alignment_target for alignment_target in ITMSession.alignment_data[ta1_name]
++                    if alignment_target.id is not None 
++                    and 'train' not in alignment_target.id
++                    and 'target-6-eval' not in alignment_target.id
+             ]
+             ITMSession.ta1_controllers[ta1_name] = [
+                 ITMTa1Controller(alignment_target_id=alignment_target.id,
+@@ -460,7 +466,7 @@ class ITMSession:
          else:
              ta1_names.append(self.session_type)
          if kdma_training:
@@ -129,7 +151,7 @@ index f47733b..5d26c54 100644
              self.return_scenario_history = True
          if session_type == 'test':
              self.ta1_integration = False
-@@ -499,8 +500,11 @@ class ITMSession:
+@@ -499,8 +505,11 @@ class ITMSession:
              alignment_targets = [target for target in ITMSession.alignment_data[ta1_name]]
              ta1_scenarios = []
              for scenario in scenarios:
