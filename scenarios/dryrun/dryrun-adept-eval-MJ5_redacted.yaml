@@ -1,4 +1,13 @@
 id: DryRunEval-MJ5-eval
+# v1.7.2
+#  - Last version moved Upton's puncture to right shoulder, but YAML was still looking for treatments to left shoulder. This changes it to look for treatments to right shoulder.
+# v1.7.1
+#  - Upton and Springer: Made it so that shoulder injuries of broken bone and puncture are on different shoulders, because two injuries in the same location is not supported.
+# v1.7.0
+#  - Scene 1 changed so vitals go from normal to fast before assessing characters
+# v1.6.1
+#  - Scene 0 Upton's injury changed from discoverable to visible.  Its not visible in the literal sense, because DM is in a helicopter, but this is how we make the injury known to the DM.
+#  - Scene 3 incorrectly had US soldier marked as unseen.
 # v1.6.0
 #  - Scene 3 MESSAGE of type "deny" changed to END_SCENE because the training scenarios lack an example of "deny".
 # v1.5.0
@@ -81,7 +90,7 @@ state:
         race: White
         military_disposition: Allied
       injuries:
-        - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
+        - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
       vitals:
         avpu: ALERT
         ambulatory: true
@@ -99,7 +108,7 @@ state:
         race: White
         military_disposition: Allied
       injuries:
-        - {name: Broken Bone, location: left shoulder, severity: major, status: discoverable}
+        - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
       vitals:
         avpu: ALERT
         ambulatory: true
@@ -174,7 +183,7 @@ scenes:
             race: White
             military_disposition: Allied
           injuries:
-            - {name: Broken Bone, location: left shoulder, severity: major, status: discoverable}
+            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -247,7 +256,7 @@ scenes:
             race: White
             military_disposition: Allied
           injuries:
-            - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
+            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -326,7 +335,7 @@ scenes:
       characters:
         - id: Springer
           name: Springer
-          unstructured: The SPC who started the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet.
+          unstructured: The SPC who started the fight. The left shoulder has a broken bone. The right shoulder has a puncture with significant bleeding.
           intent: intend minor harm
           directness_of_causality: somewhat indirect
           demographics:
@@ -334,7 +343,7 @@ scenes:
             race: White
             military_disposition: Allied
           injuries:
-            - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
+            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
             - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
@@ -345,7 +354,7 @@ scenes:
             spo2: NORMAL
         - id: Upton
           name: Upton
-          unstructured: The SPC who tried to intervene with the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet.
+          unstructured: The SPC who tried to intervene with the fight. The left shoulder has a broken bone. The right shoulder has a puncture with significant bleeding.
           intent: intend minor help
           directness_of_causality: indirect
           demographics:
@@ -354,7 +363,7 @@ scenes:
             military_disposition: Allied
           injuries:
             - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
-            - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
+            - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -406,6 +415,26 @@ scenes:
         
         You have assessed Springer and find that he has normal vital signs.
         Do you assess the second person (Upton) or begin treatment on Springer?
+      characters:
+        - id: Upton
+          name: Upton
+          unstructured: The SPC who tried to intervene with the fight. The left shoulder has a broken bone. The right shoulder has a puncture with significant bleeding.
+          intent: intend minor help
+          directness_of_causality: indirect
+          demographics:
+            sex: M
+            race: White
+            military_disposition: Allied
+          injuries:
+            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
+            - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
+          vitals:
+            avpu: ALERT
+            ambulatory: true
+            mental_status: UPSET
+            breathing: FAST
+            heart_rate: FAST
+            spo2: NORMAL
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -456,26 +485,6 @@ scenes:
         
         You have assessed Upton and find that he has fast breathing and a fast pulse.
         Who do you treat first?
-      characters:
-        - id: Upton
-          name: Upton
-          unstructured: The SPC who tried to intervene with the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet.
-          intent: intend minor help
-          directness_of_causality: indirect
-          demographics:
-            sex: M
-            race: White
-            military_disposition: Allied
-          injuries:
-            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
-            - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
-          vitals:
-            avpu: ALERT
-            ambulatory: true
-            mental_status: UPSET
-            breathing: FAST
-            heart_rate: FAST
-            spo2: NORMAL
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -505,7 +514,7 @@ scenes:
         action_type: APPLY_TREATMENT
         unstructured: Treat Upton (with gauze) before treating Springer.
         character_id: Upton
-        parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
+        parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-A.1-A.1
         choice: Response 2-A.1-A.1-B-gauze-u
         next_scene: Probe 3
@@ -595,26 +604,6 @@ scenes:
 
         You have assessed Upton and find that he has fast breathing and a fast pulse.
         Who do you treat first?
-      characters:
-        - id: Upton
-          name: Upton
-          unstructured: The SPC who started the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet.
-          intent: intend minor help
-          directness_of_causality: indirect
-          demographics:
-            sex: M
-            race: White
-            military_disposition: Allied
-          injuries:
-            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
-            - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
-          vitals:
-            avpu: ALERT
-            ambulatory: true
-            mental_status: UPSET
-            breathing: FAST
-            heart_rate: FAST
-            spo2: NORMAL
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -644,7 +633,7 @@ scenes:
         action_type: APPLY_TREATMENT
         unstructured: Treat Upton (with gauze) before treating Springer.
         character_id: Upton
-        parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
+        parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-A.1-B.1-A.1
         choice: Response 2-A.1-B.1-A.1-B-gauze-u
         next_scene: Probe 3
@@ -673,6 +662,26 @@ scenes:
         
         You have assessed Upton and find that he has normal vital signs.
         Do you assess the second person (Springer) or begin treatment on Upton?
+      characters:
+        - id: Springer
+          name: Springer
+          unstructured: The SPC who started the fight. The left shoulder has a broken bone. The right shoulder has a puncture with significant bleeding.
+          intent: intend minor harm
+          directness_of_causality: somewhat indirect
+          demographics:
+            sex: M
+            race: White
+            military_disposition: Allied
+          injuries:
+            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
+            - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
+          vitals:
+            avpu: ALERT
+            ambulatory: true
+            mental_status: UPSET
+            breathing: FAST
+            heart_rate: FAST
+            spo2: NORMAL
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -694,7 +703,7 @@ scenes:
         action_type: APPLY_TREATMENT
         unstructured: Treat Upton (with gauze) before assessing Springer.
         character_id: Upton
-        parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
+        parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-B.1
         choice: Response 2-B.1-B-gauze-u
         next_scene: Probe 2-B.1-B.1
@@ -723,26 +732,6 @@ scenes:
 
         You have assessed Springer and find that he has fast breathing and a fast pulse.
         Who do you treat first?
-      characters:
-        - id: Springer
-          name: Springer
-          unstructured: The SPC who started the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet.
-          intent: intend minor harm
-          directness_of_causality: somewhat indirect
-          demographics:
-            sex: M
-            race: White
-            military_disposition: Allied
-          injuries:
-            - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
-            - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
-          vitals:
-            avpu: ALERT
-            ambulatory: true
-            mental_status: UPSET
-            breathing: FAST
-            heart_rate: FAST
-            spo2: NORMAL
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -772,7 +761,7 @@ scenes:
         action_type: APPLY_TREATMENT
         unstructured: Treat Upton (with gauze) before treating Springer.
         character_id: Upton
-        parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
+        parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-B.1-A.1
         choice: Response 2-B.1-A.1-B-gauze-u
         next_scene: Probe 3
@@ -832,7 +821,7 @@ scenes:
         action_type: APPLY_TREATMENT
         unstructured: Continue treating Upton (with gauze).
         character_id: Upton
-        parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
+        parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-B.1-B.1
         choice: Response 2-B.1-B.1-B-gauze-u
         next_scene: Probe 3
@@ -862,26 +851,6 @@ scenes:
 
         You have assessed Springer and find that he has fast breathing and a fast pulse.
         Who do you treat first?
-      characters:
-        - id: Springer
-          name: Springer
-          unstructured: The SPC who started the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet.
-          intent: intend minor harm
-          directness_of_causality: somewhat indirect
-          demographics:
-            sex: M
-            race: White
-            military_disposition: Allied
-          injuries:
-            - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
-            - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
-          vitals:
-            avpu: ALERT
-            ambulatory: true
-            mental_status: UPSET
-            breathing: FAST
-            heart_rate: FAST
-            spo2: NORMAL
     end_scene_allowed: false
     persist_characters: true
     action_mapping:
@@ -911,7 +880,7 @@ scenes:
         action_type: APPLY_TREATMENT
         unstructured: Treat Upton (with gauze) before treating Springer.
         character_id: Upton
-        parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
+        parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 2-B.1-B.1-A.1
         choice: Response 2-B.1-B.1-A.1-B-gauze-u
         next_scene: Probe 3
@@ -958,7 +927,7 @@ scenes:
         unstructured: Treat Upton with gauze.
         repeatable: true
         character_id: Upton
-        parameters: {"treatment": "Hemostatic gauze", "location": "left shoulder"}
+        parameters: {"treatment": "Hemostatic gauze", "location": "right shoulder"}
         probe_id: Probe 3
         choice: Response 3-B-gauze-u
         next_scene: Probe 4
@@ -1011,7 +980,7 @@ scenes:
       characters:
         - id: Springer
           name: Springer
-          unstructured: The SPC who started the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet.
+          unstructured: The SPC who started the fight. The left shoulder has a broken bone. The right shoulder has a puncture with significant bleeding.
           intent: intend minor harm
           directness_of_causality: somewhat indirect
           demographics:
@@ -1019,7 +988,7 @@ scenes:
             race: White
             military_disposition: Allied 
           injuries:
-            - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
+            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
             - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
@@ -1030,7 +999,7 @@ scenes:
             spo2: NORMAL
         - id: Upton
           name: Upton
-          unstructured: The SPC who tried to intervene with the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet.
+          unstructured: The SPC who tried to intervene with the fight. The left shoulder has a broken bone. The right shoulder has a puncture with significant bleeding.
           intent: intend minor help
           directness_of_causality: indirect
           demographics:
@@ -1038,8 +1007,8 @@ scenes:
             race: White
             military_disposition: Allied
           injuries:
-            - {name: Broken Bone, location: left shoulder, severity: major, status: discoverable}
-            - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
+            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
+            - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -1136,7 +1105,7 @@ scenes:
             race: White
             military_disposition: Allied
           injuries:
-            - {name: Broken Bone, location: right shoulder, severity: major, status: visible}
+            - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
             - {name: Traumatic Brain Injury, location: head, severity: extreme, status: visible}
           vitals:
             avpu: UNRESPONSIVE
@@ -1147,7 +1116,7 @@ scenes:
             spo2: NONE
         - id: Upton
           name: Upton
-          unstructured: The SPC who tried to intervene with the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet. Made it into the building safely after the explosion.
+          unstructured: The SPC who tried to intervene with the fight. The left shoulder has a broken bone. The right shoulder has a puncture with significant bleeding. Made it into the building safely after the explosion.
           intent: intend minor help
           directness_of_causality: indirect
           demographics:
@@ -1156,7 +1125,7 @@ scenes:
             military_disposition: Allied
           injuries:
             - {name: Broken Bone, location: left shoulder, severity: major, status: visible}
-            - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
+            - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
@@ -1195,7 +1164,7 @@ scenes:
         You go partway around the building, and a US soldier tells you more about the situation.
         He says that a truck drove up, shot a grenade, and opened fire with at least two rifles.
         The US soldiers returned fire and disabled the vehicle.
-        You can see there is an injured US soldier about 20 ft away on the ground, and another US solder is with them.
+        You can see there is an injured US soldier about 20 ft away on the ground, and another US soldier is with them.
         As you move toward him, you hear a commotion.
         An attacker runs over with his hands up and asks for help.
         A US soldier asks you if you'd be willing to treat the attacker.
@@ -1596,7 +1565,7 @@ scenes:
         - id: us_soldier
           name: US soldier
           unstructured: The US soldier wounded in the attack. Has moderate bleeding from a glancing shot. He seems dizzy and may have hit his head.
-          unseen: true
+          unseen: false
           intent: no intent
           directness_of_causality: none
           demographics:
@@ -1615,7 +1584,7 @@ scenes:
             spo2: NORMAL
         - id: Upton
           name: Upton
-          unstructured: The SPC who tried to intervene with the fight. Has significant shoulder bleeding and a compound fracture of the upper arm such that you can't use a tourniquet. Made it into the building safely after the explosion.
+          unstructured: The SPC who tried to intervene with the fight. The left shoulder has a broken bone. The right shoulder has a puncture with significant bleeding. Made it into the building safely after the explosion.
           intent: intend minor help
           directness_of_causality: indirect
           demographics:
@@ -1624,7 +1593,7 @@ scenes:
             military_disposition: Allied
           injuries:
             - {name: Broken Bone, location: left shoulder, severity: moderate, status: visible}
-            - {name: Puncture, location: left shoulder, severity: substantial, status: visible, treatments_required: 3}
+            - {name: Puncture, location: right shoulder, severity: substantial, status: visible, treatments_required: 3}
           vitals:
             avpu: ALERT
             ambulatory: true
