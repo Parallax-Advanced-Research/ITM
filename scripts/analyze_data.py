@@ -604,8 +604,8 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
     write_case_base(kdma_case_output_file, kdma_cases)
     return kdma_cases
  
-def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, source_file, use_xgb, 
-                     no_weights, basic_weights):
+def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, source_file, use_xgb = False, 
+                     no_weights = True, basic_weights = False):
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
