@@ -1,9 +1,0 @@
-python scripts\tad_tester.py --session_type=soartech --kdma=mission-2 --kdma=denial-2 --rollouts 10000 > output-d2m2.txt
-python scripts\tad_tester.py --session_type=soartech --kdma=mission-2 --kdma=denial-4 --rollouts 10000 > output-d4m2.txt
-python scripts\tad_tester.py --session_type=soartech --kdma=mission-2 --kdma=denial-6 --rollouts 10000 > output-d6m2.txt
-python scripts\tad_tester.py --session_type=soartech --kdma=mission-4 --kdma=denial-2 --rollouts 10000 > output-d2m4.txt
-python scripts\tad_tester.py --session_type=soartech --kdma=mission-4 --kdma=denial-4 --rollouts 10000 > output-d4m4.txt
-python scripts\tad_tester.py --session_type=soartech --kdma=mission-4 --kdma=denial-6 --rollouts 10000 > output-d6m4.txt
-python scripts\tad_tester.py --session_type=soartech --kdma=mission-6 --kdma=denial-2 --rollouts 10000 > output-d2m6.txt
-python scripts\tad_tester.py --session_type=soartech --kdma=mission-6 --kdma=denial-4 --rollouts 10000 > output-d4m6.txt
-python scripts\tad_tester.py --session_type=soartech --kdma=mission-6 --kdma=denial-6 --rollouts 10000 > output-d6m6.txt

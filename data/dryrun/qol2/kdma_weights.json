@@ -1,9 +1,0 @@
-{
-  "kdma_specific_weights": {
-    "QualityOfLife": {
-      "age": 0.05855065956711769,
-      "treatment": 9.896464347839355
-    }
-  },
-  "default": 0
-}
