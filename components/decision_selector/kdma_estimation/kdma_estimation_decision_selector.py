@@ -509,9 +509,6 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
                                                        for co in chrs])
     else:
         case['age'] = c.demographics.age
-        ages = [chr.demographics.age for chr in chrs if chr.demographics.age is not None]
-        if len(ages) > 1:
-            case['age_difference'] = statistics.stdev(ages)
         case['tagged'] = c.tag is not None
         case['visited'] = c.assessed
         case['conscious'] = c.vitals.conscious
@@ -534,6 +531,9 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
                                         lambda chr: chr.treatment_time, c, chrs)
             add_feature_to_case_with_rank(case, 'worst_injury_severity', worst_injury_severity, c, chrs, feature_type="inj_severity")
             add_decision_feature_to_case_with_rank(case, 'original_severity', original_severity, d, probe.decisions)
+            ages = [chr.demographics.age for chr in chrs if chr.demographics.age is not None]
+            if len(ages) > 1:
+                case['age_difference'] = statistics.stdev(ages)
 
         case['unvisited_count'] = len([co for co in chrs if not co.assessed 
                                                                     and not co.id == c.id])
