@@ -434,7 +434,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.use_drexel_format:
             return make_case_drexel(probe, d)
         else:
-            case = make_case_triage(probe, d)
+            case = make_case_triage(probe, d, self.variant)
             case |= flatten("context", case.pop("context"))
             return case
 
@@ -442,19 +442,21 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
 # See kdma_estimation.VALUED_FEATURES for the ordering of individual features.
 def add_feature_to_case_with_rank(case: dict[str, Any], feature: str, 
                                   characteristic_fn: Callable[[Casualty], Any], 
-                                  c: Casualty, chrs: list[Casualty], feature_type: str = None):
+                                  c: Casualty, chrs: list[Casualty], feature_type: str = None, 
+                                  add_rank: bool = True):
     if feature_type is None: 
         feature_type = feature
     case[feature] = characteristic_fn(c)
-    if case[feature] is not None:
+    if case[feature] is not None and add_rank:
         case[feature + '_rank'] = \
             kdma_estimation.rank(case[feature], [characteristic_fn(chr) for chr in chrs], feature_type)
 
 def add_decision_feature_to_case_with_rank(case: dict[str, Any], feature: str, 
                                            characteristic_fn: Callable[[Casualty], Any], 
-                                           cur_decision: Decision, decisions: list[Decision]):
+                                           cur_decision: Decision, decisions: list[Decision], 
+                                           add_rank: bool = True):
     case[feature] = characteristic_fn(cur_decision)
-    if case[feature] is not None:
+    if case[feature] is not None and add_rank:
         case[feature + '_rank'] = kdma_estimation.rank(case[feature], {characteristic_fn(dec) for dec in decisions}, None)
 
 def add_ranked_metric_to_case(case: dict[str, Any], feature: str, decisions: list[Decision]):
@@ -490,7 +492,7 @@ def worst_threat_severity(st: TA3State) -> str | None:
     
     return min([threat["severity"] for threat in threat_state.get("threats", [])], key=kdma_estimation.get_feature_valuation("threat_severity"), default='low')
 
-def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
+def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, Any]:
     case = {}
     s: State = probe.state
     chrs: list[Casualty] = get_casualties_in_probe(probe)
@@ -513,23 +515,26 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['tagged'] = c.tag is not None
         case['visited'] = c.assessed
         case['conscious'] = c.vitals.conscious
+        add_rank = variant != "baseline"
 
-        add_feature_to_case_with_rank(case, "military_paygrade", lambda chr: chr.demographics.rank, c, chrs)
-        add_feature_to_case_with_rank(case, "mental_status", lambda chr: chr.vitals.mental_status, c, chrs)
-        add_feature_to_case_with_rank(case, "breathing", lambda chr: chr.vitals.breathing, c, chrs)
-        add_feature_to_case_with_rank(case, "hrpmin", lambda chr: chr.vitals.hrpmin, c, chrs)
-        add_feature_to_case_with_rank(case, "avpu", lambda chr: chr.vitals.avpu, c, chrs)
-        add_feature_to_case_with_rank(case, "intent", lambda chr: chr.intent, c, chrs)
-        add_feature_to_case_with_rank(case, "relationship", lambda chr: chr.relationship, c, chrs)
-        add_feature_to_case_with_rank(case, "disposition", lambda chr: chr.demographics.military_disposition, c, chrs)
+        add_feature_to_case_with_rank(case, "military_paygrade", lambda chr: chr.demographics.rank, c, chrs, add_rank=add_rank)
+        add_feature_to_case_with_rank(case, "mental_status", lambda chr: chr.vitals.mental_status, c, chrs, add_rank=add_rank)
+        add_feature_to_case_with_rank(case, "breathing", lambda chr: chr.vitals.breathing, c, chrs, add_rank=add_rank)
+        add_feature_to_case_with_rank(case, "hrpmin", lambda chr: chr.vitals.hrpmin, c, chrs, add_rank=add_rank)
+        add_feature_to_case_with_rank(case, "avpu", lambda chr: chr.vitals.avpu, c, chrs, add_rank=add_rank)
+        add_feature_to_case_with_rank(case, "intent", lambda chr: chr.intent, c, chrs, add_rank=add_rank)
+        add_feature_to_case_with_rank(case, "relationship", lambda chr: chr.relationship, c, chrs, add_rank=add_rank)
+        add_feature_to_case_with_rank(case, "disposition", lambda chr: chr.demographics.military_disposition, c, chrs, add_rank=add_rank)
         add_feature_to_case_with_rank(case, "directness_of_causality", 
-                                    lambda chr: chr.directness_of_causality, c, chrs)
-        add_feature_to_case_with_rank(case, "treatment_count", 
-                                    lambda chr: len(chr.treatments), c, chrs)
-        add_feature_to_case_with_rank(case, "treatment_time", 
-                                    lambda chr: chr.treatment_time, c, chrs)
-        add_feature_to_case_with_rank(case, 'worst_injury_severity', worst_injury_severity, c, chrs, feature_type="inj_severity")
-        add_decision_feature_to_case_with_rank(case, 'original_severity', original_severity, d, probe.decisions)
+                                    lambda chr: chr.directness_of_causality, c, chrs, add_rank=add_rank)
+        if variant != "baseline":
+            add_feature_to_case_with_rank(case, "treatment_count", 
+                                        lambda chr: len(chr.treatments), c, chrs)
+            add_feature_to_case_with_rank(case, "treatment_time", 
+                                        lambda chr: chr.treatment_time, c, chrs)
+            add_feature_to_case_with_rank(case, 'worst_injury_severity', worst_injury_severity, c, chrs, feature_type="inj_severity")
+            add_decision_feature_to_case_with_rank(case, 'original_severity', original_severity, d, probe.decisions)
+
         case['unvisited_count'] = len([co for co in chrs if not co.assessed 
                                                                     and not co.id == c.id])
         case['injured_count'] = len([co for co in chrs if len(co.injuries) > 0 
@@ -537,7 +542,6 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         case['others_tagged_or_uninjured'] = len([co.tag is not None or len(co.injuries) == 0 
                                                        for co in chrs if not co.id == c.id])
 
-    case['worst_threat_state'] = worst_threat_severity(probe.state)
     case['aid_available'] = \
         (probe.environment['decision_environment']['aid'] is not None
          and len(probe.environment['decision_environment']['aid']) > 0)
@@ -562,9 +566,10 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
     
     if a.name == "APPLY_TREATMENT":
         case['treatment'] = a.params.get("treatment", None)
-        case['target_resource_level'] = \
-            supplies = sum([supply.quantity for supply in probe.state.supplies 
-                             if supply.type == case['treatment'] and not supply.reusable])
+        if variant != "baseline":
+            case['target_resource_level'] = \
+                supplies = sum([supply.quantity for supply in probe.state.supplies 
+                                 if supply.type == case['treatment'] and not supply.reusable])
     if a.name == "TAG_CHARACTER":
         case['category'] = a.params.get("category", None)
     for dm in d.metrics.values():
@@ -573,10 +578,12 @@ def make_case_triage(probe: TADProbe, d: Decision) -> dict[str, Any]:
         else:
             for (inner_key, inner_value) in flatten(dm.name, dm.value).items():
                 case[inner_key] = inner_value
-    add_ranked_metric_to_case(case, 'SEVERITY', probe.decisions)
-    add_ranked_metric_to_case(case, 'DAMAGE_PER_SECOND', probe.decisions)
-    add_ranked_metric_to_case(case, 'ACTION_TARGET_SEVERITY', probe.decisions)
-    add_ranked_metric_to_case(case, 'ACTION_TARGET_SEVERITY_CHANGE', probe.decisions)
+    if variant != "baseline":
+        case['worst_threat_state'] = worst_threat_severity(probe.state)
+        add_ranked_metric_to_case(case, 'SEVERITY', probe.decisions)
+        add_ranked_metric_to_case(case, 'DAMAGE_PER_SECOND', probe.decisions)
+        add_ranked_metric_to_case(case, 'ACTION_TARGET_SEVERITY', probe.decisions)
+        add_ranked_metric_to_case(case, 'ACTION_TARGET_SEVERITY_CHANGE', probe.decisions)
 
     case["context"] = d.context
     case['scene'] = probe.state.orig_state.get('meta_info', {}).get('scene_id', None)
