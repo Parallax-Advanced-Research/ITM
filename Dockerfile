@@ -1,14 +1,17 @@
 FROM python:3.10
 WORKDIR /root
+ADD alignment/ /root/tad/alignment
 ADD components/ /root/tad/components
 ADD data/ /root/tad/data
 ADD domain/ /root/tad/domain
 ADD runner/ /root/tad/runner
 ADD scripts/ /root/tad/scripts
-ADD temp/ /root/tad/temp
+RUN mkdir /root/tad/temp
+ADD triage/ /root/tad/triage
 ADD util/ /root/tad/util
 ADD requirements.txt /root/tad
 ADD tad.py /root/tad
+ADD tad_tester.py /root/tad
 RUN apt-get update
 RUN apt-get install -y wget
 RUN wget https://beta.quicklisp.org/quicklisp.lisp 

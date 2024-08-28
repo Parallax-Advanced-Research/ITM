@@ -4,7 +4,8 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
                                                                                  supply_location_match)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Casualty, Supplies, Actions,
-                                                                               Injury, Affector, HealingItem)
+                                                                               Injury, Affector, HealingItem,
+                                                                               ENVIRONMENTAL_HAZARDS)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import (update_smol_injury, SmolSystems,
                                                                               heal)
 import typing
@@ -22,6 +23,7 @@ def apply_generic_treatment(casualty: Casualty, supplies: dict[str, int],
     supply_dict = {supply.name:supply.amount for supply in supplies}
     if action.supply not in supply_dict.keys() or supply_dict[action.supply] <= 0:
         fail = True
+    casualty.injuries = [x for x in casualty.injuries if x.name not in ENVIRONMENTAL_HAZARDS]
     for ci in casualty.injuries:
         supply_injury_logical = supply_injury_match(action.supply, ci.name)
         if ci.location == action.location and not fail and supply_location_logical and supply_injury_logical:
@@ -129,7 +131,7 @@ def apply_casualtytag_action(casualties: list[Casualty], supplies: dict[str, int
 
 def end_scenario_action(casualties: list[Casualty], supplies: dict[str, int], start_time: float,
                         aid_delay: float) -> list[MedsimState]:
-    time_taken = aid_delay
+    time_taken = 1.0 # lol aid_delay
     for c in casualties:
         casualty_injuries: list[Affector] = c.injuries
         for ci in casualty_injuries:
@@ -175,9 +177,12 @@ smol_action_map: typing.Mapping[str, resolve_action] = {
     Actions.DIRECT_MOBILE_CASUALTY.value: apply_zeroornone_action,
     Actions.SEARCH.value: apply_zeroornone_action,
     Actions.MOVE_TO_EVAC.value: apply_singlecaualty_action,
+    Actions.MOVTE_TO.value: apply_singlecaualty_action,
     Actions.TAG_CHARACTER.value: apply_casualtytag_action,
     Actions.SITREP.value: apply_zeroornone_action,
     Actions.UNKNOWN.value: apply_default_action,
     Actions.END_SCENARIO.value: end_scenario_action,
-    Actions.END_SCENE.value: end_scenario_action
+    Actions.END_SCENE.value: end_scenario_action,
+    Actions.CHECK_BLOOD_OXYGEN.value: apply_singlecaualty_action,
+    Actions.MESSAGE.value: apply_singlecaualty_action  # This may need more logic later but for the time is inert
 }

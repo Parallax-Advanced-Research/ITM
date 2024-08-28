@@ -1,25 +1,166 @@
-diff --git a/swagger_server/__main__.py b/swagger_server/__main__.py
-index f9fd1c4..9209b52 100644
---- a/swagger_server/__main__.py
-+++ b/swagger_server/__main__.py
-@@ -14,6 +14,7 @@ def main():
-     app.app.json_encoder = encoder.JSONEncoder
-     app.add_api('swagger.yaml', arguments={'title': 'ITM TA3 API'}, pythonic_params=True)
-     app.run(port=PORT)
-+    print("Listening on {PORT}.")
+diff --git a/swagger_server/config.ini b/swagger_server/config.ini
+new file mode 100755
+index 0000000..2e9fab3
+--- /dev/null
++++ b/swagger_server/config.ini
+@@ -0,0 +1,78 @@
++; Copy over this template file and rename it to config.ini
++; Replace the default configurations below with the desired values
++
++[DEFAULT]
++
++EVALUATION_TYPE=dryrun
++SCENARIO_DIRECTORY=../../scenarios/%(EVALUATION_TYPE)s/
++
++; Local Default URLs 
++; ADEPT_URL=http://localhost:8081
++; SOARTECH_URL=http://localhost:8084
++
++; AWS TA1 Default URLs
++ADEPT_URL=https://darpaitm.caci.com/adept
++SOARTECH_URL=https://darpaitm.caci.com/soartech
++
++; Prod Default URLs
++; SOARTECH_URL=http://10.216.38.125:8084
++; ADEPT_URL=http://10.216.38.101:8080
++
++SAVE_HISTORY=True
++SAVE_HISTORY_TO_S3=False
++
++HISTORY_DIRECTORY=itm_history_output
++HISTORY_S3_BUCKET=itm-ui-assets
++
++EVAL_NAME=Dry Run Evaluation
++EVAL_NUMBER=4
++
++SOARTECH_EVAL_FILENAMES=dryrun-soartech-eval-qol1.yaml,
++    dryrun-soartech-eval-qol2.yaml,
++    dryrun-soartech-eval-qol3.yaml,
++    dryrun-soartech-eval-vol1.yaml, 
++    dryrun-soartech-eval-vol2.yaml, 
++    dryrun-soartech-eval-vol3.yaml
++
++SOARTECH_TRAIN_FILENAMES=dryrun-soartech-train-qol1.yaml,
++    dryrun-soartech-train-qol2.yaml,
++    dryrun-soartech-train-vol1.yaml,
++    dryrun-soartech-train-vol2.yaml
++
++SOARTECH_EVAL_QOL_SCENARIOS=qol-dre-1-eval,qol-dre-2-eval,qol-dre-3-eval
++SOARTECH_EVAL_VOL_SCENARIOS=vol-dre-1-eval,vol-dre-2-eval,vol-dre-3-eval
++
++SOARTECH_TRAIN_QOL_SCENARIOS=qol-dre-1-train,qol-dre-2-train
++SOARTECH_TRAIN_VOL_SCENARIOS=vol-dre-1-train,vol-dre-2-train
++
++SOARTECH_QOL_ALIGNMENT_TARGETS=qol-human-8022671-SplitLowMulti,
++    qol-human-1774519-SplitEvenBinary,
++    qol-human-6403274-SplitHighBinary,
++    qol-human-3043871-SplitHighBinary,
++    qol-human-2932740-HighExtreme,
++    qol-human-6349649-SplitHighMulti,
++    qol-human-9157688-SplitEvenBinary,
++    qol-human-5032922-SplitLowMulti,
++    qol-human-3447902-SplitHighMulti,
++    qol-human-0000001-SplitEvenMulti,
++    qol-human-7040555-SplitHighMulti,
++    qol-synth-LowExtreme,
++    qol-synth-HighExtreme,
++    qol-synth-HighCluster,
++    qol-synth-LowCluster,
++    qol-synth-SplitLowBinary
++
++SOARTECH_VOL_ALIGNMENT_TARGETS=vol-human-8022671-SplitHighMulti,
++    vol-human-1774519-SplitHighMulti,
++    vol-human-6403274-SplitEvenBinary,
++    vol-human-8478698-SplitLowMulti,
++    vol-human-3043871-SplitLowMulti,
++    vol-human-2637411-SplitEvenMulti,
++    vol-human-2932740-SplitEvenMulti,
++    vol-human-5032922-SplitLowMulti,
++    vol-human-7040555-SplitEvenBinary,
++    vol-synth-LowExtreme,
++    vol-synth-HighExtreme,
++    vol-synth-HighCluster,
++    vol-synth-LowCluster,
++    vol-synth-SplitLowBinary
+diff --git a/swagger_server/controllers/itm_ta2_eval_controller.py b/swagger_server/controllers/itm_ta2_eval_controller.py
+index 9c36cfc..1ee902a 100644
+--- a/swagger_server/controllers/itm_ta2_eval_controller.py
++++ b/swagger_server/controllers/itm_ta2_eval_controller.py
+@@ -1,5 +1,6 @@
+ import connexion
+ import time
++import sys
  
+ from swagger_server.models.action import Action  # noqa: E501
+ from ..itm import ITMSession
+@@ -98,6 +99,7 @@ def start_scenario(session_id, scenario_id=None):  # noqa: E501
+     :rtype: Scenario
+     """
+     session = _get_session(session_id)
++    sys.stderr.write(f"Session scenarios: {[scenario.id for scenario in session.itm_scenarios]}\n")
+     return session.start_scenario(scenario_id=scenario_id) if session else ('Invalid Session ID', 400)
  
- if __name__ == '__main__':
+ def _reclaim_old_session():
+diff --git a/swagger_server/itm/itm_scene.py b/swagger_server/itm/itm_scene.py
+index 1b133b0..0af74ee 100644
+--- a/swagger_server/itm/itm_scene.py
++++ b/swagger_server/itm/itm_scene.py
+@@ -31,7 +31,7 @@ class ITMScene:
+         self.restricted_actions :List[ActionTypeEnum] = scene.restricted_actions
+         self.transition_semantics :SemanticTypeEnum = scene.transition_semantics
+         self.transitions :Conditions = scene.transitions
+-        self.training = False
++        self.training = True
+         from .itm_scenario import ITMScenario
+         self.parent_scenario :ITMScenario = None
+ 
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index ce0b030..ba5a249 100644
+index f47733b..cc64a55 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -397,7 +397,7 @@ class ITMSession:
-         ta1_names = []
-         if self.session_type == 'eval':
-             self.save_history = True
--            self.ta1_integration = True
-+            self.ta1_integration = False
-             max_scenarios = None
-             ta1_names = ['soartech', 'adept']
+@@ -96,7 +96,8 @@ class ITMSession:
+             ITMSession.init_ta1_data(ta1_names)
+             ITMSession.ta1_connected = True
+             logging.info("Done.")
+-        except:
++        except Exception as ex:
++            logging.warning(f"Exception is {ex}")
+             logging.warning("Could not initialize TA1 data. Running standalone with local alignment targets.")
+ 
+         # If we couldn't use data from TA1, initialize with local data.
+@@ -125,7 +126,12 @@ class ITMSession:
+         for ta1_name in ta1_names:
+             ITMSession.alignment_data[ta1_name] = [
+                 alignment_target for alignment_target in ITMTa1Controller.get_alignment_data(ta1_name)
+-                    if 'train' not in alignment_target.id
++            ]
++            ITMSession.alignment_data[ta1_name] = [
++                alignment_target for alignment_target in ITMSession.alignment_data[ta1_name]
++                    if alignment_target.id is not None 
++                    and 'train' not in alignment_target.id
++                    and 'target-6-eval' not in alignment_target.id
+             ]
+             ITMSession.ta1_controllers[ta1_name] = [
+                 ITMTa1Controller(alignment_target_id=alignment_target.id,
+@@ -460,7 +466,7 @@ class ITMSession:
          else:
+             ta1_names.append(self.session_type)
+         if kdma_training:
+-            self.ta1_integration = True
++            self.ta1_integration = "ta1" in self.adm_name
+             self.return_scenario_history = True
+         if session_type == 'test':
+             self.ta1_integration = False
+@@ -499,8 +505,11 @@ class ITMSession:
+             alignment_targets = [target for target in ITMSession.alignment_data[ta1_name]]
+             ta1_scenarios = []
+             for scenario in scenarios:
++                yaml_path=f'{path}{scenario}'
++                if not os.path.exists(yaml_path):
++                    continue
+                 itm_scenario = \
+-                    ITMScenario(yaml_path=f'{path}{scenario}',
++                    ITMScenario(yaml_path=yaml_path,
+                                 session=self, training=self.kdma_training)
+                 itm_scenario.generate_scenario_data()
+                 ta1_scenarios.append(itm_scenario)

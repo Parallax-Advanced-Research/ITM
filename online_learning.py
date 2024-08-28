@@ -41,7 +41,7 @@ def main():
     if args.restart_pid is not None:
         prior_results = f"local/{args.exp_name}/online_results-{args.restart_pid}.csv"
         args = read_args(args, prior_results)
-        args.casefile = f"online-experiences-{args.restart_pid}.csv"
+        args.case_file = f"online-experiences-{args.restart_pid}.csv"
 
     if args.session_type == "eval":
         print('You must specify one of "adept" or "soartech" as session type at command line.')
@@ -77,8 +77,8 @@ def main():
         
         
     seeker = OnlineApprovalSeeker(args)
-    # if args.casefile is not None:
-        # seeker.cb = read_case_base(args.casefile)
+    # if args.case_file is not None:
+        # seeker.cb = read_case_base(args.case_file)
         # seeker.approval_experiences = [case for case in seeker.cb if integerish(case["approval"])]
         # if args.restart_entries is not None:
             # seeker.approval_experiences = seeker.approval_experiences[:entries]

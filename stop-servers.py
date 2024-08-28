@@ -22,7 +22,7 @@ args = parser.parse_args()
 if args.all:
     pid_files = glob.glob(os.path.join(".deprepos", "*.pid"))
 elif args.port is not None:
-    pid_files = glob.glob(os.path.join(".deprepos", f"*-{args.port}.pid"))
+    pid_files = glob.glob(os.path.join(".deprepos", f"*-{args.port}*.pid"))
 else:
     soartech_file = os.path.join(".deprepos", f"ta1-server-mvp-{soartech_port}.pid")
     if os.path.exists(soartech_file):

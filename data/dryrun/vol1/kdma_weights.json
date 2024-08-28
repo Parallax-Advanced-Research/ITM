@@ -1,0 +1,11 @@
+{
+  "kdma_specific_weights": {
+    "PerceivedQuantityOfLivesSaved": {
+      "inj_severity_rank": 8,
+      "ACTION_TARGET_SEVERITY_CHANGE": 1,
+      "age": 1,
+      "treatment": 2
+    }
+  },
+  "default": 0
+}

@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from domain.internal import Scenario, Decision, TADProbe, KDMA, KDMAs
+from domain.internal import Scenario, Decision, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType
 from domain.mvp import MVPState, Casualty
 from .sim_tools import similarity
 
@@ -55,7 +55,9 @@ def decision_sim(d1: Decision, d2: Decision) -> float:
     return similarity(d1.value, d2.value)
 
 
-def align_sim(a1: KDMAs, a2: KDMAs) -> float:
-    a1d = {n.lower(): v for n, v in a1.kdma_map.items()}
-    a2d = {n.lower(): v for n, v in a2.kdma_map.items()}
+def align_sim(a1: AlignmentTarget, a2: AlignmentTarget) -> float:
+    if a1.type != AlignmentTargetType.SCALAR or a2.type != AlignmentTargetType.SCALAR:
+        raise Error("Similarity alignment not calculated.")
+    a1d = {n.lower(): v for n, v in a1.values.items()}
+    a2d = {n.lower(): v for n, v in a2.values.items()}
     return similarity(a1d, a2d)

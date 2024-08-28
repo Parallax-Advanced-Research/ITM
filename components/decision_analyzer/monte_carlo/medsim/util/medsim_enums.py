@@ -27,7 +27,7 @@ class Affector:
     PREFIX = 'ACTIVE '
 
     def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
-                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False, is_env: bool = False):
         self.name = name
         self.location = location
         self.severity = 0.0
@@ -62,8 +62,9 @@ class Affector:
 
 class Injury(Affector):
     def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
-                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
-        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn)
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False, is_env=False):
+        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn,
+                         is_env)
 
 
 class HealingItem(Affector):
@@ -125,13 +126,39 @@ class Casualty:
         self.lung_dps: float = 0.0
         self.burn_dps: float = 0.0
 
-        self.max_blood_ml = 5700 if demographics.sex == 'M' else 4300
-        if demographics.rank == 'Marine':
-            self.max_breath_hp = 6000
-        elif demographics.rank == 'Officer':
-            self.max_breath_hp = 5500
+        self._set_blood_ml_max_breath_hp()
+
+    def _set_blood_ml_max_breath_hp(self):
+        age = self.demographics.age
+        if age is None:
+            age = 35  # assume adult
+        # in general values were calculated by looking up average weight and multiply by 70  - ml per kg
+        if age <= 13:  # sex prob doesn't matter for this age group
+            self.max_blood_ml = 2500
+            self.max_breath_hp = 2500
+        elif age <= 17:
+            if self.demographics.sex == 'M':
+                self.max_blood_ml = 4100
+                self.max_breath_hp = 4100
+            else:
+                self.max_blood_ml = 3500
+                self.max_breath_hp = 3500
+        elif age >= 65:
+            if self.demographics.sex == 'M':
+                self.max_blood_ml = 4800
+                self.max_breath_hp = 4800
+            else:
+                self.max_blood_ml = 4100
+                self.max_breath_hp = 4100
         else:
+            self.max_blood_ml = 5700 if self.demographics.sex == 'M' else 4300
             self.max_breath_hp = 5000
+
+        # special stuff for ranks
+        if self.demographics.rank == 'Marine':
+            self.max_breath_hp = 6000
+        elif self.demographics.rank == 'Officer':
+            self.max_breath_hp = 5500
 
     def __str__(self):
         retstr = "%s_" % self.id
@@ -188,6 +215,9 @@ class Actions(Enum):
     END_SCENARIO = 'END_SCENARIO'
     END_SCENE = 'END_SCENE'
     SEARCH = 'SEARCH'
+    CHECK_BLOOD_OXYGEN = 'CHECK_BLOOD_OXYGEN'
+    MESSAGE = 'MESSAGE'
+    MOVTE_TO = 'MOVE_TO'
 
 
 class MentalStates_KNX(Enum):
@@ -229,10 +259,10 @@ class Supplies(Enum):
     SPLINT = 'Splint'
     IV_BAG = 'IV Bag'
     BURN_DRESSING = 'Burn Dressing'
+    FENTANYL_LOLLIPOP = "Fentanyl Lollipop"
 
 
 class Ta3Vitals(Enum):
-
     SLOW = 'SLOW'
     FAST = 'FAST'
     NORMAL = 'NORMAL'
@@ -244,6 +274,7 @@ class Ta3Vitals(Enum):
     CONFUSED = 'CONFUSED'
     AGONY = 'AGONY'
     CALM = 'CALM'
+    SHOCK = 'SHOCK'
 
     BREATHING = [None, SLOW, FAST, NORMAL]
     HRPMIN = [None, FAST, FAINT, NORMAL]
@@ -276,6 +307,7 @@ class Locations(Enum):
     RIGHT_NECK = "right neck"
     UNSPECIFIED = "unspecified"
     INTERNAL = "internal"
+    HEAD = "head"
 
 
 class InjuryAssumptuions:
@@ -283,6 +315,14 @@ class InjuryAssumptuions:
                                 Locations.RIGHT_NECK.value, Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]
     LUNG_PUNCTURES = [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
                       Locations.LEFT_SIDE, Locations.RIGHT_SIDE]
+
+
+class SeverityEnums(Enum):
+    MINOR = 'minor'
+    MODERATE = 'moderate'
+    SUBSTANTIAL = 'substantial'
+    MAJOR = 'major'
+    EXTREME = 'extreme'
 
 
 class VitalsEffect(Enum):
@@ -327,6 +367,21 @@ class Injuries(Enum):
     ACTIVE_NASO = 'ACTIVE Nasopharyngeal airway'
     ACTIVE_BAG = 'ACTIVE IV Bag'
     ACTIVE_BLOOD = 'ACTIVE Blood'
+    ACTIVE_FENTANYL_LOLLIPOP = 'ACTIVE Fentanyl Lollipop'
+    OPEN_ABDOMINAL_WOUND = 'Open Abdominal Wound'
+    TBI = 'Traumatic Brain Injury'
+    ABRASION = 'Abrasion'
+    ENVIRONMENTAL_FIRE_HAZARD = 'fire'
+    ENVIRONMENTAL_ATTACK_HAZARD = 'attack'
+    ENVIRONMENTAL_EXPLOSION_HAZARD = 'explosion'
+    ENVIRONMENTAL_COLLISION_HAZARD = 'collision'
+    ENVIRONMENTAL_FIREARM_HAZARD = 'firearm'
+    ENVIRONMENTAL_FIGHT_HAZARD = 'fight'
+
+
+ENVIRONMENTAL_HAZARDS = [Injuries.ENVIRONMENTAL_FIRE_HAZARD.value, Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value,
+                         Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value, Injuries.ENVIRONMENTAL_COLLISION_HAZARD.value,
+                         Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value, Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value]
 
 
 class Metric(Enum):

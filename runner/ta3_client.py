@@ -2,11 +2,12 @@ import swagger_client.models as models
 import swagger_client as ta3
 import util
 from domain.external import Scenario, ITMProbe, Action
-from domain.internal import KDMA, KDMAs
+from domain.internal import AlignmentTarget, target
+from data import target_library
 
 
 class TA3Client:
-    def __init__(self, endpoint: str = None, target = None, evalTargetNames = None, inputScenarioId = None):
+    def __init__(self, endpoint: str = None, target = None, evalTargetNames = None, inputScenarioId = None, connectToTa1 = False):
         if endpoint is None:
             port = util.find_environment("TA3_PORT", 8080)
             endpoint = "http://127.0.0.1:" + str(port)
@@ -18,18 +19,19 @@ class TA3Client:
         self._session_id: str = "NO_SESSION"
         self._scenario: Scenario = None
         self._requested_scenario_id: str = inputScenarioId
-        self._align_tgt: KDMAs = target
+        self._align_tgt: AlignmentTarget = target
         self._actions: dict[ta3.Action] = {}
         self._probe_count: int = 0
         self._session_type: str = None
         self._scenario_ended: bool = False
+        self._connect_to_ta1 = connectToTa1
         if evalTargetNames is None:
             self._eval_target_names = list()
         else:
             self._eval_target_names = list(evalTargetNames)
 
     @property
-    def align_tgt(self) -> KDMAs:
+    def align_tgt(self) -> AlignmentTarget:
         return self._align_tgt
 
     # Known arguments:
@@ -37,6 +39,8 @@ class TA3Client:
     # kdma_training
     def start_session(self, adm_name: str = 'TAD', session_type='test', **kwargs):
         self._session_type = session_type
+        if self._connect_to_ta1:
+            adm_name += '-ta1'
         self._session_id = self._api.start_session(adm_name, session_type, **kwargs)
 
     def start_scenario(self) -> Scenario:
@@ -62,8 +66,10 @@ class TA3Client:
 
         if self._session_type == 'eval':
             at: ta3.AlignmentTarget = self._api.get_alignment_target(self._session_id, ta3scen.id)
-            kdmas: KDMAs = KDMAs([KDMA(kdma.kdma, kdma.value) for kdma in at.kdma_values])
-            self._align_tgt = kdmas
+            try:
+                self._align_tgt = target.from_ta3(at)
+            except:
+                self._align_tgt = target_library.get_named_alignment_target(at.id)
 
         self._scenario = scen
         self._probe_count = 0
@@ -90,7 +96,8 @@ class TA3Client:
         _actions: list[ta3.Action] = self._api.get_available_actions(self._session_id, self._scenario.id)
         self._actions = {a.action_id: a for a in _actions}
         actions: list[Action] = [
-            Action(action.action_id, action.action_type, action.character_id, action.kdma_association, action.parameters)
+            Action(action.action_id, action.action_type, action.character_id, 
+                   action.kdma_association, action.parameters, action.intent_action)
             for action in _actions
         ]
 
@@ -110,7 +117,12 @@ class TA3Client:
             # scenario_id=self._scenario.id,
             action_type=action.type,
             character_id=action.casualty,
-            parameters=action.params
+            parameters=action.params,
+            justification=action.explanation,
+            intent_action=action.intend
         )
-        next_state = self._api.take_action(self._session_id, body=response)
+        if action.intend:
+            next_state = self._api.intend_action(self._session_id, body=response)
+        else:
+            next_state = self._api.take_action(self._session_id, body=response)
         return self.get_probe(next_state)

@@ -1,8 +1,9 @@
 import json
 import os
 import random
-from components import DecisionSelector
-from domain.internal import Scenario, TADProbe, Action, KDMAs, Decision
+from components import DecisionSelector, AlignmentTrainer
+from components.alignment_trainer import KDMACaseBaseRetainer
+from domain.internal import Scenario, TADProbe, Action, AlignmentTarget, Decision, AlignmentFeedback
 from components.decision_selector.kdma_estimation import write_case_base, read_case_base
 from components.decision_selector.kdma_estimation.kdma_estimation_decision_selector import make_case_triage
 from typing import Any
@@ -12,50 +13,59 @@ INFORMATIONAL_WEIGHT = 0.5
 EXPLORATION_WEIGHT = 0.25
 KDMA_WEIGHT = 0.25
 
-class DiverseSelector(DecisionSelector):
-    
-    def __init__(self, continue_search = True):
+class DiverseSelector(DecisionSelector, AlignmentTrainer):
+
+    def __init__(self, continue_search = True, output_case_file = CASE_FILE):
         self.rg = random.Random()
         self.rg.seed()
         self.case_index : int = 0
+        self.retainer = KDMACaseBaseRetainer(continue_search = continue_search)
         self.cases: dict[list[dict[str, Any]]] = dict()
+        self.new_cases: list[dict[str, Any]] = list()
+        self.output_case_file = output_case_file
         # self.new_cases : list[dict[str, Any]] = list()
-        if continue_search and os.path.exists(CASE_FILE):
-            with open(CASE_FILE, "r") as infile:
+        if continue_search and os.path.exists(self.output_case_file):
+            with open(self.output_case_file, "r") as infile:
                 old_cases = [json.loads(line) for line in infile]
             for case in old_cases:
                 self.cases[case["hash"]] = case
             self.case_index = len(old_cases)
         else:
-            with open(CASE_FILE, "w") as outfile:
+            with open(self.output_case_file, "w") as outfile:
                 outfile.write("")
         
-    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         # Make a case and record it.
         self.case_index += 1
         
         cur_decision = self.choose_random_decision(probe)
 
         new_case = make_case_triage(probe, cur_decision)
-        chash = hash_case(new_case)
         new_case["index"] = self.case_index
-        if cur_decision.kdmas is not None and cur_decision.kdmas.kdma_map is not None:
-            new_case["hint"] = cur_decision.kdmas.kdma_map
-        new_case["hash"] = chash
         new_case["actions"] = ([act.to_json() for act in probe.state.actions_performed] 
                                 + [cur_decision.value.to_json()])
-
+        new_case["scene"] = probe.state.orig_state["meta_info"]["scene_id"]
+        if cur_decision.kdmas is not None and cur_decision.kdmas.kdma_map is not None:
+            new_case["hint"] = cur_decision.kdmas.kdma_map
+            self.commit_case(new_case)
+            self.write_case(new_case)
+        else:
+            self.new_cases.append(new_case)
+        return (cur_decision, 0.0)
+    
+    def commit_case(self, new_case: dict[str, Any]):
+        chash = hash_case(new_case)
+        new_case["hash"] = chash
         hash_list = self.cases.get(chash, None)
         if hash_list is None:
             hash_list = list()
             self.cases[chash] = hash_list
         hash_list.append(new_case)
         
-        with open(CASE_FILE, "a") as outfile:
-            json.dump(new_case, outfile)
+    def write_case(self, case: dict[str, Any]):
+        with open(self.output_case_file, "a") as outfile:
+            json.dump(case, outfile)
             outfile.write("\n")
-        
-        return (cur_decision, 0.0)
         
     def choose_random_decision(self, probe: TADProbe) -> Decision:
         likelihood_thresholds: list[tuple[real, Decision]] = []
@@ -111,6 +121,19 @@ class DiverseSelector(DecisionSelector):
 
     def is_finished(self) -> bool:
         return False
+
+    def train(self, scenario: Scenario, actions: list[Action], feedback: AlignmentFeedback, 
+              final: bool, scene_end: bool, trained_scene: str):
+        self.retainer.train(scenario, actions, feedback, final, scene_end, trained_scene)
+        if not scene_end:
+            return
+        val = self.retainer.scene_kdmas[trained_scene]
+        for case in self.new_cases:
+            case["hint"] = val
+            self.commit_case(case)
+            self.write_case(case)
+        self.new_cases = list()
+        
 
 
 def hash_case(case: dict[str, Any]) -> int:

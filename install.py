@@ -68,6 +68,7 @@ def run_cmd_or_die(argv: list[str], capture_output: bool = False, err_msg: str |
     else:
         p = subprocess.run(argv, check=False)
     if 0 != p.returncode:
+        print(f"Command failed: `{' '.join(argv)}`")
         if err_msg is not None:
             print(err_msg)
         sys.exit(1)
@@ -101,21 +102,13 @@ def install_hems() -> None:
     else:
         # Update
         os.chdir(hems_dir)
-        run_cmd_or_die([ "git", "checkout", "package.lisp" ], capture_output=False)
-        run_cmd_or_die([ "git", "pull", "--no-edit" ])
+        res = run_cmd_or_die(["git", "diff", "HEAD"], capture_output=True).strip()
+        if res == "":
+            run_cmd_or_die(["git", "reset", "--hard"])
+            run_cmd_or_die([ "git", "pull", "--no-edit" ])
+        else:
+            print("HEMS directory has local changes. Continuing without a fresh install.")
         os.chdir(ITM_DIR)
-
-    ## Patch package.lisp
-    #print("Patching HEMS")
-    #patched_file = os.path.join(ITM_DIR, "components", "decision_analyzer",
-    #    "event_based_diagnosis", "hems-package-replacement.lisp")
-    #package_file = os.path.join(hems_dir, "package.lisp")
-    #os.remove(package_file)
-    #shutil.copyfile(patched_file, package_file)
-    
-
-    # replace patched version (if it exists) with non-patched so we can pull.
-    # git checkout package.lisp 
         
 
 os.chdir(ITM_DIR)

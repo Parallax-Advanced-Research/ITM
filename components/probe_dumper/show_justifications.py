@@ -13,7 +13,7 @@ if osp.abspath('.') not in sys.path:
     sys.path.append(osp.abspath('.'))
 import domain
 
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, metric_description_hash
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import AFFECCTOR_UPDATE, DAMAGE_PER_SECOND
 from components.probe_dumper.probe_dumper import DUMP_PATH
 from domain.mvp.mvp_state import Casualty, Supply
@@ -88,11 +88,18 @@ def htmlify_casualty(casualty: Casualty):
         return '|%s| None | N/A | N/A| N/A | N/A| N/A |\n' % casualty.id
     lines = ''
     for injury in casualty.injuries:
+        suffix_hash = {'fire': 'Environmental Hazard (Fire)',
+                       'attack': 'Environmental Hazard (Under Attack)',
+                       'fight': 'Environmental Hazard (Fighting)',
+                       'firearm': 'Environmental Hazard (Firearm)',
+                       'collision': 'Environmental Hazard (Post Collision)',
+                       'explosion': 'Environmental Hazard (Explosion)'}
+        qualified_name = injury.name if injury.name not in set(suffix_hash.keys()) else suffix_hash[injury.name]
         injury_effect = AFFECCTOR_UPDATE[injury.name]
         bleed = f'{injury_effect.bleeding_effect} ({DAMAGE_PER_SECOND[injury_effect.bleeding_effect]})'
         breath = f'{injury_effect.breathing_effect} ({DAMAGE_PER_SECOND[injury_effect.breathing_effect]})'
         burn = f'{injury_effect.burning_effect} ({DAMAGE_PER_SECOND[injury_effect.burning_effect]})'
-        lines += '|%s|%s|%s|%s|%s|%s|%s|\n' % (casualty.id, injury.name, injury.location, injury.treated, bleed, breath, burn)
+        lines += '|%s|%s|%s|%s|%s|%s|%s|\n' % (casualty.id, qualified_name, injury.location, injury.treated, bleed, breath, burn)
     return lines
 
 
@@ -103,6 +110,16 @@ def get_casualty_table(scenario):
     for casualty in scenario.casualties:
         lines += htmlify_casualty(casualty)
     return '''%s%s<hr>''' % (header, lines)
+
+
+def get_env_hazard_table(hazard):
+    env_hazard_info = AFFECCTOR_UPDATE[hazard]
+    effect_table = f'''|Body Effect|Severity (DPS)|
+|---|---|
+|Bleed|{env_hazard_info.bleeding_effect} ({DAMAGE_PER_SECOND[env_hazard_info.bleeding_effect]})|
+|Breath|{env_hazard_info.breathing_effect} ({DAMAGE_PER_SECOND[env_hazard_info.breathing_effect]})|
+|Burn|{env_hazard_info.burning_effect} ({DAMAGE_PER_SECOND[env_hazard_info.burning_effect]})|'''
+    return effect_table
 
 
 def htmlify_supply(supply: Supply, make_pink=False):
@@ -228,6 +245,8 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
             if display_name == sort_metric:
                 if display_name == 'Heuristic Rule Analytic Strategy HRA':
                     sort_func = lambda x: get_hra_strategy(x)[0] if 'HRA Strategy' in x.metrics.keys() else x.id_
+                elif display_name in ['Severity per Casualty MCA', 'DPS per Casualty MCA', 'P(Death) per Casualty MCA']:
+                    sort_func = lambda x: list(x.metrics[m_c.name].value.values())[0] if m_c.name in x.metrics.keys() else 0.0
                 else:
                     sort_func = lambda x: x.metrics[m_c.name].value if m_c.name in x.metrics.keys() else 0.0
                 break
@@ -282,6 +301,19 @@ def construct_decision_table(analysis_df, metric_choices, sort_metric):
                 if m_c.name == 'HRA Strategy':
                     strat_selected, strat_justification = get_hra_strategy(decision)
                     table_full_html += f"""<td {pink_style}> <div title='{strat_justification}'> {strat_selected} </div> </td>"""
+                elif m_c.name in ['CASUALTY_SEVERITY', 'CASUALTY_DAMAGE_PER_SECOND', 'CASUALTY_P_DEATH']:
+                    # assuming justification is eventually given and follows the structure as other justifications
+                    try:
+                        just_english = justifications[m_c.name].split('is')[-1]
+                    except:
+                        just_english = 'No justification given'
+                    metric = decision.metrics[m_c.name].value
+                    display_metric = '<table> <tbody>'
+                    for cas in metric:
+                        row = f'<tr>  <td>{cas}</td> <td>{METRIC_DISPLAY_NAME_DESCRIPTION[m_c.name][2].format(metric[cas] + 0)}</td>  </tr>'
+                        display_metric += row
+                    display_metric += ' </tbody>  </table> <br>'
+                    table_full_html += f"""<td {pink_style}> <div title='{just_english}'> {display_metric} </div> </td>"""
                 else:
                     try:
                         just_english = justifications[m_c.name].split('is')[-1]
@@ -329,7 +361,10 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
     'INFORMATION_GAINED': ('Information<br>Gained', 'How much information is gained by the action', '{:.0f}', 'MCA'),
     'HRA Strategy': ('Heuristic Rule<br>Analytic Strategy', 'Strategies include Take the Best, Exhaustive, Tallying, Satisfactory, and One Bounce', '', 'HRA',),
     'STANDARD_TIME_SEVERITY': ('Standard<br>Time<br>Severity', 'Severity 200 seconds after the action is begiun', '{:.0f}', 'MCA'),
-    'SMOL_MEDICAL_SOUNDNESS_V2': ('Medical<br>Soundness V2', 'Percent corrected ranked ordering of STANDARD_TIME_SEVERITY', '{:.0f}', 'MCA')
+    'SMOL_MEDICAL_SOUNDNESS_V2': ('Medical<br>Soundness V2', 'Percent corrected ranked ordering of STANDARD_TIME_SEVERITY', '{:.0f}', 'MCA'),
+    'CASUALTY_SEVERITY': ('Severity<br>per Casualty', 'Dictionary of severity of all casualties', '{:.0f}', 'MCA'),
+    'CASUALTY_DAMAGE_PER_SECOND': ('DPS per<br>Casualty', 'Dictionary of damage per second per casualty', '{:.0f}', 'MCA'),
+    'CASUALTY_P_DEATH': ('P(Death)<br>per Casualty', 'Dictionary of probability of death for all casualties', '{:.2%}', 'MCA')
 }
 
 
@@ -405,15 +440,20 @@ if __name__ == '__main__':
 
     state = scenario_pkls[chosen_scenario].states[chosen_decision - 1]
     environment = scenario_pkls[chosen_scenario].environments[chosen_decision - 1]
+    env_hazard = environment['decision_environment']['injury_triggers']
     environment_table_1, environment_table_2 = construct_environment_table(environment)
     if environment_table_2 is not None:
         notes = '##### CONTEXT: '
         notes += environment['decision_environment']['unstructured']
         st.markdown(notes)
+        env_hazard_description = '##### Environment Hazard: '
+        env_hazard_description += env_hazard
+        st.markdown(env_hazard_description)
     st.caption("The pink decision in the table below is the chosen decision.")
 
     decision_table_html, supply_used = construct_decision_table(analysis_df, metric_choices, sort_metric=sort_by)
     casualty_html = get_casualty_table(state)
+    env_hazard_html = get_env_hazard_table(env_hazard)
     supply_html = get_supplies_table(state, supply_used)
     previous_action_table = get_previous_actions(state)
     st.markdown(decision_table_html, unsafe_allow_html=True)
@@ -439,5 +479,8 @@ if __name__ == '__main__':
         st.markdown(previous_action_table, unsafe_allow_html=True)
     with col3:
         st.header('Characters')
+        st.markdown(f'Environment Hazard: {env_hazard}')
+        st.markdown(env_hazard_html, unsafe_allow_html=True)
+        st.markdown('<br>Character Breakdown', unsafe_allow_html=True)
         st.markdown(casualty_html, unsafe_allow_html=True)
 
