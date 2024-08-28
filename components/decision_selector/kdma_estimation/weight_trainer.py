@@ -244,7 +244,7 @@ class WeightTrainer:
     def get_basic_error(self): 
         return self.find_error("basic")
 
-    def check_standard_weight_sets(standard_weight_sets: dict[str, dict[str, float]]):
+    def check_standard_weight_sets(self, standard_weight_sets: dict[str, dict[str, float]]):
         for (name, weight_set) in standard_weight_sets.items():
             self.add_to_history(weight_set, name = name, source = "standard")
 
