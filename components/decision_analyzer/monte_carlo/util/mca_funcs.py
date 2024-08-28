@@ -5,7 +5,7 @@ from components.decision_analyzer.monte_carlo.mc_sim.decision_justification impo
 from components.decision_analyzer.monte_carlo.medsim import MedicalSimulator
 from components.decision_analyzer.monte_carlo.util.score_functions import tiny_med_severity_score, \
     tiny_med_resources_remaining, tiny_med_time_score, tiny_med_casualty_severity, med_simulator_dps, med_casualty_dps, \
-    med_prob_death, med_casualty_prob_death, prob_death_after_minute, prob_death_standard_time
+    med_prob_death, med_casualty_prob_death, prob_death_after_minute
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 from domain.internal import TADProbe, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
@@ -277,8 +277,7 @@ def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, 
                        Metric.AVERAGE_TIME_USED.value: tiny_med_time_score, Metric.CASUALTY_SEVERITY.value: tiny_med_casualty_severity,
                        Metric.DAMAGE_PER_SECOND.value: med_simulator_dps, Metric.CASUALTY_DAMAGE_PER_SECOND.value: med_casualty_dps,
                        Metric.P_DEATH.value: med_prob_death, Metric.CASUALTY_P_DEATH.value: med_casualty_prob_death,
-                       Metric.P_DEATH_ONEMINLATER.value: prob_death_after_minute,
-                       Metric.STANDARD_TIME_SEVERITY.value: prob_death_standard_time}
+                       Metric.P_DEATH_ONEMINLATER.value: prob_death_after_minute}
 
     sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe=probe)
     root = mcsim.MCStateNode(medsim_state)
@@ -478,17 +477,3 @@ def generate_decision_justifications(dj: DecisionJustifier, decision: Decision) 
             }
             justifications.append(justification)
     return justifications
-
-
-def get_v2(decision_justifications) -> DecisionMetric:
-    for dj in decision_justifications:
-        if Metric.STANDARD_TIME_SEVERITY.value not in dj[Metric.DECISION_JUSTIFICATION_ENGLISH.value]:
-            continue
-        val_dict = dj[Metric.DECISION_JUSTIFICATION_VALUES.value]
-        fraction = 100 / val_dict[Metric.RANK_TOTAL.value]
-        multiplier = val_dict[Metric.RANK_TOTAL.value] - (val_dict[Metric.RANK_ORDER.value] - 1)
-        sms_val_2 = fraction * multiplier
-        return DecisionMetric(Metric.SMOL_MEDICAL_SOUNDNESS_V2.value,
-                              metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS_V2.value], value=sms_val_2)
-    return DecisionMetric(Metric.SMOL_MEDICAL_SOUNDNESS_V2.value,
-                          metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS_V2.value], value=0)
