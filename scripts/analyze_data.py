@@ -468,7 +468,6 @@ def create_random_sub_case_bases(case_files: list[str], state_count: int, dir_na
         write_kdma_cases_to_csv(new_fname, cases, None)
         sub_cb_index += 1
 
-    
 def separate_pre_cases(case_file: str):
     with open(case_file, "r") as infile:
         cases = [json.loads(line) for line in infile]
@@ -555,6 +554,16 @@ def main():
                         help="How to measure the error of a case-based estimation, with the " \
                              + "probability of neighbor error or difference to neighbor average"
                        )
+
+
+    parser.add_argument("--use_xgb_start", action=argparse.BooleanOptionalAction, default=False, 
+                        help="Use XGBoost weights as a starting point for searching for weights.")
+    parser.add_argument("--use_no_weights_start", action=argparse.BooleanOptionalAction, default=False, 
+                        help="Use all 0 weights as a starting point for searching for weights.")
+    parser.add_argument("--use_basic_weights_start", action=argparse.BooleanOptionalAction, default=False, 
+                        help="Use basic weights set to 1 and all others set to 0 as a starting "
+                             + "point for searching for weights.")
+
     parser.add_argument("--analyze_only", action=argparse.BooleanOptionalAction, default=False, 
                         help="Generate kdma cases, but do not search for weights.")
     parser.add_argument("--search_only", action=argparse.BooleanOptionalAction, default=False, 
@@ -571,7 +580,9 @@ def main():
         kdma_cases = analyze_pre_cases(args.case_file, args.feedback_file, args.kdma_case_file, 
                                        args.alignment_file)
     if not args.analyze_only:
-        do_weight_search(kdma_cases, args.weight_file, args.all_weight_file, args.error_type, source_file)
+        do_weight_search(kdma_cases, args.weight_file, args.all_weight_file, args.error_type, 
+                         source_file, args.use_xgb_start, 
+                         args.use_no_weights_start, args.use_basic_weights_start)
         
 def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment_file):
     pre_cases = read_pre_cases(case_file)
@@ -593,7 +604,8 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
     write_case_base(kdma_case_output_file, kdma_cases)
     return kdma_cases
  
-def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, source_file):
+def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, source_file, use_xgb = False, 
+                     no_weights = True, basic_weights = False):
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
@@ -622,12 +634,16 @@ def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, sourc
         trainer = SimpleWeightTrainer(
                     KEDSModeller(kdma_cases, kdma_name.lower(), avg=(error_type == "avgdiff")), 
                     fields, kdma_cases, kdma_name.lower())
-        trainer.weight_train({key:1 for key in fields})
+        starters = {}
+        if no_weights:
+            starters["empty"] = {}
+        if basic_weights:
+            starters["basic"] = triage_constants.BASIC_WEIGHTS
+        trainer.set_log_file(all_weight_file)
+        trainer.check_standard_weight_sets(starters)
+        trainer.weight_train(None, use_xgb)
         new_weights[kdma_name] = trainer.get_best_weights()
-        all_weights.append({"kdma": kdma_name, "case_file": source_file, "weights_found": trainer.get_history()})
     
-    with open(all_weight_file, "a") as awf:
-        awf.write(json.dumps(all_weights, indent=2))
     with open(weight_file, "w") as wf:
         wf.write(json.dumps({"kdma_specific_weights": new_weights, "default": 0}, indent=2))
     
