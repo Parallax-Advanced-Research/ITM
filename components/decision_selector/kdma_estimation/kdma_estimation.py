@@ -260,7 +260,10 @@ def local_order(val1: Any, val2: Any, feature: str):
 CACHED_COMPARES = {}
 
 def local_compare(val1: Any, val2: Any, feature: str):
-    result = CACHED_COMPARES.get((feature, val1, val2), -12345)
+    try:
+        result = CACHED_COMPARES.get((feature, val1, val2), -12345)
+    except TypeError:
+        return compare(val1, val2, feature)
     if result != -12345:
         return result
     if val1 is not None and val2 is not None and feature in VALUED_FEATURES:
