@@ -154,9 +154,9 @@ def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_er
         prior_error = chosen[1]
         if chosen[4] and chosen[4] in fields:
             fields.remove(chosen[4])
-        last_adds.sort(key=lambda tuple: tuple[0], reverse=True)
-        if (len(last_adds) > 5):
-            last_adds = last_adds[:5]
+        # last_adds.sort(key=lambda tuple: tuple[0], reverse=True)
+        # if (len(last_adds) > 5):
+            # last_adds = last_adds[:5]
         if prior_choice.startswith("added"):
             added_feature = prior_choice[6:]
             last_adds = [(0, feature) for (_, feature) in last_adds if feature != added_feature]
