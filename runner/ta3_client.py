@@ -1,43 +1,18 @@
 import swagger_client.models as models
 import swagger_client as ta3
 import util
-import re
 from domain.external import Scenario, ITMProbe, Action
 from domain.internal import AlignmentTarget, target
 from data import target_library
 
-def test_endpoint_availability(endpoint):
-    m = re.fullmatch(r'(.*?//)(.*?)(:(\d+))?(/.*|$)', endpoint)
-    if m is None:
-        m = re.fullmatch(r'()(.*?)(:(\d+))?(/.*|$)', endpoint)
-        if m is None:
-            raise ValueError(f"Could not parse endpoint: {endpoint}.")
-    port = int(m.group(4))
-    if port is None:
-        port = int(util.find_environment("TA3_PORT", 8080))
-    if m.group(2) == "host-machine":
-        if util.is_listening("host.docker.internal", port):
-            return m.group(1) + "host.docker.internal:" + str(port) + m.group(5)
-        if util.is_listening("172.17.0.1", port):
-            return m.group(1) + "172.17.0.1:" + str(port) + m.group(5)
-        raise ConnectionError(f"Could not find server listening at host.docker.internal or 172.17.0.1 on {port}.")
-    host = m.group(2)
-    if util.is_listening(host, port):
-        return endpoint
-    else:
-        raise ConnectionError(f"Nothing listening at endpoint: {endpoint}")
 
 class TA3Client:
     def __init__(self, endpoint: str = None, target = None, evalTargetNames = None, inputScenarioId = None, connectToTa1 = False):
         if endpoint is None:
             port = util.find_environment("TA3_PORT", 8080)
             endpoint = "http://127.0.0.1:" + str(port)
-        
-        endpoint = test_endpoint_availability(endpoint)
-        
         _config = ta3.Configuration()
         _config.host = endpoint
-        
 
         self._client = ta3.ApiClient(_config)
         self._api: ta3.ItmTa2EvalApi = ta3.ItmTa2EvalApi(self._client)
