@@ -1,10 +1,11 @@
+import copy
 from typing import Optional
 import random
 import typing
 
 from .sim import MCSim
 from .mc_node import MCStateNode, MCDecisionNode
-from .mc_state import MCState
+from .mc_state import MCState, MCAction
 
 ScoreT = None | int | float | dict[str, float]  # This is making me uncomfortable. Its almost self referencing
 MetricResultsT = dict[str, ScoreT]
@@ -126,8 +127,37 @@ class MonteCarloTree:
         :param state: The state to explore
         """
         actions = self._sim.actions(state.state)
+
+        if state.parent == None:
+            p_actions = []
+        else:
+            p_actions = copy.deepcopy(state.parent.parent_actions)
+            p_actions.append(state.parent.action)
+
+        actions = self._remove_parent_actions(actions, p_actions)
+
         for action in actions:
-            state.children.append(MCDecisionNode(state, action))
+            state.children.append(MCDecisionNode(state, action, p_actions))
+
+    def _remove_parent_actions(self, actions, p_actions):
+        for p_act in p_actions:
+            for act in actions:
+                if self._action_comparer(act, p_act):
+                    actions.remove(act)
+                    break
+        return actions
+
+    def _action_comparer(self, act_1: MCAction, act_2: MCAction) -> bool:
+        action_1 = vars(act_1)
+        action_2 = vars(act_2)
+        same = True
+        for key, value in action_1.items():
+            if action_1[key] == action_2[key]:
+                continue
+            else:
+                same = False
+                break
+        return same
 
     def _explore_decision(self, decision: MCDecisionNode) -> MCStateNode:
         """

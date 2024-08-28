@@ -11,20 +11,22 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
                                                                                  create_medsim_actions,
                                                                                  trim_medsim_actions,
                                                                                  remove_non_injuries,
-                                                                                 create_moraldesert_options)
+                                                                                 create_moraldesert_options,
+                                                                                 trim_invalid_medsim_actions)
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import decision_to_medsimaction
 import util.logger
 from typing import Optional
 import random
 
-from domain.internal import Decision
+from components.elaborator.default import TA3Elaborator
+from domain.internal import Decision, TADProbe
 
 logger = util.logger
 
 
 class MedicalSimulator(MCSim):
     def __init__(self, init_state: MedsimState, seed: Optional[float] = None,
-                 simulator_name: str = SimulatorName.TINY.value, probe_constraints: list[Decision] | None = None):
+                 simulator_name: str = SimulatorName.SMOL.value, probe: TADProbe | None = None):
         self._rand: random.Random = random.Random(seed)
         self._init_state = deepcopy(init_state)
         self._init_supplies = deepcopy(init_state.supplies)
@@ -33,6 +35,8 @@ class MedicalSimulator(MCSim):
         self.current_supplies: list[Supply] = self._init_state.supplies
         self.action_map = tiny_action_map
         self.simulator_name = simulator_name
+        probe_constraints = probe.decisions
+        # Ends here
         self.probe_constraints = probe_constraints
         self.has_constraints = True if self.probe_constraints is not None else False
         if simulator_name == SimulatorName.SMOL.value:
@@ -61,7 +65,7 @@ class MedicalSimulator(MCSim):
         for new_s in new_state:
             new_state_casualties = new_s.casualties
             for nsc in new_state_casualties:
-                update_morbidity_calculations(nsc)
+                update_morbidity_calculations(nsc, new_s.time)
             outcome = SimResult(action=action, outcome=new_s)
             outcomes.append(outcome)
         return outcomes
@@ -71,11 +75,14 @@ class MedicalSimulator(MCSim):
             constrained_list = self.probe_constraints
             constrained_actions = [decision_to_medsimaction(x) for x in constrained_list]
             return constrained_actions
+
+        # should only be used for scenes created by knexus for testing
         casualties: list[Casualty] = state.casualties
         supplies: list[str] = supply_dict_to_list(state.supplies)
         actions: list[tuple] = get_possible_actions(casualties, supplies, state.aid_delay)
         tinymed_actions: list[MedsimAction] = create_medsim_actions(actions)
         tinymed_actions_trimmed: list[MedsimAction] = trim_medsim_actions(tinymed_actions)
+        tinymed_actions_trimmed: list[MedsimAction] = trim_invalid_medsim_actions(tinymed_actions_trimmed, casualties)
         tinymed_actions_trimmed = remove_non_injuries(state, tinymed_actions_trimmed)
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENARIO.value))
         tinymed_actions_trimmed.append(MedsimAction(action=Actions.END_SCENE.value))

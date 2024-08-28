@@ -13,10 +13,11 @@ class MCStateNode:
 
 
 class MCDecisionNode:
-    def __init__(self, parent: MCStateNode, action: MCAction):
+    def __init__(self, parent: MCStateNode, action: MCAction, p_actions: list[MCAction]):
         self.parent: MCStateNode = parent
         self.action: MCAction = action
         self.children: list[MCStateNode] = []
         self.count: int = 0
         self.score: {str: float} = {}
         self.justification: {str: str} = {}
+        self.parent_actions: list[MCAction] = p_actions

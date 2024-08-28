@@ -98,7 +98,7 @@ class BayesNetDiagnosisAnalyzer(DecisionAnalyzer):
     def get_SpO2(self, c: Casualty) -> Node_Val | None:
         # https://www.mayoclinic.org/symptoms/hypoxemia/basics/definition/sym-20050930
         if c.vitals.spo2 is None: return None
-        return "low" if c.vitals.spo2 < 0.95 else "normal"
+        return "normal" if c.vitals.spo2 == "NORMAL" else "low"
 
     def get_RR(self, c: Casualty) -> Node_Val | None:
         val = c.vitals.breathing

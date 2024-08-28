@@ -5,14 +5,14 @@ from components.decision_analyzer.monte_carlo.mc_sim.decision_justification impo
 from components.decision_analyzer.monte_carlo.medsim import MedicalSimulator
 from components.decision_analyzer.monte_carlo.util.score_functions import tiny_med_severity_score, \
     tiny_med_resources_remaining, tiny_med_time_score, tiny_med_casualty_severity, med_simulator_dps, med_casualty_dps, \
-    med_prob_death, med_casualty_prob_death, prob_death_after_minute
+    med_prob_death, med_casualty_prob_death, prob_death_after_minute, prob_death_standard_time
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 from domain.internal import TADProbe, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.util.sort_functions import injury_to_dps
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Metric, metric_description_hash,
                                                                                MetricSet, SimulatorName, Actions,
-                                                                               Supplies)
+                                                                               Supplies, HealingItem)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import calc_prob_death, calculate_injury_severity
 import components.decision_analyzer.monte_carlo.mc_sim.mc_node as mcnode
 from components.decision_analyzer.monte_carlo.mc_sim.mc_tree import MetricResultsT
@@ -28,6 +28,15 @@ def decision_to_actstr(decision: Decision) -> str:
     action_params: dict[str, str] = action.params
     retstr = "%s_" % action.name
     for opt_param in sorted(list(action_params.keys())):
+        if decision.value.name == Actions.MOVE_TO_EVAC.value:
+            if opt_param == 'aid_id':
+                continue
+        if decision.value.name == Actions.MESSAGE.value:  # This is an ugly hack but wont break
+            for in_param in ['casualty', 'type', 'recipient', 'object']:
+                if in_param not in set(action_params.keys()):
+                    continue
+                retstr += '%s_' % action_params[in_param]  # if action.lookup(opt_param) is not None else ''
+            return retstr
         retstr += '%s_' % action_params[opt_param]
     return retstr
 
@@ -35,7 +44,7 @@ def decision_to_actstr(decision: Decision) -> str:
 def tinymedact_to_actstr(decision: mcnode.MCDecisionNode) -> str:
     action: MedsimAction = decision.action
     retstr = "%s_" % action.action
-    for opt_param in ['casualty_id', 'location', 'supply', 'tag', 'evac_id']:
+    for opt_param in ['casualty_id', 'location', 'supply', 'tag', 'evac_id', 'message_type', 'recipient']:
         retstr += '%s_' % action.lookup(opt_param) if action.lookup(opt_param) is not None else ''
     return retstr
 
@@ -71,7 +80,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
             dps += injury_to_dps(injury)
             casualty_dps[cas.id] += dps
 
-        casualty_p_death[cas.id] = calc_prob_death(cas)
+        casualty_p_death[cas.id] = calc_prob_death(cas, state.time)
         casualty_severities[cas.id] = cas_severity
     for supply in state.supplies:
         resource_score += supply.amount
@@ -257,19 +266,21 @@ def get_decision_justification(decision: mcnode.MCDecisionNode) -> dict[str, int
 
 def extract_medsim_state(probe: TADProbe) -> MedsimState:
     ta3_state: TA3State = probe.state
-    medsim_state: MedsimState = ta3_conv.convert_state(ta3_state)
+    env = ta3_conv.convert_environment(probe)
+    medsim_state: MedsimState = ta3_conv.convert_state(ta3_state, env)
     medsim_state.set_aid_delay(probe)
     return medsim_state
 
 
-def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, probe_decisions: list[Decision]) -> mcsim.MonteCarloTree:
+def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, probe: TADProbe) -> mcsim.MonteCarloTree:
     score_functions = {Metric.SEVERITY.value: tiny_med_severity_score, Metric.SUPPLIES_REMAINING.value: tiny_med_resources_remaining,
                        Metric.AVERAGE_TIME_USED.value: tiny_med_time_score, Metric.CASUALTY_SEVERITY.value: tiny_med_casualty_severity,
                        Metric.DAMAGE_PER_SECOND.value: med_simulator_dps, Metric.CASUALTY_DAMAGE_PER_SECOND.value: med_casualty_dps,
                        Metric.P_DEATH.value: med_prob_death, Metric.CASUALTY_P_DEATH.value: med_casualty_prob_death,
-                       Metric.P_DEATH_ONEMINLATER.value: prob_death_after_minute}
+                       Metric.P_DEATH_ONEMINLATER.value: prob_death_after_minute,
+                       Metric.STANDARD_TIME_SEVERITY.value: prob_death_standard_time}
 
-    sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe_constraints=probe_decisions)
+    sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe=probe)
     root = mcsim.MCStateNode(medsim_state)
     tree = mcsim.MonteCarloTree(sim, score_functions, [root], node_selector=select_unselected_node_then_random)
 
@@ -293,7 +304,10 @@ def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode
         dec_str = tinymedact_to_actstr(decision)
         if not len(decision.children):
             continue
+
         simulated_state_metrics[dec_str] = get_future_and_change_metrics(medsim_state, decision)
+        # if decision.action.action == 'MESSAGE':
+        #     print('wakka')
         for cas in list(decision.score[Metric.CASUALTY_P_DEATH.value].keys()):
             cas_p_death = decision.score[Metric.CASUALTY_P_DEATH.value][cas]
             if cas_p_death < casualty_best_worst[cas][Metric.CAS_LOW_P_DEATH.value]:
@@ -310,6 +324,17 @@ def get_simulated_states_from_dnl(decision_node_list: list[mcnode.MCDecisionNode
         logger.debug('mismatch list size')
     return simulated_state_metrics
 
+
+def get_healing_items(decision_node_list: list[mcnode.MCDecisionNode]) -> list[dict[str, list[HealingItem]]]:
+    healing_items: list[dict[str, HealingItem]] = list()
+    for decision in decision_node_list:
+        state_cas = decision.children[0].state.casualties
+        decision_healingitems: dict[str, list[HealingItem]] = dict()
+        for cas in state_cas:
+            present_healing: list[HealingItem] = [x for x in cas.injuries if isinstance(x, HealingItem)]
+            decision_healingitems[cas.id] = present_healing
+        healing_items.append(decision_healingitems)
+    return healing_items
 
 def get_weighted_score_element(action: str) -> int:
     item_val = Metric.STOCK_ITEM.value
@@ -332,9 +357,10 @@ def get_weighted_score_element(action: str) -> int:
 
 def get_information_gained_element(action: str) -> int:
     no_knowledge = [Actions.APPLY_TREATMENT.value, Actions.DIRECT_MOBILE_CASUALTY.value, Actions.MOVE_TO_EVAC.value,
-                    Actions.TAG_CHARACTER.value, Actions.END_SCENE.value, Actions.END_SCENARIO.value]
-    little_knowledge = [Actions.CHECK_RESPIRATION.value, Actions.CHECK_PULSE.value]
-    some_knowledge = [Actions.CHECK_ALL_VITALS.value]
+                    Actions.TAG_CHARACTER.value, Actions.END_SCENE.value,
+                    Actions.END_SCENARIO.value, Actions.MOVTE_TO.value]
+    little_knowledge = [Actions.CHECK_RESPIRATION.value, Actions.CHECK_PULSE.value, Actions.MESSAGE.value]
+    some_knowledge = [Actions.CHECK_ALL_VITALS.value, Actions.CHECK_BLOOD_OXYGEN.value]
     lots_knowledge = [Actions.SITREP.value]
     most_knowledge = [Actions.SEARCH.value]
     for know in no_knowledge:
@@ -362,12 +388,13 @@ def get_doctor_number(pdeath, dps, pdeath_60):
     pdeath_60_scaled = pdeath_60 * 10.
     pdeath_scaled = pdeath * 50.
     dps_scaled = dps * 1.
+    if pdeath_scaled < 0 or dps_scaled < 0:
+        pass
     return int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled]))
     # return max(0, min(100, int(100 - statistics.harmonic_mean([pdeath_scaled, dps_scaled, pdeath_60_scaled]))))
 
 
 def get_nextgen_stats(all_decision_metrics: dict[str, list], ordered_treatmenmts: list[str]) -> dict[str, int]:
-    logger.debug('wakka')
     weighted_resource = [get_weighted_score_element(x) for x in ordered_treatmenmts] #get_weighted_resource_score(ordered_treatmenmts)
     pdeath = all_decision_metrics[Metric.P_DEATH.value]
     dps = all_decision_metrics[Metric.DAMAGE_PER_SECOND.value]
@@ -404,6 +431,10 @@ def process_probe_decisions(probe: TADProbe, simulated_state_metrics: list[mcnod
             if value.name not in all_decision_metrics.keys():
                 all_decision_metrics[value.name] = list()
             all_decision_metrics[value.name].append(value.value)
+    # When it breaks here, its because the only kind of decision is move_to_evac which doesnt have a metric return dict
+    # Fix this after meeting with john
+    # decision metrics raw is None
+    # basic_metrics is an empty kist
     nextgen_stats = get_nextgen_stats(all_decision_metrics, ordered_treatments)
     all_decision_metrics.update(nextgen_stats)
     for idx in range(len(ordered_treatments)):
@@ -447,3 +478,17 @@ def generate_decision_justifications(dj: DecisionJustifier, decision: Decision) 
             }
             justifications.append(justification)
     return justifications
+
+
+def get_v2(decision_justifications) -> DecisionMetric:
+    for dj in decision_justifications:
+        if Metric.STANDARD_TIME_SEVERITY.value not in dj[Metric.DECISION_JUSTIFICATION_ENGLISH.value]:
+            continue
+        val_dict = dj[Metric.DECISION_JUSTIFICATION_VALUES.value]
+        fraction = 100 / val_dict[Metric.RANK_TOTAL.value]
+        multiplier = val_dict[Metric.RANK_TOTAL.value] - (val_dict[Metric.RANK_ORDER.value] - 1)
+        sms_val_2 = fraction * multiplier
+        return DecisionMetric(Metric.SMOL_MEDICAL_SOUNDNESS_V2.value,
+                              metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS_V2.value], value=sms_val_2)
+    return DecisionMetric(Metric.SMOL_MEDICAL_SOUNDNESS_V2.value,
+                          metric_description_hash[Metric.SMOL_MEDICAL_SOUNDNESS_V2.value], value=0)

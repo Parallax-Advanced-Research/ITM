@@ -11,10 +11,6 @@ On Windows, build an image with "build-docker.bat", and later run
 
 By default, run-docker.bat will connect to a server on the local host.
 
-On either platform, you can pass command line arguments to run-docker.bat, including:
-  --no-verbose: Cuts down on the information spit out to the command line when running
-  --variant=misaligned: Runs a misaligned variant of TAD
-  --variant=baseline: Runs a baseline variant of TAD
-  --session_type soartech|adept: Requests soartech/adept mode from the TA3 server.
-  --training: Requests KDMA training mode from the TA3 server.
-  
+On either platform, you can pass command line arguments to run-docker, including:
+  --variant=baseline: Runs a baseline variant of TAD with minimal KDMA training and analysis
+  --variant=severity-baseline: Runs a baseline variant of TAD that does not attempt to align

@@ -1,24 +1,25 @@
 import typing
 import domain as ext
 import swagger_client as ta3
-from components import Elaborator, DecisionSelector, DecisionAnalyzer, AlignmentTrainer
+from components import Elaborator, DecisionSelector, DecisionAnalyzer, DecisionExplainer, AlignmentTrainer
 from components.decision_analyzer.monte_carlo.util.sort_functions import sort_decisions
 from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAULT_DUMP
-from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentFeedback
+from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentTarget, AlignmentFeedback, make_new_action_decision, target
 from util import logger
 import uuid
 
 
 class Driver:
 
-    def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer], trainer: AlignmentTrainer, dumper_config: DumpConfig = DEFAULT_DUMP):
+    def __init__(self, elaborator: Elaborator, selector: DecisionSelector, analyzers: list[DecisionAnalyzer], explainers: list[DecisionExplainer], trainer: AlignmentTrainer, dumper_config: DumpConfig = DEFAULT_DUMP):
         self.session: str = ''
         self.scenario: typing.Optional[Scenario] = None
-        self.alignment_tgt: KDMAs = KDMAs([])
+        self.alignment_tgt: AlignmentTarget = target.make_empty_alignment_target()
         # Components
         self.elaborator: Elaborator = elaborator
         self.selector: DecisionSelector = selector
         self.analyzers: list[DecisionAnalyzer] = analyzers
+        self.explainers: list[DecisionExplainer] = explainers
         self.trainer: AlignmentTrainer = trainer
         if dumper_config is None:
             self.dumper = None
@@ -32,7 +33,7 @@ class Driver:
     def new_session(self, session_id: str):
         self.session = session_id
 
-    def set_alignment_tgt(self, alignment_tgt: KDMAs):
+    def set_alignment_tgt(self, alignment_tgt: AlignmentTarget):
         self.alignment_tgt = alignment_tgt
 
     def set_scenario(self, scenario: ext.Scenario):
@@ -40,6 +41,7 @@ class Driver:
         self.scenario = Scenario(scenario.id, state)
         self.session_uuid = uuid.uuid4()
         self.actions_performed = []
+        self.selector.new_scenario()
 
     def translate_probe(self, itm_probe: ext.ITMProbe) -> TADProbe:
         # Translate probe external state into internal state
@@ -54,15 +56,19 @@ class Driver:
             params = option.params.copy() if option.params is not None else {}
             params.update({'casualty': option.casualty})
             # Add decision
-            decisions.append(Decision(option.id, Action(option.type, params), kdmas=kdmas))
+            decisions.append(make_new_action_decision(option.id, option.type, params, kdmas, option.intend))
         probe = TADProbe(itm_probe.id, state, itm_probe.prompt, itm_probe.state['environment'], decisions)
         return probe
         
-    def translate_feedback(self, feedback: ta3.AlignmentResults) -> AlignmentFeedback:
+    def translate_feedback(self, results: ta3.AlignmentResults) -> AlignmentFeedback:
+        if len(results.alignment_source) != 1:
+            return None
         return AlignmentFeedback(
-                    feedback.alignment_target_id,
-                    KDMAs([KDMA(ass.kdma, ass.value) for ass in feedback.kdma_values]), 
-                    feedback.score)
+                    results.alignment_target_id,
+                    {kvo.kdma:kvo.value for kvo in results.kdma_values},
+                    results.score,
+                    results.alignment_source[0].probes
+                    )
 
     def elaborate(self, probe: TADProbe) -> list[Decision[Action]]:
         return self.elaborator.elaborate(self.scenario, probe)
@@ -73,6 +79,16 @@ class Driver:
             this_analysis = analyzer.analyze(self.scenario, probe)
             analysis.update(this_analysis)
         return analysis
+
+    def explain_decision(self, decision: Decision):
+        decision_explanations = []
+        for explainer in self.explainers:
+            this_explanation = explainer.explain(decision)
+            if this_explanation is not None:
+                decision_explanations.append(this_explanation)
+        if len(decision_explanations) == 0:
+            return ["I can't explain that."]
+        return decision_explanations
 
     def select(self, probe: TADProbe) -> Decision[Action]:
         d, _ = self.selector.select(self.scenario, probe, self.alignment_tgt)
@@ -85,18 +101,18 @@ class Driver:
             self.treatments[casualty_name] = past_list
         return d
 
-    @staticmethod
-    def respond(decision: Decision[Action], url: str = None) -> ext.Action:
+    def respond(self, decision: Decision[Action], url: str = None) -> ext.Action:
         params = decision.value.params.copy()
         casualty = params.pop('casualty') if 'casualty' in params.keys() else None  # Sitrep can take no casualty
         if decision.kdmas is not None and type(decision.kdmas.kdma_map) == dict:
             kdma_dict = decision.kdmas.kdma_map
         else:
             kdma_dict = {}
-        return ext.Action(decision.id_, decision.value.name, casualty, kdma_dict, params, url)
+        return ext.Action(decision.id_, decision.value.name, casualty, kdma_dict, params, decision.intend, url, ','.join(self.explain_decision(decision)))
 
     def decide(self, itm_probe: ext.ITMProbe) -> ext.Action:
         probe: TADProbe = self.translate_probe(itm_probe)
+        environmental_hazard: str = probe.get_environment_hazard()
 
         # Elaborate decisions, and analyze them
         probe.decisions = self.elaborate(probe)  # Probe.decisions changes from valid to invalid here
@@ -114,16 +130,20 @@ class Driver:
         # Decide which decision is best
         decision: Decision[Action] = self.select(probe)
         if self.dumper is not None:
-            self.dumper.dump(probe, decision, self.session_uuid)
+            self.dumper.dump(probe, decision, self.session_uuid, environmental_hazard)
 
         # Extract external decision for response
         # url construction
         url = f'http://localhost:8501/?scen={probe.id_}'
         return self.respond(decision, url)
         
-    def train(self, feedback: ta3.AlignmentResults, final: bool):
-        if self.trainer is not None:
-            self.trainer.train(self.scenario, self.actions_performed, self.translate_feedback(feedback), final)
+    def train(self, feedback: ta3.AlignmentResults, final: bool, scene_end: bool, scene: str):
+        if self.trainer is None:
+            return
+        feedback = self.translate_feedback(feedback)
+        if feedback is None:
+            return
+        self.trainer.train(self.scenario, self.actions_performed, feedback, final, scene_end, scene)
 
     def _extract_state(self, dict_state: dict) -> State:
         raise NotImplementedError

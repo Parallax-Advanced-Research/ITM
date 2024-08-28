@@ -2,7 +2,7 @@ import sys
 
 from components.decision_analyzer.monte_carlo.cfgs.OracleConfig import DAMAGE_PER_SECOND
 from domain.internal import Decision, Action
-from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, Injury
+from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Metric, Injury, Affector
 import numpy as np
 
 
@@ -61,7 +61,7 @@ def sort_decisions(decision_list: list[Decision[Action]]) -> list[Decision[Actio
     return sorted_decisions
 
 
-def injury_to_dps(inj: Injury) -> float:
+def injury_to_dps(inj: Affector) -> float:
     dps_hash = DAMAGE_PER_SECOND
     dps = dps_hash[inj.breathing_effect] + dps_hash[inj.bleeding_effect] + dps_hash[inj.burning_effect] if not inj.treated else 0.0
-    return dps
+    return dps  # max(0.0, dps)

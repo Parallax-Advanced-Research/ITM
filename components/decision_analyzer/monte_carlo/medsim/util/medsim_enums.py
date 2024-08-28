@@ -23,11 +23,11 @@ class BodySystemEffect(Enum):
     FATAL = 'FATAL'
 
 
-class Injury:
-    STANDARD_BODY_VOLUME = 5000  # mL
+class Affector:
+    PREFIX = 'ACTIVE '
 
     def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
-                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False, is_env: bool = False):
         self.name = name
         self.location = location
         self.severity = 0.0
@@ -42,8 +42,9 @@ class Injury:
         self.bleeding_effect = bleeding_effect
         self.burning_effect = burning_effect
         self.damage_per_second = 0.0
+        self.damage_set = False
 
-    def __eq__(self, other: 'Injury'):
+    def __eq__(self, other: 'Affector'):
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
                 self.time_elapsed == other.time_elapsed and self.treated == other.treated and
                 self.blood_lost_ml == other.blood_lost_ml and self.breathing_hp_lost == other.breathing_hp_lost and
@@ -59,12 +60,39 @@ class Injury:
                                                                                                            self.burn_hp_lost, self.burning_effect)
 
 
+class Injury(Affector):
+    def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False, is_env=False):
+        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn,
+                         is_env)
+
+
+class HealingItem(Affector):
+    def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
+        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn)
+
+
+class InferredInjury(Affector):
+    def __init__(self, name: str, location: str, severity: float, treated: bool = False, breathing_effect='NONE',
+                 bleeding_effect='NONE', burning_effect='NONE', is_burn: bool = False):
+        super().__init__(name, location, severity, treated, breathing_effect, bleeding_effect, burning_effect, is_burn)
+        self.source = None
+
+    def set_source(self, source: str) -> None:
+        self.source = source
+
+
 class Vitals:
-    def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int):
+    def __init__(self, conscious: bool, mental_status: str, breathing: str, hrpmin: int, ambulatory: str, avpu: str,
+                 spo2: float):
         self.conscious: bool = conscious
         self.mental_status: str = mental_status
         self.breathing: str = breathing
         self.hrpmin: int = hrpmin
+        self.ambulatory: str = ambulatory
+        self.avpu: str = avpu
+        self.spo2: float = spo2
 
     def __eq__(self, other: 'Vitals'):
         return (self.conscious == other.conscious and self.mental_status == other.mental_status and
@@ -72,24 +100,14 @@ class Vitals:
 
 
 class Casualty:
-    MAX_BURN_HP = 5000
-    BLEEDOUT_CHANCE_NONE = 0.15
-    BLEEDOUT_CHANCE_LOW = 0.3
-    BLEEDOUT_CHANCE_MED = 0.4
-    BLEEDOUT_CHANCE_HIGH = 0.5
-    NO_P_BLEEDOUT = 0.0
-    LOW_P_BLEEDOUT = 0.1
-    MED_P_BLEEDOUT = 0.5
-    HIGH_P_BLEEDOUT = 0.75
-    CRITICAL_P_BLEEDOUT = 0.9999
 
     def __init__(self, id: str, unstructured: str, name: str, demographics: Demographics,
-                 injuries: list[Injury], vitals: Vitals, complete_vitals: Vitals, assessed: bool, tag: str):
+                 injuries: list[Affector], vitals: Vitals, complete_vitals: Vitals, assessed: bool, tag: str):
         self.id: str = id
         self.unstructured: str = unstructured
         self.name: str = name
         self.demographics: Demographics = demographics
-        self.injuries: list[Injury] = injuries
+        self.injuries: list[Affector] = injuries
         self.vitals: Vitals = vitals
         self.complete_vitals: Vitals = complete_vitals
         self.assessed: bool = assessed
@@ -101,14 +119,46 @@ class Casualty:
         self.prob_shock: float = 0.0
         self.prob_death: float = 0.0
         self.prob_triss_death: float = 0.0
+        self.blood_loss_ml: float = 0.0
+        self.lung_loss_hp:  float = 0.0
+        self.burn_loss_hp:  float = 0.0
+        self.blood_dps: float = 0.0
+        self.lung_dps: float = 0.0
+        self.burn_dps: float = 0.0
 
-        self.max_blood_ml = 5700 if demographics.sex == 'M' else 4300
-        if demographics.rank == 'Marine':
-            self.max_breath_hp = 6000
-        elif demographics.rank == 'Officer':
-            self.max_breath_hp = 5500
+        self._set_blood_ml_max_breath_hp()
+
+    def _set_blood_ml_max_breath_hp(self):
+        age = self.demographics.age
+        if age is None:
+            age = 35  # assume adult
+        # in general values were calculated by looking up average weight and multiply by 70  - ml per kg
+        if age <= 13:  # sex prob doesn't matter for this age group
+            self.max_blood_ml = 2500
+            self.max_breath_hp = 2500
+        elif age <= 17:
+            if self.demographics.sex == 'M':
+                self.max_blood_ml = 4100
+                self.max_breath_hp = 4100
+            else:
+                self.max_blood_ml = 3500
+                self.max_breath_hp = 3500
+        elif age >= 65:
+            if self.demographics.sex == 'M':
+                self.max_blood_ml = 4800
+                self.max_breath_hp = 4800
+            else:
+                self.max_blood_ml = 4100
+                self.max_breath_hp = 4100
         else:
+            self.max_blood_ml = 5700 if self.demographics.sex == 'M' else 4300
             self.max_breath_hp = 5000
+
+        # special stuff for ranks
+        if self.demographics.rank == 'Marine':
+            self.max_breath_hp = 6000
+        elif self.demographics.rank == 'Officer':
+            self.max_breath_hp = 5500
 
     def __str__(self):
         retstr = "%s_" % self.id
@@ -165,6 +215,9 @@ class Actions(Enum):
     END_SCENARIO = 'END_SCENARIO'
     END_SCENE = 'END_SCENE'
     SEARCH = 'SEARCH'
+    CHECK_BLOOD_OXYGEN = 'CHECK_BLOOD_OXYGEN'
+    MESSAGE = 'MESSAGE'
+    MOVTE_TO = 'MOVE_TO'
 
 
 class MentalStates_KNX(Enum):
@@ -206,6 +259,27 @@ class Supplies(Enum):
     SPLINT = 'Splint'
     IV_BAG = 'IV Bag'
     BURN_DRESSING = 'Burn Dressing'
+    FENTANYL_LOLLIPOP = "Fentanyl Lollipop"
+
+
+class Ta3Vitals(Enum):
+    SLOW = 'SLOW'
+    FAST = 'FAST'
+    NORMAL = 'NORMAL'
+    FAINT = 'FAINT'
+    VOICE = 'VOICE'
+    UNRESPONSIVE = 'UNRESPONSIVE'
+    PAIN = 'PAIN'
+    ALERT = 'ALERT'
+    CONFUSED = 'CONFUSED'
+    AGONY = 'AGONY'
+    CALM = 'CALM'
+    SHOCK = 'SHOCK'
+
+    BREATHING = [None, SLOW, FAST, NORMAL]
+    HRPMIN = [None, FAST, FAINT, NORMAL]
+    AVPU = [None, VOICE, UNRESPONSIVE, PAIN, ALERT]
+    MENTAL_STATUS = [None, CONFUSED, UNRESPONSIVE, AGONY, CALM]
 
 
 class Locations(Enum):
@@ -233,6 +307,39 @@ class Locations(Enum):
     RIGHT_NECK = "right neck"
     UNSPECIFIED = "unspecified"
     INTERNAL = "internal"
+    HEAD = "head"
+
+
+class InjuryAssumptuions:
+    BURN_SUFFOCATE_LOCATIONS = [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value, Locations.LEFT_NECK.value,
+                                Locations.RIGHT_NECK.value, Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value]
+    LUNG_PUNCTURES = [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
+                      Locations.LEFT_SIDE, Locations.RIGHT_SIDE]
+
+
+class SeverityEnums(Enum):
+    MINOR = 'minor'
+    MODERATE = 'moderate'
+    SUBSTANTIAL = 'substantial'
+    MAJOR = 'major'
+    EXTREME = 'extreme'
+
+
+class VitalsEffect(Enum):
+    SPEAKING = 'Character can Speak'
+    AVPU_UNRESPONSIVE = 'Loss of Responsiveness'
+    AVPU_PAIN = 'Character in Pain'
+    ALERT = 'Character is Alert'
+    SLOW_BREATHING = 'Slowed Breathing'
+    NORMAL_BREATHING = 'Normal Breathing'
+    FAST_BREATHING = 'Fast Breathing'
+    FAST_HR = 'Fast Heartrate'
+    NORMAL_HR = 'Normal Heartrate'
+    FAINT_HR = 'Faint Heartrate'
+    CONFUSED = 'Character is Confused'
+    MENTAL_UNRESPONSIVE = 'Mentally Unresponsive'
+    AGONY = 'Character is in agony'
+    CALM = 'Character is calm'
 
 
 class Tags(Enum):
@@ -256,9 +363,28 @@ class Injuries(Enum):
     EYE_TRAUMA = 'Eye_Trauma'
     BROKEN_BONE = 'Broken Bone'
     INTERNAL = 'Internal'
+    ACTIVE_PAIN_MEDS = 'ACTIVE Pain Medications'
+    ACTIVE_NASO = 'ACTIVE Nasopharyngeal airway'
+    ACTIVE_BAG = 'ACTIVE IV Bag'
+    ACTIVE_BLOOD = 'ACTIVE Blood'
+    ACTIVE_FENTANYL_LOLLIPOP = 'ACTIVE Fentanyl Lollipop'
+    OPEN_ABDOMINAL_WOUND = 'Open Abdominal Wound'
+    TBI = 'Traumatic Brain Injury'
+    ABRASION = 'Abrasion'
+    ENVIRONMENTAL_FIRE_HAZARD = 'fire'
+    ENVIRONMENTAL_ATTACK_HAZARD = 'attack'
+    ENVIRONMENTAL_EXPLOSION_HAZARD = 'explosion'
+    ENVIRONMENTAL_COLLISION_HAZARD = 'collision'
+    ENVIRONMENTAL_FIREARM_HAZARD = 'firearm'
+    ENVIRONMENTAL_FIGHT_HAZARD = 'fight'
 
 
-class       Metric(Enum):
+ENVIRONMENTAL_HAZARDS = [Injuries.ENVIRONMENTAL_FIRE_HAZARD.value, Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value,
+                         Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value, Injuries.ENVIRONMENTAL_COLLISION_HAZARD.value,
+                         Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value, Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value]
+
+
+class Metric(Enum):
     SEVERITY = 'SEVERITY'
     AVERAGE_CASUALTY_SEVERITY = 'AVERAGE_CASUALTY_SEVERITY'
     AVERAGE_INJURY_SEVERITY = 'AVERAGE_INJURY_SEVERITY'
@@ -304,6 +430,7 @@ class       Metric(Enum):
     CAS_LOW_P_DEATH = 'CAS_LOW_P_DEATH'
     CAS_HIGH_P_DEATH_DECISION = 'CAS_HIGH_P_DEATH_DEC'
     CAS_LOW_P_DEATH_DECISION = 'CAS_LOW_P_DEATH_DEC'
+    STANDARD_TIME_SEVERITY = 'STANDARD_TIME_SEVERITY'
 
     AVERAGE_DECISION_DPS = 'AVERAGE_DECISION_DPS'
     AVERAGE_DECISION_SUPPLIES_REMAINING = 'AVERAGE_DECISION_SUPPLIES_REMAINING'
@@ -326,6 +453,7 @@ class       Metric(Enum):
 
     IS_TIED = 'IS_TIED'
 
+    # maybe these numbers belong in oracle
     STOCK_ITEM = 5
     LIFESAVING_PENALTY = 4
     IMPORTANT_PEMALTY = 2
@@ -336,10 +464,12 @@ class       Metric(Enum):
     SOME_KNOWLEDGE = 2
     LOTS_KNOWLEDGE = 3
     MOST_KNOWLEDGE = 4
+    STANDARD_TIME = 200
 
     WEIGHTED_RESOURCE = 'WEIGHTED_RESOURCE_SCORE'
     INFORMATION_GAINED = 'INFORMATION_GAINED'
     SMOL_MEDICAL_SOUNDNESS = 'SMOL_MEDICAL_SOUNDNESS'
+    SMOL_MEDICAL_SOUNDNESS_V2 = 'SMOL_MEDICAL_SOUNDNESS_V2'
 
     NORMALIZE_VALUES = [SEVERITY, CASUALTY_SEVERITY]
 
@@ -390,8 +520,10 @@ metric_description_hash: dict[str, str] = {
     Metric.AVERAGE_URGENCY.value: 'how this metric compares to others in terms of average time used',
     Metric.P_DEATH_ONEMINLATER.value: 'Probability of death after one minute of inactivity after action performed',
     Metric.SMOL_MEDICAL_SOUNDNESS.value: 'Harmonic mean of scaled damagage per second and probability of death',
+    Metric.SMOL_MEDICAL_SOUNDNESS_V2.value: 'Uses Standard time severity for simulated states',
     Metric.INFORMATION_GAINED.value: 'Credits different actions with a higher reward for returning more knowledge',
-    Metric.WEIGHTED_RESOURCE.value: 'Resources sorted by the lifesaving value they have'
+    Metric.WEIGHTED_RESOURCE.value: 'Resources sorted by the lifesaving value they have',
+    Metric.STANDARD_TIME_SEVERITY.value: 'What the severity is 120 seconds after the action is started.'
 }
 
 
@@ -411,7 +543,8 @@ class MetricSet:
                     Metric.SEVEREST_SEVERITY.value, Metric.SEVEREST_SEVERITY_CHANGE.value, Metric.SEVERITY_CHANGE.value,
                     Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value,
                     Metric.P_DEATH_ONEMINLATER.value, Metric.WEIGHTED_RESOURCE.value, Metric.SMOL_MEDICAL_SOUNDNESS.value,
-                    Metric.INFORMATION_GAINED.value]
+                    Metric.INFORMATION_GAINED.value, Metric.STANDARD_TIME_SEVERITY.value, Metric.CASUALTY_P_DEATH.value,
+                    Metric.CASUALTY_SEVERITY.value, Metric.CASUALTY_DAMAGE_PER_SECOND.value]
         elif self.set_name == 'full':
             return []
 

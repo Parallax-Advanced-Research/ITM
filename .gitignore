@@ -329,3 +329,11 @@ ta1-server-mvp/
 .deprepos/
 repo-cfgs/*-patch-hash
 components/probe_dumper/tmp/*.pkl
+data/elab_output
+data/elab_results
+data/*tgz
+scripts/knexus/*json*
+components/decision_analyzer/monte_carlo/tmp/
+data/rag_input
+*pretraining_cases.json
+*.tgz

@@ -1,19 +1,29 @@
 import math
 from typing import Any, Sequence
-from domain.internal import Scenario, TADProbe, KDMA, KDMAs, Decision, Action, State
+from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, Decision, Action, State
 from domain.ta3 import TA3State, Casualty, Supply
-from components import DecisionSelector, DecisionAnalyzer
+from components import DecisionSelector, DecisionAnalyzer, Assessor
+from triage import TriageCompetenceAssessor
 import util
 
 class SeverityDecisionSelector(DecisionSelector):
     def __init__(self):
-        pass
+        self.competence_assessor = TriageCompetenceAssessor()
 
-    def select(self, scenario: Scenario, probe: TADProbe, target: KDMAs) -> (Decision, float):
+    def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         maxSeverityChange = -math.inf
         bestDecision = None
+        competences = {}
+        best_competence = None
+        if self.competence_assessor is not None:
+            competences = self.competence_assessor.assess(probe)
+            best_competence = max(competences.values())
+
         for decision in probe.decisions:
-            metric = decision.metrics.get("SeverityChange", None)
+            if self.competence_assessor is not None and best_competence > competences[str(decision.value)]:
+                # Just skip less competent actions.
+                continue
+            metric = decision.metrics.get("ACTION_TARGET_SEVERITY_CHANGE", None)
             if metric is not None:
                 curChange = metric.value
                 if curChange > maxSeverityChange:
@@ -21,6 +31,20 @@ class SeverityDecisionSelector(DecisionSelector):
                     bestDecision = decision
                 
         if bestDecision is None: 
-            return (util.get_global_random_generator().choice(probe.decisions), 0)
+            poss_decisions = probe.decisions
+            if self.competence_assessor is not None:
+                poss_decisions = [d for d in probe.decisions if competences[str(d.value)] == best_competence]
+            bestDecision = util.get_global_random_generator().choice(poss_decisions)
+            maxSeverityChange = "unknown"
         
+        print(f"Selected action: {bestDecision.value}")
+        if self.competence_assessor is not None:
+            print(f"Competence: {competences[str(bestDecision.value)]}")
+        print(f"Severity change: {maxSeverityChange}")
         return (bestDecision, maxSeverityChange)
+        
+    def add_assessor(self, name: str, assessor: Assessor):
+        breakpoint()
+        if name == "competence":
+            self.competence_assessor = assessor
+

@@ -68,6 +68,7 @@ def run_cmd_or_die(argv: list[str], capture_output: bool = False, err_msg: str |
     else:
         p = subprocess.run(argv, check=False)
     if 0 != p.returncode:
+        print(f"Command failed: `{' '.join(argv)}`")
         if err_msg is not None:
             print(err_msg)
         sys.exit(1)
@@ -76,6 +77,39 @@ def run_cmd_or_die(argv: list[str], capture_output: bool = False, err_msg: str |
         assert type(p.stdout) is str
         return p.stdout
     return ''
+
+def install_hems() -> None:
+    print("Installing HEMS")
+
+    # Make sure sbcl and quicklisp are set up properly, and get the path to
+    # quicklisp's local projects directory
+    run_cmd_or_die([ "sbcl", "--version" ],
+        err_msg="sbcl must be installed before we run this command.")
+    
+    ql_local_projects_dir = run_cmd_or_die(
+        argv=[ "sbcl", "--noinform", "--non-interactive", "--eval",
+               '(progn (format t "~a" (car ql:*local-project-directories*)) (quit))'],
+        err_msg ="quicklisp must be installed before we run this command.",
+        capture_output=True)
+
+    os.makedirs(ql_local_projects_dir, exist_ok=True)
+
+    # Install HEMS
+    hems_dir = os.path.join(ql_local_projects_dir, 'HEMS')
+    if not os.path.isdir(hems_dir):
+        # Install
+        install_repo('https://github.com/dmenager/HEMS.git', hems_dir)
+    else:
+        # Update
+        os.chdir(hems_dir)
+        res = run_cmd_or_die(["git", "diff", "HEAD"], capture_output=True).strip()
+        if res == "":
+            run_cmd_or_die(["git", "reset", "--hard"])
+            run_cmd_or_die([ "git", "pull", "--no-edit" ])
+        else:
+            print("HEMS directory has local changes. Continuing without a fresh install.")
+        os.chdir(ITM_DIR)
+        
 
 os.chdir(ITM_DIR)
 
@@ -126,6 +160,8 @@ try:
 except:
     handle_git_missing()
 
+install_hems()
+
 print("Installing TA3 client")
 #install_repo("git@github.com:NextCenturyCorporation/itm-evaluation-client.git")
 install_repo("https://github.com/NextCenturyCorporation/itm-evaluation-client.git")
@@ -133,3 +169,20 @@ install_repo("https://github.com/NextCenturyCorporation/itm-evaluation-client.gi
 subprocess.run([ctxt.env_exe, "-m", "pip", "install", "-e",
                               os.path.join(".deprepos", "itm-evaluation-client")], check=True)
 
+print("Installing TA3 server")
+#install_server("git@github.com:NextCenturyCorporation/itm-evaluation-server.git")
+install_server("https://github.com/NextCenturyCorporation/itm-evaluation-server.git")
+
+print("Installing BBN (ADEPT) server")
+#install_server("git@gitlab.com:itm-ta1-adept-shared/adept_server.git")
+install_server("https://gitlab.com/itm-ta1-adept-shared/adept_server.git")
+
+try:
+    print("Installing Soartech server")
+    install_server("git@github.com:ITM-Soartech/ta1-server-mvp.git")
+except:
+    print("\x1b[91mFailed to install Soartech server.\x1b[0m")
+    print("Please consult Running-TAD.md for directions on getting access. You can run tad_tester.py "
+          + 'without the Soartech server, and can run ta3_training.py with the argument '
+          + '"--session_type adept" to ensure that the Soartech server is not used.')
+    sys.exit(1)

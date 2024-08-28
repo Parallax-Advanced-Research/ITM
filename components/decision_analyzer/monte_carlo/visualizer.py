@@ -71,25 +71,31 @@ def _deepest_child(node) -> int:
     return deepest_child
 
 
+def _calc_prob_death(casualties) -> float:
+    total_prob_death = 0
+    for cas in casualties:
+        total_prob_death += cas.prob_death
+    return total_prob_death / len(casualties)
+
+
 def _extract_labels(vmap: dict) -> []:
     """Iterate through all vertices (nodes) and generate hover strings for them"""
     labels = []
     for node in vmap.keys():
         lbl = ""
         if type(node) is MCStateNode:
-            lbl += f"<b>State: {node.state.unstructured}</b>"
-            lbl += f"<br>Score: {node.score}"
-            lbl += f"<br>Count (times visited): {node.count}"
+            lbl += f"<b>Prob death (avg of all casualties):</b> {_calc_prob_death(node.state.casualties)}"
+            # lbl += f"<br>Count (times visited): {node.count}"
             for cas in node.state.casualties:
                 complete_vitals = f'Breathing: {cas.complete_vitals.breathing} Conscious: {cas.complete_vitals.conscious}'
-                lbl += f'<br>{cas.id} is {complete_vitals}. Is alive: {not cas.dead}'
+                lbl += f'<b><br>{cas.id}</b> is {complete_vitals}.'
                 for inj in cas.injuries:
-                    lbl += f'<br>Injury: {inj.name} at {inj.location} with severity {inj.severity}. Time elapsed: {inj.time_elapsed} Treated: {inj.treated}'
+                    lbl += f'<b><br>   Injury:</b> {inj.name} at {inj.location} with severity {inj.severity}. Time elapsed: {inj.time_elapsed} Treated: {inj.treated}'
 
         elif type(node) is MCDecisionNode:
             lbl += f"<b>Action: {node.action.action} to {node.action.casualty_id} at {node.action.location} with {node.action.supply}</b>"
-            lbl += f"<br>Score: {node.score}"
-            lbl += f"<br>Count (times visited): {node.count}"
+            # lbl += f"<br>Score: {node.score}"
+            # lbl += f"<br>Count (times visited): {node.count}"
         labels.append(lbl)
 
     return labels

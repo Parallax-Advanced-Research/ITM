@@ -14,3 +14,6 @@ class TADProbe(typing.Generic[StateType]):
 
     def __repr__(self):
         return f"{self.id_}: {self.prompt}"
+
+    def get_environment_hazard(self):
+        return self.environment['decision_environment']['injury_triggers']

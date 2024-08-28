@@ -8,8 +8,9 @@ import uuid
 from pydantic.tools import parse_obj_as
 from runner import TA3Driver, TA3Client
 from domain import Scenario
-from domain.internal import KDMAs, KDMA
+from domain.internal import AlignmentTarget, AlignmentTargetType
 import util
+from data import target_library
 from util import logger, LogLevel, use_simple_logger, dict_difference
 
 VERBOSE_LEVEL = LogLevel.DEBUG
@@ -19,14 +20,16 @@ def check_for_servers(args):
     if not util.is_port_open(ta3_port):
         util.logger.error("TA3 server not listening. Shutting down.")
         sys.exit(1)
+    if args.bypass_server_check:
+        return
     check_adept = False
     check_soartech = False
     if args.session_type == 'eval':
         check_adept = True
         check_soartech = True
-    if args.training and args.session_type == 'adept':
+    elif args.connect_to_ta1 and args.session_type == 'adept':
         check_adept = True
-    if args.training and args.session_type == 'soartech':
+    elif args.connect_to_ta1 and args.session_type == 'soartech':
         check_soartech = True
         
     if check_adept:
@@ -45,11 +48,13 @@ def parse_kdmas(kdma_args: list[str]):
     if kdma_args is None: 
         return None
 
-    kdma_lst = []
+    kdma_names = []
+    kdma_values = {}
     for kdmastr in kdma_args:
         k, v = kdmastr.replace("-", "=").split('=')
-        kdma_lst.append(KDMA(k, float(v)))
-    return KDMAs(kdma_lst)
+        kdma_names.append(k)
+        kdma_values[k] = float(v)
+    return AlignmentTarget("CmdLine", kdma_names, kdma_values, AlignmentTargetType.SCALAR)
 
 
 
@@ -59,16 +64,10 @@ def api_test(args, driver = None):
     else:
         logger.setLevel(LogLevel.INFO)
     
-    if args.seed is not None:
-        util.set_global_random_seed(args.seed)
-    
     if driver is None:
         driver = TA3Driver(args)
-    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario)
-    if args.training:
-        sid = client.start_session(adm_name=f'TAD', session_type=args.session_type, kdma_training=True)
-    else:
-        sid = client.start_session(f'TAD', session_type=args.session_type)
+    client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario, args.connect_to_ta1)
+    sid = client.start_session(adm_name=f'TAD-{args.variant}', session_type=args.session_type, kdma_training=args.training)
         
     logger.info(f"Started Session-{sid}")
     while True:
@@ -78,11 +77,16 @@ def api_test(args, driver = None):
             break
         logger.info(f"Started Scenario-{scen.id}")
         driver.set_scenario(scen)
-        driver.set_alignment_tgt(client.align_tgt)
+        if args.alignment_target is None:
+            driver.set_alignment_tgt(client.align_tgt)
+        else:
+            driver.set_alignment_tgt(target_library.get_named_alignment_target(args.alignment_target))
+        
         logger.debug(f"-Alignment target: {client.align_tgt}")
         logger.debug(f"-Initial State: {scen.state}")
 
         probe = client.get_probe()
+        scene = probe.state["meta_info"]["scene_id"]
         while probe is not None:
             logger.info(f"Responding to probe-{probe.id}")
             action = driver.decide(probe)
@@ -95,9 +99,17 @@ def api_test(args, driver = None):
                 difference = dict_difference(new_probe.state, probe.state, {'id', 'type'})
                 difference.pop("actions_performed")
                 logger.debug(f"-State Removals: {difference}")
-            probe = new_probe
-            if args.training:
+                new_scene = new_probe.state["meta_info"]["scene_id"]
+                if new_scene != scene:
+                    driver.reset_memory()
+            else:
+                new_scene = None
+            if args.training and (args.session_type == "adept" or new_probe is None):
                 for alignment in client.get_session_alignments():
-                    driver.train(alignment, probe is None)
+                    driver.train(alignment, new_probe is None, new_scene != scene, scene)
+                    logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
+            probe = new_probe
+            scene = new_scene
+                        
         logger.info(f"Scenario Complete")
         
