@@ -1,12 +1,12 @@
 import functools
-from typing import Any
+from typing import Any, Tuple
 
 import util
 from . import triage_constants
 from .case_base_functions import *
 
 def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False) -> float:
-    kdmaProbs = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors)
+    kdmaProbs, _ = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors)
     kdmaVal = estimate_value_from_probability_dict(kdmaProbs)
     if print_neighbors:
         util.logger.info(f"kdma_val: {kdmaVal}")
@@ -28,7 +28,7 @@ def estimate_value_from_probability_dict(probability_dict: dict[float, float]) -
 def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, 
                            cases: list[dict[str, Any]], print_neighbors: bool = False, 
                            mutable_case: bool = False, reject_same_scene=False, 
-                           reject_same_scene_and_kdma = None) -> float:
+                           reject_same_scene_and_kdma = None) -> Tuple[float, dict[str, Any]]:
     kdma = kdma.lower()
     topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors, 
                  reject_same_scene = reject_same_scene,

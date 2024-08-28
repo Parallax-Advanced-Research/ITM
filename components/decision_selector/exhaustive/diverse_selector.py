@@ -40,7 +40,7 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         
         cur_decision = self.choose_random_decision(probe)
 
-        new_case = make_case_triage(probe, cur_decision)
+        new_case = make_case_triage(probe, cur_decision, "aligned")
         new_case["index"] = self.case_index
         new_case["actions"] = ([act.to_json() for act in probe.state.actions_performed] 
                                 + [cur_decision.value.to_json()])
@@ -74,7 +74,7 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
             for i in cas.injuries:
                 print(str(i))
         current_bar = 0
-        chash = hash_case(make_case_triage(probe, probe.decisions[0]))
+        chash = hash_case(make_case_triage(probe, probe.decisions[0], "aligned"))
         hash_cases = self.cases.get(chash, [])
         
         patient_choices_with_kdma = \
