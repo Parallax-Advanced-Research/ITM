@@ -53,10 +53,10 @@ class KEDSModeller(CaseModeller):
             distanced_error = kdma_estimation.find_leave_one_out_error(
                                                 self.last_weights, self.kdma_name,
                                                 cases=self.cases, avg=self.use_average_error, reject_same_scene=True)
-            local_error = kdma_estimation.find_leave_one_out_error(
-                                                self.last_weights, self.kdma_name,
-                                                cases=self.cases, avg=self.use_average_error, reject_same_scene=False)
-            self.last_error = (distanced_error + local_error) / 2
+            # local_error = kdma_estimation.find_leave_one_out_error(
+                                                # self.last_weights, self.kdma_name,
+                                                # cases=self.cases, avg=self.use_average_error, reject_same_scene=False)
+            self.last_error = distanced_error
         return self.last_error
     
     def get_state(self) -> dict[str, Any]:
