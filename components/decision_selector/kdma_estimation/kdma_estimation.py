@@ -5,8 +5,8 @@ import util
 from . import triage_constants
 from .case_base_functions import *
 
-def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False) -> float:
-    kdmaProbs, _ = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors)
+def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False, reject_same_scene : bool = False) -> float:
+    kdmaProbs, _ = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors, reject_same_scene=reject_same_scene)
     kdmaVal = estimate_value_from_probability_dict(kdmaProbs)
     if print_neighbors:
         util.logger.info(f"kdma_val: {kdmaVal}")
@@ -24,13 +24,13 @@ def estimate_value_from_probability_dict(probability_dict: dict[float, float]) -
     for (value, prob) in probability_dict.items():
         estimated_value += prob * value
     return estimated_value
-        
-def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, 
-                           cases: list[dict[str, Any]], print_neighbors: bool = False, 
-                           mutable_case: bool = False, reject_same_scene=False, 
+
+def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], kdma: str,
+                           cases: list[dict[str, Any]], print_neighbors: bool = False,
+                           mutable_case: bool = False, reject_same_scene=False,
                            reject_same_scene_and_kdma = None) -> Tuple[float, dict[str, Any]]:
     kdma = kdma.lower()
-    topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors, 
+    topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors,
                  reject_same_scene = reject_same_scene,
                  reject_same_scene_and_kdma = reject_same_scene_and_kdma)
     if len(topk) == 0:
@@ -40,7 +40,7 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
     total = sum(dists)
     sim = [total/dist for dist in dists]
     simTotal = sum(sim)
-    
+
     kdma_probs = {}
     neighbor = 0
     for (dist, case) in topk:
@@ -124,13 +124,13 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
                 lst_pool.append(item_obj)
         # if len(lst_pool) + len(lst_guaranteed) > 10:
             # print("Large distanced list: " + str(len(lst_pool) + len(lst_guaranteed)))
-        lst = construct_distanced_list(lst_guaranteed, lst_pool, weights | {kdma: 10}, 
-                                       neighbor_count, 
-                                       lambda case1, case2, wts: 
-                                            calculate_distance(case1, case2, wts, 
+        lst = construct_distanced_list(lst_guaranteed, lst_pool, weights | {kdma: 10},
+                                       neighbor_count,
+                                       lambda case1, case2, wts:
+                                            calculate_distance(case1, case2, wts,
                                                                local_compare))
         lst = [(calculate_distance(item, cur_case, weights, local_compare), item) for item in lst]
-        
+
     if print_neighbors:
         util.logger.info(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
         util.logger.info(f"kdma: {kdma} weights: { {key:val for (key, val) in weights.items() if val != 0} }")
@@ -142,10 +142,10 @@ def relevant_fields(case: dict[str, Any], weights: dict[str, Any], kdma: str):
     fields = [key for (key, val) in weights.items() if val != 0] + [kdma, "index"]
     return {key: val for (key, val) in case.items() if key in fields}
 
-def find_leave_one_out_error(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True) -> float:
-    return find_partition_error(weights, kdma, [[c] for c in cases], avg = avg)
+def find_leave_one_out_error(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True, reject_same_scene = True) -> float:
+    return find_partition_error(weights, kdma, [[c] for c in cases], avg = avg, reject_same_scene = reject_same_scene)
 
-def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: list[list[dict[str, Any]]], avg = True) -> float:
+def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: list[list[dict[str, Any]]], avg = True, reject_same_scene = True) -> float:
     new_case_list = []
     for part in case_partitions:
         new_case_list.extend(part)
@@ -158,12 +158,12 @@ def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: 
             if case.get(kdma) is None:
                 continue
             if avg:
-                estimate = estimate_KDMA(dict(case), weights, kdma, cases = new_case_list)
+                estimate = estimate_KDMA(dict(case), weights, kdma, cases = new_case_list, reject_same_scene = reject_same_scene)
                 if estimate is None:
                     continue
                 error = abs(case[kdma] - estimate)
             else:
-                kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list) 
+                kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list, reject_same_scene = reject_same_scene)
                                                     # reject_same_scene_and_kdma=case[kdma])
                 error = 1 - kdma_probs.get(case[kdma], 0)
                 if error > 0.9: error = error * 4
