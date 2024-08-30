@@ -444,6 +444,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
     def compute_estimated_alignment(self, kde, possible_kdma_choices, global_min, global_max):
         est_alignment = 0
         total_prob = 0
+        # following two lines are a kludge to keep this from running forever.
+        global_min = {min(global_min.keys()): 1}
+        global_max = {max(global_max.keys()): 1}
+        # TODO: Fix two previous lines with a more probabilistic solution
         for (gmin, gmin_prob) in global_min.items():
             for (gmax, gmax_prob) in global_max.items():
                 lprob = gmin_prob * gmax_prob
