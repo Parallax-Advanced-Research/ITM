@@ -268,7 +268,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                             error = abs(est - truth)
                             print(f"Truth: {truth} Estimate: {est} Error: {error}")
                         else:
-                            error = 1-kdma_probs.get(cur_decision.kdmas[kdma_name], 0)
+                            error = 1-kdma_val_probs.get(cur_decision.kdmas[kdma_name], 0)
                             print(f"Truth: {truth} Probabilities: {kdma_val_probs} Error: {error}")
                         if error > 0.1:
                             util.logger.warning("Probabilities off by " + str(error))
