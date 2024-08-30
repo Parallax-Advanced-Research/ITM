@@ -34,7 +34,6 @@ RUN python3 -m pip install -e /root/itm-evaluation-client
 
 WORKDIR /root/quicklisp/local-projects
 RUN git clone https://github.com/dmenager/HEMS.git
-ADD components/decision_analyzer/event_based_diagnosis/hems-package-replacement.lisp HEMS/package.lisp
 RUN cp "HEMS/examples/Common Lisp/example.lisp" /
 
 WORKDIR /root/tad
