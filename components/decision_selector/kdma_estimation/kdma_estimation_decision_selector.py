@@ -201,13 +201,16 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
     def vote(self, individual_estimates: list[tuple[dict[float, float], list[dict[str, Any]]]]) -> tuple[dict[float, float], list[dict[str, Any]]]:
         index_popularity = {}
         kdma_val_totals = {}
+        estimate_count = 0
         for est in individual_estimates:
+            if len(est[0]) == 0:
+                continue
+            estimate_count += 1
             for case in est[1]:
                 index_popularity[case[1]["index"]] = index_popularity.get(case[1]["index"], 0) + 1
             for (kdma_val, prob) in est[0].items():
                 kdma_val_totals[kdma_val] = kdma_val_totals.get(kdma_val, 0) + prob
         top_indices = sorted(index_popularity.keys(), key=index_popularity.get)
-        estimate_count = len(individual_estimates)
         return ({kdma_val: total/estimate_count for (kdma_val, total) in kdma_val_totals.items()},
                 [(index_popularity[index], self.cb[int(index)-1])for index in top_indices[:triage_constants.DEFAULT_NEIGHBOR_COUNT]])
 
