@@ -157,17 +157,7 @@ def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: 
         for case in part:
             if case.get(kdma) is None:
                 continue
-            if avg:
-                estimate = estimate_KDMA(dict(case), weights, kdma, cases = new_case_list, reject_same_scene = reject_same_scene)
-                if estimate is None:
-                    continue
-                error = abs(case[kdma] - estimate)
-            else:
-                kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, cases = new_case_list, reject_same_scene = reject_same_scene)
-                                                    # reject_same_scene_and_kdma=case[kdma])
-                error = 1 - kdma_probs.get(case[kdma], 0)
-                if error > 0.9: error = error * 4
-                elif error > 0.5: error = error * 2
+            error = calculate_error(case, weights, kdma, new_case_list, reject_same_scene = reject_same_scene, avg = avg)
             case_count += 1
             error_total += error * error
         for case in part:
@@ -175,6 +165,31 @@ def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: 
     if case_count == 0:
         return math.inf
     return error_total / case_count
+
+def find_error_values(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True, reject_same_scene = True) -> float:
+    new_case_list = cases.copy()
+    errors = []
+    for case in cases:
+        new_case_list.remove(case)
+        if case.get(kdma) is None:
+            continue
+        error = calculate_error(case, weights, kdma, new_case_list, reject_same_scene = reject_same_scene, avg = avg)
+        errors.append((case, error))
+        new_case_list.append(case)
+    return errors
+
+def calculate_error(case: dict, weights: dict, kdma: str, other_cases: list, reject_same_scene = True, avg = True):
+    if avg:
+        estimate = estimate_KDMA(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene)
+        if estimate is None:
+            return 0
+        return abs(case[kdma] - estimate)
+    else:
+        kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene)
+        return 1 - kdma_probs.get(case[kdma], 0)
+                # if error > 0.9: error = error * 4
+                # elif error > 0.5: error = error * 2
+
 
 VALUED_FEATURES = {
         "disposition": 
