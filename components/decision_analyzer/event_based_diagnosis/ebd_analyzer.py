@@ -110,6 +110,10 @@ class EventBasedDiagnosisAnalyzer(DecisionAnalyzer):
         self._hems.load_eltm_from_file("components/decision_analyzer/event_based_diagnosis/eltm.txt")
         
     def analyze(self, _: Scenario, probe: TADProbe) -> dict[str, DecisionMetrics]:
+        # This kludge is necessary because ADEPT scenarios cause an error in HEMS somehow.
+        if probe.id_.startswith("DryRunEval-"):
+            return {}
+
         analysis: dict[str, DecisionMetrics] = {}
 
         for decision in probe.decisions:
