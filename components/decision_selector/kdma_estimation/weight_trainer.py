@@ -43,6 +43,10 @@ class KEDSModeller(CaseModeller):
         for i in range(partition_count * part_size, len(rcases)):
             part_num = i % partition_count
             self.case_partitions[part_num].append(rcases[i])
+        if avg:
+            self.error_threshold = 0.1
+        else:
+            self.error_threshold = 0.49
 
     def adjust(self, weights: dict[str, float]):
         self.last_weights = weights
@@ -50,10 +54,20 @@ class KEDSModeller(CaseModeller):
 
     def estimate_error(self) -> float:
         if self.last_error is None:
-            self.last_error = kdma_estimation.find_leave_one_out_error(
-                                                self.last_weights, self.kdma_name, 
-                                                cases=self.cases, avg=self.use_average_error)
+            distanced_errors = kdma_estimation.find_error_values(
+                                                self.last_weights, self.kdma_name,
+                                                cases=self.cases, avg=self.use_average_error, 
+                                                reject_same_scene=True)
+            self.last_error = sum([case.get("bounty", 1) for (case, error) in distanced_errors if error > self.error_threshold])
         return self.last_error
+        
+    def case_satisfied(self, case, weights) -> bool:
+        error = kdma_estimation.calculate_error( 
+                                    case, weights, self.kdma_name,
+                                    self.cases, avg=self.use_average_error, 
+                                    reject_same_scene=True)
+        return error <= self.error_threshold
+            
     
     def get_state(self) -> dict[str, Any]:
         return {"weights": self.last_weights, "error": self.estimate_error()}

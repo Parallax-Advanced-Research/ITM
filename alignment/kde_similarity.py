@@ -43,7 +43,7 @@ def _normalize_2feature(x, y, z):
 
     return pdf
 
-def _kde_to_pdf_2feature(kde, grid_size=100, normalize=True):
+def _kde_to_pdf_2feature(kde, grid_size=25, normalize=True):
 
     # Create a 2D grid of points within the normalized range [0, 1] x [0, 1]
     x_vals = np.linspace(0, 1, grid_size)
@@ -66,7 +66,7 @@ def _kde_to_pdf_2feature(kde, grid_size=100, normalize=True):
     return pf
 
 
-def js_similarity_2feature(kde1, kde2, grid_size=100):
+def js_similarity_2feature(kde1, kde2, grid_size=25):
 
     # Compute the PDFs of the two 3D KDEs on the 2D grid
     pdf_kde1 = _kde_to_pdf_2feature(kde1, grid_size)
