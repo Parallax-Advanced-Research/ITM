@@ -27,7 +27,7 @@ class SimpleWeightTrainer(WeightTrainer):
                                   "source": "initial time"}, indent=2))
             awf.write("\n")
     
-    def weight_train(self, last_weights: dict[str, float], use_xgb_starter = True, addition_penalty = None):
+    def weight_train(self, last_weights: dict[str, float], use_xgb_starter = True, addition_penalty = None, promote_diversity = True):
         self.weight_error_hist = []
 
         if last_weights is not None and type(last_weights) != str:
@@ -44,9 +44,17 @@ class SimpleWeightTrainer(WeightTrainer):
                 self.add_to_history(record["weights"], source = "derived xgboost full")
 
         for (name, weight_set) in self.starter_weight_sets.items():
+            for case in self.data:
+                case["misses"] = 1
+                case["bounty"] = 1
             for i in range(10):
                 record = greedy_weight_space_search_prob(weight_set, self.modeller, self.fields, addition_penalty=addition_penalty)
                 self.add_to_history(record["weights"], source = "derived " + name)
+                if promote_diversity:
+                    for case in self.data:
+                        if not self.modeller.case_satisfied(case, weight_set):
+                            case["misses"] += 1
+                            case["bounty"] = case["misses"] / (i+1)
     
     def add_to_history(self, weights: dict[str, float], name: str = None, source: str = ""):
         super().add_to_history(weights, name, source)
@@ -55,6 +63,7 @@ class SimpleWeightTrainer(WeightTrainer):
                 awf.write(json.dumps({"kdma": self.kdma_name, "time": str(datetime.datetime.now())}
                                      | self.weight_error_hist[-1], indent=2))
                 awf.write("\n")
+
             
 def weight_space_extend(weight_dict: dict[str, float], fields: list[str] = [], last_adds: list[str] = [], no_addition = False) -> list[dict[str, float]]:
     node_list = []
@@ -98,7 +107,7 @@ def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: Cas
 def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_error: Callable[[dict[str, float]], float], 
                                       fields = [], no_addition = False, addition_penalty = None) -> dict[str, float]:
     if addition_penalty is None:
-        addition_penalty = 0.99
+        addition_penalty = 1
     fields = list(fields)
     prior_weights = weight_dict
     prior_error = estimate_error(prior_weights)

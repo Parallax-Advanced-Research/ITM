@@ -1,45 +1,58 @@
 {
-  "kdma_specific_weights": {
-    "Moral judgement": {
-      "context.last_casualty": 0.25,
-      "intent_rank": 4,
-      "directness_of_causality_rank": 4.0,
-      "worst_injury_severity_rank": 2,
-      "breathing": 4,
-      "intent": 0.5,
-      "context.val_source_character1": 2,
-      "hrpmin_rank": 1
+    "kdma_specific_weights": {
+        "Moral judgement": {
+            "injured_count": 1.0,
+            "breathing": 1,
+            "avpu": 1,
+            "intent": 0.5,
+            "directness_of_causality": 0.5,
+            "hrpmin_rank": 1,
+            "context.topic_source_character": 2,
+            "intent_rank": 2,
+            "context.last_casualty": 0.5,
+            "breathing_rank": 0.125,
+            "MEDSIM_P_DEATH": 1,
+            "context.val_directness_of_causality2": 1,
+            "avpu_rank": 4,
+            "directness_of_causality_rank": 2,
+            "disposition_rank": 1
+        },
+        "QualityOfLife": {
+            "age": 1,
+            "tagged": 16,
+            "conscious": 4,
+            "mental_status": 1,
+            "treatment_time": 0.125,
+            "severity_rank": 2,
+            "avpu_rank": 64,
+            "original_severity_rank": 1,
+            "EBD_Entropy": 1
+        },
+        "PerceivedQuantityOfLivesSaved": {
+            "age": 0.5,
+            "tagged": 4,
+            "conscious": 2,
+            "breathing": 0.5,
+            "avpu": 2,
+            "treatment": 4,
+            "original_severity_rank": 2,
+            "severity_rank": 1.0,
+            "worst_injury_severity_rank": 1,
+            "avpu_rank": 2,
+            "breathing_rank": 4,
+            "EBD_Entropy": 2
+        },
+        "Ingroup Bias": {
+            "target_resource_level": 0.5,
+            "mental_status": 2,
+            "pAirwayBlocked": 0.5,
+            "SEVEREST_SEVERITY_CHANGE": 0.5,
+            "context.topic_rapport": 1,
+            "context.last_casualty": 0.5,
+            "context.topic_injuries": 1,
+            "relationship": 0.5,
+            "disposition_rank": 0.5
+        }
     },
-    "QualityOfLife": {
-          "age": 0.4614342749118805,
-          "tagged": 16.288803100585938,
-          "military_paygrade": 0.4126615524291992,
-          "mental_status": 0.28004682064056396,
-          "avpu": 2.029209613800049,
-          "avpu_rank": 50.99212646484375,
-          "pDeath": 0.07872632890939713,
-          "pAirwayBlocked": 12.737411499023438,
-          "entropy": 0.8108482360839844,
-          "ACTION_TARGET_SEVERITY_CHANGE": 0.06236608326435089,
-          "SEVEREST_SEVERITY_CHANGE": 0.18230803310871124,
-          "severity_rank": 3.832721471786499,
-          "damage_per_second_rank": 0.47461873292922974    
-    },
-    "PerceivedQuantityOfLivesSaved": {
-          "tagged": 1.6518068313598633,
-          "worst_injury_severity_rank": 1.3103928565979004,
-          "treatment": 0.27874594926834106,
-          "pBrainInjury": 2.283722400665283,
-          "action_target_severity_rank": 0.04502410814166069
-    },
-    "Ingroup Bias": {
-      "pDeath": 2,
-      "SEVERITY_CHANGE": 0.5,
-      "relationship_rank": 2,
-      "disposition": 1,
-      "SUPPLIES_REMAINING": 2,
-      "context.topic_injuries": 2
-    }
-  },
-  "default": 0
+    "default": 0
 }

@@ -5,6 +5,10 @@ from typing import Any, Sequence, Callable
 from numbers import Real
 
 def read_case_base(csv_filename: str):
+    case_base, header = read_case_base_with_headers(csv_filename)
+    return case_base
+
+def read_case_base_with_headers(csv_filename: str):
     """ Convert the csv into a list of dictionaries """
     case_base: list[dict] = []
     with open(csv_filename, "r") as f:
@@ -19,7 +23,7 @@ def read_case_base(csv_filename: str):
                 case[headers[i]] = convert(headers[i], entry.strip())
             case_base.append(case)
 
-    return case_base
+    return case_base, headers
 
 def write_case_base(fname: str, cb: list[dict[str, Any]], params: dict[str, Any] = {}):
     index : int = 0
@@ -35,7 +39,7 @@ def write_case_base(fname: str, cb: list[dict[str, Any]], params: dict[str, Any]
     csv_file = open(fname, "w")
     for (param, value) in params.items():
         csv_file.write(f"#Param {param}: {value}\n")
-    csv_file.write("index," + ",".join(keys))
+    csv_file.write("index," + ",".join([str(key) for key in keys]))
     csv_file.write("\n")
     for case in cb:
         index += 1
