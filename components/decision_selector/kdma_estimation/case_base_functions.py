@@ -39,7 +39,7 @@ def write_case_base(fname: str, cb: list[dict[str, Any]], params: dict[str, Any]
     csv_file = open(fname, "w")
     for (param, value) in params.items():
         csv_file.write(f"#Param {param}: {value}\n")
-    csv_file.write("index," + ",".join(keys))
+    csv_file.write("index," + ",".join([str(key) for key in keys]))
     csv_file.write("\n")
     for case in cb:
         index += 1
