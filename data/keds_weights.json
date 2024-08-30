@@ -1,6 +1,6 @@
 {
     "kdma_specific_weights": {
-        "Moral judgement": {
+        "moral judgement": {
             "injured_count": 1.0,
             "breathing": 1,
             "avpu": 1,
@@ -17,7 +17,7 @@
             "directness_of_causality_rank": 2,
             "disposition_rank": 1
         },
-        "QualityOfLife": {
+        "qualityoflife": {
             "age": 1,
             "tagged": 16,
             "conscious": 4,
@@ -28,7 +28,7 @@
             "original_severity_rank": 1,
             "EBD_Entropy": 1
         },
-        "PerceivedQuantityOfLivesSaved": {
+        "perceivedquantityoflivessaved": {
             "age": 0.5,
             "tagged": 4,
             "conscious": 2,
@@ -42,7 +42,7 @@
             "breathing_rank": 4,
             "EBD_Entropy": 2
         },
-        "Ingroup Bias": {
+        "ingroup bias": {
             "target_resource_level": 0.5,
             "mental_status": 2,
             "pAirwayBlocked": 0.5,
