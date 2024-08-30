@@ -14,3 +14,4 @@ By default, run-docker.bat will connect to a server on the local host.
 On either platform, you can pass command line arguments to run-docker, including:
   --variant=baseline: Runs a baseline variant of TAD with minimal KDMA training and analysis
   --variant=severity-baseline: Runs a baseline variant of TAD that does not attempt to align
+  --no_verbose: Cut down on output
