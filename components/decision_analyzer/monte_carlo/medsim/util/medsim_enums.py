@@ -43,6 +43,18 @@ class Affector:
         self.burning_effect = burning_effect
         self.damage_per_second = 0.0
         self.damage_set = False
+        self.qol_impact = self._set_qol_impact()
+
+    def _set_qol_impact(self):
+        if self.base_severity in [SeverityEnums.EXTREME.value, SeverityEnums.MAJOR.value]:
+            additional_severity = 2
+        elif self.base_severity in [SeverityEnums.SUBSTANTIAL.value, SeverityEnums.MODERATE.value]:
+            additional_severity = 1
+        else:  # SeverityEnums.MINOR
+            additional_severity = 0
+
+        qol = INJURY_QOL.get(self.name, 0)
+        return qol + additional_severity
 
     def __eq__(self, other: 'Affector'):
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
@@ -125,8 +137,23 @@ class Casualty:
         self.blood_dps: float = 0.0
         self.lung_dps: float = 0.0
         self.burn_dps: float = 0.0
+        self.qol_impact_total = self._set_qol_impact_total()
 
         self._set_blood_ml_max_breath_hp()
+
+    def _set_qol_impact_total(self):
+        # sometimes age is not set, so will default to under 50
+        if self.demographics.age is None:
+            age_severity = 0
+        elif self.demographics.age >= 50:
+            age_severity = 1
+        else:
+            age_severity = 0
+        total_qol = 0
+        for inj in self.injuries:
+            total_qol += (inj.qol_impact + age_severity)
+
+        return total_qol
 
     def _set_blood_ml_max_breath_hp(self):
         age = self.demographics.age
@@ -382,6 +409,26 @@ class Injuries(Enum):
 ENVIRONMENTAL_HAZARDS = [Injuries.ENVIRONMENTAL_FIRE_HAZARD.value, Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value,
                          Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value, Injuries.ENVIRONMENTAL_COLLISION_HAZARD.value,
                          Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value, Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value]
+
+
+INJURY_QOL = {
+    Injuries.FOREHEAD_SCRAPE.value: 0,
+    Injuries.EAR_BLEED.value: 0,
+    Injuries.ASTHMATIC.value: 0,
+    Injuries.LACERATION.value: 1,
+    Injuries.PUNCTURE.value: 1,
+    Injuries.SHRAPNEL.value: 1,
+    Injuries.CHEST_COLLAPSE.value: 2,
+    Injuries.AMPUTATION.value: 2,
+    Injuries.BURN.value: 1,
+    Injuries.BURN_SUFFOCATION.value: 2,
+    Injuries.EYE_TRAUMA.value: 1,
+    Injuries.BROKEN_BONE.value: 1,
+    Injuries.INTERNAL.value: 1,
+    Injuries.OPEN_ABDOMINAL_WOUND.value: 2,
+    Injuries.TBI.value: 2,
+    Injuries.ABRASION.value: 0,
+}
 
 
 class Metric(Enum):
