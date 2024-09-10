@@ -45,15 +45,19 @@ class SimpleWeightTrainer(WeightTrainer):
 
         for (name, weight_set) in self.starter_weight_sets.items():
             for case in self.data:
-                case["misses"] = 1
+                case["best_error"] = 1
+                case["error_total"] = 1
                 case["bounty"] = 1
             for i in range(10):
                 record = greedy_weight_space_search_prob(weight_set, self.modeller, self.fields, addition_penalty=addition_penalty)
                 self.add_to_history(record["weights"], source = "derived " + name)
                 if promote_diversity:
                     for case in self.data:
-                        case["misses"] += self.modeller.case_error(case, weight_set)
-                        case["bounty"] = case["misses"] / (i+1)
+                        error = self.modeller.case_error(case, record["weights"])
+                        case["error_total"] += error
+                        case["best_error"] = min(case["best_error"], error)
+                        # Bounty is higher based on higher average of weight set errors, or higher lowest error found.
+                        case["bounty"] = ((case["error_total"] / (i+2)) + case["best_error"]) / 2
     
     def add_to_history(self, weights: dict[str, float], name: str = None, source: str = ""):
         super().add_to_history(weights, name, source)
