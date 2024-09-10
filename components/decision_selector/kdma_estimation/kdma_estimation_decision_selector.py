@@ -69,6 +69,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
     def __init__(self, args = None):
         self.use_drexel_format = False
         self.cb = []
+        self.case_file = None
         self.variant = "baseline"
         self.index = 0
         self.print_neighbors = True
@@ -79,6 +80,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.possible_kdma_choices = {}
         self.assessors = {}
         self.setup_weights({})
+        self.error_data = None
         if args is not None:
             self.initialize_with_args(args)
             
@@ -95,9 +97,13 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 args.case_file = _default_drexel_case_file
             else:
                 args.case_file = _default_kdma_case_file
+                
+        self.case_file = args.case_file
             
         self.record_considered_decisions = args.record_considered_decisions
         self.cb, self.fields = read_case_base_with_headers(args.case_file)
+        for case in self.cb:
+            case["index"] = str(case["index"])
         self.variant: str = args.variant
         self.print_neighbors = args.decision_verbose
         self.insert_pauses = args.insert_pauses
@@ -114,6 +120,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         else:
             self.initialize_weights(weight_filename)
         self.training = args.training
+        
 
 
     def initialize_weights(self, weight_filename):
@@ -128,10 +135,16 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 if isinstance(json_obj, list):
                     weight_settings_list += json_obj
                 elif isinstance(json_obj, dict) and "kdma" in json_obj and "weights" in json_obj:
-                    if "derived" in json_obj["source"]:
-                        weight_settings_list.append({"kdma_specific_weights": {json_obj["kdma"]: json_obj["weights"]}})
+                    self.process_record(json_obj)
                 elif isinstance(json_obj, dict) and "kdma" in json_obj and "weights" not in json_obj:
                     pass
+                elif isinstance(json_obj, dict) and "case_errors" in json_obj:
+                    for record in json_obj["weights"]:
+                        self.process_record(record, weight_settings_list)
+                    self.error_data = json_obj["case_errors"]
+                    case_hash = util.hashing.hash_file(self.case_file)
+                    if case_hash != json_obj["case_base"]:
+                        raise Exception("Weight file is not tuned for this case file.")
                 elif isinstance(json_obj, dict):
                     weight_settings_list.append(json_obj)
                 else:
@@ -142,6 +155,19 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             util.logger.error(
                 f"Could not read from weight file: {weight_filename}; using incomplete or default weights.")
             raise Exception()
+            
+    def process_record(self, weight_record: dict[str, Any], weight_settings_list: list[dict[str, Any]]):
+        if "derived" not in weight_record.get("source", ""):
+            return
+        weights = weight_record.get("weights", {})
+        if len(weights) == 0:
+            return
+        kdma = weight_record["kdma"]
+        id = weight_record.get("id", None)
+        if id is not None:
+            weights["weight_id"] = str(id)
+        weight_settings_list.append({"kdma_specific_weights": {kdma: weights}})
+    
 
     def copy_from(self, other_selector):
         self.use_drexel_format = other_selector.use_drexel_format
@@ -179,8 +205,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     self.kdma_weights[kdma] = []
                     total_weights[kdma] = {}
                 new_weight_dict = weights | extra_weights
+                
                 self.kdma_weights[kdma].append(new_weight_dict)
                 for (k, w) in new_weight_dict.items():
+                    if not isinstance(w, float):
+                        continue
                     total_weights[kdma][k] = total_weights[kdma].get(k, 0) + w
         
         self.average_kdma_weights = {}
@@ -198,17 +227,92 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
     def add_assessor(self, name: str, assessor: Assessor):
         self.assessors[name] = assessor
         
-    def vote(self, individual_estimates: list[tuple[dict[float, float], list[dict[str, Any]]]]) -> tuple[dict[float, float], list[dict[str, Any]]]:
+        
+    def get_case_error(self, kdma_name: str, cindex: int, target: AlignmentTarget, weight_id: str):
+        if target.type == AlignmentTargetType.SCALAR:
+            return self.error_data[kdma_name][cindex]["regression_errors"][weight_id]
+        else:
+            return self.error_data[kdma_name][cindex]["classification_errors"][weight_id]
+
+    def get_error_utility(self, target: AlignmentTarget, diff: float):
+        absDiff = abs(diff)
+        if target.type == AlignmentTargetType.SCALAR:
+            if absDiff < 0.2:
+                return (0.2 - absDiff) * 5 * (0.2 - absDiff) * 5
+            else:
+                return 0
+        else: 
+            if absDiff < 0.5:
+                return 1
+            else:
+                return 0
+
+    def beyond_error_threshold(self, kdma_name: str, cindex: int, target: AlignmentTarget, weight_id: str):
+        if target.type == AlignmentTargetType.SCALAR:
+            return abs(self.error_data[kdma_name][cindex]["regression_errors"][weight_id]) > 0.2
+        else: 
+            return self.error_data[kdma_name][cindex]["classification_errors"][weight_id] > 0.5
+
+    # returns number in [0,1] depending on how far off the neighbors prediction was and how
+    # different the "neighbors" were that predicted with it. Full trust = 1 means that the weights 
+    # predicted its value perfectly and cases for which it was a "neighbor" actually had the same 
+    # value. Trust erodes the farther the situation gets from that
+    def rate_neighbor_references(self, kdma_name: str, cindex: int, target: AlignmentTarget, weight_id: str):
+        neighbor_differences = self.error_data[kdma_name][cindex]["neighbor_differences"].get(weight_id, [])
+        local_error_mod = self.get_error_utility(target, self.get_case_error(kdma_name, cindex, target, weight_id))
+        if local_error_mod == 0:
+            return 0
+        if len(neighbor_differences) == 0:
+            # No evidence for or against, so give a middling value; might be better to average 
+            # across the weight_id
+            # Note: this case is an outlier, which might make it a good predictor for other outliers.
+            return 0.5 * local_error_mod
+        trust = 0
+        for (ocindex, diff) in neighbor_differences.items():
+            trust += self.get_error_utility(target, diff)
+        return trust * local_error_mod / len(neighbor_differences)
+        
+    def trust_vote(self, kdma_name: str, individual_estimates: list[tuple[str, dict[float, float], list[dict[str, Any]]]], target: AlignmentTarget) -> tuple[dict[float, float], list[dict[str, Any]]]:
+        index_popularity = {}
+        kdma_val_totals = {}
+        all_trust_total = 0
+        
+        for (weight_id, kdma_val_probs, neighbors) in individual_estimates:
+            if len(kdma_val_probs) == 0:
+                continue
+            # closest_case = min(neighbors, key=first)[1]
+            # if self.beyond_error_threshold(kdma_name, closest_case["index"], target, weight_id):
+                # # if the weight id didn't get the nearest neighbor right, don't consider
+                # continue
+            trust_rating = 0
+            total_dist = sum([dist for (dist, case) in neighbors])
+            for (dist, neighbor) in neighbors:
+                nindex = neighbor["index"]
+                trust_rating = self.rate_neighbor_references(kdma_name, nindex, target, weight_id)
+                kdma_val = neighbor[kdma_name]
+                if total_dist == 0.0:
+                    prob = 1 / len(neighbors)
+                else:
+                    prob = dist / total_dist
+                kdma_val_totals[kdma_val] = kdma_val_totals.get(kdma_val, 0) + prob * trust_rating
+                index_popularity[nindex] = index_popularity.get(nindex, 0) + trust_rating
+                all_trust_total += trust_rating
+
+        top_indices = sorted(index_popularity.keys(), key=index_popularity.get)
+        return ({kdma_val: val_trust_total/all_trust_total for (kdma_val, val_trust_total) in kdma_val_totals.items()},
+                [(index_popularity[index], self.cb[int(index)-1])for index in top_indices[:triage_constants.DEFAULT_NEIGHBOR_COUNT]])
+
+    def vote(self, individual_estimates: list[tuple[str, dict[float, float], list[dict[str, Any]]]]) -> tuple[dict[float, float], list[dict[str, Any]]]:
         index_popularity = {}
         kdma_val_totals = {}
         estimate_count = 0
-        for est in individual_estimates:
-            if len(est[0]) == 0:
+        for (weight_id, kdma_val_probs, neighbors) in individual_estimates:
+            if len(kdma_val_probs) == 0:
                 continue
             estimate_count += 1
-            for case in est[1]:
-                index_popularity[case[1]["index"]] = index_popularity.get(case[1]["index"], 0) + 1
-            for (kdma_val, prob) in est[0].items():
+            for (dist, neighbor) in neighbors:
+                index_popularity[neighbor["index"]] = index_popularity.get(neighbor["index"], 0) + 1
+            for (kdma_val, prob) in kdma_val_probs.items():
                 kdma_val_totals[kdma_val] = kdma_val_totals.get(kdma_val, 0) + prob
         top_indices = sorted(index_popularity.keys(), key=index_popularity.get)
         return ({kdma_val: total/estimate_count for (kdma_val, total) in kdma_val_totals.items()},
@@ -252,12 +356,16 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 else:
                     individual_estimates = []
                     for weights in weights_set:
-                        individual_estimates.append(
+                        kdma_val_probs, topK = \
                             kdma_estimation.get_KDMA_probabilities(
                                 cur_case, weights, kdma_name.lower(), self.cb, 
                                 print_neighbors = False, mutable_case = True, 
-                                reject_same_scene = self.training))
-                    kdma_val_probs, topK = self.vote(individual_estimates)
+                                reject_same_scene = self.training)
+                        individual_estimates.append((weights.get("weight_id", None), kdma_val_probs, topK))
+                    if self.error_data is not None:
+                        kdma_val_probs, topK = self.trust_vote(kdma_name.lower(), individual_estimates, target)
+                    else:
+                        kdma_val_probs, topK = self.vote(individual_estimates)
                         
                     if kdma_val_probs is None:
                         continue
@@ -266,10 +374,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                         truth = cur_decision.kdmas[kdma_name]
                         if target.type == AlignmentTargetType.SCALAR:
                             est = 0
+                            tot = 0
                             for (kdma, prob) in kdma_val_probs.items():
                                 est += kdma * prob
-                            error = abs(est - truth)
-                            print(f"Truth: {truth} Estimate: {est} Error: {error}")
+                                tot += prob
+                            error = abs(est/tot - truth)
+                            print(f"Truth: {truth} Estimate: {est/tot} Error: {error}")
                         else:
                             error = 1-kdma_val_probs.get(cur_decision.kdmas[kdma_name], 0)
                             print(f"Truth: {truth} Probabilities: {kdma_val_probs} Error: {error}")
