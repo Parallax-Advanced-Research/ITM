@@ -78,7 +78,7 @@ def main():
     for kdma in hints:
         errors = collect_data(kdma, [case for case in case_base if case.get(kdma, None) is not None], 
                               headers, [wr for wr in weight_records if wr["kdma"] == kdma])
-        case_base_functions.write_case_base(f"accuracy_table_{kdma}.csv", 
+        case_base_functions.write_case_base(f"temp/accuracy_table_{kdma}.csv", 
             [record["classification_errors"] | {"index": index, "type": "classification"} for (index, record) in errors.items()] +
             [{}, {}, {}] +
             [record["regression_errors"] | {"index": index, "type": "regression"} for (index, record) in errors.items()])
