@@ -52,9 +52,8 @@ class SimpleWeightTrainer(WeightTrainer):
                 self.add_to_history(record["weights"], source = "derived " + name)
                 if promote_diversity:
                     for case in self.data:
-                        if not self.modeller.case_satisfied(case, weight_set):
-                            case["misses"] += 1
-                            case["bounty"] = case["misses"] / (i+1)
+                        case["misses"] += self.modeller.case_error(case, weight_set)
+                        case["bounty"] = case["misses"] / (i+1)
     
     def add_to_history(self, weights: dict[str, float], name: str = None, source: str = ""):
         super().add_to_history(weights, name, source)
