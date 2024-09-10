@@ -135,7 +135,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 if isinstance(json_obj, list):
                     weight_settings_list += json_obj
                 elif isinstance(json_obj, dict) and "kdma" in json_obj and "weights" in json_obj:
-                    self.process_record(json_obj)
+                    self.process_record(json_obj, weight_settings_list)
                 elif isinstance(json_obj, dict) and "kdma" in json_obj and "weights" not in json_obj:
                     pass
                 elif isinstance(json_obj, dict) and "case_errors" in json_obj:
