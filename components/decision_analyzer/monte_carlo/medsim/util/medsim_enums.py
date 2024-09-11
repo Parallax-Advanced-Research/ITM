@@ -479,6 +479,7 @@ class Metric(Enum):
     CAS_HIGH_P_DEATH_DECISION = 'CAS_HIGH_P_DEATH_DEC'
     CAS_LOW_P_DEATH_DECISION = 'CAS_LOW_P_DEATH_DEC'
     STANDARD_TIME_SEVERITY = 'STANDARD_TIME_SEVERITY'
+    CASUALTY_QOL_IMPACT = 'CASUALTY_QOL_IMPACT'
 
     AVERAGE_DECISION_DPS = 'AVERAGE_DECISION_DPS'
     AVERAGE_DECISION_SUPPLIES_REMAINING = 'AVERAGE_DECISION_SUPPLIES_REMAINING'
@@ -571,7 +572,8 @@ metric_description_hash: dict[str, str] = {
     Metric.SMOL_MEDICAL_SOUNDNESS_V2.value: 'Uses Standard time severity for simulated states',
     Metric.INFORMATION_GAINED.value: 'Credits different actions with a higher reward for returning more knowledge',
     Metric.WEIGHTED_RESOURCE.value: 'Resources sorted by the lifesaving value they have',
-    Metric.STANDARD_TIME_SEVERITY.value: 'What the severity is 120 seconds after the action is started.'
+    Metric.STANDARD_TIME_SEVERITY.value: 'What the severity is 120 seconds after the action is started.',
+    Metric.CASUALTY_QOL_IMPACT.value: 'Dictionary of quality of life impact for all casualties'
 }
 
 
@@ -592,7 +594,7 @@ class MetricSet:
                     Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value,
                     Metric.P_DEATH_ONEMINLATER.value, Metric.WEIGHTED_RESOURCE.value, Metric.SMOL_MEDICAL_SOUNDNESS.value,
                     Metric.INFORMATION_GAINED.value, Metric.STANDARD_TIME_SEVERITY.value, Metric.CASUALTY_P_DEATH.value,
-                    Metric.CASUALTY_SEVERITY.value, Metric.CASUALTY_DAMAGE_PER_SECOND.value]
+                    Metric.CASUALTY_SEVERITY.value, Metric.CASUALTY_DAMAGE_PER_SECOND.value, Metric.CASUALTY_QOL_IMPACT.value]
         elif self.set_name == 'full':
             return []
 

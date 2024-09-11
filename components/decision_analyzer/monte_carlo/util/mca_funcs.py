@@ -5,7 +5,7 @@ from components.decision_analyzer.monte_carlo.mc_sim.decision_justification impo
 from components.decision_analyzer.monte_carlo.medsim import MedicalSimulator
 from components.decision_analyzer.monte_carlo.util.score_functions import tiny_med_severity_score, \
     tiny_med_resources_remaining, tiny_med_time_score, tiny_med_casualty_severity, med_simulator_dps, med_casualty_dps, \
-    med_prob_death, med_casualty_prob_death, prob_death_after_minute, prob_death_standard_time
+    med_prob_death, med_casualty_prob_death, prob_death_after_minute, prob_death_standard_time, qol_impact_total_score
 import components.decision_analyzer.monte_carlo.mc_sim as mcsim
 from domain.internal import TADProbe, DecisionMetrics, DecisionMetric, Decision, Action
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
@@ -70,6 +70,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
     dps = 0.
     casualty_dps = dict()
     casualty_p_death = dict()
+    total_qol_impact = dict()
     for cas in state.casualties:
         cas_severity = sum([calculate_injury_severity(i) for i in cas.injuries])
         if cas.id not in list(casualty_dps.keys()):
@@ -82,6 +83,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
 
         casualty_p_death[cas.id] = calc_prob_death(cas, state.time)
         casualty_severities[cas.id] = cas_severity
+        total_qol_impact[cas.id] = cas.qol_impact_total
     for supply in state.supplies:
         resource_score += supply.amount
     retdict[Metric.SEVERITY.value] = severity
@@ -93,6 +95,7 @@ def tinymedstate_to_metrics(state: MedsimState) -> dict:
     retdict[Metric.P_DEATH.value] = min(max(casualty_p_death.values()), 1.0)
     retdict[Metric.CASUALTY_P_DEATH.value] = casualty_p_death
     retdict[Metric.P_DEATH_ONEMINLATER.value] = prob_death_after_minute(state)
+    retdict[Metric.CASUALTY_QOL_IMPACT.value] = total_qol_impact
     return retdict
 
 
@@ -109,7 +112,8 @@ def get_and_normalize_delta(past_metrics, new_metrics):
 
     for common_key in past_metrics.keys():
         if common_key in [Metric.DAMAGE_PER_SECOND.value, Metric.CASUALTY_DAMAGE_PER_SECOND.value,
-                          Metric.P_DEATH.value, Metric.CASUALTY_P_DEATH.value, Metric.P_DEATH_ONEMINLATER.value]:
+                          Metric.P_DEATH.value, Metric.CASUALTY_P_DEATH.value, Metric.P_DEATH_ONEMINLATER.value,
+                          Metric.CASUALTY_QOL_IMPACT.value]:
             continue  # This is calculated seperate, this function might deprecate
         time_delta_out[delta_converters[common_key]] = delta_dict[common_key]
         if common_key in [m for m in Metric.NORMALIZE_VALUES.value]:
@@ -278,7 +282,8 @@ def train_mc_tree(medsim_state: MedsimState, max_rollouts: int, max_depth: int, 
                        Metric.DAMAGE_PER_SECOND.value: med_simulator_dps, Metric.CASUALTY_DAMAGE_PER_SECOND.value: med_casualty_dps,
                        Metric.P_DEATH.value: med_prob_death, Metric.CASUALTY_P_DEATH.value: med_casualty_prob_death,
                        Metric.P_DEATH_ONEMINLATER.value: prob_death_after_minute,
-                       Metric.STANDARD_TIME_SEVERITY.value: prob_death_standard_time}
+                       Metric.STANDARD_TIME_SEVERITY.value: prob_death_standard_time,
+                       Metric.CASUALTY_QOL_IMPACT.value: qol_impact_total_score}
 
     sim = MedicalSimulator(medsim_state, simulator_name=SimulatorName.SMOL.value, probe=probe)
     root = mcsim.MCStateNode(medsim_state)

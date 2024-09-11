@@ -103,3 +103,10 @@ def prob_death_standard_time(state: MCState) -> ScoreT:
     if stand_time_severity < 0:
         pass
     return stand_time_severity
+
+
+def qol_impact_total_score(state: MCState) -> ScoreT:
+    qol_scores: dict[str, int] = {}
+    for casualty in state.casualties:
+        qol_scores[casualty.id] = casualty.qol_impact_total
+    return qol_scores
