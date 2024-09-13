@@ -83,7 +83,7 @@ class Medical:
                                     Locations.LEFT_FACE.value, Locations.LEFT_STOMACH.value, Locations.RIGHT_SIDE.value,
                                     Locations.RIGHT_NECK.value, Locations.RIGHT_CHEST.value,
                                     Locations.RIGHT_SHOULDER.value, Locations.RIGHT_FACE.value,
-                                    Locations.RIGHT_STOMACH.value, Locations.RIGHT_THIGH.value, Locations.LEFT_THIGH.value],
+                                    Locations.RIGHT_STOMACH.value],
         Supplies.SPLINT.value: [Locations.LEFT_CALF.value, Locations.RIGHT_CALF.value,
                                 Locations.LEFT_THIGH.value, Locations.RIGHT_THIGH.value,
                                 Locations.LEFT_FOREARM.value, Locations.RIGHT_FOREARM.value,
