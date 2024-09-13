@@ -256,7 +256,7 @@ def get_feature_valuation(feature: str) -> Callable[[str], int | None]:
     return lambda val: VALUED_FEATURES[feature].get(val, None)
 
 def get_comparatives(val: Any, comps: list[Any], feature_type: str):
-    if len(sortedVals) == 1:
+    if len(comps) == 1:
         return {}
     stats = {}
     if feature_type in VALUED_FEATURES:
