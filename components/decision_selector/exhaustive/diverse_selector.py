@@ -23,6 +23,7 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         self.cases: dict[list[dict[str, Any]]] = dict()
         self.new_cases: list[dict[str, Any]] = list()
         self.output_case_file = output_case_file
+        self.last_case = None
         # self.new_cases : list[dict[str, Any]] = list()
         if continue_search and os.path.exists(self.output_case_file):
             with open(self.output_case_file, "r") as infile:
@@ -45,8 +46,9 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         new_case["actions"] = ([act.to_json() for act in probe.state.actions_performed] 
                                 + [cur_decision.value.to_json()])
         if "last_action" in new_case["context"]:
-            new_case["context"]["last_case"] = dict(self.new_cases[-1])
+            new_case["context"]["last_case"] = dict(self.last_case)
             new_case["context"]["last_case"].pop("context")
+        self.last_case = new_case
         if cur_decision.kdmas is not None and cur_decision.kdmas.kdma_map is not None:
             new_case["hint"] = cur_decision.kdmas.kdma_map
             self.commit_case(new_case)
@@ -135,6 +137,7 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
             self.commit_case(case)
             self.write_case(case)
         self.new_cases = list()
+        self.last_case = None
         
 
 
