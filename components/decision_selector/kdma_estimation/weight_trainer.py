@@ -51,6 +51,14 @@ class KEDSModeller(CaseModeller):
     def adjust(self, weights: dict[str, float]):
         self.last_weights = weights
         self.last_error = None
+        
+    def error_impact(self, error: float):
+        if self.use_average_error:
+            weight = 2 if error > self.error_threshold else 1 - (error / self.error_threshold)
+            return weight * weight / 4
+        else:
+            return 1 if error > self.error_threshold else 0 
+            
 
     def estimate_error(self) -> float:
         if self.last_error is None:
@@ -58,15 +66,15 @@ class KEDSModeller(CaseModeller):
                                                 self.last_weights, self.kdma_name,
                                                 cases=self.cases, avg=self.use_average_error, 
                                                 reject_same_scene=True)
-            self.last_error = sum([case.get("bounty", 1) for (case, error) in distanced_errors if error > self.error_threshold])
+            self.last_error = sum([case.get("bounty", 1) * self.error_impact(error) for (case, error) in distanced_errors])
         return self.last_error
         
-    def case_satisfied(self, case, weights) -> bool:
+    def case_error(self, case, weights) -> bool:
         error = kdma_estimation.calculate_error( 
                                     case, weights, self.kdma_name,
                                     self.cases, avg=self.use_average_error, 
                                     reject_same_scene=True)
-        return error <= self.error_threshold
+        return self.error_impact(error)
             
     
     def get_state(self) -> dict[str, Any]:

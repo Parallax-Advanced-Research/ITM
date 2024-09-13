@@ -28,9 +28,9 @@ def validate_args(args: argparse.Namespace) -> None:
                         )
         sys.exit(1)
         
-    if args.session_type == 'eval' and args.scenario is not None:
-        sys.stderr.write("\x1b[93mCannot specify a scenario in evaluation mode.\x1b[0m\n")
-        sys.exit(1)
+    # if args.session_type == 'eval' and args.scenario is not None:
+        # sys.stderr.write("\x1b[93mCannot specify a scenario in evaluation mode.\x1b[0m\n")
+        # sys.exit(1)
 
     if args.session_type == 'eval' and args.kdmas is not None:
         sys.stderr.write("\x1b[93mPlease do not supply your own KDMAs in evaluation mode.\x1b[0m\n")

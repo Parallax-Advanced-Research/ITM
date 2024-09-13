@@ -31,9 +31,9 @@ class TA3Driver(Driver):
         elaborator = TA3Elaborator(elab_to_json=args.elab_output)
 
         if args.variant.lower() == "severity-baseline":
-            super().__init__(elaborator, SeverityDecisionSelector(), 
+            super().__init__(elaborator, SeverityDecisionSelector(args), 
                              [MonteCarloAnalyzer(max_rollouts=args.rollouts, max_depth=2)],
-                             None, None)
+                             [], None)
                              # ?This is not declared will error
             return
 
