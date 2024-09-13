@@ -686,12 +686,12 @@ def add_decision_feature_to_case_with_rank(case: dict[str, Any], feature: str,
                                            add_rank: bool = True):
     case[feature] = characteristic_fn(cur_decision)
     if case[feature] is not None and add_rank:
-        add_comparative_features(case, feature, {characteristic_fn(dec) for dec in decisions}, None)
+        add_comparative_features(case, feature, [characteristic_fn(dec) for dec in decisions], None)
 
 def add_ranked_metric_to_case(case: dict[str, Any], feature: str, decisions: list[Decision]):
     if feature not in case:
         return
-    add_comparative_features(case, feature, {dec.metrics[feature].value for dec in decisions if feature in dec.metrics}, None)
+    add_comparative_features(case, feature, [dec.metrics[feature].value for dec in decisions if feature in dec.metrics], None)
 
 def add_comparative_features(case, feature, comps, feature_type):
     compDict = kdma_estimation.get_comparatives(case[feature], comps, feature_type)
