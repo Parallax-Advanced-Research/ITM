@@ -256,13 +256,14 @@ def get_feature_valuation(feature: str) -> Callable[[str], int | None]:
     return lambda val: VALUED_FEATURES[feature].get(val, None)
 
 def get_comparatives(val: Any, comps: list[Any], feature_type: str):
-    if len(comps) == 1:
+    comps = [c for c in comps if c is not None]
+    if len(comps) <= 1:
         return {}
     stats = {}
     if feature_type in VALUED_FEATURES:
         map = VALUED_FEATURES.get(feature_type, None)
         val = map[val.lower()]
-        comps = [map[x.lower()] if x is not None else None for x in comps]
+        comps = [map[x.lower()] for x in comps]
     sortedVals = sorted(comps, key=functools.cmp_to_key(lambda v1, v2: local_order(v1, v2, feature_type)))
     if len(sortedVals) > 1:
         stats["variance"] = statistics.variance(sortedVals)
