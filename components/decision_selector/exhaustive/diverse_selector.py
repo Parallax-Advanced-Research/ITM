@@ -44,7 +44,9 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         new_case["index"] = self.case_index
         new_case["actions"] = ([act.to_json() for act in probe.state.actions_performed] 
                                 + [cur_decision.value.to_json()])
-        new_case["scene"] = probe.state.orig_state["meta_info"]["scene_id"]
+        if "last_action" in new_case["context"]:
+            new_case["context"]["last_case"] = dict(self.new_cases[-1])
+            new_case["context"]["last_case"].pop("context")
         if cur_decision.kdmas is not None and cur_decision.kdmas.kdma_map is not None:
             new_case["hint"] = cur_decision.kdmas.kdma_map
             self.commit_case(new_case)
