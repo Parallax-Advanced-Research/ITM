@@ -439,6 +439,9 @@ class Metric(Enum):
     AVERAGE_TIME_USED = 'AVERAGE_TIME_USED'
     TARGET_SEVERITY = 'ACTION_TARGET_SEVERITY'
     TARGET_SEVERITY_CHANGE = 'ACTION_TARGET_SEVERITY_CHANGE'
+    NONACTION_AVG_SEVERITY_CHANGE = 'NONACTION_AVG_SEVERITY_CHANGE'
+    NONACTION_MIN_SEVERITY_CHANGE = 'NONACTION_MIN_SEVERITY_CHANGE'
+    NONACTION_MAX_SEVERITY_CHANGE = 'NONACTION_MAX_SEVERITY_CHANGE'
     SEVEREST_SEVERITY = 'SEVEREST_SEVERITY'
     SEVEREST_SEVERITY_CHANGE = 'SEVEREST_SEVERITY_CHANGE'
     TIME_BETWEEN_STATE = 'TIME_BETWEEN_STATES'
@@ -570,7 +573,10 @@ metric_description_hash: dict[str, str] = {
     Metric.SMOL_MEDICAL_SOUNDNESS_V2.value: 'Uses Standard time severity for simulated states',
     Metric.INFORMATION_GAINED.value: 'Credits different actions with a higher reward for returning more knowledge',
     Metric.WEIGHTED_RESOURCE.value: 'Resources sorted by the lifesaving value they have',
-    Metric.STANDARD_TIME_SEVERITY.value: 'What the severity is 120 seconds after the action is started.'
+    Metric.STANDARD_TIME_SEVERITY.value: 'What the severity is 120 seconds after the action is started.',
+    Metric.NONACTION_AVG_SEVERITY_CHANGE.value: 'Average Severity Change (DPS) after action of all the non targets',
+    Metric.NONACTION_MAX_SEVERITY_CHANGE.value: 'Maximum Severity Change (DPS) after action of all of the non targets',
+    Metric.NONACTION_MIN_SEVERITY_CHANGE.value: 'Minuimum Severity Change (DPS) after action of all the non targets'
 }
 
 
