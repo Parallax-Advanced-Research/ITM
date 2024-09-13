@@ -665,7 +665,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             return make_case_drexel(probe, d)
         else:
             case = make_case_triage(probe, d, self.variant)
-            case |= flatten("context", case.pop("context"))
+            context = case.pop("context")
+            if "last_action" in context:
+                context["last_case"] = dict(self.last_choice)
+                context["last_case"].pop("context")
+            case |= flatten("context", context)
             return case
 
 
@@ -821,9 +825,6 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
         add_ranked_metric_to_case(case, 'ACTION_TARGET_SEVERITY_CHANGE', probe.decisions)
 
     case["context"] = d.context
-    if "last_action" in d.context:
-        d.context["last_case"] = dict(self.last_choice)
-        d.context["last_case"].pop("context")
     meta_block = probe.state.orig_state.get('meta_info', {})
     if len(meta_block) > 0:
         case['scene'] = "=" + probe.id_ + "=" + meta_block["scene_id"]
