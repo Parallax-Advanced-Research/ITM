@@ -2,7 +2,8 @@ from typing import Any
 import math, pandas, numpy
 
 from . import kdma_estimation
-from .case_base_functions import integerish
+from . import triage_constants
+from . import case_base_functions
 
 from components.attribute_learner.xgboost import xgboost_train, data_processing
 import util
@@ -65,7 +66,8 @@ class KEDSModeller(CaseModeller):
             distanced_errors = kdma_estimation.find_error_values(
                                                 self.last_weights, self.kdma_name,
                                                 cases=self.cases, avg=self.use_average_error, 
-                                                reject_same_scene=True)
+                                                reject_same_scene=True,
+                                                neighbor_count = triage_constants.DEFAULT_KDMA_NEIGHBOR_COUNT)
             self.last_error = sum([case.get("bounty", 1) * self.error_impact(error) for (case, error) in distanced_errors])
         return self.last_error
         
@@ -73,7 +75,8 @@ class KEDSModeller(CaseModeller):
         error = kdma_estimation.calculate_error( 
                                     case, weights, self.kdma_name,
                                     self.cases, avg=self.use_average_error, 
-                                    reject_same_scene=True)
+                                    reject_same_scene=True, 
+                                    neighbor_count = triage_constants.DEFAULT_KDMA_NEIGHBOR_COUNT)
         return self.error_impact(error)
             
     
@@ -364,7 +367,7 @@ def test_file_error(cb_fname: str, weights_dict: dict[str, float], kdma_name, dr
 def make_approval_data_frame(cases: list[dict[str, Any]], kdma_name, cols=None, drop_discounts = False, entries = None) -> pandas.DataFrame:
     cases = [dict(case) for case in cases if case.get(kdma_name, None) is not None]
     if drop_discounts:
-        cases = [case for case in cases if integerish(10 * case[kdma_name])]
+        cases = [case for case in cases if case_base_functions.integerish(10 * case[kdma_name])]
     if entries is not None:
         cases = cases[:entries]
     cleaned_experiences, category_labels = data_processing.clean_data(dict(zip(range(len(cases)), cases)))
