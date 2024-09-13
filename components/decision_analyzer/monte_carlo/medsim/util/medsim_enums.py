@@ -44,6 +44,7 @@ class Affector:
         self.damage_per_second = 0.0
         self.damage_set = False
         self.qol_impact = self._set_qol_impact()
+        self.is_env = is_env
 
     def _set_qol_impact(self):
         if self.base_severity in [SeverityEnums.EXTREME.value, SeverityEnums.MAJOR.value]:
