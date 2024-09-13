@@ -1,12 +1,13 @@
 import functools
 from typing import Any, Tuple
 
+import statistics
 import util
 from . import triage_constants
 from .case_base_functions import *
 
-def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False, reject_same_scene : bool = False) -> float:
-    kdmaProbs, _ = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors, reject_same_scene=reject_same_scene)
+def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False, reject_same_scene : bool = False, neighbor_count = -1) -> float:
+    kdmaProbs, _ = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors, reject_same_scene=reject_same_scene, neighbor_count = neighbor_count)
     kdmaVal = estimate_value_from_probability_dict(kdmaProbs)
     if print_neighbors:
         util.logger.info(f"kdma_val: {kdmaVal}")
@@ -16,23 +17,30 @@ def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str
 def estimate_KDMAs_from_probs(kdma_probs: dict[str, dict[float, float]]) -> dict[str, float]:
     kdma_estimates = {}
     for (kdma, prob_dict) in kdma_probs.items():
-        kdma_estimates[kdma] = estimate_value_from_probability_dict(prob_dict)
+        if len(prob_dict) == 0:
+            kdma_estimates[kdma] = None
+        else:
+            kdma_estimates[kdma] = estimate_value_from_probability_dict(prob_dict)
     return kdma_estimates
 
 def estimate_value_from_probability_dict(probability_dict: dict[float, float]) -> float:
     estimated_value = 0
+    total_prob = 0
     for (value, prob) in probability_dict.items():
         estimated_value += prob * value
-    return estimated_value
+        total_prob += prob
+    return estimated_value / total_prob
 
 def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], kdma: str,
                            cases: list[dict[str, Any]], print_neighbors: bool = False,
                            mutable_case: bool = False, reject_same_scene=False,
-                           reject_same_scene_and_kdma = None) -> Tuple[float, dict[str, Any]]:
+                           reject_same_scene_and_kdma = None, 
+                           neighbor_count = -1) -> Tuple[float, dict[str, Any]]:
     kdma = kdma.lower()
     topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors,
                  reject_same_scene = reject_same_scene,
-                 reject_same_scene_and_kdma = reject_same_scene_and_kdma)
+                 reject_same_scene_and_kdma = reject_same_scene_and_kdma, 
+                 neighbor_count = neighbor_count)
     if len(topk) == 0:
         return {},{}
 
@@ -73,8 +81,6 @@ def sorted_distances(cur_case: dict[str, Any], weights: dict[str, float], kdma: 
 def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases: list[dict[str, Any]],
           neighbor_count: int = -1, print_neighbors: bool = False, reject_same_scene = False,
           reject_same_scene_and_kdma = None) -> list[dict[str, Any]]:
-    if neighbor_count < 0:
-        neighbor_count = triage_constants.DEFAULT_NEIGHBOR_COUNT
     lst = []
     weights = {k: w for (k, w) in oweights.items() if w != 0}
     max_distance = 10000
@@ -89,6 +95,8 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
         if not is_char_act and cur_act_type != pcase_act_type:
             continue
         if reject_same_scene and cur_case['scene'] == pcase['scene']:
+            continue
+        if reject_same_scene and not pcase['scene'].startswith("=") and pcase['scene'] in cur_case['scene']:
             continue
         if reject_same_scene_and_kdma is not None and cur_case['scene'] == pcase['scene'] \
                 and reject_same_scene_and_kdma == pcase[kdma]:
@@ -142,10 +150,10 @@ def relevant_fields(case: dict[str, Any], weights: dict[str, Any], kdma: str):
     fields = [key for (key, val) in weights.items() if val != 0] + [kdma, "index"]
     return {key: val for (key, val) in case.items() if key in fields}
 
-def find_leave_one_out_error(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True, reject_same_scene = True) -> float:
-    return find_partition_error(weights, kdma, [[c] for c in cases], avg = avg, reject_same_scene = reject_same_scene)
+def find_leave_one_out_error(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True, reject_same_scene = True, neighbor_count = -1) -> float:
+    return find_partition_error(weights, kdma, [[c] for c in cases], avg = avg, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count)
 
-def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: list[list[dict[str, Any]]], avg = True, reject_same_scene = True) -> float:
+def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: list[list[dict[str, Any]]], avg = True, reject_same_scene = True, neighbor_count = -1) -> float:
     new_case_list = []
     for part in case_partitions:
         new_case_list.extend(part)
@@ -157,7 +165,7 @@ def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: 
         for case in part:
             if case.get(kdma) is None:
                 continue
-            error = calculate_error(case, weights, kdma, new_case_list, reject_same_scene = reject_same_scene, avg = avg)
+            error = calculate_error(case, weights, kdma, new_case_list, reject_same_scene = reject_same_scene, avg = avg, neighbor_count = neighbor_count)
             case_count += 1
             error_total += error * error
         for case in part:
@@ -166,26 +174,26 @@ def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: 
         return math.inf
     return error_total / case_count
 
-def find_error_values(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True, reject_same_scene = True) -> float:
+def find_error_values(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True, reject_same_scene = True, neighbor_count = -1) -> float:
     new_case_list = cases.copy()
     errors = []
     for case in cases:
         new_case_list.remove(case)
         if case.get(kdma) is None:
             continue
-        error = calculate_error(case, weights, kdma, new_case_list, reject_same_scene = reject_same_scene, avg = avg)
+        error = calculate_error(case, weights, kdma, new_case_list, reject_same_scene = reject_same_scene, avg = avg, neighbor_count = neighbor_count)
         errors.append((case, error))
         new_case_list.append(case)
     return errors
 
-def calculate_error(case: dict, weights: dict, kdma: str, other_cases: list, reject_same_scene = True, avg = True):
+def calculate_error(case: dict, weights: dict, kdma: str, other_cases: list, reject_same_scene = True, avg = True, neighbor_count = -1):
     if avg:
-        estimate = estimate_KDMA(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene)
+        estimate = estimate_KDMA(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count)
         if estimate is None:
             return 0
         return abs(case[kdma] - estimate)
     else:
-        kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene)
+        kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count)
         return 1 - kdma_probs.get(case[kdma], 0)
                 # if error > 0.9: error = error * 4
                 # elif error > 0.5: error = error * 2
@@ -246,6 +254,25 @@ VALUED_FEATURES = {
     
 def get_feature_valuation(feature: str) -> Callable[[str], int | None]:
     return lambda val: VALUED_FEATURES[feature].get(val, None)
+
+def get_comparatives(val: Any, comps: list[Any], feature_type: str):
+    stats = {}
+    if feature_type in VALUED_FEATURES:
+        map = VALUED_FEATURES.get(feature_type, None)
+        val = map[val.lower()]
+        comps = [map[x.lower()] if x is not None else None for x in comps]
+    sortedVals = sorted(comps, key=functools.cmp_to_key(lambda v1, v2: local_order(v1, v2, feature_type)))
+    if len(sortedVals) > 1:
+        stats["variance"] = statistics.variance(sortedVals)
+    if sortedVals[-1] > sortedVals[0]:
+        stats["normalized"] = (val - sortedVals[0]) / (sortedVals[-1] - sortedVals[0])
+    first_index = sortedVals.index(val)
+    sortedVals.reverse()
+    last_index = len(sortedVals) - sortedVals.index(val) - 1
+    stats["percentile"] = int((first_index + last_index) * 100 / (2 * (len(sortedVals) - 1)))
+    return stats
+    
+    
 
 def rank(val: Any, valsFound: list[Any], feature: str):
     if feature in VALUED_FEATURES:
