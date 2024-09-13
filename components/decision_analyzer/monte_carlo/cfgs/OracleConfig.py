@@ -83,7 +83,7 @@ class Medical:
                                     Locations.LEFT_FACE.value, Locations.LEFT_STOMACH.value, Locations.RIGHT_SIDE.value,
                                     Locations.RIGHT_NECK.value, Locations.RIGHT_CHEST.value,
                                     Locations.RIGHT_SHOULDER.value, Locations.RIGHT_FACE.value,
-                                    Locations.RIGHT_STOMACH.value],
+                                    Locations.RIGHT_STOMACH.value, Locations.RIGHT_THIGH.value, Locations.LEFT_THIGH.value],
         Supplies.SPLINT.value: [Locations.LEFT_CALF.value, Locations.RIGHT_CALF.value,
                                 Locations.LEFT_THIGH.value, Locations.RIGHT_THIGH.value,
                                 Locations.LEFT_FOREARM.value, Locations.RIGHT_FOREARM.value,
@@ -143,11 +143,11 @@ class InjuryUpdate:
     def val_to_bse(val):
         if val <= 1:
             return BodySystemEffect.MINIMAL.value
-        if val <= 3:
+        if val <= 4:
             return BodySystemEffect.MODERATE.value
-        if val <= 5:
-            return BodySystemEffect.SEVERE.value
         if val <= 7:
+            return BodySystemEffect.SEVERE.value
+        if val <= 9:
             return BodySystemEffect.CRITICAL.value
         return BodySystemEffect.FATAL.value
 
@@ -162,8 +162,8 @@ class InjuryUpdate:
             SeverityEnums.MINOR.value: 1,
             SeverityEnums.MODERATE.value: 2,
             SeverityEnums.MAJOR.value: 3,
-            SeverityEnums.SUBSTANTIAL.value: 6,
-            SeverityEnums.EXTREME.value: 100
+            SeverityEnums.SUBSTANTIAL.value: 4,
+            SeverityEnums.EXTREME.value: 5
         }
         injury_bleed, effect_bleed = values[self.bleeding_effect], values[affector_in.bleeding_effect]
         injury_breath, effect_breath = values[self.breathing_effect], values[affector_in.breathing_effect]

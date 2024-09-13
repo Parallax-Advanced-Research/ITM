@@ -181,30 +181,30 @@ def _get_environmnental_injury(environment_hazard: str) -> Injury | None:
     if environment_hazard == Injuries.ENVIRONMENTAL_FIRE_HAZARD.value:
         return Injury(Injuries.ENVIRONMENTAL_FIRE_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.SEVERE.value,
-                      burning_effect=BodySystemEffect.CRITICAL.value, is_burn=False)  # is burn effects treatment
+                      burning_effect=BodySystemEffect.CRITICAL.value, is_burn=False, is_env=True)  # is burn effects treatment
 
     if environment_hazard == Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value:
         return Injury(Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
-                      severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.MODERATE.value)
+                      severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.MODERATE.value, is_env=True)
 
     if environment_hazard == Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value:
         return Injury(Injuries.ENVIRONMENTAL_EXPLOSION_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, breathing_effect=BodySystemEffect.SEVERE.value,
-                      burning_effect=BodySystemEffect.SEVERE.value, is_burn=False)  # is burn effects treatment
+                      burning_effect=BodySystemEffect.SEVERE.value, is_burn=False, is_env=True)  # is burn effects treatment
 
     if environment_hazard == Injuries.ENVIRONMENTAL_COLLISION_HAZARD.value:
         return Injury(Injuries.ENVIRONMENTAL_ATTACK_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
-                      severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.SEVERE.value)
+                      severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.SEVERE.value, is_env=True)
 
     if environment_hazard == Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value:
         return Injury(Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.SEVERE.value,
-                      breathing_effect=BodySystemEffect.MODERATE.value)
+                      breathing_effect=BodySystemEffect.MODERATE.value, is_env=True)
 
     if environment_hazard == Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value:
         return Injury(Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value + env_hazard_suffix, Locations.UNSPECIFIED.value,
                       severity=SeverityEnums.MAJOR.value, bleeding_effect=BodySystemEffect.MODERATE.value,
-                      breathing_effect=BodySystemEffect.MODERATE.value)
+                      breathing_effect=BodySystemEffect.MODERATE.value, is_env=True)
 
     logger.warning("%s not found in known environmental hazards" % environment_hazard)
     return None

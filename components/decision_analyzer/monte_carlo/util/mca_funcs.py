@@ -205,6 +205,14 @@ def get_target_metrics(new_metrics: MetricResultsT, future_states: mcnode.MCDeci
         return new_metrics
     new_metrics[Metric.TARGET_SEVERITY.value] = new_metrics[Metric.CASUALTY_SEVERITY.value][target]
     new_metrics[Metric.TARGET_SEVERITY_CHANGE.value] = new_metrics[Metric.CASUALTY_SEVERITY_CHANGE.value][target]
+    other_dps = []
+    for k,v in new_metrics[Metric.CASUALTY_SEVERITY_CHANGE.value].items():
+        if k == target:
+            continue
+        other_dps.append(v)
+    new_metrics[Metric.NONACTION_AVG_SEVERITY_CHANGE.value] = np.mean(other_dps) if len(other_dps) else 0.0
+    new_metrics[Metric.NONACTION_MIN_SEVERITY_CHANGE.value] = min(other_dps) if len(other_dps) else 0.0
+    new_metrics[Metric.NONACTION_MAX_SEVERITY_CHANGE.value] = max(other_dps) if len(other_dps) else 0.0
     return new_metrics
 
 
