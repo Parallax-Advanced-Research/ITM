@@ -10,13 +10,14 @@ import json
 
 class SimpleWeightTrainer(WeightTrainer):
     
-    def __init__(self, modeller, fields, data: list[dict[str, Any]], kdma_name: str):
+    def __init__(self, modeller, fields, data: list[dict[str, Any]], kdma_name: str, searches: int = 10):
         super().__init__(modeller, fields)
         self.data = data
         self.kdma_name = kdma_name
         self.starter_weight_sets = []
         self.log_file = None
         self.find_weight_multipliers()
+        self.searches = searches
     
     def check_standard_weight_sets(self, standard_weight_sets: dict[str, dict[str, float]]):
         super().check_standard_weight_sets(standard_weight_sets)
@@ -56,7 +57,7 @@ class SimpleWeightTrainer(WeightTrainer):
         xgbW = xgbM.get_state()["weights"]
         self.add_to_history(xgbW, source = "xgboost full")
         if use_xgb_starter:
-            for i in range(10):
+            for i in range(self.searches):
                 record = greedy_weight_space_search_prob(xgbW, self.modeller, self.fields, no_addition=True)
                 self.add_to_history(record["weights"], source = "derived xgboost full")
 
@@ -65,7 +66,7 @@ class SimpleWeightTrainer(WeightTrainer):
                 case["best_error"] = 1
                 case["error_total"] = 1
                 case["bounty"] = 1
-            for i in range(10):
+            for i in range(self.searches):
                 record = greedy_weight_space_search_prob(weight_set, self.modeller, self.fields, addition_penalty=addition_penalty, initial_weights = self.initial_weights)
                 self.add_to_history(record["weights"], source = "derived " + name)
                 if promote_diversity:
