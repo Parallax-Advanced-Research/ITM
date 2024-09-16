@@ -1,5 +1,6 @@
 from typing import Any, Callable
 from .weight_trainer import WeightTrainer, CaseModeller, XGBModeller
+from . import case_base_functions
 
 import math
 import time
@@ -15,6 +16,7 @@ class SimpleWeightTrainer(WeightTrainer):
         self.kdma_name = kdma_name
         self.starter_weight_sets = []
         self.log_file = None
+        self.find_weight_multipliers()
     
     def check_standard_weight_sets(self, standard_weight_sets: dict[str, dict[str, float]]):
         super().check_standard_weight_sets(standard_weight_sets)
@@ -26,6 +28,21 @@ class SimpleWeightTrainer(WeightTrainer):
             awf.write(json.dumps({"kdma": self.kdma_name, "time": str(datetime.datetime.now()), 
                                   "source": "initial time"}, indent=2))
             awf.write("\n")
+            
+    def find_weight_multipliers(self):
+        mins = {}
+        maxes = {}
+        for datum in self.data:
+            for (k,v) in datum.items():
+                if isinstance(v, float) or isinstance(v, int):
+                    if k in mins:
+                        mins[k] = min(v, mins[k])
+                        maxes[k] = max(v, maxes[k])
+                    else:
+                        mins[k] = v
+                        maxes[k] = v
+        self.initial_weights = {k: 1 / (maxes[k] - mins[k]) for k in mins if maxes[k] != mins[k]}
+        
     
     def weight_train(self, last_weights: dict[str, float], use_xgb_starter = True, addition_penalty = None, promote_diversity = True):
         self.weight_error_hist = []
@@ -49,7 +66,7 @@ class SimpleWeightTrainer(WeightTrainer):
                 case["error_total"] = 1
                 case["bounty"] = 1
             for i in range(10):
-                record = greedy_weight_space_search_prob(weight_set, self.modeller, self.fields, addition_penalty=addition_penalty)
+                record = greedy_weight_space_search_prob(weight_set, self.modeller, self.fields, addition_penalty=addition_penalty, initial_weights = self.initial_weights)
                 self.add_to_history(record["weights"], source = "derived " + name)
                 if promote_diversity:
                     for case in self.data:
@@ -68,7 +85,7 @@ class SimpleWeightTrainer(WeightTrainer):
                 awf.write("\n")
 
             
-def weight_space_extend(weight_dict: dict[str, float], fields: list[str] = [], last_adds: list[str] = [], no_addition = False) -> list[dict[str, float]]:
+def weight_space_extend(weight_dict: dict[str, float], fields: list[str] = [], last_adds: list[str] = [], initial_weights = {}, no_addition = False) -> list[dict[str, float]]:
     node_list = []
     for (feature, weight) in weight_dict.items():
         node_list.append(dict(weight_dict))
@@ -91,24 +108,25 @@ def weight_space_extend(weight_dict: dict[str, float], fields: list[str] = [], l
             if field not in last_adds and util.get_global_random_generator().uniform(0, 10) > 1:
                 continue
             node_list.append(dict(weight_dict))
-            node_list[-1][field] = 1
+            node_list[-1][field] = initial_weights.get(field, 1)
             node_list[-1]["change"] = "added"
             node_list[-1]["feature"] = field
     return node_list
 
 
-def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: CaseModeller, fields = [], no_addition=False, addition_penalty = None) -> dict[str, float]:
+def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: CaseModeller, fields = [], initial_weights = {}, no_addition=False, addition_penalty = None) -> dict[str, float]:
     return greedy_weight_space_search_prob_c(
         weight_dict, 
         lambda w: modeller.adjust(w) or modeller.estimate_error(),
         fields,
+        initial_weights = initial_weights, 
         no_addition=no_addition,
         addition_penalty=addition_penalty
     )
 
 
 def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_error: Callable[[dict[str, float]], float], 
-                                      fields = [], no_addition = False, addition_penalty = None) -> dict[str, float]:
+                                      fields = [], initial_weights = {}, no_addition = False, addition_penalty = None) -> dict[str, float]:
     if addition_penalty is None:
         addition_penalty = 1
     fields = list(fields)
@@ -125,7 +143,7 @@ def greedy_weight_space_search_prob_c(weight_dict: dict[str, float], estimate_er
         total_wheel = 0
         choices = []
         error_has_improved = False
-        node_list = weight_space_extend(prior_weights, fields, [add[1] for add in last_adds], no_addition=no_addition)
+        node_list = weight_space_extend(prior_weights, fields, [add[1] for add in last_adds], no_addition=no_addition, initial_weights = initial_weights)
         start = time.process_time()
         last_adds = []
         for node in node_list:
