@@ -80,8 +80,7 @@ NON_NOISY_KEYS = [
     'HRA Strategy.time-resources-risk_reward_ratio-system.satisfactory', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce',
     'treatment_count', 'treatment_count_percentile', 'treatment_count_normalized', 'treatment_count_variance',
-    'treatment_time', 'treatment_time_percentile', 'treatment_time_normalized', 'treatment_time_variance',
-    'scene'
+    'treatment_time', 'treatment_time_percentile', 'treatment_time_normalized', 'treatment_time_variance'
 ]
 
 NOISY_KEYS : str = [
@@ -411,7 +410,7 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
             keys = [key for key in keys if key not in ["index", "hint"]]
             
             for key in keys:
-                vals = set([str(case.get(key, None)) for case in case_list])
+                vals = list(set([str(case.get(key, None)) for case in case_list]))
                 if len(vals) > 1:
                     # # if key == 'breathing_rank' and new_case["breathing"] in ["FAST", "SLOW"]:
                         # # breakpoint()
@@ -419,9 +418,13 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
                     # # elif key == 'mental_status_rank' and new_case["mental_status"] in ["AGONY", "UNRESPONSIVE", "CONFUSED", "UPSET"]:
                         # # new_case[key] = statistics.mean([float(val) for val in vals])
                     # else:
+                    if key == 'scene' and len(vals) == 2 and vals[0][:2] == "IO" and vals[1][:2] == "IO" and vals[0][3:] == vals[1][3:]:
+                        continue
+                    if new_case["action_name"] == "END_SCENE" and len(vals) == 2 and vals[0][:3] == "IO2" and vals[1][:3] == "IO2":
+                        continue
+
                     print(f"Multiple values for key {key}: {vals}")
                     breakpoint()
-                    break
         ret_cases.append(new_case)
         index = index + 1
         
@@ -614,6 +617,8 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
     for case in pre_cases:
         cur_keys = list(case.keys())
         case["scene"] = case["scene"].replace("=", ":")
+        if case["scene"].startswith(":DryRunEval"):
+            case["scene"] = case["scene"][12:15] + case["scene"][case["scene"][1:].index(":")+1:]
         for key in cur_keys:
             for pattern in ["casualty_", "nondeterminism"]:
                 if pattern in key.lower():
