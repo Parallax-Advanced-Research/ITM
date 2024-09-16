@@ -7,9 +7,9 @@ class Medical:
     HEALING_ITEMS = [Supplies.BLOOD.value, Supplies.NASOPHARYNGEAL_AIRWAY.value,
                      Supplies.IV_BAG.value, Supplies.PAIN_MEDICATIONS.value, Supplies.FENTANYL_LOLLIPOP.value]
     FAILURE_CHANCE = {
-        Supplies.PRESSURE_BANDAGE.value: .01,
-        Supplies.HEMOSTATIC_GAUZE.value: .05,
-        Supplies.TOURNIQUET.value: .03,
+        Supplies.PRESSURE_BANDAGE.value: 0.,
+        Supplies.HEMOSTATIC_GAUZE.value: 0.,
+        Supplies.TOURNIQUET.value: 0.,
         Supplies.DECOMPRESSION_NEEDLE.value: .03,
         Supplies.NASOPHARYNGEAL_AIRWAY.value: .05,
         Supplies.PULSE_OXIMETER.value: 1.0,
