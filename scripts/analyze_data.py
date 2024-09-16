@@ -79,20 +79,22 @@ NON_NOISY_KEYS = [
     'HRA Strategy.time-resources-risk_reward_ratio-system.tallying', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.satisfactory', 
     'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce',
-    'treatment_count', 'treatment_time', 'treatment_count_rank', 'treatment_time_rank',
-    'scene'
+    'treatment_count', 'treatment_count_percentile', 'treatment_count_normalized', 'treatment_count_variance',
+    'treatment_time', 'treatment_time_percentile', 'treatment_time_normalized', 'treatment_time_variance'
 ]
 
 NOISY_KEYS : str = [
     "SMOL_MEDICAL_SOUNDNESS", "SMOL_MEDICAL_SOUNDNESS_V2", "MEDSIM_P_DEATH", "entropy", "entropyDeath", 
     'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding', 
     'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER', 
-    'SEVERITY', 'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
+    'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
     'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 
-    'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE',
-    'STANDARD_TIME_SEVERITY', 'DAMAGE_PER_SECOND', 'severity_rank', 'damage_per_second_rank',
-    'original_severity', 'original_severity_rank', 'action_target_severity_rank', 
-    'action_target_severity_change_rank'
+    'STANDARD_TIME_SEVERITY', 'STANDARD_TIME_SEVERITY_variance', 'STANDARD_TIME_SEVERITY_normalized', 'STANDARD_TIME_SEVERITY_percentile', 
+    'SEVERITY', 'SEVERITY_variance', 'SEVERITY_normalized', 'SEVERITY_percentile', 
+    'DAMAGE_PER_SECOND', 'DAMAGE_PER_SECOND_variance', 'DAMAGE_PER_SECOND_normalized', 'DAMAGE_PER_SECOND_percentile',
+    'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_variance', 'ACTION_TARGET_SEVERITY_normalized', 'ACTION_TARGET_SEVERITY_percentile', 
+    'ACTION_TARGET_SEVERITY_CHANGE',  'ACTION_TARGET_SEVERITY_CHANGE_variance', 'ACTION_TARGET_SEVERITY_CHANGE_normalized', 'ACTION_TARGET_SEVERITY_CHANGE_percentile',
+    'original_severity', 'original_severity_variance', 'original_severity_normalized', 'original_severity_percentile',
 ]
      
 ALL_KEYS = NON_NOISY_KEYS + NOISY_KEYS
@@ -366,46 +368,63 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
                     new_case["bprop." + key.lower()] = hint_val
                 new_case.pop("dhint")
         
-        new_case.pop("hash")
-        new_case.pop("action-string")
-        new_case.pop("pre-action-string")
-        new_case.pop("actions")
-        new_case.pop("action-hash")
-        new_case.pop("pre-action-hash")
-        new_case.pop("action-len")
-        new_case.pop("state-hash")
+        trash_keys = [
+            "hash",
+            "action-string",
+            "pre-action-string",
+            "actions",
+            "action-hash",
+            "pre-action-hash",
+            "action-len",
+            "state-hash",
+            "run_index",
+            "context.last_case.index",
+            "context.last_case.actions",
+            "context.last_case.hash"
+        ]
+        new_case = {k:v for (k, v) in new_case.items() if k not in trash_keys}
+
         if "run_index" in new_case:
             new_case.pop("run_index")
+            
         
         if len(case_list) > 1:
             # Handle averaging different real values across combined cases
-            for key in NOISY_KEYS:
+            noisy_keys = NOISY_KEYS + ["context.last_case." + k for k in NOISY_KEYS]
+            for key in noisy_keys:
                 if key not in new_case:
                     continue
                 vals = [case.get(key, None) for case in case_list]
                 if None in vals:
-                    print(f"Key {key} undefined for some combined cases.")
-                    breakpoint()
+                    if key.endswith("normalized"):
+                        vals = [0.5 if val is None else val for val in vals]
+                    else:
+                        print(f"Key {key} undefined for some combined cases.")
+                        breakpoint()
                 new_case[key] = statistics.mean(vals)
                 new_case[key + ".stdev"] = statistics.stdev(vals)
 
-            keys = [key for key in new_case.keys() if key not in NOISY_KEYS]
+            keys = [key for key in new_case.keys() if key not in noisy_keys]
             keys = [key for key in keys if not key.startswith("NONDETERMINISM")]
-            keys.remove("index")
-            keys.remove("hint")
-
+            keys = [key for key in keys if not key.startswith("context.last_case.NONDETERMINISM")]
+            keys = [key for key in keys if key not in ["index", "hint"]]
             
             for key in keys:
-                vals = set([str(case.get(key, None)) for case in case_list])
+                vals = list(set([str(case.get(key, None)) for case in case_list]))
                 if len(vals) > 1:
-                    if key == 'breathing_rank' and new_case["breathing"] in ["FAST", "SLOW"]:
-                        new_case[key] = statistics.mean([float(val) for val in vals])
-                    elif key == 'mental_status_rank' and new_case["mental_status"] in ["AGONY", "UNRESPONSIVE", "CONFUSED", "UPSET"]:
-                        new_case[key] = statistics.mean([float(val) for val in vals])
-                    else:
-                        print(f"Multiple values for key {key}: {vals}")
-                        breakpoint()
-                        break
+                    # # if key == 'breathing_rank' and new_case["breathing"] in ["FAST", "SLOW"]:
+                        # # breakpoint()
+                        # # new_case[key] = statistics.mean([float(val) for val in vals])
+                    # # elif key == 'mental_status_rank' and new_case["mental_status"] in ["AGONY", "UNRESPONSIVE", "CONFUSED", "UPSET"]:
+                        # # new_case[key] = statistics.mean([float(val) for val in vals])
+                    # else:
+                    if key == 'scene' and len(vals) == 2 and vals[0][:2] == "IO" and vals[1][:2] == "IO" and vals[0][3:] == vals[1][3:]:
+                        continue
+                    if new_case["action_name"] == "END_SCENE" and len(vals) == 2 and vals[0][:3] == "IO2" and vals[1][:3] == "IO2":
+                        continue
+
+                    print(f"Multiple values for key {key}: {vals}")
+                    breakpoint()
         ret_cases.append(new_case)
         index = index + 1
         
@@ -517,9 +536,15 @@ def case_state_hash(case: dict[str, Any]) -> int:
     val_list = []
     for key in NON_NOISY_KEYS:
         val_list.append(case.get(key, None))
-    for key in sorted(case.get("context", {}).keys()):
+    context = dict(case.get("context", {}))
+    if "last_case" in context:
+        last_case = context.pop("last_case")
+        val_list.append("last_case")
+        for key in NON_NOISY_KEYS:
+            val_list.append(last_case.get(key, None))
+    for key in sorted(context.keys()):
         val_list.append(key)
-        val_list.append(str(case["context"][key]))
+        val_list.append(str(context[key]))
     for (k, v) in case.get("hint", {}).items():
         val_list.append(k)
         if not isinstance(v, float):
@@ -553,6 +578,9 @@ def main():
                         choices = ["probability", "avgdiff"],
                         help="How to measure the error of a case-based estimation, with the " \
                              + "probability of neighbor error or difference to neighbor average"
+                       )
+    parser.add_argument("--searches", type=int, default=10, 
+                        help="How many weights sets to search for from each start"
                        )
 
 
@@ -588,6 +616,9 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
     pre_cases = read_pre_cases(case_file)
     for case in pre_cases:
         cur_keys = list(case.keys())
+        case["scene"] = case["scene"].replace("=", ":")
+        if case["scene"].startswith(":DryRunEval"):
+            case["scene"] = case["scene"][12:15] + case["scene"][case["scene"][1:].index(":")+1:]
         for key in cur_keys:
             for pattern in ["casualty_", "nondeterminism"]:
                 if pattern in key.lower():
@@ -605,7 +636,7 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
     return kdma_cases
  
 def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, source_file, use_xgb = False, 
-                     no_weights = True, basic_weights = False):
+                     no_weights = True, basic_weights = False, searches = 10):
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
@@ -633,7 +664,7 @@ def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, sourc
         # trainer.weight_train({key:1 for key in fields})
         trainer = SimpleWeightTrainer(
                     KEDSModeller(kdma_cases, kdma_name.lower(), avg=(error_type == "avgdiff")), 
-                    fields, kdma_cases, kdma_name.lower())
+                    fields, kdma_cases, kdma_name.lower(), searches)
         starters = {}
         if no_weights:
             starters["empty"] = {}
