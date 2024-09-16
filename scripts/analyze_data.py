@@ -87,12 +87,14 @@ NOISY_KEYS : str = [
     "SMOL_MEDICAL_SOUNDNESS", "SMOL_MEDICAL_SOUNDNESS_V2", "MEDSIM_P_DEATH", "entropy", "entropyDeath", 
     'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding', 
     'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER', 
-    'SEVERITY', 'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
+    'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
     'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 
-    'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_CHANGE',
-    'STANDARD_TIME_SEVERITY', 'DAMAGE_PER_SECOND', 'severity_rank', 'damage_per_second_rank',
-    'original_severity', 'original_severity_rank', 'action_target_severity_rank', 
-    'action_target_severity_change_rank'
+    'STANDARD_TIME_SEVERITY', 'STANDARD_TIME_SEVERITY_variance', 'STANDARD_TIME_SEVERITY_normalized', 'STANDARD_TIME_SEVERITY_percentile', 
+    'SEVERITY', 'SEVERITY_variance', 'SEVERITY_normalized', 'SEVERITY_percentile', 
+    'DAMAGE_PER_SECOND', 'DAMAGE_PER_SECOND_variance', 'DAMAGE_PER_SECOND_normalized', 'DAMAGE_PER_SECOND_percentile',
+    'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_variance', 'ACTION_TARGET_SEVERITY_normalized', 'ACTION_TARGET_SEVERITY_percentile', 
+    'ACTION_TARGET_SEVERITY_CHANGE',  'ACTION_TARGET_SEVERITY_CHANGE_variance', 'ACTION_TARGET_SEVERITY_CHANGE_normalized', 'ACTION_TARGET_SEVERITY_CHANGE_percentile',
+    'original_severity', 'original_severity_variance', 'original_severity_normalized', 'original_severity_percentile',
 ]
      
 ALL_KEYS = NON_NOISY_KEYS + NOISY_KEYS
@@ -398,14 +400,15 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
             for key in keys:
                 vals = set([str(case.get(key, None)) for case in case_list])
                 if len(vals) > 1:
-                    if key == 'breathing_rank' and new_case["breathing"] in ["FAST", "SLOW"]:
-                        new_case[key] = statistics.mean([float(val) for val in vals])
-                    elif key == 'mental_status_rank' and new_case["mental_status"] in ["AGONY", "UNRESPONSIVE", "CONFUSED", "UPSET"]:
-                        new_case[key] = statistics.mean([float(val) for val in vals])
-                    else:
-                        print(f"Multiple values for key {key}: {vals}")
-                        breakpoint()
-                        break
+                    # # if key == 'breathing_rank' and new_case["breathing"] in ["FAST", "SLOW"]:
+                        # # breakpoint()
+                        # # new_case[key] = statistics.mean([float(val) for val in vals])
+                    # # elif key == 'mental_status_rank' and new_case["mental_status"] in ["AGONY", "UNRESPONSIVE", "CONFUSED", "UPSET"]:
+                        # # new_case[key] = statistics.mean([float(val) for val in vals])
+                    # else:
+                    print(f"Multiple values for key {key}: {vals}")
+                    breakpoint()
+                    break
         ret_cases.append(new_case)
         index = index + 1
         

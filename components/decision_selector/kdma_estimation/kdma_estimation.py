@@ -29,6 +29,8 @@ def estimate_value_from_probability_dict(probability_dict: dict[float, float]) -
     for (value, prob) in probability_dict.items():
         estimated_value += prob * value
         total_prob += prob
+    if total_prob == 0:
+        return None
     return estimated_value / total_prob
 
 def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], kdma: str,
@@ -42,7 +44,7 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
                  reject_same_scene_and_kdma = reject_same_scene_and_kdma, 
                  neighbor_count = neighbor_count)
     if len(topk) == 0:
-        return {},{}
+        return {},[]
 
     dists = [max(dist, 0.01) for (dist, case) in topk]
     total = sum(dists)
