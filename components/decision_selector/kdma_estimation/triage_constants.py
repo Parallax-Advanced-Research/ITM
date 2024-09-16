@@ -15,5 +15,5 @@ BASIC_WEIGHTS = {feature:1 for feature in BASIC_TRIAGE_CASE_FEATURES}
 IGNORE_PATTERNS = [
     'index', 'hash', 'feedback', 'action-len', 'justification', 'unnamed', 'nondeterminism', 
     'hint', 'maximization', 'moraldesert', '.stdev', 'casualty_', 'scene', 'hra strategy', 
-    'priority'
+    'priority', 'context.last_case.scene', 'context.last_case.actions'
 ]
