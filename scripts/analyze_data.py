@@ -618,7 +618,10 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
         cur_keys = list(case.keys())
         case["scene"] = case["scene"].replace("=", ":")
         if case["scene"].startswith(":DryRunEval"):
-            case["scene"] = case["scene"][12:15] + case["scene"][case["scene"][1:].index(":")+1:]
+            case["scene"] = case["scene"][12:15] + ":" + case["scene"].split(":")[2]
+        if case["scene"].startswith(":qol-") or case["scene"].startswith(":vol-"):
+            case["scene"] = case["scene"][1:4] + case["scene"][9:10] + ":" + case["scene"].split(":")[2]
+            
         for key in cur_keys:
             for pattern in ["casualty_", "nondeterminism"]:
                 if pattern in key.lower():
