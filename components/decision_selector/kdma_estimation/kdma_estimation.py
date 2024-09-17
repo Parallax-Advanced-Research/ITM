@@ -192,7 +192,7 @@ def calculate_error(case: dict, weights: dict, kdma: str, other_cases: list, rej
     if avg:
         estimate = estimate_KDMA(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count)
         if estimate is None:
-            return 0
+            return 1
         return abs(case[kdma] - estimate)
     else:
         kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count)
