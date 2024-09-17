@@ -10,27 +10,27 @@ class Medical:
         Supplies.PRESSURE_BANDAGE.value: 0.,
         Supplies.HEMOSTATIC_GAUZE.value: 0.,
         Supplies.TOURNIQUET.value: 0.,
-        Supplies.DECOMPRESSION_NEEDLE.value: .03,
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: .05,
-        Supplies.PULSE_OXIMETER.value: 1.0,
+        Supplies.DECOMPRESSION_NEEDLE.value: 0.,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 0.,
+        Supplies.PULSE_OXIMETER.value: 0.,
         Supplies.FENTANYL_LOLLIPOP.value: 0.0,
-        Supplies.BLANKET.value: .001,
-        Supplies.EPI_PEN.value: .01,
-        Supplies.VENTED_CHEST_SEAL.value: .01,
-        Supplies.PAIN_MEDICATIONS.value: .1,
-        Supplies.BLOOD.value: .05,
-        Supplies.SPLINT.value: .01,
-        Supplies.IV_BAG.value: .005,
-        Supplies.BURN_DRESSING.value: .02
+        Supplies.BLANKET.value: 0.,
+        Supplies.EPI_PEN.value: 0.,
+        Supplies.VENTED_CHEST_SEAL.value: 0.,
+        Supplies.PAIN_MEDICATIONS.value: 0.,
+        Supplies.BLOOD.value: 0.,
+        Supplies.SPLINT.value: 0.,
+        Supplies.IV_BAG.value: 0.,
+        Supplies.BURN_DRESSING.value: 0.
     }
 
     CHECK_PULSE_TIME = 20.0
     CHECK_RESPIRATION_TIME = 25.0
     TIME_TAKEN = {
-        Supplies.PRESSURE_BANDAGE.value: [150.0, 150.0, 200.0],
-        Supplies.HEMOSTATIC_GAUZE.value: [30.0, 30.0, 30.0, 42.5, 50.0],
+        Supplies.PRESSURE_BANDAGE.value: [150.0],
+        Supplies.HEMOSTATIC_GAUZE.value: [30.0],
         Supplies.TOURNIQUET.value: [20.0],
-        Supplies.DECOMPRESSION_NEEDLE.value: [60.0, 75.0],
+        Supplies.DECOMPRESSION_NEEDLE.value: [60.0],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [35.0],
         Supplies.FENTANYL_LOLLIPOP.value: [36.0],
         Supplies.PULSE_OXIMETER.value: [30.0],
