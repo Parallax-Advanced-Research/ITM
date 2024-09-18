@@ -92,7 +92,11 @@ class Medical:
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value],
         Supplies.VENTED_CHEST_SEAL.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
                                            Locations.UNSPECIFIED.value],
-        Supplies.BLANKET.value: [Locations.UNSPECIFIED.value]
+        Supplies.BLANKET.value: [Locations.UNSPECIFIED.value],
+        Supplies.BLOOD.value: [Locations.UNSPECIFIED.value, Locations.LEFT_BICEP.value, Locations.RIGHT_BICEP.value],
+        Supplies.FENTANYL_LOLLIPOP.value: [Locations.UNSPECIFIED.value, Locations.HEAD.value],
+        Supplies.IV_BAG.value: [Locations.UNSPECIFIED.value, Locations.LEFT_BICEP.value, Locations.RIGHT_BICEP.value],
+        Supplies.PAIN_MEDICATIONS.value: [Locations.UNSPECIFIED.value, Locations.HEAD.value]
     }
 
     CASUALTY_MAX_BURN_HP = 5000

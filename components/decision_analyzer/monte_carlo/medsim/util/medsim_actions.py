@@ -29,6 +29,18 @@ def supply_location_match(action: MedsimAction):
         if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.SPLINT.value]:
             return True
         return False
+    if action.supply == Supplies.BLANKET.value:
+        if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.BLANKET.value]:
+            return True
+        return False
+    if action.supply in [Supplies.BLOOD.value, Supplies.IV_BAG.value]:  # Unspecified or biceps for both
+        if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.BLOOD.value]:
+            return True
+        return False
+    if action.supply in [Supplies.FENTANYL_LOLLIPOP.value, Supplies.PAIN_MEDICATIONS.value]:
+        if action.location in SmolMedicalOracle.TREATABLE_AREAS[Supplies.FENTANYL_LOLLIPOP.value]:
+            return True
+        return False
     return True
 
 
