@@ -364,7 +364,8 @@ METRIC_DISPLAY_NAME_DESCRIPTION = {
     'SMOL_MEDICAL_SOUNDNESS_V2': ('Medical<br>Soundness V2', 'Percent corrected ranked ordering of STANDARD_TIME_SEVERITY', '{:.0f}', 'MCA'),
     'CASUALTY_SEVERITY': ('Severity<br>per Casualty', 'Dictionary of severity of all casualties', '{:.0f}', 'MCA'),
     'CASUALTY_DAMAGE_PER_SECOND': ('DPS per<br>Casualty', 'Dictionary of damage per second per casualty', '{:.0f}', 'MCA'),
-    'CASUALTY_P_DEATH': ('P(Death)<br>per Casualty', 'Dictionary of probability of death for all casualties', '{:.2%}', 'MCA')
+    'CASUALTY_P_DEATH': ('P(Death)<br>per Casualty', 'Dictionary of probability of death for all casualties', '{:.2%}', 'MCA'),
+    'CASUALTY_QOL_IMPACT': ('QOL Impact<br> per Casualty', 'Dictionary of the quality of life impact for all casualties', '{:.0f}', 'MCA')
 }
 
 
