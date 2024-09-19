@@ -53,11 +53,12 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
     c = find_casualty(action, casualties)
 
     if action.supply in SmolMedicalOracle.HEALING_ITEMS:
-        if action.supply not in [Supplies.BLOOD.value, Supplies.PAIN_MEDICATIONS.value, Supplies.BLANKET.value,
-                                 Supplies.IV_BAG.value, Supplies.FENTANYL_LOLLIPOP.value]:
-            healer = HealingItem(Affector.PREFIX + action.supply, action.location, severity=0)
-        else:
-            healer = HealingItem(Affector.PREFIX + action.supply, Locations.UNSPECIFIED.value, severity=0)
+        healer = HealingItem(Affector.PREFIX + action.supply, action.location, severity=0)
+        # if action.supply not in [Supplies.BLOOD.value, Supplies.PAIN_MEDICATIONS.value, Supplies.BLANKET.value,
+        #                          Supplies.IV_BAG.value, Supplies.FENTANYL_LOLLIPOP.value]:
+        #     healer = HealingItem(Affector.PREFIX + action.supply, action.location, severity=0)
+        # else:
+        #     healer = HealingItem(Affector.PREFIX + action.supply, Locations.UNSPECIFIED.value, severity=0)
         c.injuries.append(healer)
 
     time_taken = apply_generic_treatment(c, supplies, action, rng)
