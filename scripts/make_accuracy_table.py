@@ -74,6 +74,16 @@ def main():
         weight_json = f.read()
     with open(args.obs_file, "r") as f:
         obs_cases = [json.loads(line) for line in f]
+        
+    for ob in obs_cases:
+        if "context" in ob:
+            context = ob.pop("context")
+            ob |= case_base_functions.flatten("context", context)
+        if ob["scene"].startswith("=DryRunEval"):
+            ob["scene"] = ob["scene"][12:15] + ":" + ob["scene"].split("=")[2]
+        if ob["scene"].startswith("=qol-") or ob["scene"].startswith("=vol-"):
+            ob["scene"] = ob["scene"][1:4] + ob["scene"][9:10] + ":" + ob["scene"].split("=")[2]
+    
     decoder = json.decoder.JSONDecoder()
     weight_json = weight_json.strip()
     weight_records = []
