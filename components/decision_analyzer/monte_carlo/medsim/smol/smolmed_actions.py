@@ -5,7 +5,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction, MedsimState
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import (Casualty, Supplies, Actions,
                                                                                Injury, Affector, HealingItem,
-                                                                               ENVIRONMENTAL_HAZARDS)
+                                                                               ENVIRONMENTAL_HAZARDS, Locations)
 from components.decision_analyzer.monte_carlo.medsim.smol.smol_oracle import (update_smol_injury, SmolSystems,
                                                                               heal)
 import typing
@@ -54,6 +54,11 @@ def apply_treatment_mappers(casualties: list[Casualty], supplies: dict[str, int]
 
     if action.supply in SmolMedicalOracle.HEALING_ITEMS:
         healer = HealingItem(Affector.PREFIX + action.supply, action.location, severity=0)
+        # if action.supply not in [Supplies.BLOOD.value, Supplies.PAIN_MEDICATIONS.value, Supplies.BLANKET.value,
+        #                          Supplies.IV_BAG.value, Supplies.FENTANYL_LOLLIPOP.value]:
+        #     healer = HealingItem(Affector.PREFIX + action.supply, action.location, severity=0)
+        # else:
+        #     healer = HealingItem(Affector.PREFIX + action.supply, Locations.UNSPECIFIED.value, severity=0)
         c.injuries.append(healer)
 
     time_taken = apply_generic_treatment(c, supplies, action, rng)
