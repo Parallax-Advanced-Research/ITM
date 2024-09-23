@@ -53,11 +53,14 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
 
     kdma_probs = {}
     neighbor = 0
+    if mutable_case:
+        if "neighbors" not in cur_case:
+            cur_case["neighbors"] = {}
     for (dist, case) in topk:
         kdma_probs[case[kdma]] = kdma_probs.get(case[kdma], 0) + (sim[neighbor]/simTotal)
         neighbor += 1
         if mutable_case:
-            cur_case[f'{kdma}_neighbor{neighbor}'] = case["index"]
+            cur_case['neighbors'][kdma] = cur_case['neighbors'].get(kdma, []) + [case["index"]]
 
     return kdma_probs, topk
 
@@ -127,10 +130,10 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
             if first(item) < guarantee_distance:
                 lst_guaranteed.append(item_obj)
             else:
-                kdma_val = item_obj[kdma]
-                if kdma_val in set_kdma_vals:
-                    continue
-                set_kdma_vals.add(kdma_val)
+                # kdma_val = item_obj[kdma]
+                # if kdma_val in set_kdma_vals:
+                    # continue
+                # set_kdma_vals.add(kdma_val)
                 lst_pool.append(item_obj)
         # if len(lst_pool) + len(lst_guaranteed) > 10:
             # print("Large distanced list: " + str(len(lst_pool) + len(lst_guaranteed)))

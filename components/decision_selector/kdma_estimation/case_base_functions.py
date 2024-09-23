@@ -94,6 +94,8 @@ def construct_distanced_list(initial_list: list[dict[str, Any]],
                              dist_fn: Callable[[dict[str, Any], dict[str, Any], dict[str, float]], int] = calculate_distance):
     if len(initial_list) >= max_item_count:
         return initial_list
+    if len(additional_items) == 0:
+        return initial_list
     if len(initial_list) == 0:
         max_dist_items = additional_items
     else:
@@ -109,7 +111,7 @@ def construct_distanced_list(initial_list: list[dict[str, Any]],
             elif cur_avg_dist > min_avg_dist:
                 max_dist_items.append(item)
     if len(max_dist_items) == 0:
-        return initial_list
+        max_dist_items = additional_items
     chosen_item = util.get_global_random_generator().choice(max_dist_items)
     initial_list.append(chosen_item)
     additional_items.remove(chosen_item)
