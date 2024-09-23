@@ -421,7 +421,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                         if error > 0.1:
                             util.logger.warning("Probabilities off by " + str(error))
                             # breakpoint()
-                cur_case[kdma_name] = kdma_val_probs
+                if "kdma_probs" not in cur_case:
+                    cur_case["kdma_probs"] = {}
+                cur_case["kdma_probs"][kdma_name] = kdma_val_probs
                 cur_kdma_val_probs_per_kdma[kdma_name] = kdma_val_probs
             min_kdma_probs = self.update_kdma_probabilities(min_kdma_probs, cur_kdma_val_probs_per_kdma, min)
             max_kdma_probs = self.update_kdma_probabilities(max_kdma_probs, cur_kdma_val_probs_per_kdma, max)
@@ -667,8 +669,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             case = make_case_triage(probe, d, self.variant)
             context = case.pop("context")
             if "last_action" in context:
-                context["last_case"] = dict(self.last_choice)
-                context["last_case"].pop("context")
+                context["last_case"] = {k: v for (k, v) in self.last_choice.items() if k not in ["context", "neighbors", "kdma_probs"]}
             case |= flatten("context", context)
             return case
 
@@ -827,7 +828,11 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
     case["context"] = d.context
     meta_block = probe.state.orig_state.get('meta_info', {})
     if len(meta_block) > 0:
-        case['scene'] = "=" + probe.id_ + "=" + meta_block["scene_id"]
+        if probe.id_.startswith("DryRunEval"):
+            case['scene'] = probe.id_[11:14] 
+        elif probe.id_.startswith("qol-") or probe.id_.startswith("vol-"):
+            case['scene'] = probe.id_[:3] + probe.id_[8:9] 
+        case['scene'] += ":" + meta_block["scene_id"]
     return case
 
 
