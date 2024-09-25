@@ -582,6 +582,9 @@ def main():
     parser.add_argument("--searches", type=int, default=10, 
                         help="How many weights sets to search for from each start"
                        )
+    parser.add_argument("--weight_count_penalty", type=float, default=0.95, 
+                        help="Value between 0 and 1, applied to error threshold as an incentive to keep weight count down."
+                       )
 
 
     parser.add_argument("--use_xgb_start", action=argparse.BooleanOptionalAction, default=False, 
@@ -639,11 +642,11 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
     return kdma_cases
  
 def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, source_file, use_xgb = False, 
-                     no_weights = True, basic_weights = False, searches = 10):
+                     no_weights = True, basic_weights = False, searches = 10, addition_penalty = .95):
     new_weights = {}
     hint_types = get_hint_types(kdma_cases)
     fields = set()
-    patterns = triage_constants.IGNORE_PATTERNS
+    patterns = list(triage_constants.IGNORE_PATTERNS)
     patterns.append("bprop.")
     patterns.remove("scene")
     for case in kdma_cases:
@@ -675,7 +678,7 @@ def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, sourc
             starters["basic"] = triage_constants.BASIC_WEIGHTS
         trainer.set_log_file(all_weight_file)
         trainer.check_standard_weight_sets(starters)
-        trainer.weight_train(None, use_xgb)
+        trainer.weight_train(None, use_xgb, addition_penalty = addition_penalty)
         new_weights[kdma_name] = trainer.get_best_weights()
     
     with open(weight_file, "w") as wf:
