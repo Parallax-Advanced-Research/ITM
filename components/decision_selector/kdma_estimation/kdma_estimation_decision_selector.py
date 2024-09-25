@@ -284,7 +284,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 kdma_val_totals[kdma_val] = kdma_val_totals.get(kdma_val, 0) + trust_rating * prob
                 nindex = neighbor["index"]
                 index_popularity[nindex] = index_popularity.get(nindex, 0) + trust_rating * prob
-                all_trust_total += trust_rating
+                all_trust_total += trust_rating * prob
 
         top_indices = sorted(index_popularity.keys(), key=index_popularity.get)
         return ({kdma_val: val_trust_total/all_trust_total for (kdma_val, val_trust_total) in kdma_val_totals.items()},
@@ -320,7 +320,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     prob = dist / total_dist
                 kdma_val_totals[kdma_val] = kdma_val_totals.get(kdma_val, 0) + prob * trust_rating
                 index_popularity[nindex] = index_popularity.get(nindex, 0) + prob * trust_rating
-                all_trust_total += trust_rating
+                all_trust_total += prob * trust_rating
                 
         if all_trust_total == 0.0:
             return ({}, [], {})
@@ -330,21 +330,21 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 [(index_popularity[index], self.cb[int(index)-1])for index in top_indices[:triage_constants.DEFAULT_KDMA_NEIGHBOR_COUNT]], 
                 weight_trust_ratings)
 
-    def vote(self, individual_estimates: list[tuple[str, dict[float, float], list[dict[str, Any]]]]) -> tuple[dict[float, float], list[dict[str, Any]]]:
-        index_popularity = {}
-        kdma_val_totals = {}
-        estimate_count = 0
+    def make_minimum_error_estimate(self, kdma_name: str, individual_estimates: list[tuple[str, dict[float, float], list[dict[str, Any]]]]) -> tuple[dict[float, float], list[dict[str, Any]]]:
+        minimum_expected_error = 1
+        best_err_tuple = None
         for (weight_id, kdma_val_probs, neighbors) in individual_estimates:
-            if len(kdma_val_probs) == 0:
+            if len(neighbors) == 0:
                 continue
-            estimate_count += 1
-            for (dist, neighbor) in neighbors:
-                index_popularity[neighbor["index"]] = index_popularity.get(neighbor["index"], 0) + 1
-            for (kdma_val, prob) in kdma_val_probs.items():
-                kdma_val_totals[kdma_val] = kdma_val_totals.get(kdma_val, 0) + prob
-        top_indices = sorted(index_popularity.keys(), key=index_popularity.get)
-        return ({kdma_val: total/estimate_count for (kdma_val, total) in kdma_val_totals.items()},
-                [(index_popularity[index], self.cb[int(index)-1])for index in top_indices[:triage_constants.DEFAULT_KDMA_NEIGHBOR_COUNT]])
+            expected_errors = [self.error_data[kdma_name][neighbor["index"]]["neighbor_error_estimate"].get(weight_id, 0.99) for (dist, neighbor) in neighbors]
+            err_est = sum(expected_errors) / len(expected_errors)
+            if err_est < minimum_expected_error:
+                best_err_tuple = (weight_id, kdma_val_probs, neighbors)
+                minimum_expected_error = err_est
+        if best_err_tuple == None:
+            return ({}, [])
+        
+        return (best_err_tuple[1], best_err_tuple[2])
 
     def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
         if target is None:
@@ -398,6 +398,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                             kdma_val_probs, topK, ratings = self.trust_vote(kdma_name.lower(), individual_estimates, target)
                     else:
                         kdma_val_probs, topK = self.vote(individual_estimates)
+                    if len(kdma_val_probs) == 0:
+                        kdma_val_probs, topK = self.make_minimum_error_estimate(kdma_name.lower(), individual_estimates)
+                        
                         
                     if kdma_val_probs is None:
                         continue
