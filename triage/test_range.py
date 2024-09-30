@@ -50,41 +50,33 @@ class TestRange(ABC):
         pass
 
 
-# Class for numeric ranges
+
 class NumericTestRange(TestRange):
     """
     Class for handling numeric ranges with support for normal and combat-adjusted ranges.
     """
 
-    def __init__(
-        self,
-        normal_range: Tuple[float, float],
-        combat_adjusted_range: Tuple[float, float],
-        range_type: str = "normal",
-    ):
+    def __init__(self, normal_range: Tuple[float, float], combat_range: Tuple[float, float], range_type: str = "normal"):
         super().__init__(range_type)
         self.normal_range = normal_range
-        self.combat_range = combat_adjusted_range
+        self.combat_range = combat_range
 
-    def contains(self, value: float) -> bool:
+    def contains(self, value: float, range_type: str = "normal") -> bool:
         """
-        Checks if the value is within the specified normal or combat range based on the range type.
+        Checks if the value is within the specified normal or combat range.
         """
-        if self.range_type == "combat":
+        if range_type == "combat":
             min_value, max_value = self.combat_range
         else:
             min_value, max_value = self.normal_range
 
         return min_value <= value <= max_value
 
-    def get_min_value(self) -> float:
+    def get_min_value(self, range_type: str = "normal") -> float:
         """
-        Returns the minimum value for the current range type.
+        Returns the minimum value for the specified range type.
         """
-        if self.range_type == "combat":
-            return self.combat_range[0]
-        else:
-            return self.normal_range[0]
+        return self.combat_range[0] if range_type == "combat" else self.normal_range[0]
 
     def describe(self) -> str:
         """
@@ -94,19 +86,9 @@ class NumericTestRange(TestRange):
             f"Normal range: {self.normal_range[0]} to {self.normal_range[1]}. "
             f"Combat-adjusted range: {self.combat_range[0]} to {self.combat_range[1]}."
         )
-
-    def __str__(self):
-        """
-        Provides a user-friendly string representation of the numeric range.
-        """
-        return (
-            f"Normal range: {self.normal_range[0]} to {self.normal_range[1]}, "
-            f"Combat range: {self.combat_range[0]} to {self.combat_range[1]}."
-        )
-
+        
+        
 # Class for boolean ranges
-
-
 class BooleanRange(TestRange):
     """
     Class for handling boolean ranges (e.g., a value being True or False).

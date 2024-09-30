@@ -78,3 +78,6 @@ class MedicalPoliciesEnum(Enum):
         INTERMEDIATE = "INTERMEDIATE"
         EXPERT = "EXPERT"
         COMBAT = "COMBAT"
+
+class MedicalTests(Enum):
+    PULSE_OXIMETRY = "PULSE_OXIMETRY"

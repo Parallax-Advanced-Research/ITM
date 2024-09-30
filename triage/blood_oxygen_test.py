@@ -1,31 +1,40 @@
 """
 blood_oxygen_test.py
 
-This module is designed to assess blood oxygen levels according to TCCC (Tactical Combat Casualty Care) standard values.
-It allows adjustment of the classification of SpO2 values based on the scenario, such as combat, where 
-different ranges may apply due to environmental and operational factors.
-
-The input for classification can be either:
-- A numeric SpO2 value, which is evaluated against normal and combat-adjusted ranges using the `NumericTestRange` class.
-- An enumeration value (BloodOxygenEnum) provided by the Evaluation Server.
+This module defines the CheckBloodOxygenTest class, which characterizes blood oxygen levels according to the 
+Tactical Combat Casualty Care (TCCC) guidelines. The test can adapt to different scenarios (e.g., combat vs. non-combat) 
+and provider skill levels through the application of dynamic policies.
 
 Key functionalities:
-- Classify SpO2 values into different categories based on specified range types (normal/combat) using the `NumericTestRange` class.
-- Handle both numeric and enumeration inputs for SpO2 values.
-- Manage test value ranges (normal and combat) and required equipment for blood oxygen measurement.
-- Generate TCCC messages based on the classification of SpO2 values, with both brief and extended messages explaining the results.
-- Provide a human-readable string representation of the test ranges (normal/combat).
+- Classifies SpO2 values into different categories based on the specified policy.
+- Supports both numeric SpO2 values and enumerations provided by the Evaluation Server.
+- Applies different policies, including combat or non-combat conditions, and skill-level restrictions.
+- Generates TCCC messages based on the classification of SpO2 values.
 """
 
-from typing import Optional
+from typing import Optional, Union
 from medical_test import MedicalTest, MedicalTestValue, TCCCMessage, MessageSeverity
 from test_range import NumericTestRange
-from domain_enum import MedicalPoliciesEnum
 from domain_enum import BloodOxygenEnum
+from policy import CombatPolicy, NormalPolicy, Policy
 
 
 class CheckBloodOxygenTest(MedicalTest):
-    def __init__(self, policy):
+    """
+    A class for measuring blood oxygen saturation levels (SpO2) using a pulse oximeter.
+    
+    This class uses different test ranges (normal vs. combat) and adjusts the classification 
+    based on a given policy, such as combat or provider level.
+    """
+    
+    def __init__(self, policy: Policy):
+        """
+        Initializes the CheckBloodOxygenTest with a policy that dictates whether to use 
+        combat-adjusted ranges, normal ranges, or other provider-level constraints.
+        
+        Args:
+            policy (Policy): The policy to be applied for the test (e.g., combat, provider level).
+        """
         super().__init__(
             name="Pulse Oximetry",
             description="Measures blood oxygen saturation levels (SpO2).",
@@ -33,86 +42,90 @@ class CheckBloodOxygenTest(MedicalTest):
             test_category="Oxygen Saturation",
             enum_reference=BloodOxygenEnum,
             action_reference="CHECK_BLOOD_OXYGEN",
-            related_conditions=["Hypoxia", "Cyanosis",
-                                "Respiratory Failure", "Shock"],
+            related_conditions=["Hypoxia", "Cyanosis", "Respiratory Failure", "Shock"],
         )
+        self.policy = policy
 
-        # Normal and combat-adjusted ranges using NumericTestRange
+        # Define normal and combat-adjusted ranges using NumericTestRange
         self.test_value = MedicalTestValue(
             test_value_name="Blood Oxygen",
             test_value_description="Measures blood oxygen saturation levels (SpO2).",
             test_value_units="%",
             test_range=NumericTestRange(
                 normal_range=(95.0, 100.0),
-                combat_adjusted_range=(90.0, 95.0),
-                range_type="normal"  # Default to normal
+                combat_range=(90.0, 95.0)  # Adjusted for both normal and combat ranges
             ),
             required_equipment=["Pulse Oximeter"],
         )
 
-        self.policy = policy  # Use the policy to influence the behavior of the test
-
-    def classify_blood_oxygen(
-        self, spo2_value: Optional[float], range_type: str = "normal"
-    ) -> BloodOxygenEnum:
+    def classify_blood_oxygen(self, spo2_value: Optional[float]) -> BloodOxygenEnum:
         """
-        Classifies the SpO2 value into a BloodOxygenEnum value based on the range type.
+        Classifies the SpO2 value into a BloodOxygenEnum value based on the active policy.
 
         Args:
-            spo2_value (Optional[float]): The SpO2 value or enum to classify.
-            range_type (str): Indicates whether to use 'normal' or 'combat' adjusted ranges.
+            spo2_value (Optional[float]): The SpO2 value to be classified.
 
         Returns:
-            BloodOxygenEnum: Classification of SpO2 level.
+            BloodOxygenEnum: The classified SpO2 category.
         """
         if isinstance(spo2_value, BloodOxygenEnum):
-            return spo2_value  # If already a BloodOxygenEnum, return it directly
+            return spo2_value  # If it's already a BloodOxygenEnum, return it directly
 
         if spo2_value is None:
             return BloodOxygenEnum.NONE
 
-        # Update the range type based on the policy or input
-        self.test_value.test_range.range_type = range_type if range_type else "normal"
+        # Determine which range to use based on the policy
+        range_type = self.policy.range_type
 
-        if self.test_value.test_range.contains(spo2_value):
+        if self.test_value.test_range.contains(spo2_value, range_type):
             return BloodOxygenEnum.NORMAL
-        elif spo2_value < self.test_value.test_range.get_min_value():
+        elif spo2_value < self.test_value.test_range.get_min_value(range_type):
             return BloodOxygenEnum.LOW
+        else:
+            raise ValueError(f"Invalid SpO2 value: {spo2_value}")
 
-        raise ValueError(f"Invalid SpO2 value: {spo2_value}")
+    def run_test(self, spo2_value: Optional[Union[float, BloodOxygenEnum]]) -> MedicalTestValue:
+        """
+        Executes the blood oxygen test and returns a MedicalTestValue object with the classification.
 
-    def run_test(
-        self, spo2_value: Optional[float or BloodOxygenEnum], range_type: str = "normal"
-    ) -> MedicalTestValue:
+        Args:
+            spo2_value (Optional[float or BloodOxygenEnum]): The SpO2 value to be tested.
+
+        Returns:
+            MedicalTestValue: The test result including classification and actual value.
         """
-        Runs the blood oxygen test and returns the test value with classification.
-        """
-        classification = self.classify_blood_oxygen(spo2_value, range_type)
-        self.test_value.actual_value = spo2_value if isinstance(
-            spo2_value, (float, int)) else None
+        classification = self.classify_blood_oxygen(spo2_value)
+        self.test_value.actual_value = (
+            spo2_value if isinstance(spo2_value, (float, int)) else None
+        )
         self.test_value.classification = classification.value
         print(
-            f"Running {self.name}: SpO2 = {spo2_value}, Classification = {classification}")
+            f"Running {self.name}: SpO2 = {spo2_value}, Classification = {classification}"
+        )
         return self.test_value
 
-    def tccc_message_for_blood_oxygen(
-        self, classification: BloodOxygenEnum, range_type="combat"
-    ) -> TCCCMessage:
+    def tccc_message_for_blood_oxygen(self, classification: BloodOxygenEnum) -> TCCCMessage:
         """
-        Returns a TCCCMessage based on the classification of blood oxygen level.
+        Generates a TCCC message based on the classification of blood oxygen levels.
+
+        Args:
+            classification (BloodOxygenEnum): The classification of the SpO2 value.
+
+        Returns:
+            TCCCMessage: The TCCC message including normal and extended information.
         """
-        combat_adjustment_description = (
+        combat_adjustment_explanation = (
             "In tactical combat situations, the combat-adjusted SpO₂ ranges are lower due to factors like high altitude, "
             "smoke inhalation, physical exertion, and blood loss. While a lower SpO₂ reading might be critical in a hospital setting, "
             "it is not necessarily life-threatening in combat unless paired with other symptoms."
         )
 
-        normal_range_description = "In normal medical settings, the expected range for SpO₂ is between 95% and 100%. Readings below 95% are typically considered low and indicate hypoxia."
+        normal_range_explanation = "In normal medical settings, the expected range for SpO₂ is between 95% and 100%. Readings below 95% are typically considered low and indicate hypoxia."
 
         range_explanation = (
-            combat_adjustment_description
-            if range_type == "combat"
-            else normal_range_description
+            combat_adjustment_explanation
+            if self.policy.range_type == "combat"
+            else normal_range_explanation
         )
 
         messages = {
@@ -149,19 +162,34 @@ class CheckBloodOxygenTest(MedicalTest):
 
 # Example Demo
 if __name__ == "__main__":
-    # Set the policy (could be PRIORITIZE_MISSION, TREAT_ALL_NEUTRALLY, etc.)
-    policy = MedicalPoliciesEnum.PRIORITIZE_MISSION
+    # Initialize the CheckBloodOxygenTest instance with a combat policy (under fire)
+    combat_policy = CombatPolicy(under_fire=True)
+    blood_oxygen_test = CheckBloodOxygenTest(policy=combat_policy)
 
-    # Initialize the CheckBloodOxygenTest instance with the policy
-    blood_oxygen_test = CheckBloodOxygenTest(policy=policy)
-
-    # Test case 1: Using a numeric SpO2 value with the normal range
-    spo2_value_normal = 96.0
-    test_result_normal = blood_oxygen_test.run_test(
-        spo2_value_normal, range_type="normal")
-    print(f"Test Result (Normal Range): {test_result_normal}")
-
+    # Test case 1: Using a numeric SpO2 value with the combat policy
     spo2_value_combat = 91.0
-    test_result_combat = blood_oxygen_test.run_test(
-        spo2_value_combat, range_type="combat")
+    test_result_combat = blood_oxygen_test.run_test(spo2_value_combat)
+    message_combat = blood_oxygen_test.tccc_message_for_blood_oxygen(
+        blood_oxygen_test.classify_blood_oxygen(spo2_value_combat)
+    )
     print(f"Test Result (Combat Range): {test_result_combat}")
+    print(f"TCCC Message (Combat Range): {message_combat}\n")
+
+    # Test case 2: Using a numeric SpO2 value with the normal policy
+    normal_policy = NormalPolicy()
+    blood_oxygen_test = CheckBloodOxygenTest(policy=normal_policy)
+
+    spo2_value_normal = 96.0
+    test_result_normal = blood_oxygen_test.run_test(spo2_value_normal)
+    message_normal = blood_oxygen_test.tccc_message_for_blood_oxygen(
+        blood_oxygen_test.classify_blood_oxygen(spo2_value_normal)
+    )
+    print(f"Test Result (Normal Range): {test_result_normal}")
+    print(f"TCCC Message (Normal Range): {message_normal}\n")
+
+    # Test case 3: Using a BloodOxygenEnum value (NORMAL)
+    enum_input = BloodOxygenEnum.NORMAL
+    test_result_enum = blood_oxygen_test.run_test(enum_input)
+    message_enum = blood_oxygen_test.tccc_message_for_blood_oxygen(enum_input)
+    print(f"Test Result (Enum Input): {test_result_enum}")
+    print(f"TCCC Message (Enum Input): {message_enum}")
