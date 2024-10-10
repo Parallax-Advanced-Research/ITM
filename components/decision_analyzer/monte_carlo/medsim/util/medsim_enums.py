@@ -483,6 +483,11 @@ class Metric(Enum):
     CAS_LOW_P_DEATH_DECISION = 'CAS_LOW_P_DEATH_DEC'
     STANDARD_TIME_SEVERITY = 'STANDARD_TIME_SEVERITY'
     CASUALTY_QOL_IMPACT = 'CASUALTY_QOL_IMPACT'
+    SEVERITY_AT_TIMES = 'SEVERITY_AT_TIMES'
+    SEVERITY_1_SECOND = 'SEVERITY_1T'
+    SEVERITY_1_MINUTE = 'SEVERITY_60T'
+    SEVERITY_10_MINUTE = 'SEVERITY_600T'
+    SEVERITY_1_HOUR = 'SEVERITY_3600T'
 
     AVERAGE_DECISION_DPS = 'AVERAGE_DECISION_DPS'
     AVERAGE_DECISION_SUPPLIES_REMAINING = 'AVERAGE_DECISION_SUPPLIES_REMAINING'
@@ -579,8 +584,13 @@ metric_description_hash: dict[str, str] = {
     Metric.CASUALTY_QOL_IMPACT.value: 'Dictionary of quality of life impact for all casualties',
     Metric.NONACTION_AVG_SEVERITY_CHANGE.value: 'Average Severity Change (DPS) after action of all the non targets',
     Metric.NONACTION_MAX_SEVERITY_CHANGE.value: 'Maximum Severity Change (DPS) after action of all of the non targets',
-    Metric.NONACTION_MIN_SEVERITY_CHANGE.value: 'Minuimum Severity Change (DPS) after action of all the non targets'
-}
+    Metric.NONACTION_MIN_SEVERITY_CHANGE.value: 'Minuimum Severity Change (DPS) after action of all the non targets',
+    Metric.SEVERITY_AT_TIMES.value: 'Dictionary holding the severity after times of the casualties',
+    Metric.SEVERITY_1_SECOND.value:  'Severity after 1 seocnd',
+    Metric.SEVERITY_1_MINUTE.value: 'Severity after 1 minute',
+    Metric.SEVERITY_10_MINUTE.value: 'Severity after 10 minutes',
+    Metric.SEVERITY_1_HOUR.value: 'Severity after 1 hour'
+    }
 
 
 class MetricSet:

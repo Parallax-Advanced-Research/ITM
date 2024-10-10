@@ -200,6 +200,9 @@ def get_future_and_change_metrics(current_state: MedsimState, future_states: mcn
     morbidity_metrics = get_average_morbidity(metric_return[Metric.NONDETERMINISM.value])
     metric_return.update(morbidity_metrics)
 
+    future_severity_metrics = get_future_severity_metrics(future_states)
+    metric_return.update(future_severity_metrics)
+
     return metric_return
 
 
@@ -218,6 +221,19 @@ def get_target_metrics(new_metrics: MetricResultsT, future_states: mcnode.MCDeci
     new_metrics[Metric.NONACTION_MIN_SEVERITY_CHANGE.value] = min(other_dps) if len(other_dps) else 0.0
     new_metrics[Metric.NONACTION_MAX_SEVERITY_CHANGE.value] = max(other_dps) if len(other_dps) else 0.0
     return new_metrics
+
+
+def get_future_severity_metrics(future_states: mcnode.MCDecisionNode) -> MetricResultsT:
+    casualty_dict = {}
+    for cas in future_states.children[0].state.casualties:
+        this_casualty = {}
+        cas_dps = cas.burn_dps + cas.lung_dps + cas.blood_dps
+        this_casualty[Metric.SEVERITY_1_SECOND.value] = 1.0 * cas_dps
+        this_casualty[Metric.SEVERITY_1_MINUTE.value] = 60.0 * cas_dps
+        this_casualty[Metric.SEVERITY_10_MINUTE.value] = 600.0 * cas_dps
+        this_casualty[Metric.SEVERITY_1_HOUR.value] = 3600.0 * cas_dps
+        casualty_dict[cas.id] = this_casualty
+    return {Metric.SEVERITY_AT_TIMES.value: casualty_dict}
 
 
 def get_most_severe_metrics(new_metrics: MetricResultsT) -> MetricResultsT:
