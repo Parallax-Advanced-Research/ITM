@@ -225,6 +225,7 @@ def get_target_metrics(new_metrics: MetricResultsT, future_states: mcnode.MCDeci
 
 def get_future_severity_metrics(future_states: mcnode.MCDecisionNode) -> MetricResultsT:
     casualty_dict = {}
+    action_target = future_states.action.casualty_id
     for cas in future_states.children[0].state.casualties:
         this_casualty = {}
         cas_dps = cas.burn_dps + cas.lung_dps + cas.blood_dps
@@ -232,6 +233,8 @@ def get_future_severity_metrics(future_states: mcnode.MCDecisionNode) -> MetricR
         this_casualty[Metric.SEVERITY_1_MINUTE.value] = 60.0 * cas_dps
         this_casualty[Metric.SEVERITY_10_MINUTE.value] = 600.0 * cas_dps
         this_casualty[Metric.SEVERITY_1_HOUR.value] = 3600.0 * cas_dps
+        if cas.id == action_target:
+            casualty_dict['ACTION_TARGET'] = this_casualty
         casualty_dict[cas.id] = this_casualty
     return {Metric.SEVERITY_AT_TIMES.value: casualty_dict}
 
