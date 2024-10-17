@@ -229,6 +229,8 @@ VALUED_FEATURES = {
             {"none": -3, "faint": -2, "normal": -1, "fast": 0},
         "spo2":
             {"none": -2, "low": -1, "normal": 0},
+        "triage_urgency":
+            {"expectant": -2, "minimal": -1, "delayed": 1, "immediate": 2},
         "military_paygrade":
             {"e-1": 1,
              "e-2": 2,
