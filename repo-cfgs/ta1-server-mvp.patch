@@ -1,0 +1,7 @@
+diff --git a/submodules/itm-schema b/submodules/itm-schema
+index 684ade9..2e9c65f 160000
+--- a/submodules/itm-schema
++++ b/submodules/itm-schema
+@@ -1 +1 @@
+-Subproject commit 684ade98fa0cbf9c10ac7fe944e763432c25f3ba
++Subproject commit 2e9c65fea58e37936331de90477aa5efccb36d48
