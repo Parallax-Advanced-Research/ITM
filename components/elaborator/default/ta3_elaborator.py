@@ -142,6 +142,8 @@ class TA3Elaborator(Elaborator):
             return []
         for state_referent in [s.strip(" ")[1:-1] for s in decision.value.params["relevant_state"].split(",")]:
             topic = self.get_topic(state_referent)
+            if topic == "rapport":
+                topic = "relationship"
             newCount = decision.context.get("topic_" + topic, 0) + 1
             decision.context["topic_" + topic] = newCount
             decision.context["val_" + topic + str(newCount)] = \
