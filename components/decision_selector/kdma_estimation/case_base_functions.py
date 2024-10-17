@@ -73,6 +73,8 @@ def compare(val1: Any, val2: Any, feature: str):
         return abs(val1-val2)
     return 1
 
+CACHED_DIVISOR = dict()
+
 def calculate_distance(case1: dict[str, Any], case2: dict[str, Any], weights: dict[str, float], comp_fn = compare) -> float:
     weighted_average: float = 0
     count = 0
@@ -81,10 +83,15 @@ def calculate_distance(case1: dict[str, Any], case2: dict[str, Any], weights: di
         if diff is not None:
             count += weight
             weighted_average += diff * weight
-    if count > 0:
-        return weighted_average / count
-    else:
+    if count == 0:
         return math.inf
+    else:
+        return weighted_average
+        # divisor = CACHED_DIVISOR.get(count, None)
+        # if divisor is None:
+            # divisor = 1 / count
+            # CACHED_DIVISOR[count] = divisor
+        # return weighted_average * divisor
 
 
 def construct_distanced_list(initial_list: list[dict[str, Any]], 
