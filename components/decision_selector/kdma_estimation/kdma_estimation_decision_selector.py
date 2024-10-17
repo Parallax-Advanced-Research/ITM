@@ -756,6 +756,7 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
         case['conscious'] = c.vitals.conscious
         add_rank = variant != "baseline"
 
+        add_feature_to_case_with_rank(case, "triage_urgency", lambda chr: chr.tag, c, chrs, add_rank=add_rank)
         add_feature_to_case_with_rank(case, "military_paygrade", lambda chr: chr.demographics.rank, c, chrs, add_rank=add_rank)
         add_feature_to_case_with_rank(case, "mental_status", lambda chr: chr.vitals.mental_status, c, chrs, add_rank=add_rank)
         add_feature_to_case_with_rank(case, "breathing", lambda chr: chr.vitals.breathing, c, chrs, add_rank=add_rank)
@@ -772,7 +773,6 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
             add_feature_to_case_with_rank(case, "treatment_time", 
                                         lambda chr: chr.treatment_time, c, chrs)
             add_feature_to_case_with_rank(case, 'worst_injury_severity', worst_injury_severity, c, chrs, feature_type="inj_severity")
-            add_decision_feature_to_case_with_rank(case, 'original_severity', original_severity, d, probe.decisions)
             ages = [chr.demographics.age for chr in chrs if chr.demographics.age is not None]
             if len(ages) > 1:
                 case['age_difference'] = statistics.stdev(ages)
@@ -827,6 +827,7 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
         add_ranked_metric_to_case(case, 'DAMAGE_PER_SECOND', probe.decisions)
         add_ranked_metric_to_case(case, 'ACTION_TARGET_SEVERITY', probe.decisions)
         add_ranked_metric_to_case(case, 'ACTION_TARGET_SEVERITY_CHANGE', probe.decisions)
+        add_ranked_metric_to_case(case, 'SEVEREST_SEVERITY_CHANGE', probe.decisions)
 
     case["context"] = d.context
     meta_block = probe.state.orig_state.get('meta_info', {})
