@@ -6,8 +6,8 @@ import util
 from . import triage_constants
 from .case_base_functions import *
 
-def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False, reject_same_scene : bool = False, neighbor_count = -1) -> float:
-    kdmaProbs, _ = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors, reject_same_scene=reject_same_scene, neighbor_count = neighbor_count)
+def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False, reject_same_scene : bool = False, neighbor_count = -1, dist_fn = None) -> float:
+    kdmaProbs, _ = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors, reject_same_scene=reject_same_scene, neighbor_count = neighbor_count, dist_fn = dist_fn)
     kdmaVal = estimate_value_from_probability_dict(kdmaProbs)
     if print_neighbors:
         util.logger.info(f"kdma_val: {kdmaVal}")
@@ -37,12 +37,12 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
                            cases: list[dict[str, Any]], print_neighbors: bool = False,
                            mutable_case: bool = False, reject_same_scene=False,
                            reject_same_scene_and_kdma = None, 
-                           neighbor_count = -1) -> Tuple[float, dict[str, Any]]:
+                           neighbor_count = -1, dist_fn = None) -> Tuple[float, dict[str, Any]]:
     kdma = kdma.lower()
     topk = top_K(cur_case, weights, kdma, cases, print_neighbors=print_neighbors,
                  reject_same_scene = reject_same_scene,
                  reject_same_scene_and_kdma = reject_same_scene_and_kdma, 
-                 neighbor_count = neighbor_count)
+                 neighbor_count = neighbor_count, dist_fn = dist_fn)
     if len(topk) == 0:
         return {},[]
 
@@ -82,32 +82,40 @@ def sorted_distances(cur_case: dict[str, Any], weights: dict[str, float], kdma: 
         lst.append((distance, pcase))
         lst.sort(key=first)
     return lst
+    
+def is_compatible(case1, case2, kdma, check_scenes : bool = True) -> float:
+    if kdma not in case1 or kdma not in case2:
+        return False
+    case1_act_type = case1['action_type']
+    case2_act_type = case2['action_type']
+    if case1_act_type != case2_act_type:
+        if case1_act_type not in ['treating', 'assessing'] or case2_act_type not in ['treating', 'assessing']:
+            return False
+    if not check_scenes:
+        return True
+    if case1["scene"] == case2["scene"]:
+        return False
+    return True
+
+def find_compatible_distance(case1, case2, weights, kdma, check_scenes : bool = True) -> float:
+    if is_compatible(case1, case2, kdma, check_scenes = check_scenes):
+        return calculate_distance(case1, case2, weights, local_compare)
+    else:
+        return None
 
 def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases: list[dict[str, Any]],
           neighbor_count: int = -1, print_neighbors: bool = False, reject_same_scene = False,
-          reject_same_scene_and_kdma = None) -> list[dict[str, Any]]:
+          reject_same_scene_and_kdma = None, dist_fn = None) -> list[dict[str, Any]]:
+    if dist_fn == None:
+        dist_fn = find_compatible_distance
     lst = []
     weights = {k: w for (k, w) in oweights.items() if w != 0}
-    max_distance = 10000
+    max_distance = 1e9
     cur_act_type = cur_case['action_type']
     is_char_act = cur_act_type in ['treating', 'assessing']
     for pcase in cases:
-        if kdma not in pcase or pcase[kdma] is None:
-            continue
-        pcase_act_type = pcase['action_type']
-        if is_char_act and pcase_act_type not in ['treating', 'assessing']:
-            continue
-        if not is_char_act and cur_act_type != pcase_act_type:
-            continue
-        if reject_same_scene and cur_case['scene'] == pcase['scene']:
-            continue
-        if reject_same_scene and not pcase['scene'].startswith("=") and pcase['scene'] in cur_case['scene']:
-            continue
-        if reject_same_scene_and_kdma is not None and cur_case['scene'] == pcase['scene'] \
-                and reject_same_scene_and_kdma == pcase[kdma]:
-            continue
-        distance = calculate_distance(pcase, cur_case, weights, local_compare)
-        if distance > max_distance:
+        distance = dist_fn(pcase, cur_case, weights, kdma, check_scenes = reject_same_scene)
+        if distance is None or distance > max_distance:
             continue
         lst.append((distance, pcase))
         if len(lst) < neighbor_count:
@@ -118,31 +126,50 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
         max_distance = lst[neighbor_count - 1][0] * 1.01
         lst = [item for item in lst if first(item) <= max_distance]
     if len(lst) == 0:
-        # breakpoint()
+        if len(weights) > 0 and cur_act_type != 'tagging':
+            if len([1 for (k, v) in relevant_fields(cur_case, weights, "").items() if v is not None]) > 0:
+                util.logger.warn(f"No neighbors found. No KDMA prediction made.")
+                breakpoint()
         return lst
+    kdma_preds = [(c[kdma], (dist, c))  for (dist, c) in lst]
+    case_max = max(kdma_preds, key=first)[1]
+    case_min = min(kdma_preds, key=first)[1]
+    if case_max[1][kdma] - case_min[1][kdma] >= 0.2:
+        if print_neighbors:
+            util.logger.warn(f"Neighbor variance too high. No KDMA prediction made.")
+        # breakpoint()
+        return []
     if len(lst) > neighbor_count:
-        guarantee_distance = max_distance * 0.99
-        lst_guaranteed = []
-        lst_pool = []
-        set_kdma_vals = set()
-        for item in lst:
-            item_obj = item[1]
-            if first(item) < guarantee_distance:
-                lst_guaranteed.append(item_obj)
-            else:
-                # kdma_val = item_obj[kdma]
-                # if kdma_val in set_kdma_vals:
-                    # continue
-                # set_kdma_vals.add(kdma_val)
-                lst_pool.append(item_obj)
-        # if len(lst_pool) + len(lst_guaranteed) > 10:
-            # print("Large distanced list: " + str(len(lst_pool) + len(lst_guaranteed)))
-        lst = construct_distanced_list(lst_guaranteed, lst_pool, weights | {kdma: 10},
-                                       neighbor_count,
-                                       lambda case1, case2, wts:
-                                            calculate_distance(case1, case2, wts,
-                                                               local_compare))
-        lst = [(calculate_distance(item, cur_case, weights, local_compare), item) for item in lst]
+        lst = [item for item in lst if first(item) < max_distance * 0.99]
+        if len(lst) > neighbor_count:
+            breakpoint()
+            raise Exception()
+        if case_max not in lst:
+            lst.append(case_max)
+        if case_min not in lst:
+            lst.append(case_min)
+        # guarantee_distance = max_distance * 0.99
+        # lst_guaranteed = []
+        # lst_pool = []
+        # set_kdma_vals = set()
+        # for item in lst:
+            # item_obj = item[1]
+            # if first(item) < guarantee_distance:
+                # lst_guaranteed.append(item_obj)
+            # else:
+                # # kdma_val = item_obj[kdma]
+                # # if kdma_val in set_kdma_vals:
+                    # # continue
+                # # set_kdma_vals.add(kdma_val)
+                # lst_pool.append(item_obj)
+        # # if len(lst_pool) + len(lst_guaranteed) > 10:
+            # # print("Large distanced list: " + str(len(lst_pool) + len(lst_guaranteed)))
+        # lst = construct_distanced_list(lst_guaranteed, lst_pool, weights | {kdma: 10},
+                                       # neighbor_count,
+                                       # lambda case1, case2, wts:
+                                            # calculate_distance(case1, case2, wts,
+                                                               # local_compare))
+        # lst = [(calculate_distance(item, cur_case, weights, local_compare), item) for item in lst]
 
     if print_neighbors:
         util.logger.info(f"Orig: {relevant_fields(cur_case, weights, kdma)}")
@@ -179,30 +206,42 @@ def find_partition_error(weights: dict[str, float], kdma: str, case_partitions: 
         return math.inf
     return error_total / case_count
 
-def find_error_values(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True, reject_same_scene = True, neighbor_count = -1) -> float:
+def find_error_values(weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], avg = True, reject_same_scene = True, neighbor_count = -1, dist_fn = None) -> float:
     new_case_list = cases.copy()
     errors = []
     for case in cases:
         new_case_list.remove(case)
         if case.get(kdma) is None:
             continue
-        error = calculate_error(case, weights, kdma, new_case_list, reject_same_scene = reject_same_scene, avg = avg, neighbor_count = neighbor_count)
+        error = calculate_error(case, weights, kdma, new_case_list, reject_same_scene = reject_same_scene, avg = avg, neighbor_count = neighbor_count, dist_fn = dist_fn)
         errors.append((case, error))
         new_case_list.append(case)
     return errors
 
-def calculate_error(case: dict, weights: dict, kdma: str, other_cases: list, reject_same_scene = True, avg = True, neighbor_count = -1):
+def calculate_error(case: dict, weights: dict, kdma: str, other_cases: list, reject_same_scene = True, avg = True, neighbor_count = -1, dist_fn = None):
     if avg:
-        estimate = estimate_KDMA(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count)
+        estimate = estimate_KDMA(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count, dist_fn = dist_fn)
         if estimate is None:
             return 1
         return abs(case[kdma] - estimate)
     else:
-        kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count)
+        kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count, dist_fn = dist_fn)
         return 1 - kdma_probs.get(case[kdma], 0)
                 # if error > 0.9: error = error * 4
                 # elif error > 0.5: error = error * 2
 
+def get_unstable_cases(cases, kdma_name, weights):
+    unstable_cases = []
+    for case in cases:
+        if case.get(kdma_name, None) is None:
+            continue
+        sample = []
+        for i in range(5):
+           sample.append(calculate_error(case, weights, "ingroup bias", cases, neighbor_count=4))
+        if statistics.variance(sample) > 0:
+            unstable_cases.append({"index": case["index"], "mean": statistics.mean(sample), "variance": statistics.variance(sample), "min": min(sample), "max": max(sample)})
+            print(unstable_cases[-1])
+    return unstable_cases
 
 VALUED_FEATURES = {
         "disposition": 
@@ -321,5 +360,7 @@ def local_compare(val1: Any, val2: Any, feature: str):
     if val1 is not None and val2 is not None and feature in VALUED_FEATURES:
         result = abs(VALUED_FEATURES[feature][val1.lower()] - VALUED_FEATURES[feature][val2.lower()])
     result = compare(val1, val2, feature) 
+    if result is None:
+        result = 0
     CACHED_COMPARES[(feature, val1, val2)] = result
     return result
