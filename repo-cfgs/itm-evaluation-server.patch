@@ -164,3 +164,66 @@ index f47733b..cc64a55 100644
                                  session=self, training=self.kdma_training)
                  itm_scenario.generate_scenario_data()
                  ta1_scenarios.append(itm_scenario)
+diff --git a/swagger_server/itm/itm_ta1_controller.py b/swagger_server/itm/itm_ta1_controller.py
+index 6ed3042..e92189c 100644
+--- a/swagger_server/itm/itm_ta1_controller.py
++++ b/swagger_server/itm/itm_ta1_controller.py
+@@ -35,11 +35,11 @@ class ITMTa1Controller:
+         host_port = ITMTa1Controller.get_contact_info(scene_type=scene_type)
+         target_id_path = 'alignment_target_ids' if scene_type == 'adept' else 'alignment_targets'
+         url = f"{host_port}/api/v1/{target_id_path}"
+-        alignment_target_ids = json.loads(requests.get(url).content.decode('utf-8'))
++        alignment_target_ids = json.loads(requests.get(url, verify=False).content.decode('utf-8'))
+         alignments = []
+         for alignment_target_id in alignment_target_ids:
+           url = f"{host_port}/api/v1/alignment_target/{alignment_target_id}"
+-          response = requests.get(url)
++          response = requests.get(url, verify=False)
+           alignment_target = ITMTa1Controller.to_dict(response)
+           alignments.append(AlignmentTarget.from_dict(alignment_target))
+         return alignments
+@@ -53,7 +53,7 @@ class ITMTa1Controller:
+         if user_id:
+             params = {"user_id": user_id}
+             url = f"{url}?{urllib.parse.urlencode(params)}"
+-        initial_response = requests.post(url)
++        initial_response = requests.post(url, verify=False)
+         initial_response.raise_for_status()
+         response = self.to_dict(initial_response)
+         self.session_id = response
+@@ -62,7 +62,7 @@ class ITMTa1Controller:
+     def post_probe(self, probe_response: ProbeResponse):
+         body = {"session_id": self.session_id, "response": probe_response.to_dict()}
+         url = f"{self.url}/api/v1/response"
+-        self.to_dict(requests.post(url, json=body))
++        self.to_dict(requests.post(url, json=body, verify=False))
+         return None
+     
+     def get_probe_response_alignment(self, scenario_id, probe_id):
+@@ -75,7 +75,7 @@ class ITMTa1Controller:
+             "probe_id": probe_id
+         }
+         url = f"{base_url}?{urllib.parse.urlencode(params)}"
+-        initial_response = requests.get(url)
++        initial_response = requests.get(url, verify=False)
+         initial_response.raise_for_status()
+         response = self.to_dict(initial_response)
+         return response
+@@ -87,7 +87,7 @@ class ITMTa1Controller:
+             "target_id": self.alignment_target_id if not target_id else target_id
+         }
+         url = f"{base_url}?{urllib.parse.urlencode(params)}"
+-        initial_response = requests.get(url)
++        initial_response = requests.get(url, verify=False)
+         initial_response.raise_for_status()
+         response = self.to_dict(initial_response)
+         alignment_results :AlignmentResults = AlignmentResults.from_dict(response)
+@@ -98,7 +98,7 @@ class ITMTa1Controller:
+             "session_id": self.session_id
+         }
+         url = f"{base_url}?{urllib.parse.urlencode(params)}"
+-        initial_response = requests.get(url)
++        initial_response = requests.get(url, verify=False)
+         initial_response.raise_for_status()
+         response = self.to_dict(initial_response)
+         # KDMAs are represented slightly differently between the two TA1s.
