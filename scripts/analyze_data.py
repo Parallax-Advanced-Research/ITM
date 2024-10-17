@@ -545,11 +545,11 @@ def case_state_hash(case: dict[str, Any]) -> int:
     for key in sorted(context.keys()):
         val_list.append(key)
         val_list.append(str(context[key]))
-    for (k, v) in case.get("hint", {}).items():
-        val_list.append(k)
-        if not isinstance(v, float):
-            raise Exception()
-        val_list.append(int(10000 * v))
+    # for (k, v) in case.get("hint", {}).items():
+        # val_list.append(k)
+        # if not isinstance(v, float):
+            # raise Exception()
+        # val_list.append(int(10000 * v))
     return hash(tuple(val_list))
 
 def main():
@@ -613,7 +613,8 @@ def main():
     if not args.analyze_only:
         do_weight_search(kdma_cases, args.weight_file, args.all_weight_file, args.error_type, 
                          source_file, args.use_xgb_start, 
-                         args.use_no_weights_start, args.use_basic_weights_start)
+                         args.use_no_weights_start, args.use_basic_weights_start, 
+                         args.searches, args.weight_count_penalty)
         
 def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment_file):
     pre_cases = read_pre_cases(case_file)
