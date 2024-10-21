@@ -9,6 +9,7 @@ import time
 import requests
 from run_tests import color
 from enum import Enum
+from util import process
 
 Status = Enum('Status', { 'SUCCESS': 0, 'WARNING': 0, 'ERROR': 2 })
 status = Status.SUCCESS
@@ -363,13 +364,13 @@ while ta1_servers_up == False and time.time() - wait_started < 90: # At least 90
         adept_verified = check_alignment_targets(adept_port, "ADEPT")
         if not adept_verified:
             ta1_servers_up = False
-        if not util.process.active(adept_pid)
+        if not process.active(adept_pid):
             break
     if soartech_server_available and not soartech_verified:
         soartech_verified = check_alignment_targets(soartech_port, "Soartech")
         if not soartech_verified:
             ta1_servers_up = False
-        if not util.process.active(soartech_pid)
+        if not process.active(soartech_pid):
             break
 
 
@@ -389,7 +390,7 @@ while not servers_up and time.time() - wait_started < 300: # At least 120 second
             ta3_verified = True
         else:
             servers_up = False
-    if not util.process.active(ta3_pid)
+    if not process.active(ta3_pid):
         break
 
 if not servers_up:
