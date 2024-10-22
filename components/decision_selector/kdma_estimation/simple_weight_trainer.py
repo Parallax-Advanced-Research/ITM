@@ -116,7 +116,7 @@ class SimpleWeightTrainer(WeightTrainer):
                         
                     print(f"Cases Covered: {sum([1 for case in self.data if case['times_covered'] > 0])}/{len(self.data)}")
                     print(f"Average best error: {statistics.mean([case['best_error'] for case in self.data])}")
-                    breakpoint()
+                    # breakpoint()
     
     def add_to_history(self, weights: dict[str, float], name: str = None, source: str = ""):
         super().add_to_history(weights, name, source)
@@ -225,6 +225,8 @@ def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: Cas
                 continue
             choices.append((improvement, new_error_map, change, node, feature_changed))
 
+        if len(choices) == 0:
+            break
         min_improvement = min([choice[0] for choice in choices]) - .0001
         total_wheel = sum([(choice[0] - min_improvement) for choice in choices])
 
