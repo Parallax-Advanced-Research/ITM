@@ -88,7 +88,7 @@ NOISY_KEYS : str = [
     'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding', 
     'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER', 
     'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
-    'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 
+    'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 'SEVEREST_SEVERITY_CHANGE_variance', 'SEVEREST_SEVERITY_CHANGE_normalized', 'SEVEREST_SEVERITY_CHANGE_percentile',
     'STANDARD_TIME_SEVERITY', 'STANDARD_TIME_SEVERITY_variance', 'STANDARD_TIME_SEVERITY_normalized', 'STANDARD_TIME_SEVERITY_percentile', 
     'SEVERITY', 'SEVERITY_variance', 'SEVERITY_normalized', 'SEVERITY_percentile', 
     'DAMAGE_PER_SECOND', 'DAMAGE_PER_SECOND_variance', 'DAMAGE_PER_SECOND_normalized', 'DAMAGE_PER_SECOND_percentile',
@@ -627,7 +627,7 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
             case["scene"] = case["scene"][1:4] + case["scene"][9:10] + ":" + case["scene"].split(":")[2]
             
         for key in cur_keys:
-            for pattern in ["casualty_", "nondeterminism"]:
+            for pattern in ["casualty_", "nondeterminism", "triage_urgency"]:
                 if pattern in key.lower():
                     case.pop(key)
                     break
