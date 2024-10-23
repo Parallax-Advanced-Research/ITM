@@ -386,12 +386,12 @@ while not servers_up and time.time() - wait_started < 120: # At least 120 second
 
 if not servers_up:
     if ta3_server_available and not ta3_verified:
-        error("TA3 server did not start successfully. Check .deprepos/itm-evaluation-server.err")
+        error(f"TA3 server did not start successfully. Check .deprepos/itm-evaluation-server-{ta3_port}.err")
     if adept_server_available and not adept_verified:
-        error("ADEPT server did not start successfully. Check .deprepos/adept_server.err")
+        error(f"ADEPT server did not start successfully. Check .deprepos/adept_server-{adept_port}.err")
     if soartech_server_available and not soartech_verified:
         old_status = status
-        error("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp.err")
+        error(f"Soartech server did not start successfully. Check .deprepos/ta1-server-mvp-{soartech_port}.err")
         # if Status.SUCCESS == old_status:
             # warning("Temporarily returning success even though Soartech isn't running. Will change once TA1 fixes it")
             # status = old_status
