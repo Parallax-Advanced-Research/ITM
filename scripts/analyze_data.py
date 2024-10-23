@@ -16,7 +16,6 @@ import random
 
 
 
-
 NON_NOISY_KEYS = [
     'age', 'tagged', 'visited', 'relationship', 'rank', 'conscious',
     'environment_type', 'questioning', 'assessing', 'treating', 'tagging', 'leaving', 
@@ -32,7 +31,7 @@ NOISY_KEYS : str = [
     'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding', 
     'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER', 
     'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
-    'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 
+    'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 'SEVEREST_SEVERITY_CHANGE_variance', 'SEVEREST_SEVERITY_CHANGE_normalized', 'SEVEREST_SEVERITY_CHANGE_percentile',
     'STANDARD_TIME_SEVERITY', 'STANDARD_TIME_SEVERITY_variance', 'STANDARD_TIME_SEVERITY_normalized', 'STANDARD_TIME_SEVERITY_percentile', 
     'SEVERITY', 'SEVERITY_variance', 'SEVERITY_normalized', 'SEVERITY_percentile', 
     'DAMAGE_PER_SECOND', 'DAMAGE_PER_SECOND_variance', 'DAMAGE_PER_SECOND_normalized', 'DAMAGE_PER_SECOND_percentile',
@@ -73,7 +72,6 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
                 # if key.startswith("topic") or key.startswith("val_"):
                     # case[key] = str(case[key])
                     # case["context"][key] = case[key]
-
         if "context" in case:
             context = case.pop("context")
             case |= flatten("context", context)

@@ -114,14 +114,20 @@ class KEDSModeller(CaseModeller):
                 if value is None:
                     cur_list[oindex] = None
                     continue
-                cur_list[oindex] = fun(case, ocase, value)
+                new_val = fun(case, ocase, value)
+                if new_val < 0:
+                    if new_val > -1e-6:
+                        new_val = 0
+                    else:
+                        raise Exception()
+                cur_list[oindex] = new_val
                 
     def get_added_fun(self, node) -> Callable[[dict, dict, float], float]:
         added_features = [(k, v) for (k, v) in node.items() if k not in self.base_node]
         def add_fun(case1, case2, value): 
             value_sum = value
             for (feature, weight) in added_features:
-                value_sum += kdma_estimation.local_compare(case1[feature], case2[feature], feature) * weight
+                value_sum += kdma_estimation.local_compare(case1.get(feature, None), case2.get(feature, None), feature) * weight
             return value_sum
         return add_fun
 
@@ -136,7 +142,7 @@ class KEDSModeller(CaseModeller):
         
     def get_weight_change(self, feature, weight_change):
         return lambda case1, case2, value: \
-            value + (kdma_estimation.local_compare(case1[feature], case2[feature], feature) * weight_change)
+            value + (kdma_estimation.local_compare(case1.get(feature, None), case2.get(feature, None), feature) * weight_change)
                 
     def cached_distance_calculation(self, case1, case2, weights, kdma, check_scenes = True):
         index1 = case1["index"]

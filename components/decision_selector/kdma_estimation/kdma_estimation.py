@@ -84,7 +84,7 @@ def sorted_distances(cur_case: dict[str, Any], weights: dict[str, float], kdma: 
     return lst
     
 def is_compatible(case1, case2, kdma, check_scenes : bool = True) -> float:
-    if kdma not in case1 or kdma not in case2:
+    if kdma not in case1:
         return False
     case1_act_type = case1['action_type']
     case2_act_type = case2['action_type']
@@ -118,6 +118,9 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
         if distance is None or distance > max_distance:
             continue
         lst.append((distance, pcase))
+        if 2 * distance < max_distance:
+            max_distance = 2 * distance
+            lst = [item for item in lst if first(item) <= max_distance]
         if len(lst) < neighbor_count:
             continue
         if max_distance == 0:
@@ -126,10 +129,14 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
         max_distance = lst[neighbor_count - 1][0] * 1.01
         lst = [item for item in lst if first(item) <= max_distance]
     if len(lst) == 0:
-        if len(weights) > 0 and cur_act_type != 'tagging':
-            if len([1 for (k, v) in relevant_fields(cur_case, weights, "").items() if v is not None]) > 0:
-                util.logger.warn(f"No neighbors found. No KDMA prediction made.")
-                breakpoint()
+        if len(weights) == 0 or cur_act_type == 'tagging':
+            return lst
+        if cur_case["scene"].startswith("vol") and cur_act_type == 'leaving':
+            return lst
+        if len([1 for (k, v) in relevant_fields(cur_case, weights, "").items() if v is not None]) == 0:
+            return lst
+        util.logger.warn(f"No neighbors found. No KDMA prediction made.")
+        breakpoint()
         return lst
     kdma_preds = [(c[kdma], (dist, c))  for (dist, c) in lst]
     case_max = max(kdma_preds, key=first)[1]
