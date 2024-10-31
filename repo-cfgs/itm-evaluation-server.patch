@@ -31,10 +31,10 @@ index 1b133b0..0af74ee 100644
          self.parent_scenario :ITMScenario = None
  
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index fc1cd8f..dcb3a9d 100644
+index cde68c6..b7c3778 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -104,7 +104,8 @@ class ITMSession:
+@@ -106,7 +106,8 @@ class ITMSession:
              ITMSession.init_ta1_data(ta1_names)
              ITMSession.ta1_connected = True
              logging.info("Done.")
@@ -44,7 +44,7 @@ index fc1cd8f..dcb3a9d 100644
              logging.warning("Could not initialize TA1 data. Running standalone with local alignment targets.")
  
          # If we couldn't use data from TA1, initialize with local data.
-@@ -135,6 +136,12 @@ class ITMSession:
+@@ -137,6 +138,12 @@ class ITMSession:
                  alignment_target for alignment_target in ITMTa1Controller.get_alignment_data(ta1_name)
                      if 'train' not in alignment_target.id or ta1_name == 'soartech'
              ]
@@ -57,7 +57,7 @@ index fc1cd8f..dcb3a9d 100644
              ITMSession.ta1_controllers[ta1_name] = [
                  ITMTa1Controller(alignment_target_id=alignment_target.id,
                                   scene_type=ta1_name,
-@@ -146,7 +153,6 @@ class ITMSession:
+@@ -148,7 +155,6 @@ class ITMSession:
      def _check_scenario_id(self, scenario_id: str) -> None:
          """
          Check if the provided scenario ID matches the session's scenario ID.
@@ -65,7 +65,7 @@ index fc1cd8f..dcb3a9d 100644
          Args:
              scenario_id: The scenario ID to compare.
          """
-@@ -468,7 +474,7 @@ class ITMSession:
+@@ -470,7 +476,7 @@ class ITMSession:
          else:
              ta1_names.append(self.session_type)
          if kdma_training:
@@ -74,7 +74,7 @@ index fc1cd8f..dcb3a9d 100644
              self.return_scenario_history = True
          if session_type == 'test':
              self.ta1_integration = False
-@@ -507,8 +513,11 @@ class ITMSession:
+@@ -509,8 +515,11 @@ class ITMSession:
              ta1_scenarios = []
              scenario_ctr = 0
              for scenario in scenarios:
@@ -88,10 +88,10 @@ index fc1cd8f..dcb3a9d 100644
                  itm_scenario.generate_scenario_data()
  
 diff --git a/swagger_server/itm/itm_ta1_controller.py b/swagger_server/itm/itm_ta1_controller.py
-index 6ed3042..e92189c 100644
+index 995ae8e..cb5b395 100644
 --- a/swagger_server/itm/itm_ta1_controller.py
 +++ b/swagger_server/itm/itm_ta1_controller.py
-@@ -35,11 +35,11 @@ class ITMTa1Controller:
+@@ -38,11 +38,11 @@ class ITMTa1Controller:
          host_port = ITMTa1Controller.get_contact_info(scene_type=scene_type)
          target_id_path = 'alignment_target_ids' if scene_type == 'adept' else 'alignment_targets'
          url = f"{host_port}/api/v1/{target_id_path}"
@@ -105,7 +105,7 @@ index 6ed3042..e92189c 100644
            alignment_target = ITMTa1Controller.to_dict(response)
            alignments.append(AlignmentTarget.from_dict(alignment_target))
          return alignments
-@@ -53,7 +53,7 @@ class ITMTa1Controller:
+@@ -56,7 +56,7 @@ class ITMTa1Controller:
          if user_id:
              params = {"user_id": user_id}
              url = f"{url}?{urllib.parse.urlencode(params)}"
@@ -114,7 +114,7 @@ index 6ed3042..e92189c 100644
          initial_response.raise_for_status()
          response = self.to_dict(initial_response)
          self.session_id = response
-@@ -62,7 +62,7 @@ class ITMTa1Controller:
+@@ -65,7 +65,7 @@ class ITMTa1Controller:
      def post_probe(self, probe_response: ProbeResponse):
          body = {"session_id": self.session_id, "response": probe_response.to_dict()}
          url = f"{self.url}/api/v1/response"
@@ -123,7 +123,7 @@ index 6ed3042..e92189c 100644
          return None
      
      def get_probe_response_alignment(self, scenario_id, probe_id):
-@@ -75,7 +75,7 @@ class ITMTa1Controller:
+@@ -78,7 +78,7 @@ class ITMTa1Controller:
              "probe_id": probe_id
          }
          url = f"{base_url}?{urllib.parse.urlencode(params)}"
@@ -132,7 +132,7 @@ index 6ed3042..e92189c 100644
          initial_response.raise_for_status()
          response = self.to_dict(initial_response)
          return response
-@@ -87,7 +87,7 @@ class ITMTa1Controller:
+@@ -90,7 +90,7 @@ class ITMTa1Controller:
              "target_id": self.alignment_target_id if not target_id else target_id
          }
          url = f"{base_url}?{urllib.parse.urlencode(params)}"
@@ -141,7 +141,7 @@ index 6ed3042..e92189c 100644
          initial_response.raise_for_status()
          response = self.to_dict(initial_response)
          alignment_results :AlignmentResults = AlignmentResults.from_dict(response)
-@@ -98,7 +98,7 @@ class ITMTa1Controller:
+@@ -101,7 +101,7 @@ class ITMTa1Controller:
              "session_id": self.session_id
          }
          url = f"{base_url}?{urllib.parse.urlencode(params)}"
