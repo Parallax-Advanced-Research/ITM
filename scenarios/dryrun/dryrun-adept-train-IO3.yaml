@@ -797,7 +797,7 @@ scenes:
       - action_id: indicate_help_teammate
         action_type: MESSAGE
         unstructured: The patient was picked because you needed to do everything you could to help your teammate.
-        parameters: {"type": "justify", "relevant_state": "[characters[P6 Patient A].injuries], [characters[P6 Patient A].rapport]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[P6 Patient A].injuries], [characters[P6 Patient A].demographics.military_disposition]"}
         probe_id: DryRunEval.IO3.6.A-1
         choice: DryRunEval.IO3.6.A-1.A
         next_scene: P7
@@ -857,7 +857,7 @@ scenes:
       - action_id: indicate_cannot_favor_teammate
         action_type: MESSAGE
         unstructured: The patient was picked because it is important not to favor a patient because of a personal relationship.
-        parameters: {"type": "justify", "relevant_state": "[characters[P6 Patient A].injuries], [characters[P6 Patient A].rapport], [characters[P6 Patient B].injuries]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[P6 Patient A].injuries], [characters[P6 Patient A].demographics.military_disposition], [characters[P6 Patient B].injuries]"}
         probe_id: DryRunEval.IO3.6.B-1
         choice: DryRunEval.IO3.6.B-1.C
         next_scene: P7
@@ -1450,7 +1450,7 @@ scenes:
       - action_id: indicate_help_teammate
         action_type: MESSAGE
         unstructured: The patient was picked because you needed to do everything you could to help your teammate.
-        parameters: {"type": "justify", "relevant_state": "[characters[P11 Patient A].injuries], [characters[P11 Patient A].rapport]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[P11 Patient A].injuries], [characters[P11 Patient A].demographics.military_disposition]"}
         probe_id: DryRunEval.IO3.11.A-1
         choice: DryRunEval.IO3.11.A-1.A
         next_scene: P12
@@ -1510,7 +1510,7 @@ scenes:
       - action_id: indicate_cannot_favor_teammate
         action_type: MESSAGE
         unstructured: The patient was picked because it is important not to favor a patient because of a personal relationship.
-        parameters: {"type": "justify", "relevant_state": "[characters[P11 Patient A].injuries], [characters[P11 Patient A].rapport], [characters[P11 Patient B].injuries]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[P11 Patient A].injuries], [characters[P11 Patient A].demographics.military_disposition], [characters[P11 Patient B].injuries]"}
         probe_id: DryRunEval.IO3.11.B-1
         choice: DryRunEval.IO3.11.B-1.C
         next_scene: P12
@@ -2137,7 +2137,7 @@ scenes:
       - action_id: indicate_help_teammate
         action_type: MESSAGE
         unstructured: The patient was picked because you needed to do everything you could to help your teammate.
-        parameters: {"type": "justify", "relevant_state": "[characters[P16 Patient A].injuries], [characters[P16 Patient A].rapport]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[P16 Patient A].injuries], [characters[P16 Patient A].demographics.military_disposition]"}
         probe_id: DryRunEval.IO3.16.A-1
         choice: DryRunEval.IO3.16.A-1.A
         kdma_association:
@@ -2192,7 +2192,7 @@ scenes:
       - action_id: indicate_cannot_favor_teammate
         action_type: MESSAGE
         unstructured: The patient was picked because it is important not to favor a patient because of a personal relationship.
-        parameters: {"type": "justify", "relevant_state": "[characters[P16 Patient A].injuries], [characters[P16 Patient A].rapport], [characters[P16 Patient B].injuries]"}
+        parameters: {"type": "justify", "relevant_state": "[characters[P16 Patient A].injuries], [characters[P16 Patient A].demographics.military_disposition], [characters[P16 Patient B].injuries]"}
         probe_id: DryRunEval.IO3.16.B-1
         choice: DryRunEval.IO3.16.B-1.C
         kdma_association:

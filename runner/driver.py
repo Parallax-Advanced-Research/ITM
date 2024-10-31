@@ -84,7 +84,10 @@ class Driver:
         decision_explanations = []
         for explainer in self.explainers:
             this_explanation = explainer.explain(decision)
-            decision_explanations.append(this_explanation)    
+            if this_explanation is not None:
+                decision_explanations.append(this_explanation)
+        if len(decision_explanations) == 0:
+            return ["I can't explain that."]
         return decision_explanations
 
     def select(self, probe: TADProbe) -> Decision[Action]:

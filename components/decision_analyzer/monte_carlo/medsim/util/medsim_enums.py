@@ -43,6 +43,19 @@ class Affector:
         self.burning_effect = burning_effect
         self.damage_per_second = 0.0
         self.damage_set = False
+        self.qol_impact = self._set_qol_impact()
+        self.is_env = is_env
+
+    def _set_qol_impact(self):
+        if self.base_severity in [SeverityEnums.EXTREME.value, SeverityEnums.MAJOR.value]:
+            additional_severity = 2
+        elif self.base_severity in [SeverityEnums.SUBSTANTIAL.value, SeverityEnums.MODERATE.value]:
+            additional_severity = 1
+        else:  # SeverityEnums.MINOR
+            additional_severity = 0
+
+        qol = INJURY_QOL.get(self.name, 0)
+        return qol + additional_severity
 
     def __eq__(self, other: 'Affector'):
         return (self.name == other.name and self.location == other.location and self.severity == other.severity and
@@ -125,8 +138,23 @@ class Casualty:
         self.blood_dps: float = 0.0
         self.lung_dps: float = 0.0
         self.burn_dps: float = 0.0
+        self.qol_impact_total = self._set_qol_impact_total()
 
         self._set_blood_ml_max_breath_hp()
+
+    def _set_qol_impact_total(self):
+        # sometimes age is not set, so will default to under 50
+        if self.demographics.age is None:
+            age_severity = 0
+        elif self.demographics.age >= 50:
+            age_severity = 1
+        else:
+            age_severity = 0
+        total_qol = 0
+        for inj in self.injuries:
+            total_qol += (inj.qol_impact + age_severity)
+
+        return total_qol
 
     def _set_blood_ml_max_breath_hp(self):
         age = self.demographics.age
@@ -384,6 +412,26 @@ ENVIRONMENTAL_HAZARDS = [Injuries.ENVIRONMENTAL_FIRE_HAZARD.value, Injuries.ENVI
                          Injuries.ENVIRONMENTAL_FIREARM_HAZARD.value, Injuries.ENVIRONMENTAL_FIGHT_HAZARD.value]
 
 
+INJURY_QOL = {
+    Injuries.FOREHEAD_SCRAPE.value: 0,
+    Injuries.EAR_BLEED.value: 0,
+    Injuries.ASTHMATIC.value: 0,
+    Injuries.LACERATION.value: 1,
+    Injuries.PUNCTURE.value: 1,
+    Injuries.SHRAPNEL.value: 1,
+    Injuries.CHEST_COLLAPSE.value: 2,
+    Injuries.AMPUTATION.value: 2,
+    Injuries.BURN.value: 1,
+    Injuries.BURN_SUFFOCATION.value: 2,
+    Injuries.EYE_TRAUMA.value: 1,
+    Injuries.BROKEN_BONE.value: 1,
+    Injuries.INTERNAL.value: 1,
+    Injuries.OPEN_ABDOMINAL_WOUND.value: 2,
+    Injuries.TBI.value: 2,
+    Injuries.ABRASION.value: 0,
+}
+
+
 class Metric(Enum):
     SEVERITY = 'SEVERITY'
     AVERAGE_CASUALTY_SEVERITY = 'AVERAGE_CASUALTY_SEVERITY'
@@ -392,6 +440,9 @@ class Metric(Enum):
     AVERAGE_TIME_USED = 'AVERAGE_TIME_USED'
     TARGET_SEVERITY = 'ACTION_TARGET_SEVERITY'
     TARGET_SEVERITY_CHANGE = 'ACTION_TARGET_SEVERITY_CHANGE'
+    NONACTION_AVG_SEVERITY_CHANGE = 'NONACTION_AVG_SEVERITY_CHANGE'
+    NONACTION_MIN_SEVERITY_CHANGE = 'NONACTION_MIN_SEVERITY_CHANGE'
+    NONACTION_MAX_SEVERITY_CHANGE = 'NONACTION_MAX_SEVERITY_CHANGE'
     SEVEREST_SEVERITY = 'SEVEREST_SEVERITY'
     SEVEREST_SEVERITY_CHANGE = 'SEVEREST_SEVERITY_CHANGE'
     TIME_BETWEEN_STATE = 'TIME_BETWEEN_STATES'
@@ -431,6 +482,12 @@ class Metric(Enum):
     CAS_HIGH_P_DEATH_DECISION = 'CAS_HIGH_P_DEATH_DEC'
     CAS_LOW_P_DEATH_DECISION = 'CAS_LOW_P_DEATH_DEC'
     STANDARD_TIME_SEVERITY = 'STANDARD_TIME_SEVERITY'
+    CASUALTY_QOL_IMPACT = 'CASUALTY_QOL_IMPACT'
+    SEVERITY_AT_TIMES = 'SEVERITY_AT_TIMES'
+    SEVERITY_1_SECOND = 'SEVERITY_1T'
+    SEVERITY_1_MINUTE = 'SEVERITY_60T'
+    SEVERITY_10_MINUTE = 'SEVERITY_600T'
+    SEVERITY_1_HOUR = 'SEVERITY_3600T'
 
     AVERAGE_DECISION_DPS = 'AVERAGE_DECISION_DPS'
     AVERAGE_DECISION_SUPPLIES_REMAINING = 'AVERAGE_DECISION_SUPPLIES_REMAINING'
@@ -523,8 +580,17 @@ metric_description_hash: dict[str, str] = {
     Metric.SMOL_MEDICAL_SOUNDNESS_V2.value: 'Uses Standard time severity for simulated states',
     Metric.INFORMATION_GAINED.value: 'Credits different actions with a higher reward for returning more knowledge',
     Metric.WEIGHTED_RESOURCE.value: 'Resources sorted by the lifesaving value they have',
-    Metric.STANDARD_TIME_SEVERITY.value: 'What the severity is 120 seconds after the action is started.'
-}
+    Metric.STANDARD_TIME_SEVERITY.value: 'What the severity is 120 seconds after the action is started.',
+    Metric.CASUALTY_QOL_IMPACT.value: 'Dictionary of quality of life impact for all casualties',
+    Metric.NONACTION_AVG_SEVERITY_CHANGE.value: 'Average Severity Change (DPS) after action of all the non targets',
+    Metric.NONACTION_MAX_SEVERITY_CHANGE.value: 'Maximum Severity Change (DPS) after action of all of the non targets',
+    Metric.NONACTION_MIN_SEVERITY_CHANGE.value: 'Minuimum Severity Change (DPS) after action of all the non targets',
+    Metric.SEVERITY_AT_TIMES.value: 'Dictionary holding the severity after times of the casualties',
+    Metric.SEVERITY_1_SECOND.value:  'Severity after 1 seocnd',
+    Metric.SEVERITY_1_MINUTE.value: 'Severity after 1 minute',
+    Metric.SEVERITY_10_MINUTE.value: 'Severity after 10 minutes',
+    Metric.SEVERITY_1_HOUR.value: 'Severity after 1 hour'
+    }
 
 
 class MetricSet:
@@ -544,7 +610,7 @@ class MetricSet:
                     Metric.NONDETERMINISM.value, Metric.P_DEATH.value, Metric.DAMAGE_PER_SECOND.value, Metric.NONDETERMINISM.value,
                     Metric.P_DEATH_ONEMINLATER.value, Metric.WEIGHTED_RESOURCE.value, Metric.SMOL_MEDICAL_SOUNDNESS.value,
                     Metric.INFORMATION_GAINED.value, Metric.STANDARD_TIME_SEVERITY.value, Metric.CASUALTY_P_DEATH.value,
-                    Metric.CASUALTY_SEVERITY.value, Metric.CASUALTY_DAMAGE_PER_SECOND.value]
+                    Metric.CASUALTY_SEVERITY.value, Metric.CASUALTY_DAMAGE_PER_SECOND.value, Metric.CASUALTY_QOL_IMPACT.value]
         elif self.set_name == 'full':
             return []
 

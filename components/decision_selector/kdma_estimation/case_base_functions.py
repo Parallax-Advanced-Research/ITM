@@ -5,6 +5,10 @@ from typing import Any, Sequence, Callable
 from numbers import Real
 
 def read_case_base(csv_filename: str):
+    case_base, header = read_case_base_with_headers(csv_filename)
+    return case_base
+
+def read_case_base_with_headers(csv_filename: str):
     """ Convert the csv into a list of dictionaries """
     case_base: list[dict] = []
     with open(csv_filename, "r") as f:
@@ -19,7 +23,7 @@ def read_case_base(csv_filename: str):
                 case[headers[i]] = convert(headers[i], entry.strip())
             case_base.append(case)
 
-    return case_base
+    return case_base, headers
 
 def write_case_base(fname: str, cb: list[dict[str, Any]], params: dict[str, Any] = {}):
     index : int = 0
@@ -35,7 +39,7 @@ def write_case_base(fname: str, cb: list[dict[str, Any]], params: dict[str, Any]
     csv_file = open(fname, "w")
     for (param, value) in params.items():
         csv_file.write(f"#Param {param}: {value}\n")
-    csv_file.write("index," + ",".join(keys))
+    csv_file.write("index," + ",".join([str(key) for key in keys]))
     csv_file.write("\n")
     for case in cb:
         index += 1
@@ -69,6 +73,8 @@ def compare(val1: Any, val2: Any, feature: str):
         return abs(val1-val2)
     return 1
 
+CACHED_DIVISOR = dict()
+
 def calculate_distance(case1: dict[str, Any], case2: dict[str, Any], weights: dict[str, float], comp_fn = compare) -> float:
     weighted_average: float = 0
     count = 0
@@ -77,10 +83,15 @@ def calculate_distance(case1: dict[str, Any], case2: dict[str, Any], weights: di
         if diff is not None:
             count += weight
             weighted_average += diff * weight
-    if count > 0:
-        return weighted_average / count
-    else:
+    if count == 0:
         return math.inf
+    else:
+        return weighted_average
+        # divisor = CACHED_DIVISOR.get(count, None)
+        # if divisor is None:
+            # divisor = 1 / count
+            # CACHED_DIVISOR[count] = divisor
+        # return weighted_average * divisor
 
 
 def construct_distanced_list(initial_list: list[dict[str, Any]], 
@@ -89,6 +100,8 @@ def construct_distanced_list(initial_list: list[dict[str, Any]],
                              max_item_count: int,
                              dist_fn: Callable[[dict[str, Any], dict[str, Any], dict[str, float]], int] = calculate_distance):
     if len(initial_list) >= max_item_count:
+        return initial_list
+    if len(additional_items) == 0:
         return initial_list
     if len(initial_list) == 0:
         max_dist_items = additional_items
@@ -105,7 +118,7 @@ def construct_distanced_list(initial_list: list[dict[str, Any]],
             elif cur_avg_dist > min_avg_dist:
                 max_dist_items.append(item)
     if len(max_dist_items) == 0:
-        return initial_list
+        max_dist_items = additional_items
     chosen_item = util.get_global_random_generator().choice(max_dist_items)
     initial_list.append(chosen_item)
     additional_items.remove(chosen_item)

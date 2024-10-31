@@ -1,45 +1,1251 @@
 {
-  "kdma_specific_weights": {
-    "Moral judgement": {
-      "context.last_casualty": 0.25,
-      "intent_rank": 4,
-      "directness_of_causality_rank": 4.0,
-      "worst_injury_severity_rank": 2,
-      "breathing": 4,
-      "intent": 0.5,
-      "context.val_source_character1": 2,
-      "hrpmin_rank": 1
-    },
-    "QualityOfLife": {
-          "age": 0.4614342749118805,
-          "tagged": 16.288803100585938,
-          "military_paygrade": 0.4126615524291992,
-          "mental_status": 0.28004682064056396,
-          "avpu": 2.029209613800049,
-          "avpu_rank": 50.99212646484375,
-          "pDeath": 0.07872632890939713,
-          "pAirwayBlocked": 12.737411499023438,
-          "entropy": 0.8108482360839844,
-          "ACTION_TARGET_SEVERITY_CHANGE": 0.06236608326435089,
-          "SEVEREST_SEVERITY_CHANGE": 0.18230803310871124,
-          "severity_rank": 3.832721471786499,
-          "damage_per_second_rank": 0.47461873292922974    
-    },
-    "PerceivedQuantityOfLivesSaved": {
-          "tagged": 1.6518068313598633,
-          "worst_injury_severity_rank": 1.3103928565979004,
-          "treatment": 0.27874594926834106,
-          "pBrainInjury": 2.283722400665283,
-          "action_target_severity_rank": 0.04502410814166069
-    },
-    "Ingroup Bias": {
-      "pDeath": 2,
-      "SEVERITY_CHANGE": 0.5,
-      "relationship_rank": 2,
-      "disposition": 1,
-      "SUPPLIES_REMAINING": 2,
-      "context.topic_injuries": 2
-    }
+  "kdma": "ingroup bias",
+  "time": "2024-08-28 23:24:47.211923",
+  "weights": {
+    "disposition": 1,
+    "SEVERITY_CHANGE": 0.25,
+    "pBrainInjury": 2,
+    "context.last_casualty": 1.0,
+    "context.topic_injuries": 2,
+    "mental_status": 1,
+    "relationship_rank": 1,
+    "context.val_rapport1": 1
   },
-  "default": 0
+  "error": 0.05174512489430049,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-28 23:52:39.324811",
+  "weights": {
+    "breathing_rank": 1,
+    "worst_threat_state": 1,
+    "pAirwayBlocked": 1,
+    "disposition": 1,
+    "context.val_injuries2": 1,
+    "context.last_casualty": 0.25,
+    "context.val_supplies1": 1,
+    "relationship_rank": 1,
+    "context.topic_rapport": 1
+  },
+  "error": 0.04977346274815293,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 00:17:35.166060",
+  "weights": {
+    "SEVEREST_SEVERITY_CHANGE": 1,
+    "pAirwayBlocked": 1,
+    "treatment_time": 0.5,
+    "context.topic_injuries": 1,
+    "context.val_rapport1": 1,
+    "disposition": 1,
+    "context.last_casualty": 4,
+    "relationship_rank": 1,
+    "worst_injury_severity_rank": 1
+  },
+  "error": 0.04841167152369075,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 00:43:25.461990",
+  "weights": {
+    "injured_count": 1,
+    "mental_status_rank": 1,
+    "context.last_casualty": 1,
+    "breathing": 1,
+    "disposition_rank": 1,
+    "context.topic_supplies": 0.5,
+    "relationship": 0.5,
+    "context.topic_injuries": 1,
+    "context.topic_rapport": 1
+  },
+  "error": 0.04834178104906369,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 01:14:32.976647",
+  "weights": {
+    "pAirwayBlocked": 2,
+    "relationship": 1,
+    "context.last_casualty": 1,
+    "context.topic_rapport": 0.5,
+    "SUPPLIES_REMAINING": 1,
+    "avpu_rank": 2,
+    "disposition_rank": 1,
+    "context.val_injuries2": 1,
+    "unvisited_count": 0.5
+  },
+  "error": 0.046812008955991705,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 01:33:43.160035",
+  "weights": {
+    "tagged": 1,
+    "SMOL_MEDICAL_SOUNDNESS_V2": 1,
+    "SEVERITY_CHANGE": 1,
+    "context.last_casualty": 1,
+    "entropyDeath": 1,
+    "context.topic_injuries": 1,
+    "disposition_rank": 1,
+    "context.val_rapport1": 1
+  },
+  "error": 0.05367774180794732,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 02:01:06.112342",
+  "weights": {
+    "SEVERITY": 0.5,
+    "context.val_injuries2": 0.5,
+    "context.topic_supplies": 1,
+    "context.last_casualty": 2,
+    "relationship": 1,
+    "avpu_rank": 2,
+    "SUPPLIES_REMAINING": 1
+  },
+  "error": 0.05725419825024287,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 02:43:12.476002",
+  "weights": {
+    "target_resource_level": 0.5,
+    "mental_status": 2,
+    "pAirwayBlocked": 0.5,
+    "SEVEREST_SEVERITY_CHANGE": 0.5,
+    "context.topic_rapport": 1,
+    "context.last_casualty": 0.5,
+    "context.topic_injuries": 1,
+    "relationship": 0.5,
+    "disposition_rank": 0.5
+  },
+  "error": 0.04351398997575236,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 03:23:32.850965",
+  "weights": {
+    "SMOL_MEDICAL_SOUNDNESS_V2": 1,
+    "context.val_injuries2": 1,
+    "context.last_casualty": 1,
+    "breathing": 4,
+    "context.topic_injuries": 0.5,
+    "disposition_rank": 1,
+    "context.topic_supplies": 1,
+    "target_resource_level": 1,
+    "context.topic_rapport": 1.0,
+    "relationship_rank": 0.5
+  },
+  "error": 0.045678490296473535,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 03:57:53.776724",
+  "weights": {
+    "relationship_rank": 1,
+    "context.topic_rapport": 1.0,
+    "context.last_casualty": 1,
+    "context.topic_injuries": 1,
+    "DAMAGE_PER_SECOND": 1,
+    "target_resource_level": 2,
+    "avpu_rank": 2,
+    "breathing": 1
+  },
+  "error": 0.0463866321460103,
+  "source": "derived empty"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 07:40:15.572460",
+  "weights": {
+    "unvisited_count": 1,
+    "injured_count": 1,
+    "age": 1,
+    "tagged": 2,
+    "visited": 1,
+    "military_paygrade": 2,
+    "mental_status": 1,
+    "breathing": 1,
+    "hrpmin": 1,
+    "relationship": 1,
+    "disposition": 0.5,
+    "aid_available": 1,
+    "environment_type": 0.5,
+    "action_name": 1,
+    "category": 2,
+    "context.topic_injuries": 0.5,
+    "context.val_rapport1": 1,
+    "breathing_rank": 2,
+    "context.last_casualty": 1,
+    "target_resource_level": 0.5,
+    "context.topic_supplies": 1
+  },
+  "error": 0.04569850712443531,
+  "source": "derived basic"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 10:17:15.672502",
+  "weights": {
+    "injured_count": 1,
+    "others_tagged_or_uninjured": 1,
+    "age": 1,
+    "tagged": 0.5,
+    "visited": 1,
+    "military_paygrade": 0.5,
+    "breathing": 1,
+    "avpu": 1,
+    "intent": 0.5,
+    "relationship": 1,
+    "directness_of_causality": 1,
+    "action_name": 1,
+    "category": 0.5,
+    "SEVERITY_CHANGE": 0.5,
+    "context.val_rapport1": 1,
+    "context.last_casualty": 1,
+    "context.topic_injuries": 1,
+    "SUPPLIES_REMAINING": 1
+  },
+  "error": 0.045590096872267005,
+  "source": "derived basic"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 13:03:23.362377",
+  "weights": {
+    "unvisited_count": 1,
+    "others_tagged_or_uninjured": 1,
+    "conscious": 2,
+    "mental_status": 1,
+    "breathing": 1,
+    "avpu": 1,
+    "relationship": 2,
+    "disposition": 1,
+    "environment_type": 1,
+    "action_name": 1,
+    "treatment": 1,
+    "context.val_supplies1": 1,
+    "context.topic_injuries": 1,
+    "context.topic_rapport": 1,
+    "context.last_casualty": 2,
+    "target_resource_level": 1,
+    "breathing_rank": 1
+  },
+  "error": 0.04691907601174233,
+  "source": "derived basic"
+}
+{
+  "kdma": "ingroup bias",
+  "time": "2024-08-29 15:22:18.297465",
+  "weights": {
+    "unvisited_count": 1,
+    "injured_count": 2,
+    "others_tagged_or_uninjured": 1,
+    "military_paygrade": 1,
+    "mental_status": 1,
+    "breathing": 1,
+    "hrpmin": 1,
+    "relationship": 1,
+    "disposition": 1,
+    "directness_of_causality": 0.5,
+    "context.last_casualty": 1,
+    "context.val_rapport1": 1,
+    "context.val_injuries2": 1,
+    "SUPPLIES_REMAINING": 0.5
+  },
+  "error": 0.049234334722410254,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-28 23:18:50.354142",
+  "weights": {
+    "intent": 4,
+    "context.topic_source_character": 1,
+    "ACTION_TARGET_SEVERITY_CHANGE": 0.5,
+    "context.last_casualty": 0.25,
+    "directness_of_causality_rank": 4.0,
+    "context.val_vitals1.avpu": 0.5,
+    "intent_rank": 4.0,
+    "hrpmin_rank": 16,
+    "MEDSIM_P_DEATH": 0.5,
+    "breathing": 1
+  },
+  "error": 0.008934169154045565,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-28 23:24:15.128376",
+  "weights": {
+    "intent_rank": 1,
+    "context.val_vitals1.heart_rate": 0.5,
+    "mental_status": 2,
+    "context.last_casualty": 1,
+    "SEVEREST_SEVERITY_CHANGE": 0.25,
+    "directness_of_causality_rank": 4,
+    "directness_of_causality": 0.5,
+    "pInternalBleeding": 1,
+    "entropyDeath": 1
+  },
+  "error": 0.016908394375653987,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-28 23:33:57.524297",
+  "weights": {
+    "treatment": 1,
+    "intent": 0.5,
+    "original_severity_rank": 1,
+    "SMOL_MEDICAL_SOUNDNESS_V2": 0.0625,
+    "context.last_casualty": 0.125,
+    "directness_of_causality_rank": 4,
+    "context.topic_source_character": 1.0,
+    "intent_rank": 4,
+    "context.topic_intent": 4
+  },
+  "error": 0.010316692878435877,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-28 23:41:09.092135",
+  "weights": {
+    "context.last_casualty": 0.25,
+    "breathing": 0.5,
+    "intent_rank": 1,
+    "directness_of_causality_rank": 0.5,
+    "pInternalBleeding": 1.0,
+    "context.val_vitals1.spo2": 1,
+    "context.val_vitals1.heart_rate": 0.5,
+    "context.topic_source_character": 1,
+    "INFORMATION_GAINED": 1,
+    "disposition": 0.5
+  },
+  "error": 0.00956940416258152,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-28 23:49:34.617046",
+  "weights": {
+    "pDeath": 4,
+    "context.last_casualty": 1,
+    "directness_of_causality_rank": 32,
+    "context.topic_source_character": 2,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.5,
+    "context.last_action": 1.0,
+    "context.val_injuries2": 1,
+    "avpu": 1.0,
+    "intent_rank": 2,
+    "pExternalBleeding": 1
+  },
+  "error": 0.010118323667161075,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-28 23:51:58.977293",
+  "weights": {
+    "entropy": 0.5,
+    "intent_rank": 1,
+    "directness_of_causality_rank": 2,
+    "context.last_casualty": 1,
+    "target_resource_level": 0.5,
+    "context.val_vitals1.mental_status": 1,
+    "hrpmin_rank": 1
+  },
+  "error": 0.016986292931194677,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-28 23:58:25.186916",
+  "weights": {
+    "context.val_vitals1.heart_rate": 0.5,
+    "pBrainInjury": 4,
+    "context.topic_source_character": 2,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.0625,
+    "directness_of_causality_rank": 1,
+    "context.last_casualty": 1,
+    "breathing": 1.0,
+    "disposition_rank": 2,
+    "intent_rank": 2
+  },
+  "error": 0.009667769989414052,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 00:02:51.042420",
+  "weights": {
+    "SEVERITY_CHANGE": 0.5,
+    "directness_of_causality_rank": 8.0,
+    "context.topic_vitals": 1.0,
+    "context.last_casualty": 1,
+    "worst_injury_severity_rank": 4.0,
+    "directness_of_causality": 2,
+    "intent_rank": 4,
+    "pBrainInjury": 16
+  },
+  "error": 0.016770096878547334,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 00:05:05.566426",
+  "weights": {
+    "treatment_count_rank": 1,
+    "entropyDeath": 1,
+    "context.val_vitals2.avpu": 2,
+    "directness_of_causality_rank": 2,
+    "context.last_casualty": 2,
+    "others_tagged_or_uninjured": 2,
+    "intent_rank": 2
+  },
+  "error": 0.017757975601992052,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 00:11:14.524572",
+  "weights": {
+    "SEVEREST_SEVERITY_CHANGE": 0.25,
+    "pInternalBleeding": 1,
+    "directness_of_causality_rank": 4,
+    "context.last_casualty": 1,
+    "context.val_intent1": 0.5,
+    "intent_rank": 1,
+    "pPain": 1.0,
+    "directness_of_causality": 0.5,
+    "pDeath": 2
+  },
+  "error": 0.01655837517504133,
+  "source": "derived empty"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 00:41:30.697829",
+  "weights": {
+    "breathing": 2,
+    "avpu": 2,
+    "intent": 1,
+    "disposition": 4,
+    "directness_of_causality": 0.5,
+    "action_name": 1.0,
+    "entropy": 1,
+    "context.last_casualty": 0.25,
+    "context.topic_source_character": 0.5,
+    "directness_of_causality_rank": 1,
+    "intent_rank": 1,
+    "context.val_vitals2.ambulatory": 1
+  },
+  "error": 0.01006331367090566,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 01:17:02.419638",
+  "weights": {
+    "breathing": 0.5,
+    "avpu": 0.25,
+    "directness_of_causality": 0.25,
+    "aid_available": 1.0,
+    "context.last_casualty": 0.5,
+    "context.topic_vitals": 1.0,
+    "context.topic_source_character": 2,
+    "intent_rank": 1,
+    "entropy": 0.25,
+    "context.val_intent2": 0.0625,
+    "directness_of_causality_rank": 0.5,
+    "disposition_rank": 0.5
+  },
+  "error": 0.009402381524188319,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 01:57:04.148598",
+  "weights": {
+    "hrpmin": 1,
+    "avpu": 2,
+    "intent": 1,
+    "ACTION_TARGET_SEVERITY_CHANGE": 1,
+    "context.topic_source_character": 1,
+    "context.val_vitals2.avpu": 1,
+    "directness_of_causality_rank": 8,
+    "context.last_casualty": 0.25,
+    "context.val_vitals1.breathing": 1,
+    "intent_rank": 4,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 1,
+    "hrpmin_rank": 2
+  },
+  "error": 0.009824413389157563,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 02:37:08.043365",
+  "weights": {
+    "others_tagged_or_uninjured": 1,
+    "breathing": 0.5,
+    "avpu": 1,
+    "intent": 0.5,
+    "directness_of_causality_rank": 2,
+    "context.last_casualty": 0.25,
+    "context.topic_source_character": 1,
+    "pPain": 2,
+    "intent_rank": 1,
+    "context.val_vitals1.breathing": 0.0625,
+    "context.val_vitals2.spo2": 1
+  },
+  "error": 0.009195148001776263,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 03:16:32.477994",
+  "weights": {
+    "breathing": 1,
+    "avpu": 1.0,
+    "intent": 0.5,
+    "directness_of_causality": 0.5,
+    "context.val_vitals2.spo2": 0.5,
+    "context.val_vitals2.heart_rate": 0.5,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 0.5,
+    "context.last_casualty": 0.25,
+    "context.topic_source_character": 2,
+    "directness_of_causality_rank": 2,
+    "intent_rank": 2,
+    "breathing_rank": 2
+  },
+  "error": 0.008512226490063082,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 03:52:50.965053",
+  "weights": {
+    "breathing": 1,
+    "avpu": 2,
+    "intent": 1,
+    "disposition": 1,
+    "directness_of_causality": 1,
+    "context.topic_source_character": 2,
+    "ACTION_TARGET_SEVERITY_CHANGE": 0.125,
+    "context.val_vitals1.heart_rate": 1,
+    "directness_of_causality_rank": 2,
+    "context.last_casualty": 0.5,
+    "intent_rank": 4,
+    "hrpmin_rank": 4,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 1,
+    "pPain": 1
+  },
+  "error": 0.008795060458090795,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 04:37:08.444904",
+  "weights": {
+    "injured_count": 2,
+    "breathing": 2,
+    "avpu": 2,
+    "intent": 0.5,
+    "disposition": 4,
+    "directness_of_causality": 1,
+    "context.last_casualty": 1,
+    "intent_rank": 2,
+    "context.topic_source_character": 4,
+    "entropy": 1,
+    "context.val_vitals1.mental_status": 2,
+    "directness_of_causality_rank": 1,
+    "context.val_vitals2.ambulatory": 1
+  },
+  "error": 0.009900041047754018,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 05:17:47.256844",
+  "weights": {
+    "injured_count": 1.0,
+    "breathing": 1,
+    "avpu": 1,
+    "intent": 0.5,
+    "directness_of_causality": 0.5,
+    "hrpmin_rank": 1,
+    "context.topic_source_character": 2,
+    "intent_rank": 2,
+    "context.last_casualty": 0.5,
+    "breathing_rank": 0.125,
+    "MEDSIM_P_DEATH": 1,
+    "context.val_directness_of_causality2": 1,
+    "avpu_rank": 4,
+    "directness_of_causality_rank": 2,
+    "disposition_rank": 1
+  },
+  "error": 0.008503214110577367,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 05:54:21.875845",
+  "weights": {
+    "breathing": 1,
+    "avpu": 1,
+    "intent": 0.5,
+    "directness_of_causality": 1,
+    "context.last_casualty": 0.5,
+    "context.val_vitals1.avpu": 1,
+    "worst_injury_severity_rank": 1,
+    "context.topic_source_character": 2,
+    "pPain": 2,
+    "intent_rank": 1,
+    "breathing_rank": 1,
+    "MEDSIM_P_DEATH_ONE_MIN_LATER": 1
+  },
+  "error": 0.009253569938441763,
+  "source": "derived basic"
+}
+{
+  "kdma": "moral judgement",
+  "time": "2024-08-29 06:23:54.739388",
+  "weights": {
+    "breathing": 2.0,
+    "hrpmin": 0.5,
+    "directness_of_causality": 1,
+    "aid_available": 2,
+    "context.val_injuries1": 0.5,
+    "context.topic_source_character": 1,
+    "context.last_casualty": 0.5,
+    "intent_rank": 2,
+    "worst_injury_severity_rank": 4,
+    "pInternalBleeding": 2
+  },
+  "error": 0.010072597824738828,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:00:14.016728",
+  "source": "initial time"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:00:24.355369",
+  "weights": {
+    "action_name": 0.5,
+    "avpu_rank": 1,
+    "avpu": 0.03125,
+    "worst_injury_severity_rank": 0.5
+  },
+  "error": 0.7738651101942179,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:00:39.520320",
+  "weights": {
+    "original_severity_rank": 0.5,
+    "age": 0.5,
+    "action_name": 1.0,
+    "pDeath": 1,
+    "entropy": 0.5,
+    "tagged": 8
+  },
+  "error": 0.3590031965784473,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:00:44.304483",
+  "weights": {
+    "avpu_rank": 1,
+    "WEIGHTED_RESOURCE_SCORE": 4,
+    "tagged": 1
+  },
+  "error": 1.0216235575693218,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:00:58.076053",
+  "weights": {
+    "original_severity_rank": 1,
+    "age": 1,
+    "damage_per_second_rank": 1,
+    "treatment_time": 0.5,
+    "action_name": 1,
+    "entropyDeath": 2,
+    "avpu": 1,
+    "entropy": 2
+  },
+  "error": 0.4589449639140929,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:01:04.297370",
+  "weights": {
+    "WEIGHTED_RESOURCE_SCORE": 1,
+    "age": 0.5,
+    "avpu_rank": 1
+  },
+  "error": 0.5820011006752382,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:01:10.207864",
+  "weights": {
+    "treatment": 0.5,
+    "INFORMATION_GAINED": 2
+  },
+  "error": 1.7998663192084734,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:01:15.787842",
+  "weights": {
+    "avpu": 1,
+    "WEIGHTED_RESOURCE_SCORE": 1
+  },
+  "error": 0.979723518551675,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:01:25.763031",
+  "weights": {
+    "avpu_rank": 1,
+    "WEIGHTED_RESOURCE_SCORE": 1,
+    "age": 0.5
+  },
+  "error": 0.584995367449403,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:01:31.085888",
+  "weights": {
+    "DAMAGE_PER_SECOND": 1,
+    "action_target_severity_change_rank": 1,
+    "age": 1,
+    "age_difference": 1
+  },
+  "error": 1.6705461995664384,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:01:37.091979",
+  "weights": {
+    "WEIGHTED_RESOURCE_SCORE": 1,
+    "avpu_rank": 1,
+    "age": 0.5
+  },
+  "error": 0.5835441446598302,
+  "source": "derived empty"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:03:11.875514",
+  "weights": {
+    "unvisited_count": 1,
+    "injured_count": 1,
+    "age": 0.5,
+    "tagged": 8,
+    "visited": 1,
+    "conscious": 1,
+    "military_paygrade": 2,
+    "mental_status": 1,
+    "breathing": 1,
+    "avpu": 1,
+    "disposition": 0.5,
+    "action_name": 2,
+    "original_severity_rank": 1
+  },
+  "error": 0.4134268948733385,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:04:39.706556",
+  "weights": {
+    "age": 1,
+    "tagged": 4,
+    "breathing": 16,
+    "disposition": 2,
+    "environment_type": 4,
+    "treatment": 1
+  },
+  "error": 0.737791931260082,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:05:55.111133",
+  "weights": {
+    "age": 1,
+    "tagged": 1,
+    "mental_status": 1,
+    "disposition": 2,
+    "action_name": 2,
+    "original_severity_rank": 1,
+    "worst_injury_severity_rank": 2
+  },
+  "error": 0.6318945580342639,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:07:34.852644",
+  "weights": {
+    "injured_count": 128,
+    "age": 1,
+    "tagged": 2,
+    "mental_status": 1,
+    "breathing": 1,
+    "hrpmin": 8,
+    "intent": 1,
+    "disposition": 2,
+    "environment_type": 1,
+    "treatment": 1
+  },
+  "error": 0.718675986067298,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:09:50.820131",
+  "weights": {
+    "age": 1,
+    "tagged": 2,
+    "mental_status": 1,
+    "avpu": 1,
+    "disposition": 2,
+    "action_name": 2.0,
+    "original_severity_rank": 1,
+    "worst_injury_severity_rank": 4,
+    "treatment_time": 0.5,
+    "entropyDeath": 1,
+    "damage_per_second_rank": 1
+  },
+  "error": 0.4710386689356075,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:11:28.057751",
+  "weights": {
+    "age": 1,
+    "tagged": 4,
+    "mental_status": 1,
+    "breathing": 4,
+    "disposition": 2,
+    "action_name": 1,
+    "original_severity_rank": 1,
+    "worst_injury_severity_rank": 4,
+    "treatment_time_rank": 1
+  },
+  "error": 0.6168132253344905,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:12:55.673049",
+  "weights": {
+    "age": 1,
+    "tagged": 8,
+    "mental_status": 1,
+    "avpu": 2,
+    "disposition": 1,
+    "action_name": 1,
+    "original_severity_rank": 1,
+    "breathing_rank": 1,
+    "treatment_time_rank": 1
+  },
+  "error": 0.4500198219424521,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:14:26.922641",
+  "weights": {
+    "age": 1,
+    "tagged": 2,
+    "military_paygrade": 1,
+    "mental_status": 1,
+    "breathing": 4,
+    "disposition": 1,
+    "action_name": 1,
+    "original_severity_rank": 1,
+    "SUPPLIES_USED": 0.5,
+    "worst_injury_severity_rank": 1
+  },
+  "error": 0.6160293820987037,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:16:52.870324",
+  "weights": {
+    "injured_count": 1,
+    "age": 1,
+    "tagged": 1,
+    "visited": 2,
+    "conscious": 1.0,
+    "military_paygrade": 1.0,
+    "mental_status": 1.0,
+    "breathing": 4,
+    "avpu": 1,
+    "disposition": 1,
+    "treatment_time": 1,
+    "original_severity_rank": 2,
+    "pExternalBleeding": 1,
+    "avpu_rank": 1
+  },
+  "error": 0.4723088995772282,
+  "source": "derived basic"
+}
+{
+  "kdma": "qualityoflife",
+  "time": "2024-08-28 23:19:53.058679",
+  "weights": {
+    "age": 1,
+    "tagged": 16,
+    "conscious": 4,
+    "mental_status": 1,
+    "treatment_time": 0.125,
+    "severity_rank": 2,
+    "avpu_rank": 64,
+    "original_severity_rank": 1,
+    "EBD_Entropy": 1
+  },
+  "error": 0.33805353499377533,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:00:14.258096",
+  "source": "initial time"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:00:36.991108",
+  "weights": {
+    "avpu_rank": 1.0,
+    "EBD_Entropy": 1.0,
+    "worst_injury_severity_rank": 1.0,
+    "conscious": 2,
+    "breathing": 8,
+    "tagged": 1,
+    "action_name": 1
+  },
+  "error": 0.6217824509141123,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:00:44.622888",
+  "weights": {
+    "treatment": 1,
+    "EBD_Entropy": 4,
+    "worst_injury_severity_rank": 1
+  },
+  "error": 1.127169438033326,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:00:54.427085",
+  "weights": {
+    "worst_injury_severity_rank": 0.5,
+    "action_name": 0.25,
+    "disposition": 2,
+    "tagged": 4
+  },
+  "error": 0.7235102749905167,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:01:11.365309",
+  "weights": {
+    "conscious": 1,
+    "worst_injury_severity": 0.5,
+    "EBD_Entropy": 32,
+    "breathing_rank": 8,
+    "mental_status_rank": 0.5,
+    "worst_injury_severity_rank": 1
+  },
+  "error": 0.709611830299154,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:01:31.899860",
+  "weights": {
+    "action_name": 0.015625,
+    "EBD_Entropy": 1,
+    "conscious": 1,
+    "worst_injury_severity_rank": 0.03125,
+    "breathing_rank": 2
+  },
+  "error": 0.612056589883527,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:01:59.361866",
+  "weights": {
+    "conscious": 2.0,
+    "action_name": 0.0078125,
+    "EBD_Entropy": 1.0,
+    "breathing_rank": 4,
+    "worst_injury_severity_rank": 0.03125,
+    "military_paygrade_rank": 0.25
+  },
+  "error": 0.5834262590695769,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:02:06.538524",
+  "weights": {
+    "ACTION_TARGET_SEVERITY_CHANGE": 1,
+    "military_paygrade_rank": 2,
+    "pExternalBleeding": 1,
+    "severity_rank": 1,
+    "worst_injury_severity_rank": 1
+  },
+  "error": 0.9432680334396528,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:02:16.603580",
+  "weights": {
+    "avpu_rank": 1,
+    "mental_status_rank": 1,
+    "tagged": 1,
+    "EBD_Entropy": 2,
+    "action_name": 0.5
+  },
+  "error": 0.8893827259543461,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:02:54.427431",
+  "weights": {
+    "pPain": 1.0,
+    "age": 0.25,
+    "severity_rank": 1,
+    "EBD_Entropy": 64,
+    "breathing_rank": 32,
+    "action_target_severity_change_rank": 1,
+    "action_target_severity_rank": 0.25,
+    "tagged": 4
+  },
+  "error": 0.7698261496273913,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:03:03.961762",
+  "weights": {
+    "SUPPLIES_USED": 4,
+    "worst_injury_severity_rank": 1,
+    "age": 1,
+    "conscious": 2,
+    "action_target_severity_change_rank": 1
+  },
+  "error": 1.1115418211626702,
+  "source": "derived empty"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:04:47.220149",
+  "weights": {
+    "age": 0.25,
+    "tagged": 1,
+    "avpu": 2,
+    "action_name": 1,
+    "treatment": 2,
+    "original_severity_rank": 1,
+    "entropyDeath": 4,
+    "pAirwayBlocked": 1
+  },
+  "error": 0.5908190947109764,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:06:52.362685",
+  "weights": {
+    "age": 0.5,
+    "tagged": 1,
+    "military_paygrade": 1,
+    "avpu": 4,
+    "action_name": 1,
+    "treatment": 4,
+    "action_target_severity_rank": 1,
+    "pBrainInjury": 8.0
+  },
+  "error": 0.6081219306628107,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:08:43.571791",
+  "weights": {
+    "age": 0.25,
+    "tagged": 1,
+    "visited": 1,
+    "conscious": 1,
+    "breathing": 2,
+    "relationship": 1,
+    "aid_available": 1,
+    "environment_type": 0.5,
+    "treatment": 2,
+    "original_severity_rank": 1,
+    "worst_injury_severity_rank": 1,
+    "EBD_Entropy": 1
+  },
+  "error": 0.5627436836539259,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:11:04.405512",
+  "weights": {
+    "age": 0.5,
+    "tagged": 4,
+    "military_paygrade": 2,
+    "avpu": 16,
+    "disposition": 1,
+    "action_name": 0.25,
+    "treatment": 4,
+    "action_target_severity_change_rank": 1,
+    "EBD_Entropy": 8,
+    "SUPPLIES_REMAINING": 1
+  },
+  "error": 0.6259219840107789,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:13:38.998046",
+  "weights": {
+    "age": 0.5,
+    "tagged": 8.0,
+    "military_paygrade": 1,
+    "avpu": 32,
+    "action_name": 1,
+    "treatment": 2,
+    "EBD_Entropy": 16.0,
+    "original_severity_rank": 2,
+    "avpu_rank": 2
+  },
+  "error": 0.5453546791806042,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:15:03.175171",
+  "weights": {
+    "age": 0.25,
+    "tagged": 0.5,
+    "conscious": 1,
+    "mental_status": 1,
+    "breathing": 1.0,
+    "avpu": 1,
+    "treatment": 2,
+    "action_target_severity_rank": 1
+  },
+  "error": 0.8291637645786112,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:16:30.098562",
+  "weights": {
+    "age": 0.5,
+    "conscious": 0.5,
+    "mental_status": 1,
+    "action_name": 1,
+    "treatment": 1,
+    "action_target_severity_rank": 1,
+    "pBrainInjury": 4
+  },
+  "error": 1.00896687527392,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:19:06.722970",
+  "weights": {
+    "age": 0.125,
+    "tagged": 1.0,
+    "mental_status": 0.25,
+    "avpu": 4,
+    "treatment": 4,
+    "action_target_severity_change_rank": 1,
+    "worst_injury_severity_rank": 1,
+    "EBD_Entropy": 2,
+    "target_resource_level": 1
+  },
+  "error": 0.5481085724336636,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:22:51.192888",
+  "weights": {
+    "age": 0.5,
+    "tagged": 4,
+    "conscious": 2,
+    "breathing": 0.5,
+    "avpu": 2,
+    "treatment": 4,
+    "original_severity_rank": 2,
+    "severity_rank": 1.0,
+    "worst_injury_severity_rank": 1,
+    "avpu_rank": 2,
+    "breathing_rank": 4,
+    "EBD_Entropy": 2
+  },
+  "error": 0.5168242300277976,
+  "source": "derived basic"
+}
+{
+  "kdma": "perceivedquantityoflivessaved",
+  "time": "2024-08-28 23:24:42.777937",
+  "weights": {
+    "age": 0.25,
+    "tagged": 2,
+    "conscious": 1.0,
+    "avpu": 2,
+    "disposition": 1,
+    "action_name": 2.0,
+    "treatment": 2,
+    "action_target_severity_change_rank": 1,
+    "worst_injury_severity_rank": 1
+  },
+  "error": 0.620444877227049,
+  "source": "derived basic"
 }

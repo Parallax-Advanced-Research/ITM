@@ -1,8 +1,9 @@
-from typing import Any
-import math, pandas, numpy
+from typing import Any, Callable
+import math, pandas, numpy, statistics
 
 from . import kdma_estimation
-from .case_base_functions import integerish
+from . import triage_constants
+from . import case_base_functions
 
 from components.attribute_learner.xgboost import xgboost_train, data_processing
 import util
@@ -37,26 +38,168 @@ class KEDSModeller(CaseModeller):
         self.use_average_error = avg
         rcases = list(self.cases)
         util.get_global_random_generator().shuffle(rcases)
-        part_size = len(rcases)//partition_count
+        part_size = len(rcases) // partition_count
         for i in range(partition_count):
             self.case_partitions.append(rcases[i*part_size:(i+1)*(part_size)])
         for i in range(partition_count * part_size, len(rcases)):
             part_num = i % partition_count
             self.case_partitions[part_num].append(rcases[i])
+        if avg:
+            self.error_threshold = 0.1
+        else:
+            self.error_threshold = 0.49
+        self.base_node = None
+        self.base_distance_cache = None
+        self.base_total_weight = None
+        self.derivative_distance_cache = None
+        self.derivative_total_weight = None
 
     def adjust(self, weights: dict[str, float]):
         self.last_weights = weights
         self.last_error = None
+        
+    def error_impact(self, error: float):
+        if self.use_average_error:
+            weight = 16 if error > self.error_threshold else error / self.error_threshold
+            return math.sqrt(weight) * 0.25
+        else:
+            return 1 if error > self.error_threshold else 0
+            
+    def set_base_weights(self, node: dict):
+        if node["change"] == "new":
+            self.base_total_weight = 0
+            self.base_distance_cache = dict()
+            for case in self.cases:
+                self.base_distance_cache[case["index"]] = [None]*len(self.cases)
+                for ocase in self.cases:
+                    compat = kdma_estimation.is_compatible(case, ocase, self.kdma_name, check_scenes = True)
+                    self.base_distance_cache[case["index"]][ocase["index"]] = 0 if compat else None
+        else: 
+            self.set_weight_modification(node)
+            self.base_distance_cache = self.derivative_distance_cache
+            self.base_total_weight = self.derivative_total_weight
+        self.base_node = node
+        self.derivative_distance_cache = dict()
+        for case in self.cases:
+            self.derivative_distance_cache[case["index"]] = [None]*len(self.cases)
+        self.derivative_total_weight = None
 
-    def estimate_error(self) -> float:
+    
+    def set_weight_modification(self, node: dict):
+        match node["change"]:
+            case "added":
+                fun = self.get_added_fun(node)
+                self.derivative_total_weight = sum([v for (k, v) in node.items() if isinstance(v, float)])
+            case "halved":
+                fun = self.get_halved_fun(node["feature"], node[node["feature"]])
+                self.derivative_total_weight = self.base_total_weight - node[node["feature"]]
+            case "doubled":
+                fun = self.get_doubled_fun(node["feature"], node[node["feature"]])
+                self.derivative_total_weight = self.base_total_weight + (node[node["feature"]]* 0.5)
+            case "removed":
+                fun = self.get_removed_fun(node["feature"])
+                self.derivative_total_weight = self.base_total_weight + self.base_node[node["feature"]]
+            case _:
+                raise Exception()
+        for case in self.cases:
+            index = case["index"]
+            cur_list = self.derivative_distance_cache[index]
+            cur_base_list = self.base_distance_cache[index]
+            for ocase in self.cases:
+                oindex = ocase["index"]
+                if oindex <= index:
+                    cur_list[oindex] = None
+                    continue
+                value = cur_base_list[oindex]
+                if value is None:
+                    cur_list[oindex] = None
+                    continue
+                new_val = fun(case, ocase, value)
+                if new_val < 0:
+                    if new_val > -1e-6:
+                        new_val = 0
+                    else:
+                        raise Exception()
+                cur_list[oindex] = new_val
+                
+    def get_added_fun(self, node) -> Callable[[dict, dict, float], float]:
+        added_features = [(k, v) for (k, v) in node.items() if k not in self.base_node]
+        def add_fun(case1, case2, value): 
+            value_sum = value
+            for (feature, weight) in added_features:
+                value_sum += kdma_estimation.local_compare(case1.get(feature, None), case2.get(feature, None), feature) * weight
+            return value_sum
+        return add_fun
+
+    def get_halved_fun(self, feature, new_weight) -> Callable[[dict, dict, float], float]:
+        return self.get_weight_change(feature, new_weight-self.base_node[feature])
+
+    def get_doubled_fun(self, feature, new_weight) -> Callable[[dict, dict, float], float]:
+        return self.get_weight_change(feature, new_weight-self.base_node[feature])
+
+    def get_removed_fun(self, feature) -> Callable[[dict, dict, float], float]:
+        return self.get_weight_change(feature, -self.base_node[feature])
+        
+    def get_weight_change(self, feature, weight_change):
+        return lambda case1, case2, value: \
+            value + (kdma_estimation.local_compare(case1.get(feature, None), case2.get(feature, None), feature) * weight_change)
+                
+    def cached_distance_calculation(self, case1, case2, weights, kdma, check_scenes = True):
+        index1 = case1["index"]
+        index2 = case2["index"]
+        if index1 < index2:
+            return self.derivative_distance_cache[index1][index2]
+        else:
+            return self.derivative_distance_cache[index2][index1]
+        
+
+    def estimate_error(self) -> dict[str, float]:
         if self.last_error is None:
-            self.last_error = kdma_estimation.find_leave_one_out_error(
-                                                self.last_weights, self.kdma_name, 
-                                                cases=self.cases, avg=self.use_average_error)
+            self.last_error = dict()
+            dist_fn = None
+            if self.derivative_total_weight is not None:
+                dist_fn = self.cached_distance_calculation
+            distanced_errors = kdma_estimation.find_error_values(
+                                                self.last_weights, self.kdma_name,
+                                                cases=self.cases, avg=self.use_average_error, 
+                                                reject_same_scene=True,
+                                                neighbor_count = triage_constants.DEFAULT_KDMA_NEIGHBOR_COUNT,
+                                                dist_fn = dist_fn)
+            self.last_error["combined"] = sum([case.get("bounty", 1) * self.error_impact(error) for (case, error) in distanced_errors])
+            self.last_error["cases_covered"] = sum([1 for (case, error) in distanced_errors if error <= self.error_threshold])
+            self.last_error["new_cases_covered"] = sum([1 for (case, error) in distanced_errors if error <= self.error_threshold and case.get("times_covered", 0) == 0])
+            self.last_error["average_impact"] = statistics.mean([self.error_impact(error) for (case, error) in distanced_errors])
+
+            if self.last_error["new_cases_covered"] == 0:
+                self.last_error["new_cases_error_avg"] = 0
+            else:
+                self.last_error["new_cases_error_avg"] = statistics.mean([error for (case, error) in distanced_errors if error <= self.error_threshold and case.get("times_covered", 0) == 0])
+
+            if self.last_error["cases_covered"] == 0:
+                self.last_error["covered_error_avg"] = 0
+                self.last_error["covered_impact_avg"] = 0
+            else:
+                self.last_error["covered_error_avg"] = statistics.mean([error for (case, error) in distanced_errors if error <= self.error_threshold])
+                self.last_error["covered_impact_avg"] = statistics.mean([self.error_impact(error) for (case, error) in distanced_errors if error <= self.error_threshold])
+
+            if self.last_error["cases_covered"] <= self.last_error["new_cases_covered"]:
+                self.last_error["old_cases_error_avg"] = 0
+            else:
+                self.last_error["old_cases_error_avg"] = statistics.mean([error for (case, error) in distanced_errors if error <= self.error_threshold and case.get("times_covered", 0) > 0])
         return self.last_error
+        
+    def case_error(self, case, weights) -> bool:
+        error = kdma_estimation.calculate_error( 
+                                    case, weights, self.kdma_name,
+                                    self.cases, avg=self.use_average_error, 
+                                    reject_same_scene=True, 
+                                    neighbor_count = triage_constants.DEFAULT_KDMA_NEIGHBOR_COUNT)
+        return self.error_impact(error)
+            
     
     def get_state(self) -> dict[str, Any]:
-        return {"weights": self.last_weights, "error": self.estimate_error()}
+        error = self.estimate_error()["combined"]
+        return {"weights": self.last_weights, "error": error} | dict(self.last_error)
 
 class XGBModeller(CaseModeller):
     experience_data: pandas.DataFrame
@@ -244,7 +387,7 @@ class WeightTrainer:
     def get_basic_error(self): 
         return self.find_error("basic")
 
-    def check_standard_weight_sets(standard_weight_sets: dict[str, dict[str, float]]):
+    def check_standard_weight_sets(self, standard_weight_sets: dict[str, dict[str, float]]):
         for (name, weight_set) in standard_weight_sets.items():
             self.add_to_history(weight_set, name = name, source = "standard")
 
@@ -342,7 +485,7 @@ def test_file_error(cb_fname: str, weights_dict: dict[str, float], kdma_name, dr
 def make_approval_data_frame(cases: list[dict[str, Any]], kdma_name, cols=None, drop_discounts = False, entries = None) -> pandas.DataFrame:
     cases = [dict(case) for case in cases if case.get(kdma_name, None) is not None]
     if drop_discounts:
-        cases = [case for case in cases if integerish(10 * case[kdma_name])]
+        cases = [case for case in cases if case_base_functions.integerish(10 * case[kdma_name])]
     if entries is not None:
         cases = cases[:entries]
     cleaned_experiences, category_labels = data_processing.clean_data(dict(zip(range(len(cases)), cases)))

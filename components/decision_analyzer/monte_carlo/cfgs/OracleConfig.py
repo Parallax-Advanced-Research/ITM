@@ -7,30 +7,30 @@ class Medical:
     HEALING_ITEMS = [Supplies.BLOOD.value, Supplies.NASOPHARYNGEAL_AIRWAY.value,
                      Supplies.IV_BAG.value, Supplies.PAIN_MEDICATIONS.value, Supplies.FENTANYL_LOLLIPOP.value]
     FAILURE_CHANCE = {
-        Supplies.PRESSURE_BANDAGE.value: .01,
-        Supplies.HEMOSTATIC_GAUZE.value: .05,
-        Supplies.TOURNIQUET.value: .03,
-        Supplies.DECOMPRESSION_NEEDLE.value: .03,
-        Supplies.NASOPHARYNGEAL_AIRWAY.value: .05,
-        Supplies.PULSE_OXIMETER.value: 1.0,
+        Supplies.PRESSURE_BANDAGE.value: 0.,
+        Supplies.HEMOSTATIC_GAUZE.value: 0.,
+        Supplies.TOURNIQUET.value: 0.,
+        Supplies.DECOMPRESSION_NEEDLE.value: 0.,
+        Supplies.NASOPHARYNGEAL_AIRWAY.value: 0.,
+        Supplies.PULSE_OXIMETER.value: 0.,
         Supplies.FENTANYL_LOLLIPOP.value: 0.0,
-        Supplies.BLANKET.value: .001,
-        Supplies.EPI_PEN.value: .01,
-        Supplies.VENTED_CHEST_SEAL.value: .01,
-        Supplies.PAIN_MEDICATIONS.value: .1,
-        Supplies.BLOOD.value: .05,
-        Supplies.SPLINT.value: .01,
-        Supplies.IV_BAG.value: .005,
-        Supplies.BURN_DRESSING.value: .02
+        Supplies.BLANKET.value: 0.,
+        Supplies.EPI_PEN.value: 0.,
+        Supplies.VENTED_CHEST_SEAL.value: 0.,
+        Supplies.PAIN_MEDICATIONS.value: 0.,
+        Supplies.BLOOD.value: 0.,
+        Supplies.SPLINT.value: 0.,
+        Supplies.IV_BAG.value: 0.,
+        Supplies.BURN_DRESSING.value: 0.
     }
 
     CHECK_PULSE_TIME = 20.0
     CHECK_RESPIRATION_TIME = 25.0
     TIME_TAKEN = {
-        Supplies.PRESSURE_BANDAGE.value: [150.0, 150.0, 200.0],
-        Supplies.HEMOSTATIC_GAUZE.value: [30.0, 30.0, 30.0, 42.5, 50.0],
+        Supplies.PRESSURE_BANDAGE.value: [150.0],
+        Supplies.HEMOSTATIC_GAUZE.value: [30.0],
         Supplies.TOURNIQUET.value: [20.0],
-        Supplies.DECOMPRESSION_NEEDLE.value: [60.0, 75.0],
+        Supplies.DECOMPRESSION_NEEDLE.value: [60.0],
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [35.0],
         Supplies.FENTANYL_LOLLIPOP.value: [36.0],
         Supplies.PULSE_OXIMETER.value: [30.0],
@@ -92,7 +92,11 @@ class Medical:
         Supplies.NASOPHARYNGEAL_AIRWAY.value: [Locations.LEFT_FACE.value, Locations.RIGHT_FACE.value],
         Supplies.VENTED_CHEST_SEAL.value: [Locations.LEFT_CHEST.value, Locations.RIGHT_CHEST.value,
                                            Locations.UNSPECIFIED.value],
-        Supplies.BLANKET.value: [Locations.UNSPECIFIED.value]
+        Supplies.BLANKET.value: [Locations.UNSPECIFIED.value],
+        Supplies.BLOOD.value: [Locations.UNSPECIFIED.value, Locations.LEFT_BICEP.value, Locations.RIGHT_BICEP.value],
+        Supplies.FENTANYL_LOLLIPOP.value: [Locations.UNSPECIFIED.value, Locations.HEAD.value],
+        Supplies.IV_BAG.value: [Locations.UNSPECIFIED.value, Locations.LEFT_BICEP.value, Locations.RIGHT_BICEP.value],
+        Supplies.PAIN_MEDICATIONS.value: [Locations.UNSPECIFIED.value, Locations.HEAD.value]
     }
 
     CASUALTY_MAX_BURN_HP = 5000
@@ -143,11 +147,11 @@ class InjuryUpdate:
     def val_to_bse(val):
         if val <= 1:
             return BodySystemEffect.MINIMAL.value
-        if val <= 3:
+        if val <= 4:
             return BodySystemEffect.MODERATE.value
-        if val <= 5:
-            return BodySystemEffect.SEVERE.value
         if val <= 7:
+            return BodySystemEffect.SEVERE.value
+        if val <= 9:
             return BodySystemEffect.CRITICAL.value
         return BodySystemEffect.FATAL.value
 
@@ -162,8 +166,8 @@ class InjuryUpdate:
             SeverityEnums.MINOR.value: 1,
             SeverityEnums.MODERATE.value: 2,
             SeverityEnums.MAJOR.value: 3,
-            SeverityEnums.SUBSTANTIAL.value: 6,
-            SeverityEnums.EXTREME.value: 100
+            SeverityEnums.SUBSTANTIAL.value: 4,
+            SeverityEnums.EXTREME.value: 5
         }
         injury_bleed, effect_bleed = values[self.bleeding_effect], values[affector_in.bleeding_effect]
         injury_breath, effect_breath = values[self.breathing_effect], values[affector_in.breathing_effect]

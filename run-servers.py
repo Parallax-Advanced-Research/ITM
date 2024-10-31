@@ -9,6 +9,7 @@ import time
 import requests
 from run_tests import color
 from enum import Enum
+from util import process
 
 Status = Enum('Status', { 'SUCCESS': 0, 'WARNING': 0, 'ERROR': 2 })
 status = Status.SUCCESS
@@ -200,7 +201,7 @@ def which_docker_compose() -> list[str] | None:
 
     return None
 
-def start_server(dir_name: str, args: list[str], port: str, use_venv = True, extra_env = {}) -> None:
+def start_server(dir_name: str, args: list[str], port: str, use_venv = True, extra_env = {}) -> int:
     ldir = os.path.join(os.getcwd(), ".deprepos", dir_name)
     env = os.environ.copy() | extra_env
     out_path = os.path.join(os.getcwd(), ".deprepos", dir_name + "-" + port + ".out")
@@ -218,6 +219,7 @@ def start_server(dir_name: str, args: list[str], port: str, use_venv = True, ext
         p = subprocess.Popen(cmd, env=env, stdout=out, stderr=err, cwd=ldir) # pylint: disable=consider-using-with # (daemon)
     with open(pid_path, "w", encoding="utf-8") as f:
         f.write(str(p.pid))
+    return p.pid
     
     # t1 = threading.Thread(target=redirect_output, args=(p.stdout, ))
     # t1.start()
@@ -326,17 +328,18 @@ if not adept_server_available and not soartech_server_available:
     warning('No training servers in use. Using ta3_training.py will not be possible. Testing '
           + 'using tad_tester.py should be unaffected.')
 
-
+adept_pid = -1
 if adept_server_available:
-    start_server("adept_server", ["openapi_server", "--port", str(adept_port)], str(adept_port))
+    adept_pid = start_server("adept_server", ["openapi_server", "--port", str(adept_port)], str(adept_port))
 elif soartech_server_available:
     warning('ADEPT server is not in use. Use the arguments '
           + '"--session_type soartech" to use only the Soartech server with ta3_training.py. The '
           + 'arguments "--no-training --session_type adept" will also work with tad_tester.py, but '
           + '"--session_type eval" will not.')
 
+soartech_pid = -1
 if soartech_server_available:
-    start_server("ta1-server-mvp", ["ta1_server"], str(soartech_port))
+    soartech_pid = start_server("ta1-server-mvp", ["ta1_server"], str(soartech_port))
 elif adept_server_available:
     warning('Soartech server is not in use. Use the arguments '
           + '"--session_type adept" to use only the ADEPT server with ta3_training.py. The arguments '
@@ -361,20 +364,24 @@ while ta1_servers_up == False and time.time() - wait_started < 90: # At least 90
         adept_verified = check_alignment_targets(adept_port, "ADEPT")
         if not adept_verified:
             ta1_servers_up = False
+        if not process.active(adept_pid):
+            break
     if soartech_server_available and not soartech_verified:
         soartech_verified = check_alignment_targets(soartech_port, "Soartech")
         if not soartech_verified:
             ta1_servers_up = False
-    
+        if not process.active(soartech_pid):
+            break
 
-start_server("itm-evaluation-server", ["swagger_server"], str(ta3_port))
+
+ta3_pid = start_server("itm-evaluation-server", ["swagger_server"], str(ta3_port))
 
 servers_up = False
 ta3_verified = False
 
 wait_started = time.time()
 
-while not servers_up and time.time() - wait_started < 120: # At least 120 seconds have passed.
+while not servers_up and time.time() - wait_started < 300: # At least 120 seconds have passed.
     time.sleep(1)
     servers_up = True
     if ta3_server_available and not ta3_verified:
@@ -383,15 +390,17 @@ while not servers_up and time.time() - wait_started < 120: # At least 120 second
             ta3_verified = True
         else:
             servers_up = False
+    if not process.active(ta3_pid):
+        break
 
 if not servers_up:
     if ta3_server_available and not ta3_verified:
-        error("TA3 server did not start successfully. Check .deprepos/itm-evaluation-server.err")
+        error(f"TA3 server did not start successfully. Check .deprepos/itm-evaluation-server-{ta3_port}.err")
     if adept_server_available and not adept_verified:
-        error("ADEPT server did not start successfully. Check .deprepos/adept_server.err")
+        error(f"ADEPT server did not start successfully. Check .deprepos/adept_server-{adept_port}.err")
     if soartech_server_available and not soartech_verified:
         old_status = status
-        error("Soartech server did not start successfully. Check .deprepos/ta1-server-mvp.err")
+        error(f"Soartech server did not start successfully. Check .deprepos/ta1-server-mvp-{soartech_port}.err")
         # if Status.SUCCESS == old_status:
             # warning("Temporarily returning success even though Soartech isn't running. Will change once TA1 fixes it")
             # status = old_status

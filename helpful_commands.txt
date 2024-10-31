@@ -27,21 +27,31 @@ python -m scripts.analyze_data --kdma_case_output_file data/temp-soartech-qol-tr
 python run-servers.py
 
 # Test KEDS selection, with uniform weights, a locally stored alignment target (--alignment_target),
-# a local case file (--casefile), and local weights (--weightfile), against a remote alignment 
+# a local case file (--case_file), and local weights (--weight_file), against a remote alignment 
 # target (--evaltarget). Requests alignment from TA1 server (--connect_to_ta1).
 python tad_tester.py --session_type soartech --scenario qol-dre-1-train --selector keds --training --alignment_target "soartech-dryrun-0" --case_file data/temp-soartech-qol-train-cases.csv --weight_file data/qol_weights.json --evaltarget qol-prelim-emt-d29ef563 --connect_to_ta1
 
+# Test KEDS selection, with default case file, and weight file, against an alignment target of Moral 
+# Judgement/Ingroup Bias 0.5 (--kdma). Does not request alignment from TA1 server. Prints out 
+# information concerning decision selection (--decision_verbose) and goes to debugger after each 
+# decision (--insert_pauses).
+python tad_tester.py --session_type adept --scenario DryRunEval.MJ1 --selector keds --training --assessor triage --kdma "Moral judgement=0.5" --insert_pauses --decision_verbose
+python tad_tester.py --session_type adept --scenario DryRunEval.IO1 --selector keds --training --assessor triage --kdma "Ingroup Bias=0.5" --insert_pauses --decision_verbose
+python tad_tester.py --session_type adept --scenario DryRunEval-MJ5-eval --selector keds --no-training --assessor triage --kdma "Moral judgement=0.5" --insert_pauses --decision_verbose
+python tad_tester.py --session_type adept --scenario DryRunEval-MJ2-eval --selector keds --no-training --assessor triage --kdma "Ingroup Bias=0.5" --insert_pauses --decision_verbose
+
+
 # Test full evaluation, using standard case and weights files, triage assessor with local TA3 server and remote TA1s.
-python tad_tester.py --session_type eval --no-training --selector keds --bypass_server_check --assessor_triage
+python tad_tester.py --session_type eval --no-training --selector keds --bypass_server_check --assessor triage
 
 # Test full evaluation -- severity baseline
-python tad_tester.py --session_type eval --no-training --variant severity-baseline --bypass_server_check --assessor_triage
+python tad_tester.py --session_type eval --no-training --variant severity-baseline --bypass_server_check --assessor triage
 
 # Test full evaluation -- learning baseline
-python tad_tester.py --session_type eval --no-training --selector keds --variant baseline --bypass_server_check --assessor_triage
+python tad_tester.py --session_type eval --no-training --selector keds --variant baseline --bypass_server_check --assessor triage
 
 # Test full evaluation -- remote TA3 server (no local results)
-python tad_tester.py --session_type eval --no-training --selector keds --assessor_triage --endpoint https://darpaitm.caci.com
+python tad_tester.py --session_type eval --no-training --selector keds --assessor triage --endpoint https://darpaitm.caci.com
 
 
 # From .deprepos\itm-evaluation-server directory, update to latest code, reapply the current patch, partially if necessary, and add the config.ini file back in, then create a new patch and commit state.
