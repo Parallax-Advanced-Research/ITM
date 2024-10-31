@@ -18,69 +18,12 @@ import random
 
 NON_NOISY_KEYS = [
     'age', 'tagged', 'visited', 'relationship', 'rank', 'conscious',
-    'mental_status', 'breathing', 'hrpmin', 'avpu', 'intent', 'directness_of_causality', 
-    'unvisited_count', 'injured_count', 'others_tagged_or_uninjured', 'aid_available', 
     'environment_type', 'questioning', 'assessing', 'treating', 'tagging', 'leaving', 
-    'category', 'SUPPLIES_REMAINING', 'disposition',
-    'Take-The-Best Priority', 'Exhaustive Priority', 'Tallying Priority', 
-    'Satisfactory Priority', 'One-Bounce Priority',
-    'HRA Strategy.time-resources.take-the-best', 
-    'HRA Strategy.time-resources.exhaustive', 
-    'HRA Strategy.time-resources.tallying', 
-    'HRA Strategy.time-resources.satisfactory', 
-    'HRA Strategy.time-resources.one-bounce', 
-    'HRA Strategy.time-risk_reward_ratio.take-the-best', 
-    'HRA Strategy.time-risk_reward_ratio.exhaustive', 
-    'HRA Strategy.time-risk_reward_ratio.tallying', 
-    'HRA Strategy.time-risk_reward_ratio.satisfactory', 
-    'HRA Strategy.time-risk_reward_ratio.one-bounce', 
-    'HRA Strategy.time-system.take-the-best', 
-    'HRA Strategy.time-system.exhaustive', 
-    'HRA Strategy.time-system.tallying', 
-    'HRA Strategy.time-system.satisfactory', 
-    'HRA Strategy.time-system.one-bounce', 
-    'HRA Strategy.resources-risk_reward_ratio.take-the-best', 
-    'HRA Strategy.resources-risk_reward_ratio.exhaustive', 
-    'HRA Strategy.resources-risk_reward_ratio.tallying', 
-    'HRA Strategy.resources-risk_reward_ratio.satisfactory', 
-    'HRA Strategy.resources-risk_reward_ratio.one-bounce', 
-    'HRA Strategy.resources-system.take-the-best', 
-    'HRA Strategy.resources-system.exhaustive', 
-    'HRA Strategy.resources-system.tallying', 
-    'HRA Strategy.resources-system.satisfactory', 
-    'HRA Strategy.resources-system.one-bounce', 
-    'HRA Strategy.risk_reward_ratio-system.take-the-best', 
-    'HRA Strategy.risk_reward_ratio-system.exhaustive', 
-    'HRA Strategy.risk_reward_ratio-system.tallying', 
-    'HRA Strategy.risk_reward_ratio-system.satisfactory', 
-    'HRA Strategy.risk_reward_ratio-system.one-bounce', 
-    'HRA Strategy.time-resources-risk_reward_ratio.take-the-best', 
-    'HRA Strategy.time-resources-risk_reward_ratio.exhaustive', 
-    'HRA Strategy.time-resources-risk_reward_ratio.tallying', 
-    'HRA Strategy.time-resources-risk_reward_ratio.satisfactory', 
-    'HRA Strategy.time-resources-risk_reward_ratio.one-bounce', 
-    'HRA Strategy.time-resources-system.take-the-best', 
-    'HRA Strategy.time-resources-system.exhaustive', 
-    'HRA Strategy.time-resources-system.tallying', 
-    'HRA Strategy.time-resources-system.satisfactory', 
-    'HRA Strategy.time-resources-system.one-bounce', 
-    'HRA Strategy.time-risk_reward_ratio-system.take-the-best', 
-    'HRA Strategy.time-risk_reward_ratio-system.exhaustive', 
-    'HRA Strategy.time-risk_reward_ratio-system.tallying', 
-    'HRA Strategy.time-risk_reward_ratio-system.satisfactory', 
-    'HRA Strategy.time-risk_reward_ratio-system.one-bounce', 
-    'HRA Strategy.resources-risk_reward_ratio-system.take-the-best', 
-    'HRA Strategy.resources-risk_reward_ratio-system.exhaustive', 
-    'HRA Strategy.resources-risk_reward_ratio-system.tallying', 
-    'HRA Strategy.resources-risk_reward_ratio-system.satisfactory', 
-    'HRA Strategy.resources-risk_reward_ratio-system.one-bounce', 
-    'HRA Strategy.time-resources-risk_reward_ratio-system.take-the-best', 
-    'HRA Strategy.time-resources-risk_reward_ratio-system.exhaustive', 
-    'HRA Strategy.time-resources-risk_reward_ratio-system.tallying', 
-    'HRA Strategy.time-resources-risk_reward_ratio-system.satisfactory', 
-    'HRA Strategy.time-resources-risk_reward_ratio-system.one-bounce',
-    'treatment_count', 'treatment_count_percentile', 'treatment_count_normalized', 'treatment_count_variance',
-    'treatment_time', 'treatment_time_percentile', 'treatment_time_normalized', 'treatment_time_variance'
+    'aid_available', 'category', 'SUPPLIES_REMAINING',
+    'disposition', 'rapport', 'intent', 'directness_of_causality',
+    'HRA Strategy', 'treatment_count', 'treatment_time',
+    'mental_status', 'breathing', 'hrpmin', 'avpu',
+    'unvisited_count', 'injured_count', 'others_tagged_or_uninjured'
 ]
 
 NOISY_KEYS : str = [
@@ -88,7 +31,7 @@ NOISY_KEYS : str = [
     'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding', 
     'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER', 
     'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
-    'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 
+    'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 'SEVEREST_SEVERITY_CHANGE_variance', 'SEVEREST_SEVERITY_CHANGE_normalized', 'SEVEREST_SEVERITY_CHANGE_percentile',
     'STANDARD_TIME_SEVERITY', 'STANDARD_TIME_SEVERITY_variance', 'STANDARD_TIME_SEVERITY_normalized', 'STANDARD_TIME_SEVERITY_percentile', 
     'SEVERITY', 'SEVERITY_variance', 'SEVERITY_normalized', 'SEVERITY_percentile', 
     'DAMAGE_PER_SECOND', 'DAMAGE_PER_SECOND_variance', 'DAMAGE_PER_SECOND_normalized', 'DAMAGE_PER_SECOND_percentile',
@@ -108,7 +51,16 @@ def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
 def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[str, Any]]:
     with open(case_file, "r") as infile:
         cases = [json.loads(line) for line in infile]
+    fields = set()
     for case in cases:
+        for key in case.keys():
+            for pattern in ["casualty_", "nondeterminism"]:
+                if pattern in key.lower():
+                    case.pop(key)
+                    break
+            fields.add(key)
+
+
         case["action-string"] = stringify_action_list(case["actions"])
         case["pre-action-string"] = stringify_action_list(case["actions"][:-1])
         case["action-len"] = len(case["actions"])
@@ -120,8 +72,6 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
                 # if key.startswith("topic") or key.startswith("val_"):
                     # case[key] = str(case[key])
                     # case["context"][key] = case[key]
-
-        case["state-hash"] = case_state_hash(case)
         if "context" in case:
             context = case.pop("context")
             case |= flatten("context", context)
@@ -147,7 +97,11 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
         else:
             raise Error()
         case['action_name'] = a['name']
-    last_action_len : int = 1
+        
+    non_noisy_keys = get_non_noisy_keys(fields)
+    for case in cases:
+        case["state-hash"] = case_state_hash(case, non_noisy_keys)
+    
     last_hints : dict[str, float] = {}
     last_pre_action_string = ""
     for i in range(1,len(cases)+1):
@@ -180,7 +134,21 @@ def read_feedback(feedback_file: str = kdma_case_base_retainer.FEEDBACK_FILE) ->
             index = index + 1
     return training_data
 
-
+SUFFIXES = "_variance", "_percentile", "_normalized"
+def get_non_noisy_keys(fields):
+    nnkeys = []
+    for key in NON_NOISY_KEYS:
+        field_exts = []
+        if key in fields:
+            field_exts.append(key)
+        for suffix in SUFFIXES:
+            if key + suffix in fields:
+                field_exts.append(key + suffix)
+        for ext in field_exts:
+            nnkeys.append(ext)
+            lckey = "context.last_case" + ext
+            if lckey in fields:
+                nnkeys.append(lckey)
 
 
 def stringify_action_list(actions: list[dict[str, Any]]) -> str:
@@ -530,17 +498,16 @@ def write_alignment_target_cases_to_csv(fname: str, training_data: list[dict[str
     
 def subtract_dict(dict1: dict[str, Any], dict2: dict[str, Any]) -> dict[str, Any]:
     return {key1:value1 - dict2[key1] for (key1, value1) in dict1.items() if value1 is not None}
-
-
-def case_state_hash(case: dict[str, Any]) -> int:
+    
+def case_state_hash(case: dict[str, Any], non_noisy_keys: list[str]) -> int:
     val_list = []
-    for key in NON_NOISY_KEYS:
+    for key in non_noisy_keys:
         val_list.append(case.get(key, None))
     context = dict(case.get("context", {}))
     if "last_case" in context:
         last_case = context.pop("last_case")
         val_list.append("last_case")
-        for key in NON_NOISY_KEYS:
+        for key in non_noisy_keys:
             val_list.append(last_case.get(key, None))
     for key in sorted(context.keys()):
         val_list.append(key)
@@ -626,11 +593,6 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
         if case["scene"].startswith(":qol-") or case["scene"].startswith(":vol-"):
             case["scene"] = case["scene"][1:4] + case["scene"][9:10] + ":" + case["scene"].split(":")[2]
             
-        for key in cur_keys:
-            for pattern in ["casualty_", "nondeterminism"]:
-                if pattern in key.lower():
-                    case.pop(key)
-                    break
     training_data = None
     if feedback_file is not None:
         training_data = read_feedback(feedback_file)
