@@ -84,7 +84,7 @@ def sorted_distances(cur_case: dict[str, Any], weights: dict[str, float], kdma: 
     return lst
     
 def is_compatible(case1, case2, kdma, check_scenes : bool = True) -> float:
-    if kdma not in case1:
+    if case1.get(kdma, None) is None:
         return False
     case1_act_type = case1['action_type']
     case2_act_type = case2['action_type']
