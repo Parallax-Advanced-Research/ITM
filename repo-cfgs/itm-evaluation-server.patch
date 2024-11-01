@@ -1,6 +1,6 @@
 diff --git a/swagger_server/config.ini b/swagger_server/config.ini
 new file mode 100755
-index 0000000..62257f6
+index 0000000..c638d89
 --- /dev/null
 +++ b/swagger_server/config.ini
 @@ -0,0 +1,195 @@
@@ -50,8 +50,8 @@ index 0000000..62257f6
 +SOARTECH_EVAL_QOL_SCENARIOS=qol-dre-1-eval,qol-dre-2-eval,qol-dre-3-eval
 +SOARTECH_EVAL_VOL_SCENARIOS=vol-dre-1-eval,vol-dre-2-eval,vol-dre-3-eval
 +
-+SOARTECH_TRAIN_QOL_SCENARIOS=qol-dre-1-train,qol-dre-2-train
-+SOARTECH_TRAIN_VOL_SCENARIOS=vol-dre-1-train,vol-dre-2-train
++SOARTECH_TRAIN_QOL_SCENARIOS=qol-ph1-train-1,qol-ph1-train-2
++SOARTECH_TRAIN_VOL_SCENARIOS=vol-ph1-train-1,vol-ph1-train-2
 +
 +SOARTECH_QOL_ALIGNMENT_TARGETS=qol-human-8022671-SplitLowMulti,
 +    qol-human-1774519-SplitEvenBinary,
