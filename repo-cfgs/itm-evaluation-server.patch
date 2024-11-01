@@ -1,6 +1,6 @@
 diff --git a/swagger_server/config.ini b/swagger_server/config.ini
 new file mode 100755
-index 0000000..c638d89
+index 0000000..b610b3f
 --- /dev/null
 +++ b/swagger_server/config.ini
 @@ -0,0 +1,195 @@
@@ -42,10 +42,10 @@ index 0000000..c638d89
 +    dryrun-soartech-eval-vol2.yaml, 
 +    dryrun-soartech-eval-vol3.yaml
 +
-+SOARTECH_TRAIN_FILENAMES=dryrun-soartech-train-qol1.yaml,
-+    dryrun-soartech-train-qol2.yaml,
-+    dryrun-soartech-train-vol1.yaml,
-+    dryrun-soartech-train-vol2.yaml
++SOARTECH_TRAIN_FILENAMES=qol-ph1-train-1-ta3.yaml,
++    qol-ph1-train-2-ta3.yaml,
++    vol-ph1-train-1-ta3.yaml,
++    vol-ph1-train-2-ta3.yaml
 +
 +SOARTECH_EVAL_QOL_SCENARIOS=qol-dre-1-eval,qol-dre-2-eval,qol-dre-3-eval
 +SOARTECH_EVAL_VOL_SCENARIOS=vol-dre-1-eval,vol-dre-2-eval,vol-dre-3-eval
@@ -161,16 +161,16 @@ index 0000000..c638d89
 +    dryrun-soartech-eval-vol2.yaml, 
 +    dryrun-soartech-eval-vol3.yaml
 +
-+SOARTECH_TRAIN_FILENAMES=dryrun-soartech-train-qol1.yaml,
-+    dryrun-soartech-train-qol2.yaml,
-+    dryrun-soartech-train-vol1.yaml,
-+    dryrun-soartech-train-vol2.yaml
++SOARTECH_TRAIN_FILENAMES=qol-ph1-train-1-ta3.yaml,
++    qol-ph1-train-2-ta3.yaml,
++    vol-ph1-train-1-ta3.yaml,
++    vol-ph1-train-2-ta3.yaml
 +
 +SOARTECH_EVAL_QOL_SCENARIOS=qol-dre-1-eval,qol-dre-2-eval,qol-dre-3-eval
 +SOARTECH_EVAL_VOL_SCENARIOS=vol-dre-1-eval,vol-dre-2-eval,vol-dre-3-eval
 +
-+SOARTECH_TRAIN_QOL_SCENARIOS=qol-dre-1-train,qol-dre-2-train
-+SOARTECH_TRAIN_VOL_SCENARIOS=vol-dre-1-train,vol-dre-2-train
++SOARTECH_TRAIN_QOL_SCENARIOS=qol-ph1-train-1,qol-ph1-train-2
++SOARTECH_TRAIN_VOL_SCENARIOS=vol-ph1-train-1,vol-ph1-train-2
 +
 +SOARTECH_QOL_ALIGNMENT_TARGETS=qol-group-target-dre-1,
 +   qol-group-target-dre-2
@@ -262,7 +262,7 @@ index 1b133b0..0af74ee 100644
          self.parent_scenario :ITMScenario = None
  
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index cde68c6..15e8331 100644
+index cde68c6..5be3077 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
 @@ -106,7 +106,8 @@ class ITMSession:
@@ -314,7 +314,15 @@ index cde68c6..15e8331 100644
              timestamp = f"{datetime.now():%Y%m%d-%H.%M.%S}" # e.g., 20240821-18.22.53
              filename = f"{self.adm_profile.replace(' ','-')}-" if self.adm_profile else ''
              filename += f"{ITMSession.EVALUATION_TYPE.replace(' ','')}-{self.itm_scenario.id.replace(' ', '_')}-{self.itm_scenario.scene_type}-{alignment_type.replace(' ', '_')}-{self.adm_name}-{timestamp}"
-@@ -470,7 +477,7 @@ class ITMSession:
+@@ -353,6 +360,7 @@ class ITMSession:
+                     break
+                 index += 1
+             if self.itm_scenario is None:
++                breakpoint()
+                 return f'Scenario ID `{scenario_id}` does not exist as {"a training" if self.kdma_training else "an eval"} scenario for `{self.session_type}`', 404
+             if self.itm_scenario.isd.current_scene.state is None:
+                 return self._end_session() # We have already run the specified scenario to completion
+@@ -470,7 +478,7 @@ class ITMSession:
          else:
              ta1_names.append(self.session_type)
          if kdma_training:
@@ -323,7 +331,7 @@ index cde68c6..15e8331 100644
              self.return_scenario_history = True
          if session_type == 'test':
              self.ta1_integration = False
-@@ -509,8 +516,11 @@ class ITMSession:
+@@ -509,8 +517,11 @@ class ITMSession:
              ta1_scenarios = []
              scenario_ctr = 0
              for scenario in scenarios:
@@ -336,7 +344,7 @@ index cde68c6..15e8331 100644
                                  session=self, training=self.kdma_training)
                  itm_scenario.generate_scenario_data()
  
-@@ -528,7 +538,7 @@ class ITMSession:
+@@ -528,7 +539,7 @@ class ITMSession:
                                  ta1_controller = deepcopy(next(controller for controller in controllers if controller.alignment_target_id == target_id), None)
                                  ta1_scenarios[scenario_ctr].set_controller(ta1_controller)
                              else:
@@ -345,7 +353,7 @@ index cde68c6..15e8331 100644
                              scenario_ctr += 1
                          return scenario_ctr
  
-@@ -550,7 +560,7 @@ class ITMSession:
+@@ -550,7 +561,7 @@ class ITMSession:
          scenario_ctr = 0
          logging.info("Scenario load summary:")
          for scenario in self.itm_scenarios:
