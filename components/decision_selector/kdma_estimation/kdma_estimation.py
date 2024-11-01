@@ -109,7 +109,7 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
     if dist_fn == None:
         dist_fn = find_compatible_distance
     lst = []
-    weights = {k: w for (k, w) in oweights.items() if w != 0}
+    weights = {k: w for (k, w) in oweights.items() if w != 0 and not isinstance(w, str)}
     max_distance = 1e9
     cur_act_type = cur_case['action_type']
     is_char_act = cur_act_type in ['treating', 'assessing']
