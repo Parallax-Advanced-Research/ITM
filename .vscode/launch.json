@@ -5,20 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Tad Tester MJ1",
+            "name": "Python Debugger: Tad Tester with Arguments",
             "type": "debugpy",
             "request": "launch",
             "program": "tad_tester.py",
             "console": "integratedTerminal",
-            "args": "--session_type adept --scenario DryRunEval.MJ1 --selector keds --training --assessor triage --kdma \"Moral judgement=0.5\" --decision_verbose"
-        },
-        {
-            "name": "Python Debugger: Tad Tester qol-ph1-train-1",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "tad_tester.py",
-            "console": "integratedTerminal",
-            "args": "--session_type soartech --scenario qol-ph1-train-1 --selector keds --training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose"
+            "args": "--session_type eval --no-training --variant severity-baseline --bypass_server_check --assessor triage"
         }
     ]
 }
