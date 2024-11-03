@@ -76,14 +76,14 @@ def compare(val1: Any, val2: Any, feature: str):
 CACHED_DIVISOR = dict()
 
 def calculate_distance(case1: dict[str, Any], case2: dict[str, Any], weights: dict[str, float], comp_fn = compare) -> float:
-    weighted_average: float = 0
-    count = 0
+    weighted_average : float = 0.0
+    total_weight : float = 0.0
     for (feature, weight) in weights.items():
         diff = comp_fn(case1.get(feature, None), case2.get(feature, None), feature)
         if diff is not None:
-            count += weight
+            total_weight += weight
             weighted_average += diff * weight
-    if count == 0:
+    if total_weight == 0:
         return math.inf
     else:
         return weighted_average

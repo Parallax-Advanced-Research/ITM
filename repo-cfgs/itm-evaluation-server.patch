@@ -1,3 +1,234 @@
+diff --git a/swagger_server/config.ini b/swagger_server/config.ini
+new file mode 100755
+index 0000000..b610b3f
+--- /dev/null
++++ b/swagger_server/config.ini
+@@ -0,0 +1,195 @@
++; Copy over this template file and rename it to config.ini
++; Replace the default configurations below with the desired values
++
++[DEFAULT]
++
++EVALUATION_TYPE=dryrun
++SCENARIO_DIRECTORY=../../scenarios/ph1/
++
++; Local Default URLs 
++; ADEPT_URL=http://localhost:8081
++; SOARTECH_URL=http://localhost:8084
++
++; AWS TA1 Default URLs (access Prod AWS servers locally)
++ADEPT_URL=https://darpaitm.caci.com/adept
++SOARTECH_URL=https://darpaitm.caci.com/soartech
++
++; Prod Default URLs (use on production AWS only)
++; SOARTECH_URL=http://10.216.38.25:8084
++; ADEPT_URL=http://10.216.38.101:8080
++
++SAVE_HISTORY=True
++SAVE_HISTORY_TO_S3=True
++; This applies to `soartech` and `adept` non-training sessions
++ALWAYS_CONNECT_TO_TA1=True
++
++HISTORY_DIRECTORY=itm_history_output
++HISTORY_S3_BUCKET=itm-ui-assets
++
++EVAL_NAME=Dry Run Evaluation
++EVAL_NUMBER=4
++
++SOARTECH_EVAL_FILENAMES=dryrun-soartech-eval-qol1.yaml,
++    dryrun-soartech-eval-qol2.yaml,
++    dryrun-soartech-eval-qol3.yaml,
++    dryrun-soartech-eval-vol1.yaml, 
++    dryrun-soartech-eval-vol2.yaml, 
++    dryrun-soartech-eval-vol3.yaml
++
++SOARTECH_TRAIN_FILENAMES=qol-ph1-train-1-ta3.yaml,
++    qol-ph1-train-2-ta3.yaml,
++    vol-ph1-train-1-ta3.yaml,
++    vol-ph1-train-2-ta3.yaml
++
++SOARTECH_EVAL_QOL_SCENARIOS=qol-dre-1-eval,qol-dre-2-eval,qol-dre-3-eval
++SOARTECH_EVAL_VOL_SCENARIOS=vol-dre-1-eval,vol-dre-2-eval,vol-dre-3-eval
++
++SOARTECH_TRAIN_QOL_SCENARIOS=qol-ph1-train-1,qol-ph1-train-2
++SOARTECH_TRAIN_VOL_SCENARIOS=vol-ph1-train-1,vol-ph1-train-2
++
++SOARTECH_QOL_ALIGNMENT_TARGETS=qol-human-8022671-SplitLowMulti,
++    qol-human-1774519-SplitEvenBinary,
++    qol-human-6403274-SplitHighBinary,
++    qol-human-3043871-SplitHighBinary,
++    qol-human-2932740-HighExtreme,
++    qol-human-6349649-SplitHighMulti,
++    qol-human-9157688-SplitEvenBinary,
++    qol-human-5032922-SplitLowMulti,
++    qol-human-3447902-SplitHighMulti,
++    qol-human-0000001-SplitEvenMulti,
++    qol-human-7040555-SplitHighMulti,
++    qol-synth-LowExtreme,
++    qol-synth-HighExtreme,
++    qol-synth-HighCluster,
++    qol-synth-LowCluster,
++    qol-synth-SplitLowBinary
++
++SOARTECH_VOL_ALIGNMENT_TARGETS=vol-human-8022671-SplitHighMulti,
++    vol-human-1774519-SplitHighMulti,
++    vol-human-6403274-SplitEvenBinary,
++    vol-human-8478698-SplitLowMulti,
++    vol-human-3043871-SplitLowMulti,
++    vol-human-2637411-SplitEvenMulti,
++    vol-human-2932740-SplitEvenMulti,
++    vol-human-5032922-SplitLowMulti,
++    vol-human-7040555-SplitEvenBinary,
++    vol-synth-LowExtreme,
++    vol-synth-HighExtreme,
++    vol-synth-HighCluster,
++    vol-synth-LowCluster,
++    vol-synth-SplitLowBinary
++
++ADEPT_EVAL_FILENAMES=dryrun-adept-eval-MJ2.yaml,
++    dryrun-adept-eval-MJ4.yaml,
++    dryrun-adept-eval-MJ5.yaml
++
++ADEPT_TRAIN_FILENAMES=dryrun-adept-train-MJ1.yaml,
++    dryrun-adept-train-MJ3.yaml,
++    dryrun-adept-train-IO1.yaml,
++    dryrun-adept-train-IO2.yaml,
++    dryrun-adept-train-IO3.yaml
++
++ADEPT_EVAL_MJ_SCENARIOS=DryRunEval-MJ2-eval,DryRunEval-MJ4-eval,DryRunEval-MJ5-eval
++ADEPT_EVAL_IO_SCENARIOS=DryRunEval-MJ2-eval,DryRunEval-MJ4-eval,DryRunEval-MJ5-eval
++
++ADEPT_TRAIN_MJ_SCENARIOS=DryRunEval.MJ1,DryRunEval.MJ3
++ADEPT_TRAIN_IO_SCENARIOS=DryRunEval.IO1,DryRunEval.IO2,DryRunEval.IO3
++
++ADEPT_MJ_ALIGNMENT_TARGETS=ADEPT-DryRun-Moral judgement-0.0,
++    ADEPT-DryRun-Moral judgement-0.1,
++    ADEPT-DryRun-Moral judgement-0.2,
++    ADEPT-DryRun-Moral judgement-0.3,
++    ADEPT-DryRun-Moral judgement-0.4,
++    ADEPT-DryRun-Moral judgement-0.5,
++    ADEPT-DryRun-Moral judgement-0.6,
++    ADEPT-DryRun-Moral judgement-0.7,
++    ADEPT-DryRun-Moral judgement-0.8,
++    ADEPT-DryRun-Moral judgement-0.9,
++    ADEPT-DryRun-Moral judgement-1.0
++
++ADEPT_IO_ALIGNMENT_TARGETS=ADEPT-DryRun-Ingroup Bias-0.0,
++    ADEPT-DryRun-Ingroup Bias-0.1,
++    ADEPT-DryRun-Ingroup Bias-0.2,
++    ADEPT-DryRun-Ingroup Bias-0.3,
++    ADEPT-DryRun-Ingroup Bias-0.4,
++    ADEPT-DryRun-Ingroup Bias-0.5,
++    ADEPT-DryRun-Ingroup Bias-0.6,
++    ADEPT-DryRun-Ingroup Bias-0.7,
++    ADEPT-DryRun-Ingroup Bias-0.8,
++    ADEPT-DryRun-Ingroup Bias-0.9,
++    ADEPT-DryRun-Ingroup Bias-1.0
++
++
++[GROUP_TARGET]
++
++EVALUATION_TYPE=dryrun
++SCENARIO_DIRECTORY=swagger_server/itm/data/%(EVALUATION_TYPE)s/scenarios/
++
++; Local Default URLs 
++; ADEPT_URL=http://localhost:8081
++; SOARTECH_URL=http://localhost:8084
++
++; AWS TA1 Default URLs (access Prod AWS servers locally)
++; ADEPT_URL=https://darpaitm.caci.com/adept
++; SOARTECH_URL=https://darpaitm.caci.com/soartech
++
++; Prod Default URLs (use on production AWS only)
++SOARTECH_URL=http://10.216.38.25:8084
++ADEPT_URL=http://10.216.38.101:8080
++
++SAVE_HISTORY=True
++SAVE_HISTORY_TO_S3=True
++; This applies to `soartech` and `adept` non-training sessions
++ALWAYS_CONNECT_TO_TA1=True
++
++HISTORY_DIRECTORY=itm_history_output
++HISTORY_S3_BUCKET=itm-ui-assets
++
++EVAL_NAME=Dry Run Evaluation
++EVAL_NUMBER=4
++
++SOARTECH_EVAL_FILENAMES=dryrun-soartech-eval-qol1.yaml,
++    dryrun-soartech-eval-qol2.yaml,
++    dryrun-soartech-eval-qol3.yaml,
++    dryrun-soartech-eval-vol1.yaml, 
++    dryrun-soartech-eval-vol2.yaml, 
++    dryrun-soartech-eval-vol3.yaml
++
++SOARTECH_TRAIN_FILENAMES=qol-ph1-train-1-ta3.yaml,
++    qol-ph1-train-2-ta3.yaml,
++    vol-ph1-train-1-ta3.yaml,
++    vol-ph1-train-2-ta3.yaml
++
++SOARTECH_EVAL_QOL_SCENARIOS=qol-dre-1-eval,qol-dre-2-eval,qol-dre-3-eval
++SOARTECH_EVAL_VOL_SCENARIOS=vol-dre-1-eval,vol-dre-2-eval,vol-dre-3-eval
++
++SOARTECH_TRAIN_QOL_SCENARIOS=qol-ph1-train-1,qol-ph1-train-2
++SOARTECH_TRAIN_VOL_SCENARIOS=vol-ph1-train-1,vol-ph1-train-2
++
++SOARTECH_QOL_ALIGNMENT_TARGETS=qol-group-target-dre-1,
++   qol-group-target-dre-2
++
++SOARTECH_VOL_ALIGNMENT_TARGETS=vol-group-target-dre-1,
++   vol-group-target-dre-2
++
++ADEPT_EVAL_FILENAMES=dryrun-adept-eval-MJ2.yaml,
++    dryrun-adept-eval-MJ4.yaml,
++    dryrun-adept-eval-MJ5.yaml
++
++ADEPT_TRAIN_FILENAMES=dryrun-adept-train-MJ1.yaml,
++    dryrun-adept-train-MJ3.yaml,
++    dryrun-adept-train-IO1.yaml,
++    dryrun-adept-train-IO2.yaml,
++    dryrun-adept-train-IO3.yaml
++
++ADEPT_EVAL_MJ_SCENARIOS=DryRunEval-MJ2-eval,DryRunEval-MJ4-eval,DryRunEval-MJ5-eval
++ADEPT_EVAL_IO_SCENARIOS=DryRunEval-MJ2-eval,DryRunEval-MJ4-eval,DryRunEval-MJ5-eval
++
++ADEPT_TRAIN_MJ_SCENARIOS=DryRunEval.MJ1,DryRunEval.MJ3
++ADEPT_TRAIN_IO_SCENARIOS=DryRunEval.IO1,DryRunEval.IO2,DryRunEval.IO3
++
++ADEPT_MJ_ALIGNMENT_TARGETS=ADEPT-DryRun-Moral judgement-Group-Low,
++    ADEPT-DryRun-Moral judgement-Group-High
++
++ADEPT_IO_ALIGNMENT_TARGETS=ADEPT-DryRun-Ingroup Bias-Group-Low,
++    ADEPT-DryRun-Ingroup Bias-Group-High
+\ No newline at end of file
+diff --git a/swagger_server/config.ini.template b/swagger_server/config.ini.template
+index 4e5bae7..62257f6 100644
+--- a/swagger_server/config.ini.template
++++ b/swagger_server/config.ini.template
+@@ -4,19 +4,19 @@
+ [DEFAULT]
+ 
+ EVALUATION_TYPE=dryrun
+-SCENARIO_DIRECTORY=swagger_server/itm/data/%(EVALUATION_TYPE)s/scenarios/
++SCENARIO_DIRECTORY=../../scenarios/ph1/
+ 
+ ; Local Default URLs 
+ ; ADEPT_URL=http://localhost:8081
+ ; SOARTECH_URL=http://localhost:8084
+ 
+ ; AWS TA1 Default URLs (access Prod AWS servers locally)
+-; ADEPT_URL=https://darpaitm.caci.com/adept
+-; SOARTECH_URL=https://darpaitm.caci.com/soartech
++ADEPT_URL=https://darpaitm.caci.com/adept
++SOARTECH_URL=https://darpaitm.caci.com/soartech
+ 
+ ; Prod Default URLs (use on production AWS only)
+-SOARTECH_URL=http://10.216.38.25:8084
+-ADEPT_URL=http://10.216.38.101:8080
++; SOARTECH_URL=http://10.216.38.25:8084
++; ADEPT_URL=http://10.216.38.101:8080
+ 
+ SAVE_HISTORY=True
+ SAVE_HISTORY_TO_S3=True
 diff --git a/swagger_server/controllers/itm_ta2_eval_controller.py b/swagger_server/controllers/itm_ta2_eval_controller.py
 index 9c36cfc..1ee902a 100644
 --- a/swagger_server/controllers/itm_ta2_eval_controller.py
@@ -31,10 +262,10 @@ index 1b133b0..0af74ee 100644
          self.parent_scenario :ITMScenario = None
  
 diff --git a/swagger_server/itm/itm_session.py b/swagger_server/itm/itm_session.py
-index fc1cd8f..dcb3a9d 100644
+index cde68c6..15e8331 100644
 --- a/swagger_server/itm/itm_session.py
 +++ b/swagger_server/itm/itm_session.py
-@@ -104,7 +104,8 @@ class ITMSession:
+@@ -106,7 +106,8 @@ class ITMSession:
              ITMSession.init_ta1_data(ta1_names)
              ITMSession.ta1_connected = True
              logging.info("Done.")
@@ -44,20 +275,20 @@ index fc1cd8f..dcb3a9d 100644
              logging.warning("Could not initialize TA1 data. Running standalone with local alignment targets.")
  
          # If we couldn't use data from TA1, initialize with local data.
-@@ -135,6 +136,12 @@ class ITMSession:
+@@ -137,6 +138,12 @@ class ITMSession:
                  alignment_target for alignment_target in ITMTa1Controller.get_alignment_data(ta1_name)
                      if 'train' not in alignment_target.id or ta1_name == 'soartech'
              ]
-+            ITMSession.alignment_data[ta1_name] = [
-+                alignment_target for alignment_target in ITMSession.alignment_data[ta1_name]
-+                    if alignment_target.id is not None
-+                    and 'train' not in alignment_target.id
-+                    and 'target-6-eval' not in alignment_target.id
-+            ]
++            # ITMSession.alignment_data[ta1_name] = [
++                # alignment_target for alignment_target in ITMSession.alignment_data[ta1_name]
++                    # if alignment_target.id is not None
++                    # and 'train' not in alignment_target.id
++                    # and 'target-6-eval' not in alignment_target.id
++            # ]
              ITMSession.ta1_controllers[ta1_name] = [
                  ITMTa1Controller(alignment_target_id=alignment_target.id,
                                   scene_type=ta1_name,
-@@ -146,7 +153,6 @@ class ITMSession:
+@@ -148,7 +155,6 @@ class ITMSession:
      def _check_scenario_id(self, scenario_id: str) -> None:
          """
          Check if the provided scenario ID matches the session's scenario ID.
@@ -65,7 +296,25 @@ index fc1cd8f..dcb3a9d 100644
          Args:
              scenario_id: The scenario ID to compare.
          """
-@@ -468,7 +474,7 @@ class ITMSession:
+@@ -204,11 +210,12 @@ class ITMSession:
+ 
+     def _cleanup(self):
+         if self.save_history:
+-            kdma = self.itm_scenario.alignment_target.kdma_values[0].kdma.split(" ")[0].lower()
+-            value = self.itm_scenario.alignment_target.kdma_values[0].value
+-            if not value:
+-                value = self.itm_scenario.alignment_target.id
+-            alignment_type = kdma + "-" + str(value)
++            # kdma = self.itm_scenario.alignment_target.kdma_values[0].kdma.split(" ")[0].lower()
++            # value = self.itm_scenario.alignment_target.kdma_values[0].value
++            # if not value:
++                # value = self.itm_scenario.alignment_target.id
++            # alignment_type = kdma + "-" + str(value)
++            alignment_type = "doh"
+             timestamp = f"{datetime.now():%Y%m%d-%H.%M.%S}" # e.g., 20240821-18.22.53
+             filename = f"{self.adm_profile.replace(' ','-')}-" if self.adm_profile else ''
+             filename += f"{ITMSession.EVALUATION_TYPE.replace(' ','')}-{self.itm_scenario.id.replace(' ', '_')}-{self.itm_scenario.scene_type}-{alignment_type.replace(' ', '_')}-{self.adm_name}-{timestamp}"
+@@ -470,7 +477,7 @@ class ITMSession:
          else:
              ta1_names.append(self.session_type)
          if kdma_training:
@@ -74,7 +323,7 @@ index fc1cd8f..dcb3a9d 100644
              self.return_scenario_history = True
          if session_type == 'test':
              self.ta1_integration = False
-@@ -507,8 +513,11 @@ class ITMSession:
+@@ -509,8 +516,11 @@ class ITMSession:
              ta1_scenarios = []
              scenario_ctr = 0
              for scenario in scenarios:
@@ -87,11 +336,29 @@ index fc1cd8f..dcb3a9d 100644
                                  session=self, training=self.kdma_training)
                  itm_scenario.generate_scenario_data()
  
+@@ -528,7 +538,7 @@ class ITMSession:
+                                 ta1_controller = deepcopy(next(controller for controller in controllers if controller.alignment_target_id == target_id), None)
+                                 ta1_scenarios[scenario_ctr].set_controller(ta1_controller)
+                             else:
+-                                ta1_scenarios[scenario_ctr].alignment_target = next(target for target in alignment_targets if target.id == target_id), None
++                                ta1_scenarios[scenario_ctr].alignment_target = next(target for target in alignment_targets if target == target_id), None
+                             scenario_ctr += 1
+                         return scenario_ctr
+ 
+@@ -550,7 +560,7 @@ class ITMSession:
+         scenario_ctr = 0
+         logging.info("Scenario load summary:")
+         for scenario in self.itm_scenarios:
+-            logging.info(f'  Scenario #{scenario_ctr} has ID {scenario.id} and alignment target {scenario.alignment_target.id}.')
++            logging.info(f'  Scenario #{scenario_ctr} has ID {scenario.id} and alignment target {scenario.alignment_target}.')
+             scenario_ctr += 1
+ 
+         if max_scenarios is not None and max_scenarios >= num_read_scenarios:
 diff --git a/swagger_server/itm/itm_ta1_controller.py b/swagger_server/itm/itm_ta1_controller.py
-index 6ed3042..e92189c 100644
+index 995ae8e..cb5b395 100644
 --- a/swagger_server/itm/itm_ta1_controller.py
 +++ b/swagger_server/itm/itm_ta1_controller.py
-@@ -35,11 +35,11 @@ class ITMTa1Controller:
+@@ -38,11 +38,11 @@ class ITMTa1Controller:
          host_port = ITMTa1Controller.get_contact_info(scene_type=scene_type)
          target_id_path = 'alignment_target_ids' if scene_type == 'adept' else 'alignment_targets'
          url = f"{host_port}/api/v1/{target_id_path}"
@@ -105,7 +372,7 @@ index 6ed3042..e92189c 100644
            alignment_target = ITMTa1Controller.to_dict(response)
            alignments.append(AlignmentTarget.from_dict(alignment_target))
          return alignments
-@@ -53,7 +53,7 @@ class ITMTa1Controller:
+@@ -56,7 +56,7 @@ class ITMTa1Controller:
          if user_id:
              params = {"user_id": user_id}
              url = f"{url}?{urllib.parse.urlencode(params)}"
@@ -114,7 +381,7 @@ index 6ed3042..e92189c 100644
          initial_response.raise_for_status()
          response = self.to_dict(initial_response)
          self.session_id = response
-@@ -62,7 +62,7 @@ class ITMTa1Controller:
+@@ -65,7 +65,7 @@ class ITMTa1Controller:
      def post_probe(self, probe_response: ProbeResponse):
          body = {"session_id": self.session_id, "response": probe_response.to_dict()}
          url = f"{self.url}/api/v1/response"
@@ -123,7 +390,7 @@ index 6ed3042..e92189c 100644
          return None
      
      def get_probe_response_alignment(self, scenario_id, probe_id):
-@@ -75,7 +75,7 @@ class ITMTa1Controller:
+@@ -78,7 +78,7 @@ class ITMTa1Controller:
              "probe_id": probe_id
          }
          url = f"{base_url}?{urllib.parse.urlencode(params)}"
@@ -132,7 +399,7 @@ index 6ed3042..e92189c 100644
          initial_response.raise_for_status()
          response = self.to_dict(initial_response)
          return response
-@@ -87,7 +87,7 @@ class ITMTa1Controller:
+@@ -90,7 +90,7 @@ class ITMTa1Controller:
              "target_id": self.alignment_target_id if not target_id else target_id
          }
          url = f"{base_url}?{urllib.parse.urlencode(params)}"
@@ -141,7 +408,7 @@ index 6ed3042..e92189c 100644
          initial_response.raise_for_status()
          response = self.to_dict(initial_response)
          alignment_results :AlignmentResults = AlignmentResults.from_dict(response)
-@@ -98,7 +98,7 @@ class ITMTa1Controller:
+@@ -101,7 +101,7 @@ class ITMTa1Controller:
              "session_id": self.session_id
          }
          url = f"{base_url}?{urllib.parse.urlencode(params)}"
