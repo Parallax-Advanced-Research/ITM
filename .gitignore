@@ -337,3 +337,4 @@ components/decision_analyzer/monte_carlo/tmp/
 data/rag_input
 *pretraining_cases.json
 *.tgz
+triage/data
