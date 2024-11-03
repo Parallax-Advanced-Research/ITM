@@ -12,6 +12,7 @@ from domain.internal import TADProbe, Decision, Action
 # components/decision_analyzer/bayesian_network/scenario-bn.old-with-notes.yaml
 # components/decision_analyzer/bayesian_network/scenario-bn.yaml
 # components/decision_analyzer/event_based_diagnosis/ebd_analyzer.py
+# components/decision_analyzer/monte_carlo/medsim/smol/smol_oracle.py calc_TRISS_deathP
 
 class CompetenceAssessor(Assessor):
     def __init__(self, assessor):
