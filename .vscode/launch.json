@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "tad_tester.py",
             "console": "integratedTerminal",
-            "args": "--session_type eval --no-training --variant severity-baseline --bypass_server_check --assessor triage"
+            "args": "--session_type adept --scenario DryRunEval.MJ1 --selector keds --training --assessor triage --kdma \"Moral judgement=0.5\" --decision_verbose"
         }
     ]
 }
