@@ -72,6 +72,7 @@ class TriageCategory(Enum):
     DELAYED = "DELAYED"
     IMMEDIATE = "IMMEDIATE"
     EXPECTANT = "EXPECTANT"
+    UNCATEGORIZED = "UNCATEGORIZED"  # New category for cases with no match
     # order matters
 
 # Vitals Enums

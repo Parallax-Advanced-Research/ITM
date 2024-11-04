@@ -40,18 +40,18 @@ class TriageCompetenceAssessor(Assessor):
             target_patient = get_target_patient(probe, dec)
 
             if is_tag_action(dec.value):
-                self.check_tag_decision(
+                ret_assessments[dec_key] = self.check_tag_decision(
                     casualty=target_patient, given_tag=dec.value.params[ParamEnum.CATEGORY])
 
-                char1 = get_target_patient(probe, dec)
-                possible_tags = determine_tag(char1)
-                given_tag = dec.value.params[ParamEnum.CATEGORY]
-                if given_tag == possible_tags[0]:
-                    ret_assessments[dec_key] = 1
-                elif given_tag in possible_tags:
-                    ret_assessments[dec_key] = 0.8
-                else:
-                    ret_assessments[dec_key] = 0.5
+                # char1 = get_target_patient(probe, dec)
+                # possible_tags = determine_tag(char1)
+                # given_tag = dec.value.params[ParamEnum.CATEGORY]
+                # if given_tag == possible_tags[0]:
+                #    ret_assessments[dec_key] = 1
+                # elif given_tag in possible_tags:
+                #    ret_assessments[dec_key] = 0.8
+                # else:
+                #    ret_assessments[dec_key] = 0.5
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
@@ -117,6 +117,24 @@ class TriageCompetenceAssessor(Assessor):
     def check_tag_decision(self, casualty, given_tag):
         vitals_tags = self.vitals_rule_set.get_vitals_tags(casualty.vitals)
 
+        # is it UNCATEGORIZED? Don't have a rule for it, so use the default
+        if TriageCategory(given_tag) == TriageCategory.UNCATEGORIZED:
+            return 1
+
+        # is the value of the given tag the predicted tag (remember to add injury tags)
+        elif TriageCategory(given_tag) in vitals_tags:
+            return 1
+
+        # is it within a distance of one of the predicted tags by index of TriageCategory? Assign .5
+        elif abs(list(TriageCategory).index(TriageCategory(given_tag)) - list(TriageCategory).index(vitals_tags[0])) == 1:
+            return 0.8
+
+        # does it violate a basic rule
+        # return 0
+
+        else:
+            return .5
+
         injury_tags = []
 
         for injury in casualty.injuries:
@@ -137,43 +155,53 @@ class TriageCompetenceAssessor(Assessor):
 class InjuryTaggingRuleSet:
     INJURY_RULES = {
         TriageCategory.EXPECTANT: [
-            # Likely indicates severe brain injury with low chance of survival.
-            (InjuryTypeEnum.EAR_BLEED, None),
-            # Extensive burns often fatal in field conditions.
+            # Severe brain injury or extensive burns, often fatal.
+            (InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY, InjurySeverityEnum.EXTREME),
             (InjuryTypeEnum.BURN, InjurySeverityEnum.EXTREME),
-            # Severe TBI with irreversible damage.
-            (InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY, InjurySeverityEnum.EXTREME)
+            # Major internal bleeding or irreparable damage.
+            (InjuryTypeEnum.INTERNAL, InjurySeverityEnum.EXTREME),
+            # Chest collapse with no chance of intervention survival.
+            (InjuryTypeEnum.CHEST_COLLAPSE, InjurySeverityEnum.EXTREME)
         ],
 
         TriageCategory.IMMEDIATE: [
-            # Tension pneumothorax needs decompression immediately.
-            (InjuryTypeEnum.CHEST_COLLAPSE, None),
-            # Open abdominal wounds require rapid intervention.
+            # Open wounds or amputations needing rapid intervention.
             (InjuryTypeEnum.OPEN_ABDOMINAL_WOUND, None),
-            # Major amputation demands tourniquet and rapid bleeding control.
             (InjuryTypeEnum.AMPUTATION, InjurySeverityEnum.MAJOR),
-            # Deep puncture wounds in critical areas like chest need urgent care.
+            # Chest injuries requiring immediate respiratory support.
+            (InjuryTypeEnum.CHEST_COLLAPSE, None),
+            # Severe puncture wounds in critical areas.
             (InjuryTypeEnum.PUNCTURE, InjurySeverityEnum.MAJOR),
+            # High-severity burns needing urgent care.
+            (InjuryTypeEnum.BURN, InjurySeverityEnum.MAJOR),
+            # Internal injuries with severe hemorrhage.
+            (InjuryTypeEnum.INTERNAL, InjurySeverityEnum.MAJOR),
+            # TBI needing constant monitoring.
+            (InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY, InjurySeverityEnum.MAJOR)
         ],
 
         TriageCategory.DELAYED: [
-            # Fractures are serious but can often wait if stabilized.
-            (InjuryTypeEnum.BROKEN_BONE, None),
+            # Significant but stable conditions needing delayed care.
+            (InjuryTypeEnum.BROKEN_BONE, InjurySeverityEnum.SUBSTANTIAL),
+            # Large laceration with controlled bleeding.
+            (InjuryTypeEnum.LACERATION, InjurySeverityEnum.SUBSTANTIAL),
             # Moderate internal injuries requiring treatment but not critical.
             (InjuryTypeEnum.INTERNAL, InjurySeverityEnum.MODERATE),
-            # Significant lacerations can be delayed if bleeding is controlled.
-            (InjuryTypeEnum.LACERATION, InjurySeverityEnum.SUBSTANTIAL)
+            # Moderate burns not immediately life-threatening.
+            (InjuryTypeEnum.BURN, InjurySeverityEnum.MODERATE),
+            # Moderate shrapnel injuries that can be stabilized.
+            (InjuryTypeEnum.SHRAPNEL, InjurySeverityEnum.MODERATE)
         ],
 
         TriageCategory.MINIMAL: [
-            # Asthma is generally stable and can be managed with minimal care.
+            # Stable conditions with minor injuries.
             (InjuryTypeEnum.ASTHMATIC, None),
-            # Minor burns are not life-threatening.
-            (InjuryTypeEnum.BURN, InjurySeverityEnum.MINOR),
-            # Small cuts or abrasions only require basic first aid.
+            # Superficial abrasions or minor cuts only require basic first aid.
+            (InjuryTypeEnum.ABRASION, None),
             (InjuryTypeEnum.LACERATION, InjurySeverityEnum.MINOR),
-            # Superficial abrasions need minimal care.
-            (InjuryTypeEnum.ABRASION, None)
+            # Minor burns or superficial injuries.
+            (InjuryTypeEnum.BURN, InjurySeverityEnum.MINOR),
+            (InjuryTypeEnum.SHRAPNEL, InjurySeverityEnum.MINOR)
         ]
     }
 
@@ -193,21 +221,40 @@ class InjuryTaggingRuleSet:
         return [max(current_tags + new_tags, key=lambda tag: list(TriageCategory).index(tag))]
 
 
-'''
-@dataclass
-class Vitals:
-    conscious: bool
-    avpu: str
-    ambulatory: bool
-    mental_status: str
-    breathing: str
-    hrpmin: int
-    spo2: str
-'''
-
-
 class VitalSignsTaggingRuleSet:
+    """
+    Assigns a triage category (EXPECTANT, IMMEDIATE, DELAYED, MINIMAL, UNCATEGORIZED) to casualties based on 
+    vital signs using a rules-based approach inspired by TCCC guidelines.
+
+    Input:
+        - vitals: An instance of the Vitals class containing attributes       
+        conscious, avpu, ambulatory, mental_status, breathing, hrpmin, spo2 
+
+    Output:
+        - Returns a list containing the most severe applicable triage category based 
+          on the casualty's vital signs.
+        If no rules match, returns UNCATEGORIZED to indicate no category could be assigned.
+    Process:
+        - Iterates through predefined rules for each triage level in `VITALS_RULES`.
+        - For each level, checks if the casualty’s vitals match any rule conditions.
+        - If matches are found, assigns the most severe applicable categoryIf no rules match, returns UNCATEGORIZED to indicate no category could be assigned.
+
+    """
     VITALS_RULES = {
+        # EXPECTANT - Low likelihood of survival, indicating fatal conditions
+        TriageCategory.EXPECTANT: [
+            # No breathing and no pulse indicate cardiac arrest or death.
+            ('breathing', BreathingLevelEnum.NONE, 'hrpmin', HeartRateEnum.NONE),
+            # Unresponsive with hypoxia often points to non-survivable head trauma or severe shock.
+            ('avpu', AvpuLevelEnum.UNRESPONSIVE, 'spo2', BloodOxygenEnum.LOW),
+            # Unresponsive with no breathing indicates impending death or severe trauma.
+            ('mental_status', MentalStatusEnum.UNRESPONSIVE,
+             'breathing', BreathingLevelEnum.NONE),
+            # No pulse with hypoxia, likely to be fatal without immediate advanced care.
+            ('hrpmin', HeartRateEnum.NONE, 'spo2', BloodOxygenEnum.LOW)
+        ],
+
+        # IMMEDIATE - Critical conditions that require urgent intervention
         TriageCategory.IMMEDIATE: [
             # No breathing indicates respiratory arrest.
             ('breathing', BreathingLevelEnum.NONE),
@@ -217,24 +264,42 @@ class VitalSignsTaggingRuleSet:
             ('spo2', BloodOxygenEnum.LOW),
             # Faint pulse suggests severe blood loss.
             ('hrpmin', HeartRateEnum.FAINT),
-            # Unresponsive indicates severe brain injury or coma.
-            ('avpu', AvpuLevelEnum.UNRESPONSIVE),
             # Bradycardia or no heart rate signals cardiac arrest.
-            ('hrpmin', HeartRateEnum.NONE)
+            ('hrpmin', HeartRateEnum.NONE),
+            # Restricted breathing and hypoxia signal respiratory distress.
+            ('breathing', BreathingLevelEnum.RESTRICTED, 'spo2', BloodOxygenEnum.LOW),
+            # Unresponsiveness with high HR indicates severe shock or head trauma.
+            ('mental_status', MentalStatusEnum.UNRESPONSIVE,
+             'hrpmin', HeartRateEnum.FAST)
         ],
+
+        # DELAYED - Serious conditions that can wait but require monitoring
         TriageCategory.DELAYED: [
-            # Severe pain requires attention.
+            # Severe pain but not immediately life-threatening.
             ('mental_status', MentalStatusEnum.AGONY),
-            # Rapid breathing due to pain or stress.
+            # Rapid breathing due to distress or pain.
             ('breathing', BreathingLevelEnum.FAST),
-            # Slow breathing may indicate mild shock.
-            ('breathing', BreathingLevelEnum.SLOW)
+            # Fast breathing without hypoxia often represents moderate distress.
+            ('breathing', BreathingLevelEnum.FAST, 'spo2', BloodOxygenEnum.NORMAL),
+            # Responds to pain, indicating stability without hypoxia.
+            ('avpu', AvpuLevelEnum.PAIN, 'spo2', BloodOxygenEnum.NORMAL),
+            # Responds to voice with no hypoxia, indicating stable condition.
+            ('avpu', AvpuLevelEnum.VOICE, 'spo2', BloodOxygenEnum.NORMAL)
         ],
+
+        # MINIMAL - Stable conditions with no immediate risk
         TriageCategory.MINIMAL: [
-            ('avpu', AvpuLevelEnum.ALERT),  # Alert and stable.
-            # Normal respiratory function.
+            # Fully alert patients are typically stable.
+            ('avpu', AvpuLevelEnum.ALERT),
+            # Normal breathing indicates stability.
             ('breathing', BreathingLevelEnum.NORMAL),
-            ('spo2', BloodOxygenEnum.NORMAL)  # Sufficient oxygenation.
+            # Sufficient oxygenation.
+            ('spo2', BloodOxygenEnum.NORMAL),
+            # Calm, stable breathing indicates minimal risk.
+            ('mental_status', MentalStatusEnum.CALM,
+             'breathing', BreathingLevelEnum.NORMAL),
+            # Normal heart rate and breathing are stable signs.
+            ('hrpmin', HeartRateEnum.NORMAL, 'breathing', BreathingLevelEnum.NORMAL)
         ]
     }
 
@@ -242,15 +307,31 @@ class VitalSignsTaggingRuleSet:
         matched_categories = [TriageCategory.MINIMAL]
         for category, rules in self.VITALS_RULES.items():
             for rule in rules:
-                attr, expected_value = rule
-                if getattr(vitals, attr) == expected_value:
+                if self.match_combination(vitals, rule):
                     matched_categories = self.get_most_severe(
                         matched_categories, [category])
-        return matched_categories
+        return matched_categories or [TriageCategory.UNCATEGORIZED]
+
+    @staticmethod
+    def match_combination(vitals: Vitals, rule) -> bool:
+        """
+        Check if the vitals match a specific rule.
+        Each rule is a tuple with alternating attribute names and expected values.
+        """
+        for i in range(0, len(rule), 2):
+            attr = rule[i]
+            expected_value = rule[i + 1]
+            # Get the attribute from vitals and compare it
+            if getattr(vitals, attr) != expected_value:
+                return False
+        return True
 
     @staticmethod
     def get_most_severe(current_tags: List[TriageCategory], new_tags: List[TriageCategory]) -> List[TriageCategory]:
-        # Return the most severe tag based on the TriageCategory order
+        """
+        Returns the most severe tag based on TriageCategory order.
+        """
+        # Returns a single most severe tag for clarity
         return [max(current_tags + new_tags, key=lambda tag: list(TriageCategory).index(tag))]
 
 
