@@ -12,6 +12,40 @@ from enum import Enum
 from dataclasses import dataclass
 
 
+class TreatmentsEnum(Enum):
+    TOURNIQUET = "Tourniquet"
+    PRESSURE_BANDAGE = "Pressure bandage"
+    HEMOSTATIC_GAUZE = "Hemostatic gauze"
+    DECOMPRESSION_NEEDLE = "Decompression Needle"
+    NASOPHARYNGEAL_AIRWAY = "Nasopharyngeal airway"
+    PULSE_OXIMETER = "Pulse Oximeter"
+    BLANKET = "Blanket"
+    EPI_PEN = "Epi Pen"
+    VENTED_CHEST_SEAL = "Vented Chest Seal"
+    PAIN_MEDICATIONS = "Pain Medications"
+    FENTANYL_LOLLIPOP = "Fentanyl Lollipop"
+    SPLINT = "Splint"
+    BLOOD = "Blood"
+    IV_BAG = "IV Bag"
+    BURN_DRESSING = "Burn Dressing"
+
+
+class InjuryTypeEnum(Enum):
+    EAR_BLEED = "Ear Bleed"
+    ASTHMATIC = "Asthmatic"
+    LACERATION = "Laceration"
+    PUNCTURE = "Puncture"
+    SHRAPNEL = "Shrapnel"
+    CHEST_COLLAPSE = "Chest Collapse"
+    AMPUTATION = "Amputation"
+    BURN = "Burn"
+    ABRASION = "Abrasion"
+    BROKEN_BONE = "Broken Bone"
+    INTERNAL = "Internal"
+    TRAUMATIC_BRAIN_INJURY = "Traumatic Brain Injury"
+    OPEN_ABDOMINAL_WOUND = "Open Abdominal Wound"
+
+
 class InjuryLocationEnum(Enum):
     RIGHT_FOREARM = "right forearm"
     LEFT_FOREARM = "left forearm"
@@ -47,6 +81,14 @@ class InjuryLocationEnum(Enum):
     UNSPECIFIED = "unspecified"
 
 
+class InjurySeverityEnum(Enum):
+    MINOR = "minor"
+    MODERATE = "moderate"
+    SUBSTANTIAL = "substantial"
+    MAJOR = "major"
+    EXTREME = "extreme"
+
+
 non_tourniquet_locations = [
     InjuryLocationEnum.RIGHT_CHEST,
     InjuryLocationEnum.LEFT_CHEST,
@@ -74,8 +116,6 @@ class TriageCategory(Enum):
     EXPECTANT = "EXPECTANT"
     UNCATEGORIZED = "UNCATEGORIZED"  # New category for cases with no match
     # order matters
-
-# Vitals Enums
 
 
 class AvpuLevelEnum(Enum):
@@ -112,30 +152,6 @@ class HeartRateEnum(Enum):
 class BloodOxygenEnum(Enum):
     NORMAL = "NORMAL"
     LOW = "LOW"
-
-
-class InjurySeverityEnum(Enum):
-    MINOR = "minor"
-    MODERATE = "moderate"
-    SUBSTANTIAL = "substantial"
-    MAJOR = "major"
-    EXTREME = "extreme"
-
-
-class InjuryTypeEnum(Enum):
-    EAR_BLEED = "Ear Bleed"
-    ASTHMATIC = "Asthmatic"
-    LACERATION = "Laceration"
-    PUNCTURE = "Puncture"
-    SHRAPNEL = "Shrapnel"
-    CHEST_COLLAPSE = "Chest Collapse"
-    AMPUTATION = "Amputation"
-    BURN = "Burn"
-    ABRASION = "Abrasion"
-    BROKEN_BONE = "Broken Bone"
-    INTERNAL = "Internal"
-    TRAUMATIC_BRAIN_INJURY = "Traumatic Brain Injury"
-    OPEN_ABDOMINAL_WOUND = "Open Abdominal Wound"
 
 
 enum_descriptions = {

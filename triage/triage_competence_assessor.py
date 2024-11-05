@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
+from typing import List
 from components import Assessor
 from domain.internal import TADProbe, Decision, Action
 from domain.ta3 import Casualty, Injury, Vitals
@@ -8,7 +8,7 @@ from domain.enum import ActionTypeEnum, SupplyTypeEnum, TagEnum, InjuryTypeEnum,
     MentalStatusEnum, HeartRateEnum, BloodOxygenEnum, AvpuLevelEnum, \
     BreathingLevelEnum, ParamEnum
 
-from .domain_reference import TriageCategory
+from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum
 
 PAINMED_SUPPLIES = [SupplyTypeEnum.PAIN_MEDICATIONS,
                     SupplyTypeEnum.FENTANYL_LOLLIPOP]
@@ -21,6 +21,7 @@ class TriageCompetenceAssessor(Assessor):
     def __init__(self):
         self.vitals_rule_set = VitalSignsTaggingRuleSet()
         self.injury_rule_set = InjuryTaggingRuleSet()
+        self.treatment_rule_set = TreatmentRuleSet()
 
     def assess(self, probe: TADProbe) -> dict[Decision, float]:
         treatment_available = sum(
@@ -40,18 +41,12 @@ class TriageCompetenceAssessor(Assessor):
             target_patient = get_target_patient(probe, dec)
 
             if is_tag_action(dec.value):
-                ret_assessments[dec_key] = self.check_tag_decision(
+                ret_assessments[dec_key] = self.assess_tag(
                     casualty=target_patient, given_tag=dec.value.params[ParamEnum.CATEGORY])
 
-                # char1 = get_target_patient(probe, dec)
-                # possible_tags = determine_tag(char1)
-                # given_tag = dec.value.params[ParamEnum.CATEGORY]
-                # if given_tag == possible_tags[0]:
-                #    ret_assessments[dec_key] = 1
-                # elif given_tag in possible_tags:
-                #    ret_assessments[dec_key] = 0.8
-                # else:
-                #    ret_assessments[dec_key] = 0.5
+            elif is_treatment_action(dec.value):
+                ret_assessments[dec_key] = self.assess_treatment(
+                    casualty=target_patient, given_treatment=dec.value.params[ParamEnum.TREATMENT])
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
@@ -71,18 +66,7 @@ class TriageCompetenceAssessor(Assessor):
                     ret_assessments[dec_key] = 0.8
                 else:
                     ret_assessments[dec_key] = 1
-            elif is_treatment_action(dec.value):
-                char1 = get_target_patient(probe, dec)
-                cur_tag = max(get_tags(char1), key=neediness)
-                if cur_tag != neediest_tag:
-                    if cur_tag == TagEnum.MINIMAL:
-                        ret_assessments[dec_key] = 0.2
-                    elif cur_tag == TagEnum.DELAYED:
-                        ret_assessments[dec_key] = 0.5
-                    elif cur_tag == TagEnum.EXPECTANT:
-                        ret_assessments[dec_key] = 0.7
-                else:
-                    ret_assessments[dec_key] = 1
+
             elif dec.value.name == ActionTypeEnum.MOVE_TO_EVAC:
                 char1 = get_target_patient(probe, dec)
                 cur_tag = max(get_tags(char1), key=neediness)
@@ -114,31 +98,61 @@ class TriageCompetenceAssessor(Assessor):
                 ret_assessments[dec_key] = 1
         return ret_assessments
 
-    def check_tag_decision(self, casualty, given_tag):
+    def assess_tag(self, casualty, given_tag):
+        # Get tags from vitals and injuries
         vitals_tags = self.vitals_rule_set.get_vitals_tags(casualty.vitals)
-
-        # is it UNCATEGORIZED? Don't have a rule for it, so use the default
-        if TriageCategory(given_tag) == TriageCategory.UNCATEGORIZED:
-            return 1
-
-        # is the value of the given tag the predicted tag (remember to add injury tags)
-        elif TriageCategory(given_tag) in vitals_tags:
-            return 1
-
-        # is it within a distance of one of the predicted tags by index of TriageCategory? Assign .5
-        elif abs(list(TriageCategory).index(TriageCategory(given_tag)) - list(TriageCategory).index(vitals_tags[0])) == 1:
-            return 0.8
-
-        # does it violate a basic rule
-        # return 0
-
-        else:
-            return .5
-
         injury_tags = []
-
         for injury in casualty.injuries:
             injury_tags.extend(self.injury_rule_set.get_injury_tags(injury))
+
+        # Combine all tags and identify the most severe
+        all_tags = vitals_tags + injury_tags
+        most_severe_tag = max(
+            all_tags, key=lambda tag: list(TriageCategory).index(tag))
+
+        given_tag_enum = TriageCategory(given_tag)
+        given_tag_index = list(TriageCategory).index(given_tag_enum)
+        most_severe_index = list(TriageCategory).index(most_severe_tag)
+
+        # Assign score based on the relationship between given_tag and most_severe_tag
+        if given_tag_enum == most_severe_tag:
+            return 1  # Exact match
+        elif given_tag_enum in all_tags:
+            return 0.8  # Present but not the most severe
+        elif abs(given_tag_index - most_severe_index) == 1:
+            return 0.5  # Within a distance of one of the most severe
+        else:
+            return 0  # No match
+
+    def assess_treatment(self, casualty, given_treatment):
+        # Initialize empty lists to gather valid and contraindicated treatments for all injuries
+        all_valid_treatments = set()
+        all_contraindicated_treatments = set()
+        all_location_contraindicated_treatments = set()
+
+        # Loop through each injury in the casualty's list of injuries
+        for injury in casualty.injuries:
+            # Accumulate valid treatments for each injury
+            valid_treatments = self.treatment_rule_set.get_valid_treatments(
+                injury)
+            contraindicated_treatments = self.treatment_rule_set.get_contraindicated_treatments(
+                injury)
+            location_contraindicated_treatments = self.treatment_rule_set.get_location_contraindicated_treatments(
+                injury)
+
+            # Update sets to include treatments from each injury
+            all_valid_treatments.update(valid_treatments)
+            all_contraindicated_treatments.update(contraindicated_treatments)
+            all_location_contraindicated_treatments.update(
+                location_contraindicated_treatments)
+
+        # Assess the treatment based on the combined lists from all injuries
+        if given_treatment in all_valid_treatments:
+            return 1  # Fully valid treatment
+        elif given_treatment in all_contraindicated_treatments or given_treatment in all_location_contraindicated_treatments:
+            return 0  # Contraindicated treatment (either by type or location)
+        else:
+            return 0.5  # Unknown but not explicitly contraindicated
 
     def check_end_scene_decision(self, treatment_available, check_available, painmeds_available):
         """Assess if ending the scene is premature given available actions."""
@@ -147,7 +161,7 @@ class TriageCompetenceAssessor(Assessor):
         elif check_available > 0:
             return 0.2
         elif painmeds_available > 0:
-            return 0.5
+            return 0.5  # check for circumstances where this is not the case. e.g. don't give intoxicating drugs to ambulatory soldiers who can defend themselves
         else:
             return 1
 
@@ -223,22 +237,8 @@ class InjuryTaggingRuleSet:
 
 class VitalSignsTaggingRuleSet:
     """
-    Assigns a triage category (EXPECTANT, IMMEDIATE, DELAYED, MINIMAL, UNCATEGORIZED) to casualties based on 
+    Assigns a triage category (EXPECTANT, IMMEDIATE, DELAYED, MINIMAL) to casualties based on
     vital signs using a rules-based approach inspired by TCCC guidelines.
-
-    Input:
-        - vitals: An instance of the Vitals class containing attributes       
-        conscious, avpu, ambulatory, mental_status, breathing, hrpmin, spo2 
-
-    Output:
-        - Returns a list containing the most severe applicable triage category based 
-          on the casualty's vital signs.
-        If no rules match, returns UNCATEGORIZED to indicate no category could be assigned.
-    Process:
-        - Iterates through predefined rules for each triage level in `VITALS_RULES`.
-        - For each level, checks if the casualty’s vitals match any rule conditions.
-        - If matches are found, assigns the most severe applicable categoryIf no rules match, returns UNCATEGORIZED to indicate no category could be assigned.
-
     """
     VITALS_RULES = {
         # EXPECTANT - Low likelihood of survival, indicating fatal conditions
@@ -335,15 +335,95 @@ class VitalSignsTaggingRuleSet:
         return [max(current_tags + new_tags, key=lambda tag: list(TriageCategory).index(tag))]
 
 
-class TreatingRuleSet:
-    # don't give certain pain meds to ambulatory soldiers who can defend themselves
-    # don't put a tourniquet certain places
-    # only apply tourniquet for massive hemorrhage
-    # we should really only get here if we are assessing competence only because these decisions wouldn't be allowed
+class TreatmentRuleSet:
+    VALID_TREATMENTS = {
+        InjuryTypeEnum.EAR_BLEED: [TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.PAIN_MEDICATIONS],
+        InjuryTypeEnum.ASTHMATIC: [TreatmentsEnum.EPI_PEN, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        InjuryTypeEnum.LACERATION: [TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.PAIN_MEDICATIONS],
+        InjuryTypeEnum.PUNCTURE: [TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.VENTED_CHEST_SEAL, TreatmentsEnum.PAIN_MEDICATIONS],
+        InjuryTypeEnum.SHRAPNEL: [TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.PAIN_MEDICATIONS],
+        InjuryTypeEnum.CHEST_COLLAPSE: [TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.VENTED_CHEST_SEAL, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        InjuryTypeEnum.AMPUTATION: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.FENTANYL_LOLLIPOP, TreatmentsEnum.BLOOD],
+        InjuryTypeEnum.BURN: [TreatmentsEnum.BURN_DRESSING, TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.IV_BAG, TreatmentsEnum.BLANKET],
+        InjuryTypeEnum.ABRASION: [TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.PAIN_MEDICATIONS],
+        InjuryTypeEnum.BROKEN_BONE: [TreatmentsEnum.SPLINT, TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.FENTANYL_LOLLIPOP],
+        InjuryTypeEnum.INTERNAL: [TreatmentsEnum.IV_BAG, TreatmentsEnum.BLOOD, TreatmentsEnum.PAIN_MEDICATIONS],
+        InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY: [TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.PULSE_OXIMETER, TreatmentsEnum.IV_BAG],
+        InjuryTypeEnum.OPEN_ABDOMINAL_WOUND: [
+            TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.IV_BAG]
+    }
+
+    CONTRAINDICATED_TREATMENTS = {
+        InjuryTypeEnum.EAR_BLEED: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryTypeEnum.ASTHMATIC: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.PRESSURE_BANDAGE],
+        InjuryTypeEnum.LACERATION: [TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.TOURNIQUET],
+        InjuryTypeEnum.PUNCTURE: [TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.TOURNIQUET],
+        InjuryTypeEnum.SHRAPNEL: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryTypeEnum.CHEST_COLLAPSE: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.PRESSURE_BANDAGE],
+        InjuryTypeEnum.AMPUTATION: [TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryTypeEnum.BURN: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryTypeEnum.ABRASION: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryTypeEnum.BROKEN_BONE: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryTypeEnum.INTERNAL: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.HEMOSTATIC_GAUZE],
+        InjuryTypeEnum.OPEN_ABDOMINAL_WOUND: [
+            TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.SPLINT]
+    }
+
+    LOCATION_CONTRAINDICATED_TREATMENTS = {
+        # Head and neck areas where tourniquets and decompression needles are contraindicated
+        InjuryLocationEnum.HEAD: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryLocationEnum.NECK: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryLocationEnum.LEFT_NECK: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        InjuryLocationEnum.RIGHT_NECK: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+
+        # Chest and side areas where tourniquets and splints are contraindicated
+        InjuryLocationEnum.RIGHT_CHEST: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.SPLINT],
+        InjuryLocationEnum.LEFT_CHEST: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.SPLINT],
+        InjuryLocationEnum.CENTER_CHEST: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.SPLINT],
+        InjuryLocationEnum.RIGHT_SIDE: [TreatmentsEnum.TOURNIQUET],
+        InjuryLocationEnum.LEFT_SIDE: [TreatmentsEnum.TOURNIQUET],
+
+        # Stomach areas where tourniquets, decompression needles, and splints are contraindicated
+        InjuryLocationEnum.RIGHT_STOMACH: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.SPLINT],
+        InjuryLocationEnum.LEFT_STOMACH: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.SPLINT],
+        InjuryLocationEnum.STOMACH: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.SPLINT],
+
+        # Face areas where tourniquets are contraindicated
+        InjuryLocationEnum.LEFT_FACE: [TreatmentsEnum.TOURNIQUET],
+        InjuryLocationEnum.RIGHT_FACE: [TreatmentsEnum.TOURNIQUET],
+
+        # Internal injuries where tourniquets and decompression needles are contraindicated
+        InjuryLocationEnum.INTERNAL: [
+            TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE]
+    }
+
+    def get_valid_treatments(self, injury: Injury) -> List[TreatmentsEnum]:
+        """
+        Returns a list of valid treatments for the specified injury type.
+        """
+        return self.VALID_TREATMENTS.get(injury.name, [])
+
+    def get_contraindicated_treatments(self, injury: Injury) -> List[TreatmentsEnum]:
+        """
+        Returns a list of treatments that are contraindicated for the specified injury type.
+        """
+        return self.CONTRAINDICATED_TREATMENTS.get(injury.name, [])
+
+    def get_location_contraindicated_treatments(self, injury: Injury) -> List[TreatmentsEnum]:
+        """
+        Returns a list of contraindicated treatments based on injury location.
+        """
+        location_enum = InjuryLocationEnum(injury.location)
+        return self.LOCATION_CONTRAINDICATED_TREATMENTS.get(location_enum, [])
+
+
+class PainMedRuleSet:
+    # don't give pain meds to ambulatory soldiers who can defend themselves
     pass
 
 
-class AssessingRuleSet:
+class AssessmentRuleSet:
     pass
 
 
