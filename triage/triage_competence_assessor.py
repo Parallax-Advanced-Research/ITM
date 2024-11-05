@@ -10,11 +10,15 @@ from domain.enum import ActionTypeEnum, SupplyTypeEnum, TagEnum, InjuryTypeEnum,
 
 from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum
 
-PAINMED_SUPPLIES = [SupplyTypeEnum.PAIN_MEDICATIONS,
-                    SupplyTypeEnum.FENTANYL_LOLLIPOP]
+
 CHECK_ACTION_TYPES = [ActionTypeEnum.CHECK_ALL_VITALS, ActionTypeEnum.CHECK_BLOOD_OXYGEN,
                       ActionTypeEnum.CHECK_PULSE, ActionTypeEnum.CHECK_RESPIRATION,
                       ActionTypeEnum.SITREP]
+
+PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administered
+    TreatmentsEnum.PAIN_MEDICATIONS,
+    TreatmentsEnum.FENTANYL_LOLLIPOP
+}
 
 
 class TriageCompetenceAssessor(Assessor):
@@ -22,6 +26,7 @@ class TriageCompetenceAssessor(Assessor):
         self.vitals_rule_set = VitalSignsTaggingRuleSet()
         self.injury_rule_set = InjuryTaggingRuleSet()
         self.treatment_rule_set = TreatmentRuleSet()
+        self.painmed_rule_set = PainMedRuleSet()
 
     def assess(self, probe: TADProbe) -> dict[Decision, float]:
         treatment_available = sum(
@@ -33,7 +38,8 @@ class TriageCompetenceAssessor(Assessor):
         tag_available = sum(
             [1 for dec in probe.decisions if is_tag_action(dec.value)])
 
-        ret_assessments = {}
+        ret_assessments: dict[str, int] = {}
+
         neediest_tag = get_neediest_tag(probe)
 
         for dec in probe.decisions:
@@ -45,13 +51,20 @@ class TriageCompetenceAssessor(Assessor):
                     casualty=target_patient, given_tag=dec.value.params[ParamEnum.CATEGORY])
 
             elif is_treatment_action(dec.value):
+                # also includes painmed actions
+                treatment = dec.value.params[ParamEnum.TREATMENT]
                 ret_assessments[dec_key] = self.assess_treatment(
                     casualty=target_patient, given_treatment=dec.value.params[ParamEnum.TREATMENT])
+
+            elif is_evac_action(dec.value):
+                ret_assessments[dec_key] = self.assess_evac(
+                    casualty=target_patient)
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
                     treatment_available, check_available, painmeds_available)
 
+                """
             elif is_painmed_action(dec.value):
                 char1 = get_target_patient(probe, dec)
                 if char1.vitals.mental_status != MentalStatusEnum.AGONY:
@@ -66,21 +79,7 @@ class TriageCompetenceAssessor(Assessor):
                     ret_assessments[dec_key] = 0.8
                 else:
                     ret_assessments[dec_key] = 1
-
-            elif dec.value.name == ActionTypeEnum.MOVE_TO_EVAC:
-                char1 = get_target_patient(probe, dec)
-                cur_tag = max(get_tags(char1), key=neediness)
-                nt_tag = get_neediest_transfer_tag(probe)
-                if cur_tag != nt_tag:
-                    if cur_tag == TagEnum.MINIMAL:
-                        ret_assessments[dec_key] = 0.2
-                    elif cur_tag == TagEnum.DELAYED:
-                        ret_assessments[dec_key] = 0.5
-                    elif cur_tag == TagEnum.EXPECTANT:
-                        ret_assessments[dec_key] = 0.7
-                else:
-                    ret_assessments[dec_key] = 1
-
+                """
             elif is_check_action(dec.value):
                 if neediest_tag == TagEnum.IMMEDIATE:
                     ret_assessments[dec_key] = 0.5
@@ -100,13 +99,9 @@ class TriageCompetenceAssessor(Assessor):
 
     def assess_tag(self, casualty, given_tag):
         # Get tags from vitals and injuries
-        vitals_tags = self.vitals_rule_set.get_vitals_tags(casualty.vitals)
-        injury_tags = []
-        for injury in casualty.injuries:
-            injury_tags.extend(self.injury_rule_set.get_injury_tags(injury))
+        all_tags = self.predict_tags(casualty)
 
-        # Combine all tags and identify the most severe
-        all_tags = vitals_tags + injury_tags
+        # Find the most severe tag from the list
         most_severe_tag = max(
             all_tags, key=lambda tag: list(TriageCategory).index(tag))
 
@@ -126,6 +121,8 @@ class TriageCompetenceAssessor(Assessor):
 
     def assess_treatment(self, casualty, given_treatment):
         # Initialize empty lists to gather valid and contraindicated treatments for all injuries
+
+        given_treatment_enum = TreatmentsEnum(given_treatment)
         all_valid_treatments = set()
         all_contraindicated_treatments = set()
         all_location_contraindicated_treatments = set()
@@ -147,23 +144,65 @@ class TriageCompetenceAssessor(Assessor):
                 location_contraindicated_treatments)
 
         # Assess the treatment based on the combined lists from all injuries
-        if given_treatment in all_valid_treatments:
-            return 1  # Fully valid treatment
-        elif given_treatment in all_contraindicated_treatments or given_treatment in all_location_contraindicated_treatments:
-            return 0  # Contraindicated treatment (either by type or location)
+        if given_treatment_enum in all_contraindicated_treatments or given_treatment_enum in all_location_contraindicated_treatments:
+            return 0
+
+        elif given_treatment_enum in all_valid_treatments:
+            if given_treatment_enum in [TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.FENTANYL_LOLLIPOP]:
+                return self.painmed_rule_set.assess_pain_medication(casualty, given_treatment)
+            else:
+                return 1  # Fully valid treatment
+
         else:
-            return 0.5  # Unknown but not explicitly contraindicated
+            return 0.555  # Unknown but not explicitly contraindicated
+
+    def assess_evac(self, casualty):
+        tags = self.predict_tags(casualty)
+
+        highest_priority_tag = tags[0] if tags else TriageCategory.UNCATEGORIZED
+
+        # Determine the evacuation score based on the tag
+        if highest_priority_tag == TriageCategory.IMMEDIATE:
+            return 1.0  # Evacuation necessary
+        elif highest_priority_tag == TriageCategory.EXPECTANT:
+            return 0.7  # Evacuate if resources allow; Expectant are deprioritized in combat
+        elif highest_priority_tag == TriageCategory.MINIMAL:
+            return 0.0  # Evacuation not necessary for Minimal cases
+        else:
+            return 0.5  # Default score for unclear cases
 
     def check_end_scene_decision(self, treatment_available, check_available, painmeds_available):
-        """Assess if ending the scene is premature given available actions."""
+        """ Assess if ending the scene is premature given available actions. """
         if treatment_available > 0:
             return 0  # Ending the scene prematurely when treatment is still available
         elif check_available > 0:
             return 0.2
-        elif painmeds_available > 0:
-            return 0.5  # check for circumstances where this is not the case. e.g. don't give intoxicating drugs to ambulatory soldiers who can defend themselves
+        # elif painmeds_available > 0:
+        #    return 0.5  # check for circumstances where this is not the case. e.g. don't give intoxicating drugs to ambulatory soldiers who can defend themselves
         else:
             return 1
+
+    def predict_tags(self, casualty) -> List[TriageCategory]:
+        """ Predicts the possible tags (TriageCategory) for a casualty based on their vitals and injuries. """
+        vitals = casualty.vitals
+        injuries = casualty.injuries
+
+        # Collect tags from vital signs
+        vitals_tags = self.vitals_rule_set.get_vitals_tags(vitals)
+
+        # Collect tags from each injury and combine them
+        injury_tags = []
+        for injury in injuries:
+            injury_tags.extend(self.injury_rule_set.get_injury_tags(injury))
+
+        # Combine and deduplicate tags from vitals and injuries
+        all_tags = list(set(vitals_tags + injury_tags))
+
+        # Sort tags by severity level
+        all_tags.sort(key=lambda tag: list(TriageCategory).index(tag))
+
+        # Return the sorted list, with the most severe tag first
+        return all_tags
 
 
 class InjuryTaggingRuleSet:
@@ -337,63 +376,89 @@ class VitalSignsTaggingRuleSet:
 
 class TreatmentRuleSet:
     VALID_TREATMENTS = {
+        # Bandage and pain management for bleeding control and discomfort.
         InjuryTypeEnum.EAR_BLEED: [TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.PAIN_MEDICATIONS],
+        # EpiPen to address asthma attacks and airway for severe respiratory distress.
         InjuryTypeEnum.ASTHMATIC: [TreatmentsEnum.EPI_PEN, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        # Standard bandage and gauze for bleeding control, plus pain relief for discomfort.
         InjuryTypeEnum.LACERATION: [TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.PAIN_MEDICATIONS],
+        # Bandage, gauze, and chest seal to prevent air leakage, with pain management.
         InjuryTypeEnum.PUNCTURE: [TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.VENTED_CHEST_SEAL, TreatmentsEnum.PAIN_MEDICATIONS],
+        # Gauze and bandage for wound stabilization and pain management.
         InjuryTypeEnum.SHRAPNEL: [TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.PAIN_MEDICATIONS],
+        # Needle decompression for collapsed lung, chest seal to prevent air leakage, and airway support.
         InjuryTypeEnum.CHEST_COLLAPSE: [TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.VENTED_CHEST_SEAL, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        # Tourniquet for major bleeding, gauze and bandage for wound care, pain relief, and blood transfusion as needed.
         InjuryTypeEnum.AMPUTATION: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.FENTANYL_LOLLIPOP, TreatmentsEnum.BLOOD],
+        # Specialized dressing and IV fluids for hydration, pain relief, and warmth.
         InjuryTypeEnum.BURN: [TreatmentsEnum.BURN_DRESSING, TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.IV_BAG, TreatmentsEnum.BLANKET],
+        # Bandage and pain relief for minor cuts.
         InjuryTypeEnum.ABRASION: [TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.PAIN_MEDICATIONS],
+        # Splint for stabilization, plus pain relief for moderate to severe fractures.
         InjuryTypeEnum.BROKEN_BONE: [TreatmentsEnum.SPLINT, TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.FENTANYL_LOLLIPOP],
+        # IV fluids and blood transfusion as needed, plus pain relief for internal injuries.
         InjuryTypeEnum.INTERNAL: [TreatmentsEnum.IV_BAG, TreatmentsEnum.BLOOD, TreatmentsEnum.PAIN_MEDICATIONS],
+        # Pain management, oxygen monitoring, and IV fluids for brain injury support.
         InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY: [TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.PULSE_OXIMETER, TreatmentsEnum.IV_BAG],
+        # Bandage and gauze to control bleeding, pain relief, and IV fluids for stabilization.
         InjuryTypeEnum.OPEN_ABDOMINAL_WOUND: [
             TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.IV_BAG]
     }
 
     CONTRAINDICATED_TREATMENTS = {
-        InjuryTypeEnum.EAR_BLEED: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
-        InjuryTypeEnum.ASTHMATIC: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.PRESSURE_BANDAGE],
+        # Applying a tourniquet, decompression needle, or airway for ear bleeding is inappropriate.
+        InjuryTypeEnum.EAR_BLEED: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        # For asthma attacks, avoid tourniquet, bandage, and decompression, as they are ineffective or harmful.
+        InjuryTypeEnum.ASTHMATIC: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        # Decompression needles and tourniquets are unnecessary and harmful for surface cuts.
         InjuryTypeEnum.LACERATION: [TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.TOURNIQUET],
+        # Avoid tourniquet and decompression for puncture wounds, as these treatments don’t address the injury type.
         InjuryTypeEnum.PUNCTURE: [TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.TOURNIQUET],
+        # Tourniquet and decompression needle are inappropriate for managing shrapnel injuries.
         InjuryTypeEnum.SHRAPNEL: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
-        InjuryTypeEnum.CHEST_COLLAPSE: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.PRESSURE_BANDAGE],
-        InjuryTypeEnum.AMPUTATION: [TreatmentsEnum.DECOMPRESSION_NEEDLE],
-        InjuryTypeEnum.BURN: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        # Avoid tourniquet, bandage, and airway for collapsed lung as they do not aid respiratory issues effectively.
+        InjuryTypeEnum.CHEST_COLLAPSE: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.PRESSURE_BANDAGE, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        # Decompression needle and bandage are unsuitable for amputations; bleeding needs advanced interventions.
+        InjuryTypeEnum.AMPUTATION: [TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.PRESSURE_BANDAGE],
+        # Tourniquet, hemostatic gauze, decompression, and airway management are unsuitable for burns.
+        InjuryTypeEnum.BURN: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        # Avoid tourniquet and decompression needle for minor scrapes.
         InjuryTypeEnum.ABRASION: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
-        InjuryTypeEnum.BROKEN_BONE: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
-        InjuryTypeEnum.INTERNAL: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
-        InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.HEMOSTATIC_GAUZE],
+        # Tourniquet, decompression needle, and airway are not suitable for treating fractures.
+        InjuryTypeEnum.BROKEN_BONE: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        # Avoid tourniquet, decompression needle, and airway for internal injuries as they don't address internal trauma.
+        InjuryTypeEnum.INTERNAL: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        # Tourniquet, decompression, gauze, and airway management are ineffective and inappropriate for brain injuries.
+        InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        # Tourniquet, decompression needle, splint, and airway are unsuitable for abdominal wounds.
         InjuryTypeEnum.OPEN_ABDOMINAL_WOUND: [
-            TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.SPLINT]
+            TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.SPLINT, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY]
     }
 
     LOCATION_CONTRAINDICATED_TREATMENTS = {
-        # Head and neck areas where tourniquets and decompression needles are contraindicated
+        # Head and neck areas: Tourniquets and decompression needles can cause harm without benefit.
         InjuryLocationEnum.HEAD: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
         InjuryLocationEnum.NECK: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
         InjuryLocationEnum.LEFT_NECK: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
         InjuryLocationEnum.RIGHT_NECK: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
 
-        # Chest and side areas where tourniquets and splints are contraindicated
+        # Chest and side areas: Tourniquets and splints do not stabilize or aid injuries in these regions.
         InjuryLocationEnum.RIGHT_CHEST: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.SPLINT],
         InjuryLocationEnum.LEFT_CHEST: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.SPLINT],
         InjuryLocationEnum.CENTER_CHEST: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.SPLINT],
         InjuryLocationEnum.RIGHT_SIDE: [TreatmentsEnum.TOURNIQUET],
         InjuryLocationEnum.LEFT_SIDE: [TreatmentsEnum.TOURNIQUET],
 
-        # Stomach areas where tourniquets, decompression needles, and splints are contraindicated
+        # Stomach areas: Tourniquets, decompression needles, and splints are ineffective here.
         InjuryLocationEnum.RIGHT_STOMACH: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.SPLINT],
         InjuryLocationEnum.LEFT_STOMACH: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.SPLINT],
         InjuryLocationEnum.STOMACH: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.SPLINT],
 
-        # Face areas where tourniquets are contraindicated
+        # Face areas: Tourniquets cannot be applied effectively to facial injuries.
         InjuryLocationEnum.LEFT_FACE: [TreatmentsEnum.TOURNIQUET],
         InjuryLocationEnum.RIGHT_FACE: [TreatmentsEnum.TOURNIQUET],
 
-        # Internal injuries where tourniquets and decompression needles are contraindicated
+        # Internal injuries: Tourniquets and decompression needles are ineffective for internal trauma.
         InjuryLocationEnum.INTERNAL: [
             TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE]
     }
@@ -419,8 +484,85 @@ class TreatmentRuleSet:
 
 
 class PainMedRuleSet:
-    # don't give pain meds to ambulatory soldiers who can defend themselves
-    pass
+    """
+    Evaluates the appropriateness of pain medication administration based on injury severity,
+    mental status, AVPU level, consciousness, and other contraindications.
+    """
+
+    # Contraindications for specific cases, where a lower score applies
+    CONTRAINDICATIONS = [
+        # Non-agonizing mental status with Fentanyl Lollipop administration
+        ('mental_status', MentalStatusEnum.CALM,
+         TreatmentsEnum.FENTANYL_LOLLIPOP, 0.7),
+        ('mental_status', MentalStatusEnum.CONFUSED,
+         TreatmentsEnum.FENTANYL_LOLLIPOP, 0.7),
+        ('mental_status', MentalStatusEnum.SHOCK,
+         TreatmentsEnum.FENTANYL_LOLLIPOP, 0.7),
+
+        # Injuries generally not needing high-level pain management
+        ('injury_type', InjuryTypeEnum.ABRASION,
+         TreatmentsEnum.FENTANYL_LOLLIPOP, 0.7),
+        ('injury_type', InjuryTypeEnum.LACERATION,
+         TreatmentsEnum.PAIN_MEDICATIONS, 0.7),
+
+        # Additional contraindications specific to TBI or signs of neurological injury
+        ('injury_type', InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY,
+         TreatmentsEnum.PAIN_MEDICATIONS, 0.3),
+        ('injury_type', InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY,
+         TreatmentsEnum.FENTANYL_LOLLIPOP, 0.3),
+
+        # Avoid Fentanyl if AVPU Level is UNRESPONSIVE
+        ('avpu_level', AvpuLevelEnum.UNRESPONSIVE,
+         TreatmentsEnum.PAIN_MEDICATIONS, 0.3),
+        ('avpu_level', AvpuLevelEnum.UNRESPONSIVE,
+         TreatmentsEnum.FENTANYL_LOLLIPOP, 0.3),
+
+        # Avoid any pain meds if patient is flagged as unconscious
+        ('conscious', False, TreatmentsEnum.PAIN_MEDICATIONS, 0.3),
+        ('conscious', False, TreatmentsEnum.FENTANYL_LOLLIPOP, 0.3),
+
+        # Avoid Fentanyl if mental status indicates potential respiratory depression risk
+        ('mental_status', MentalStatusEnum.UNRESPONSIVE,
+         TreatmentsEnum.FENTANYL_LOLLIPOP, 0.3),
+
+        # Asthmatic considerations
+        ('injury_type', InjuryTypeEnum.ASTHMATIC,
+         TreatmentsEnum.FENTANYL_LOLLIPOP, 0.3),
+        ('injury_type', InjuryTypeEnum.ASTHMATIC,
+         TreatmentsEnum.PAIN_MEDICATIONS, 0.3),
+    ]
+
+    def assess_pain_medication(self, casualty, given_treatment):
+        """
+        Assesses the appropriateness of administering pain medication to a casualty based on 
+        injury severity, mental status, and other contraindications.
+
+        Returns:
+            float: Appropriateness score for administering the given pain medication.
+        """
+        # Default score if no contraindications are found
+        score = 1.0
+
+        if all(injury.severity == InjurySeverityEnum.MINOR for injury in casualty.injuries):
+            score = min(score, 0.7)
+
+        else:
+            for rule in self.CONTRAINDICATIONS:
+                if len(rule) == 3:  # Contraindication without specific treatment
+                    attribute, condition, rule_score = rule
+                    casualty_value = getattr(casualty, attribute, None)
+
+                    if casualty_value == condition:
+                        score = min(score, rule_score)
+
+                elif len(rule) == 4:  # Contraindication with specific treatment
+                    attribute, condition, contraindicated_treatment, rule_score = rule
+                    casualty_value = getattr(casualty, attribute, None)
+
+                    if casualty_value == condition and given_treatment == contraindicated_treatment:
+                        score = min(score, rule_score)
+
+        return score
 
 
 class AssessmentRuleSet:
@@ -482,7 +624,7 @@ def seriousness(tag: str):
 
 
 def is_treatment_action(act: Action):
-    return act.name == ActionTypeEnum.APPLY_TREATMENT and not is_painmed_action(act)
+    return act.name == ActionTypeEnum.APPLY_TREATMENT
 
 
 def is_painmed_action(act: Action):
@@ -491,6 +633,10 @@ def is_painmed_action(act: Action):
 
 def is_check_action(act: Action):
     return act.name in CHECK_ACTION_TYPES
+
+
+def is_evac_action(act: Action):
+    return act.name == ActionTypeEnum.MOVE_TO_EVAC
 
 
 def is_tag_action(act: Action):

@@ -89,26 +89,6 @@ class InjurySeverityEnum(Enum):
     EXTREME = "extreme"
 
 
-non_tourniquet_locations = [
-    InjuryLocationEnum.RIGHT_CHEST,
-    InjuryLocationEnum.LEFT_CHEST,
-    InjuryLocationEnum.CENTER_CHEST,
-    InjuryLocationEnum.RIGHT_SIDE,
-    InjuryLocationEnum.LEFT_SIDE,
-    InjuryLocationEnum.RIGHT_STOMACH,
-    InjuryLocationEnum.LEFT_STOMACH,
-    InjuryLocationEnum.STOMACH,
-    InjuryLocationEnum.HEAD,
-    InjuryLocationEnum.NECK,
-    InjuryLocationEnum.LEFT_NECK,
-    InjuryLocationEnum.RIGHT_NECK,
-    InjuryLocationEnum.INTERNAL,
-    InjuryLocationEnum.LEFT_FACE,
-    InjuryLocationEnum.RIGHT_FACE,
-    InjuryLocationEnum.UNSPECIFIED
-]
-
-
 class TriageCategory(Enum):
     MINIMAL = "MINIMAL"
     DELAYED = "DELAYED"
@@ -116,6 +96,22 @@ class TriageCategory(Enum):
     EXPECTANT = "EXPECTANT"
     UNCATEGORIZED = "UNCATEGORIZED"  # New category for cases with no match
     # order matters
+
+
+class ActionTypeEnum(Enum):
+    APPLY_TREATMENT = "APPLY_TREATMENT"
+    CHECK_ALL_VITALS = "CHECK_ALL_VITALS"
+    CHECK_BLOOD_OXYGEN = "CHECK_BLOOD_OXYGEN"
+    CHECK_PULSE = "CHECK_PULSE"
+    CHECK_RESPIRATION = "CHECK_RESPIRATION"
+    DIRECT_MOBILE_CHARACTERS = "DIRECT_MOBILE_CHARACTERS"
+    END_SCENE = "END_SCENE"
+    MESSAGE = "MESSAGE"
+    MOVE_TO = "MOVE_TO"
+    MOVE_TO_EVAC = "MOVE_TO_EVAC"
+    SEARCH = "SEARCH"
+    SITREP = "SITREP"
+    TAG_CHARACTER = "TAG_CHARACTER"
 
 
 class AvpuLevelEnum(Enum):
@@ -153,103 +149,6 @@ class BloodOxygenEnum(Enum):
     NORMAL = "NORMAL"
     LOW = "LOW"
 
-
-enum_descriptions = {
-    "AvpuLevelEnum": {
-        "ALERT": {
-            "short_description": "Fully responsive",
-            "long_description": "The patient is fully alert, responsive to stimuli, aware of their surroundings, and able to answer questions appropriately. This indicates normal brain function."
-        },
-        "VOICE": {
-            "short_description": "Responds to voice",
-            "long_description": "The patient is not fully alert but responds to verbal stimuli. They may be drowsy or disoriented, but they can react to voice commands, indicating some level of consciousness."
-        },
-        "PAIN": {
-            "short_description": "Responds to pain",
-            "long_description": "The patient does not respond to verbal stimuli but reacts to painful stimuli (e.g., pinching). This suggests severe impairment of brain function, with diminished consciousness."
-        },
-        "UNRESPONSIVE": {
-            "short_description": "No response",
-            "long_description": "The patient is completely unresponsive to both verbal and painful stimuli. This indicates a critical condition, such as deep unconsciousness or coma, and requires immediate medical intervention."
-        }
-    },
-    "MentalStatusEnum": {
-        "CALM": {
-            "short_description": "Stable and calm",
-            "long_description": "The patient shows no signs of emotional distress or agitation. Their mental state is stable, and they are cooperative, which facilitates medical evaluation and care."
-        },
-        "CONFUSED": {
-            "short_description": "Disoriented",
-            "long_description": "The patient is disoriented and may have difficulty understanding or processing information. They may be unable to follow commands, indicating possible brain injury or shock."
-        },
-        "AGONY": {
-            "short_description": "Severe pain",
-            "long_description": "The patient is experiencing extreme pain, which may cause agitation and distress. This could be due to severe injury, requiring immediate pain management and intervention."
-        },
-        "SHOCK": {
-            "short_description": "Circulatory failure",
-            "long_description": "The patient exhibits signs of shock, such as cold, clammy skin, and confusion. This is often caused by severe blood loss or other circulatory problems, and it is a life-threatening condition that requires urgent care."
-        },
-        "UPSET": {
-            "short_description": "Emotional distress",
-            "long_description": "The patient is emotionally distressed but is still able to respond to stimuli. They may be crying or agitated, but their mental status does not suggest immediate danger."
-        },
-        "UNRESPONSIVE": {
-            "short_description": "No mental response",
-            "long_description": "The patient is unresponsive, indicating that they are not reacting to any external stimuli. This mental status is indicative of a severe brain injury or coma."
-        }
-    },
-    "BreathingLevelEnum": {
-        "NORMAL": {
-            "short_description": "Normal breathing",
-            "long_description": "The patient's breathing rate and rhythm are within normal limits. This indicates stable respiratory function and is a good sign of overall stability."
-        },
-        "FAST": {
-            "short_description": "Rapid breathing",
-            "long_description": "The patient is breathing faster than normal (tachypnea), often due to stress, pain, or shock. It may indicate hypoxia or respiratory distress and requires monitoring."
-        },
-        "SLOW": {
-            "short_description": "Slow breathing",
-            "long_description": "The patient is breathing slower than normal (bradypnea). This could be a sign of respiratory depression due to head injury, drugs, or a metabolic issue, and may require intervention."
-        },
-        "RESTRICTED": {
-            "short_description": "Labored breathing",
-            "long_description": "The patient is experiencing restricted or labored breathing, possibly due to chest trauma or airway obstruction. This requires immediate attention to ensure airway patency."
-        },
-        "NONE": {
-            "short_description": "No breathing",
-            "long_description": "The patient is not breathing. This is a life-threatening emergency that requires immediate resuscitation efforts, including opening the airway and performing CPR if necessary."
-        }
-    },
-    "HeartRateEnum": {
-        "NORMAL": {
-            "short_description": "Stable heart rate",
-            "long_description": "The patient's heart rate is within normal limits, indicating effective circulation and stable cardiovascular function. This is a sign of a stable condition."
-        },
-        "FAINT": {
-            "short_description": "Weak pulse",
-            "long_description": "The patient has a faint or weak pulse, which may suggest low blood pressure or poor circulation. This is often seen in cases of shock or severe blood loss and requires monitoring or intervention."
-        },
-        "FAST": {
-            "short_description": "Rapid heart rate",
-            "long_description": "The patient has an elevated heart rate (tachycardia), which could indicate pain, blood loss, dehydration, or shock. It is a sign of stress on the circulatory system and may require intervention."
-        },
-        "NONE": {
-            "short_description": "No pulse",
-            "long_description": "The patient has no detectable heart rate or pulse, indicating cardiac arrest or circulatory failure. This is a medical emergency, requiring immediate CPR or advanced cardiac life support."
-        }
-    },
-    "BloodOxygenEnum": {
-        "NORMAL": {
-            "short_description": "Sufficient oxygen",
-            "long_description": "The patient's oxygen saturation (SpO2) is within normal limits (usually 95-100%), indicating effective oxygenation of tissues and stable respiratory function."
-        },
-        "LOW": {
-            "short_description": "Low oxygen saturation",
-            "long_description": "The patient's oxygen saturation is below normal levels (below 90%), indicating hypoxia or insufficient oxygen in the bloodstream. This can result from respiratory distress, airway obstruction, or other factors and requires immediate intervention."
-        }
-    }
-}
 
 '''
 # For testing:
