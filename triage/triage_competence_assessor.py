@@ -1,6 +1,4 @@
-from enum import Enum
 from typing import List
-from dataclasses import dataclass
 from components import Assessor
 from domain.internal import TADProbe, Decision, Action
 from domain.ta3 import Casualty, Injury, Vitals
@@ -13,7 +11,7 @@ from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum
 
 CHECK_ACTION_TYPES = [ActionTypeEnum.CHECK_ALL_VITALS, ActionTypeEnum.CHECK_BLOOD_OXYGEN,
                       ActionTypeEnum.CHECK_PULSE, ActionTypeEnum.CHECK_RESPIRATION,
-                      ActionTypeEnum.SITREP]
+                      ActionTypeEnum.SITREP, ActionTypeEnum.SEARCH, ActionTypeEnum.MOVE_TO]
 
 PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administered
     TreatmentsEnum.PAIN_MEDICATIONS,
@@ -28,6 +26,8 @@ class TriageCompetenceAssessor(Assessor):
         self.treatment_rule_set = TreatmentRuleSet()
         self.painmed_rule_set = PainMedRuleSet()
         self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset()
+        self.assess_evac_rule_set = EvacuationRuleSet()
+        self.end_scene_rule_set = EndSceneRuleset()
 
     def assess(self, probe: TADProbe) -> dict[Decision, float]:
         treatment_available = sum(
@@ -41,8 +41,6 @@ class TriageCompetenceAssessor(Assessor):
 
         ret_assessments: dict[str, int] = {}
 
-        neediest_tag = get_neediest_tag(probe)
-
         for dec in probe.decisions:
             dec_key = str(dec.value)
             target_patient = get_target_patient(probe, dec)
@@ -53,36 +51,21 @@ class TriageCompetenceAssessor(Assessor):
 
             elif is_treatment_action(dec.value):
                 # also includes painmed actions
-                treatment = dec.value.params[ParamEnum.TREATMENT]
                 ret_assessments[dec_key] = self.assess_treatment(
                     casualty=target_patient, given_treatment=dec.value.params[ParamEnum.TREATMENT])
 
+            elif is_check_action(dec.value):
+                ret_assessments[dec_key] = self.assess_check_action(
+                    casualty=target_patient, action_type=dec.value.name)
+
             elif is_evac_action(dec.value):
-                ret_assessments[dec_key] = self.assess_evac(
+                ret_assessments[dec_key] = self.assess_evacuation(
                     casualty=target_patient)
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
                     treatment_available, check_available, painmeds_available)
 
-            elif is_check_action(dec.value):
-                ret_assessments[dec_key] = self.assessment_heuristic_ruleset.assess_action(
-                    casualty=target_patient, action_type=dec.value.name)
-                '''
-                if neediest_tag == TagEnum.IMMEDIATE:
-                    ret_assessments[dec_key] = 0.5
-                else:
-                    ret_assessments[dec_key] = 1
-                '''
-            elif dec.value.name in [ActionTypeEnum.MOVE_TO, ActionTypeEnum.SEARCH]:
-                if neediest_tag == TagEnum.IMMEDIATE:
-                    ret_assessments[dec_key] = 0.2
-                elif neediest_tag == TagEnum.MINIMAL:
-                    ret_assessments[dec_key] = 1
-                else:
-                    ret_assessments[dec_key] = 0.9
-            else:
-                ret_assessments[dec_key] = 1
         return ret_assessments
 
     def assess_tag(self, casualty, given_tag):
@@ -145,22 +128,14 @@ class TriageCompetenceAssessor(Assessor):
         else:
             return 0.555  # Unknown but not explicitly contraindicated
 
-    def assess_evac(self, casualty):
-        tags = self.predict_tags(casualty)
+    def assess_check_action(self, casualty, action_type):
+        return self.assessment_heuristic_ruleset.assess_action(casualty, action_type)
 
-        highest_priority_tag = tags[0] if tags else TriageCategory.UNCATEGORIZED
-
-        # Determine the evacuation score based on the tag
-        if highest_priority_tag == TriageCategory.IMMEDIATE:
-            return 1.0  # Evacuation necessary
-        elif highest_priority_tag == TriageCategory.EXPECTANT:
-            return 0.7  # Evacuate if resources allow; Expectant are deprioritized in combat
-        elif highest_priority_tag == TriageCategory.MINIMAL:
-            return 0.0  # Evacuation not necessary for Minimal cases
-        else:
-            return 0.5  # Default score for unclear cases
+    def assess_evacuation(self, casualty):
+        return self.assess_evac_rule_set.assess_evacuation(casualty)
 
     def check_end_scene_decision(self, treatment_available, check_available, painmeds_available):
+        return self.end_scene_rule_set.check_end_scene_decision(treatment_available, check_available, painmeds_available)
         """ Assess if ending the scene is premature given available actions. """
         if treatment_available > 0:
             return 0  # Ending the scene prematurely when treatment is still available
@@ -555,7 +530,14 @@ class AssessmentHeuristicRuleset:
     """
     Evaluates the appropriateness of specific assessment actions (CHECK_ALL_VITALS, CHECK_BLOOD_OXYGEN, etc.)
     based on a casualty's condition, injury types, severity, and vitals.
-    Adjusts score based on heuristic matches.
+    Adjusts score based on heuristic matches, where a baseline score is modified up or down according to conditions.
+
+    Theory of Application:
+    - The heuristic model adds relevance to an assessment action based on certain injury patterns or vital conditions. 
+    - For example, respiratory injuries prioritize oxygen and respiration checks, while circulatory injuries make pulse checks more relevant.
+    - Less critical or superficial injuries (e.g., abrasions, minor wounds) reduce the necessity of intensive monitoring.
+    - A **SITREP** is particularly valuable in severe cases where a casualty is stable but critical, or if they are unvisited, to provide an initial overview without exhaustive assessment.
+    - The resulting score indicates the appropriateness of the action
     """
 
     BASELINE_SCORE = 0.7
@@ -620,6 +602,33 @@ class AssessmentHeuristicRuleset:
             # Minor or superficial injuries lower necessity for SITREP.
             ('injury_severity', 'MINOR', -0.4),
             ('injury_type', 'ABRASION', -0.4)
+        ],
+        ActionTypeEnum.MOVE_TO: [
+            # High-priority MOVE_TO if casualty has severe visible injuries
+            # but lacks full vital signs or detailed information.
+            ("injury_type", InjuryTypeEnum.CHEST_COLLAPSE, 0.9),
+            ("injury_type", InjuryTypeEnum.AMPUTATION, 0.9),
+            ("injury_type", InjuryTypeEnum.OPEN_ABDOMINAL_WOUND, 0.9),
+
+            # MOVE_TO if there’s an injury but unclear vitals
+            ("vitals_known", False, 0.8),
+        ],
+
+        # SEARCH heuristic
+        ActionTypeEnum.SEARCH: [
+            # Recommended SEARCH action if injury severity is high and detailed
+            # vitals information is incomplete, as there may be hidden complications.
+            ("injury_severity", InjurySeverityEnum.MAJOR, 0.85),
+            ("injury_severity", InjurySeverityEnum.EXTREME, 0.85),
+
+            # Perform SEARCH for additional context if certain vitals are missing,
+            # indicating a need to gather more information for accurate triage.
+            ("spo2_known", False, 0.75),
+            ("heart_rate_known", False, 0.75),
+
+            # SEARCH action is useful when there is only partial visibility on injuries
+            # but suspicion of additional unconfirmed injuries or conditions.
+            ("injury_known", False, 0.8),
         ]
     }
 
@@ -645,12 +654,135 @@ class AssessmentHeuristicRuleset:
 
 
 class EvacuationRuleSet:
-    # don't evac expectant
-    pass
+    """
+    Determines evacuation necessity based on casualty's triage tag, injury severity, type, 
+    and location. Prioritizes 'Immediate' and considers factors such as brain injury, 
+    chest trauma, and location-based criticality.
+    """
+
+    BASE_SCORES = {
+        # Evacuation is necessary for life-threatening injuries.
+        TriageCategory.IMMEDIATE: 1.0,
+        # Evacuate only if resources allow; deprioritized in combat settings.
+        TriageCategory.EXPECTANT: 0.7,
+        # Evacuation generally unnecessary; stable condition.
+        TriageCategory.MINIMAL: 0.0,
+        # Evacuation can wait but may be required; monitor condition.
+        TriageCategory.DELAYED: 0.5,
+        # Default score for unclear or uncategorized cases.
+        TriageCategory.UNCATEGORIZED: 0.5
+    }
+
+    def assess_evacuation(self, casualty):
+        """
+        Evaluates the necessity for evacuation based on predicted tags, with adjustments 
+        for injury severity, type, and location.
+        """
+        tags = self.predict_tags(casualty)
+        highest_priority_tag = tags[0] if tags else TriageCategory.UNCATEGORIZED
+        score = self.BASE_SCORES.get(highest_priority_tag, 0.5)
+
+        # Adjust based on severity
+        if any(injury.severity == InjurySeverityEnum.EXTREME for injury in casualty.injuries):
+            score = min(score + 0.2, 1.0)  # High priority for severe cases
+        elif all(injury.severity == InjurySeverityEnum.MINOR for injury in casualty.injuries):
+            # Lower priority if all injuries are minor
+            score = max(score - 0.2, 0.0)
+
+        # Adjust for specific high-priority injury types
+        if any(injury.name == InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY for injury in casualty.injuries):
+            # TBI often requires specialized evacuation
+            score = min(score + 0.15, 1.0)
+
+        if any(injury.name in {InjuryTypeEnum.OPEN_ABDOMINAL_WOUND, InjuryTypeEnum.CHEST_COLLAPSE}
+               for injury in casualty.injuries):
+            # Chest and abdominal wounds increase evacuation priority
+            score = min(score + 0.1, 1.0)
+
+        # Location-based adjustments
+        critical_locations = {InjuryLocationEnum.HEAD,
+                              InjuryLocationEnum.NECK, InjuryLocationEnum.CHEST}
+        if any(injury.location in critical_locations for injury in casualty.injuries):
+            # Critical area injuries increase evacuation need
+            score = min(score + 0.1, 1.0)
+
+        return score
 
 
-class EndingRuleSet:
-    pass
+class EndSceneRuleset:
+    """
+    Determines if it is appropriate to end the scene based on available treatments, 
+    assessments, and the status of casualties, following established conditions.
+    """
+
+    def __init__(self):
+        # Define rules for determining scene-ending appropriateness
+        self.rules = {
+            # Prevent ending scene if high-priority casualties have unmet treatment needs
+            "high_priority_treatment_needed": lambda treatment_available, casualties: treatment_available > 0
+            and any(self.is_high_priority(casualty) for casualty in casualties),
+
+            # Prevent ending scene if assessments for high-priority casualties are still required
+            "high_priority_assessment_needed": lambda check_available, casualties: check_available > 0
+            and any(self.requires_assessment(casualty) for casualty in casualties),
+
+            # Avoid ending scene if pain medications are available and might interfere with functionality
+            "painmed_contradiction": lambda painmeds_available, casualties: painmeds_available > 0
+            and any(self.is_ambulatory_and_minimal(casualty) for casualty in casualties),
+
+            # Allow ending if there are no critical unmet needs (default case)
+            "end_scene_default": lambda treatment_available, check_available, painmeds_available: treatment_available == 0
+            and check_available == 0
+            and painmeds_available == 0
+        }
+
+    def assess_end_scene(self, treatment_available, check_available, painmeds_available, casualties):
+        """
+        Assesses if ending the scene is appropriate based on available treatments, 
+        assessments, and casualty statuses.
+        """
+        # Evaluate each rule, returning specific scores based on rule fulfillment
+        if self.rules["high_priority_treatment_needed"](treatment_available, casualties):
+            return 0  # Critical treatments are still available for high-priority casualties
+
+        if self.rules["high_priority_assessment_needed"](check_available, casualties):
+            return 0.2  # Critical assessments still needed
+
+        if self.rules["painmed_contradiction"](painmeds_available, casualties):
+            return 0.5  # Avoid ending if pain meds might interfere with functionality
+
+        # Default rule for ending scene when no critical treatments, checks, or pain meds are required
+        if self.rules["end_scene_default"](treatment_available, check_available, painmeds_available):
+            return 1  # Scene can end
+
+        return 0.7  # Midway score if no specific rule matched, but no critical blockers
+
+    @staticmethod
+    def is_high_priority(casualty):
+        """
+        Determine if the casualty is of high priority (Immediate or Expectant).
+        """
+        return casualty.triage_category in {TriageCategory.IMMEDIATE, TriageCategory.EXPECTANT}
+
+    @staticmethod
+    def requires_assessment(casualty):
+        """
+        Determine if the casualty requires further assessment based on incomplete vitals or injury assessment.
+        """
+        return not casualty.vitals_complete or not casualty.injuries_assessed
+
+    @staticmethod
+    def is_ambulatory_and_minimal(casualty):
+        """
+        Determine if the casualty is ambulatory with a minimal triage tag, indicating they may not need
+        strong pain medications.
+        """
+        return casualty.is_ambulatory and casualty.triage_category == TriageCategory.MINIMAL
+
+
+'''
+Triage Competence Assessor Original functions
+'''
 
 
 def get_neediest_tag(probe: TADProbe):
