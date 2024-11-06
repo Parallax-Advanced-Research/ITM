@@ -28,6 +28,8 @@ class TriageCompetenceAssessor(Assessor):
         self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset()
         self.assess_evac_rule_set = EvacuationRuleSet()
         self.end_scene_rule_set = EndSceneRuleset()
+        self.tag_predictor = TriagePredictor(
+            self.vitals_rule_set, self.injury_rule_set)
 
     def assess(self, probe: TADProbe) -> dict[Decision, float]:
         treatment_available = sum(
@@ -40,6 +42,7 @@ class TriageCompetenceAssessor(Assessor):
             [1 for dec in probe.decisions if is_tag_action(dec.value)])
 
         ret_assessments: dict[str, int] = {}
+        casualties = probe.state.casualties
 
         for dec in probe.decisions:
             dec_key = str(dec.value)
@@ -64,13 +67,13 @@ class TriageCompetenceAssessor(Assessor):
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
-                    treatment_available, check_available, painmeds_available)
+                    treatment_available, check_available, painmeds_available, casualties)
 
         return ret_assessments
 
     def assess_tag(self, casualty, given_tag):
         # Get tags from vitals and injuries
-        all_tags = self.predict_tags(casualty)
+        all_tags = self.tag_predictor.predict_tags(casualty)
 
         # Find the most severe tag from the list
         most_severe_tag = max(
@@ -134,31 +137,9 @@ class TriageCompetenceAssessor(Assessor):
     def assess_evacuation(self, casualty):
         return self.assess_evac_rule_set.assess_evacuation(casualty)
 
-    def check_end_scene_decision(self, treatment_available, check_available, painmeds_available):
+    def check_end_scene_decision(self, treatment_available, check_available, painmeds_available, casualties):
         """ Assess if ending the scene is premature given available actions. """
-        return self.end_scene_rule_set.check_end_scene_decision(treatment_available, check_available, painmeds_available)
-
-    def predict_tags(self, casualty) -> List[TriageCategory]:
-        """ Predicts the possible tags (TriageCategory) for a casualty based on their vitals and injuries. """
-        vitals = casualty.vitals
-        injuries = casualty.injuries
-
-        # Collect tags from vital signs
-        vitals_tags = self.vitals_rule_set.get_vitals_tags(vitals)
-
-        # Collect tags from each injury and combine them
-        injury_tags = []
-        for injury in injuries:
-            injury_tags.extend(self.injury_rule_set.get_injury_tags(injury))
-
-        # Combine and deduplicate tags from vitals and injuries
-        all_tags = list(set(vitals_tags + injury_tags))
-
-        # Sort tags by severity level
-        all_tags.sort(key=lambda tag: list(TriageCategory).index(tag))
-
-        # Return the sorted list, with the most severe tag first
-        return all_tags
+        return self.end_scene_rule_set.assess_end_scene(treatment_available, check_available, painmeds_available, casualties)
 
 
 class InjuryTaggingRuleSet:
@@ -704,7 +685,7 @@ class EvacuationRuleSet:
 class EndSceneRuleset:
     """
     Determines if it is appropriate to end the scene based on available treatments, 
-    assessments, and the status of casualties, following established conditions.
+    assessments, and the status of multiple casualties.
     """
 
     def __init__(self):
@@ -731,45 +712,75 @@ class EndSceneRuleset:
     def assess_end_scene(self, treatment_available, check_available, painmeds_available, casualties):
         """
         Assesses if ending the scene is appropriate based on available treatments, 
-        assessments, and casualty statuses.
+        assessments, and statuses across multiple casualties.
         """
-        # Evaluate each rule, returning specific scores based on rule fulfillment
+        # Iterate over each rule to determine if ending the scene is feasible
         if self.rules["high_priority_treatment_needed"](treatment_available, casualties):
-            return 0  # Critical treatments are still available for high-priority casualties
+            return 0  # High-priority casualties still require treatment
 
         if self.rules["high_priority_assessment_needed"](check_available, casualties):
-            return 0.2  # Critical assessments still needed
+            return 0.2  # High-priority casualties still require assessment
 
         if self.rules["painmed_contradiction"](painmeds_available, casualties):
-            return 0.5  # Avoid ending if pain meds might interfere with functionality
+            return 0.5  # Avoid ending if ambulatory casualties might be affected by pain meds
 
-        # Default rule for ending scene when no critical treatments, checks, or pain meds are required
+        # Default rule if no blockers remain
         if self.rules["end_scene_default"](treatment_available, check_available, painmeds_available):
             return 1  # Scene can end
 
-        return 0.7  # Midway score if no specific rule matched, but no critical blockers
+        return 0.7  # Intermediate score if no specific rule matched but no urgent blockers
 
     @staticmethod
     def is_high_priority(casualty):
         """
-        Determine if the casualty is of high priority (Immediate or Expectant).
+        Determines if a casualty is of high priority (Immediate or Expectant).
         """
+        if casualty.tag is None:
+            self.predict_tags(casualty)
         return casualty.triage_category in {TriageCategory.IMMEDIATE, TriageCategory.EXPECTANT}
 
     @staticmethod
     def requires_assessment(casualty):
         """
-        Determine if the casualty requires further assessment based on incomplete vitals or injury assessment.
+        Determines if a casualty requires further assessment based on incomplete vitals or injury assessment.
         """
         return not casualty.vitals_complete or not casualty.injuries_assessed
 
     @staticmethod
     def is_ambulatory_and_minimal(casualty):
         """
-        Determine if the casualty is ambulatory with a minimal triage tag, indicating they may not need
-        strong pain medications.
+        Determines if a casualty is ambulatory and categorized as minimal, indicating lower need for strong pain medications.
         """
         return casualty.is_ambulatory and casualty.triage_category == TriageCategory.MINIMAL
+
+
+class TriagePredictor:
+    def __init__(self, vitals_rule_set, injury_rule_set):
+        self.vitals_rule_set = vitals_rule_set
+        self.injury_rule_set = injury_rule_set
+
+    def predict_tags(self, casualty) -> List[TriageCategory]:
+        """
+        Predicts the possible tags (TriageCategory) for a casualty based on their vitals and injuries.
+        """
+        vitals = casualty.vitals
+        injuries = casualty.injuries
+
+        # Collect tags from vital signs
+        vitals_tags = self.vitals_rule_set.get_vitals_tags(vitals)
+
+        # Collect tags from each injury and combine them
+        injury_tags = []
+        for injury in injuries:
+            injury_tags.extend(self.injury_rule_set.get_injury_tags(injury))
+
+        # Combine and deduplicate tags from vitals and injuries
+        all_tags = list(set(vitals_tags + injury_tags))
+
+        # Sort tags by severity level
+        all_tags.sort(key=lambda tag: list(TriageCategory).index(tag))
+
+        return all_tags  # Most severe tag first
 
 
 '''

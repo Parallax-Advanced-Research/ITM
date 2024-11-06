@@ -5,12 +5,36 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Tad Tester with Arguments",
+            "name": "Tad Tester MJ1",
             "type": "debugpy",
             "request": "launch",
             "program": "tad_tester.py",
             "console": "integratedTerminal",
             "args": "--session_type adept --scenario DryRunEval.MJ1 --selector keds --training --assessor triage --kdma \"Moral judgement=0.5\" --decision_verbose"
+        },
+        {
+            "name": "Tad Tester MJ5",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type adept --scenario DryRunEval.MJ5 --selector keds --training --assessor triage --kdma \"Moral judgement=0.5\" --decision_verbose"
+        },
+        {
+            "name": "Tad Tester IO1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type adept --scenario DryRunEval.IO1 --selector keds --training --assessor triage --kdma \"Ingroup Bias=0.5\" --decision_verbose"
+        },
+        {
+            "name": "Tad Tester IO2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type adept --scenario DryRunEval.IO2 --selector keds --training --assessor triage --kdma \"Ingroup Bias=0.5\" --decision_verbose"
         }
     ]
 }
