@@ -135,16 +135,8 @@ class TriageCompetenceAssessor(Assessor):
         return self.assess_evac_rule_set.assess_evacuation(casualty)
 
     def check_end_scene_decision(self, treatment_available, check_available, painmeds_available):
-        return self.end_scene_rule_set.check_end_scene_decision(treatment_available, check_available, painmeds_available)
         """ Assess if ending the scene is premature given available actions. """
-        if treatment_available > 0:
-            return 0  # Ending the scene prematurely when treatment is still available
-        elif check_available > 0:
-            return 0.2
-        # elif painmeds_available > 0:
-        #    return 0.5  # check for circumstances where this is not the case. e.g. don't give intoxicating drugs to ambulatory soldiers who can defend themselves
-        else:
-            return 1
+        return self.end_scene_rule_set.check_end_scene_decision(treatment_available, check_available, painmeds_available)
 
     def predict_tags(self, casualty) -> List[TriageCategory]:
         """ Predicts the possible tags (TriageCategory) for a casualty based on their vitals and injuries. """
