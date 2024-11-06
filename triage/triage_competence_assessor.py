@@ -1,6 +1,6 @@
-from dataclasses import dataclass
 from enum import Enum
 from typing import List
+from dataclasses import dataclass
 from components import Assessor
 from domain.internal import TADProbe, Decision, Action
 from domain.ta3 import Casualty, Injury, Vitals
@@ -27,6 +27,7 @@ class TriageCompetenceAssessor(Assessor):
         self.injury_rule_set = InjuryTaggingRuleSet()
         self.treatment_rule_set = TreatmentRuleSet()
         self.painmed_rule_set = PainMedRuleSet()
+        self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset()
 
     def assess(self, probe: TADProbe) -> dict[Decision, float]:
         treatment_available = sum(
@@ -64,28 +65,15 @@ class TriageCompetenceAssessor(Assessor):
                 ret_assessments[dec_key] = self.check_end_scene_decision(
                     treatment_available, check_available, painmeds_available)
 
-                """
-            elif is_painmed_action(dec.value):
-                char1 = get_target_patient(probe, dec)
-                if char1.vitals.mental_status != MentalStatusEnum.AGONY:
-                    ret_assessments[dec_key] = 0.2
-                elif patient_treatable(probe, char1):
-                    ret_assessments[dec_key] = 0.6
-                elif neediest_tag == TagEnum.IMMEDIATE:
-                    ret_assessments[dec_key] = 0.4
-                elif check_available > 0:
-                    ret_assessments[dec_key] = 0.5
-                elif treatment_available > 0:
-                    ret_assessments[dec_key] = 0.8
-                else:
-                    ret_assessments[dec_key] = 1
-                """
             elif is_check_action(dec.value):
+                ret_assessments[dec_key] = self.assessment_heuristic_ruleset.assess_action(
+                    casualty=target_patient, action_type=dec.value.name)
+                '''
                 if neediest_tag == TagEnum.IMMEDIATE:
                     ret_assessments[dec_key] = 0.5
                 else:
                     ret_assessments[dec_key] = 1
-
+                '''
             elif dec.value.name in [ActionTypeEnum.MOVE_TO, ActionTypeEnum.SEARCH]:
                 if neediest_tag == TagEnum.IMMEDIATE:
                     ret_assessments[dec_key] = 0.2
@@ -148,6 +136,7 @@ class TriageCompetenceAssessor(Assessor):
             return 0
 
         elif given_treatment_enum in all_valid_treatments:
+            # is it a painmed action?
             if given_treatment_enum in [TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.FENTANYL_LOLLIPOP]:
                 return self.painmed_rule_set.assess_pain_medication(casualty, given_treatment)
             else:
@@ -536,9 +525,6 @@ class PainMedRuleSet:
         """
         Assesses the appropriateness of administering pain medication to a casualty based on 
         injury severity, mental status, and other contraindications.
-
-        Returns:
-            float: Appropriateness score for administering the given pain medication.
         """
         # Default score if no contraindications are found
         score = 1.0
@@ -565,8 +551,97 @@ class PainMedRuleSet:
         return score
 
 
-class AssessmentRuleSet:
-    pass
+class AssessmentHeuristicRuleset:
+    """
+    Evaluates the appropriateness of specific assessment actions (CHECK_ALL_VITALS, CHECK_BLOOD_OXYGEN, etc.)
+    based on a casualty's condition, injury types, severity, and vitals.
+    Adjusts score based on heuristic matches.
+    """
+
+    BASELINE_SCORE = 0.7
+
+    ASSESSMENT_RULES = {
+        ActionTypeEnum.CHECK_ALL_VITALS: [
+            # Severe injuries require a full vitals check.
+            ('injury_severity', 'EXTREME', 0.2),
+            ('injury_severity', 'MAJOR', 0.2),
+            # Unresponsive status justifies full vitals check.
+            ('avpu', 'UNRESPONSIVE', 0.2),
+            # Less critical injuries make full vitals check unnecessary.
+            ('injury_type', 'ABRASION', -0.3),
+            ('injury_type', 'ASTHMATIC', -0.3)
+        ],
+
+        ActionTypeEnum.CHECK_BLOOD_OXYGEN: [
+            # Blood oxygen check is important for chest or respiratory issues.
+            ('injury_type', 'CHEST_COLLAPSE', 0.2),
+            ('injury_type', 'PUNCTURE', 0.2),
+            ('injury_type', 'INTERNAL', 0.2),
+            # Severe injuries increase likelihood of hypoxia.
+            ('injury_severity', 'SEVERE', 0.1),
+            ('injury_severity', 'EXTREME', 0.1),
+            # Minor injuries do not typically require oxygen checks.
+            ('injury_type', 'LACERATION', -0.3),
+            ('injury_type', 'ABRASION', -0.3)
+        ],
+
+        ActionTypeEnum.CHECK_PULSE: [
+            # Pulse check is critical for blood loss or circulatory issues.
+            ('injury_type', 'AMPUTATION', 0.2),
+            ('injury_type', 'TRAUMATIC_BRAIN_INJURY', 0.2),
+            ('injury_type', 'LACERATION', 0.2),
+            # Severe injuries may compromise pulse.
+            ('injury_severity', 'EXTREME', 0.1),
+            ('injury_severity', 'MAJOR', 0.1),
+            # Non-circulatory injuries do not require pulse checks.
+            ('injury_type', 'ASTHMATIC', -0.3),
+            ('injury_type', 'INTERNAL', -0.3)
+        ],
+
+        ActionTypeEnum.CHECK_RESPIRATION: [
+            # Respiratory checks are prioritized for breathing issues.
+            ('injury_type', 'CHEST_COLLAPSE', 0.3),
+            ('injury_type', 'PUNCTURE', 0.3),
+            ('injury_type', 'SHRAPNEL', 0.3),
+            # Restricted or absent breathing increases importance.
+            ('breathing', 'RESTRICTED', 0.1),
+            ('breathing', 'NONE', 0.1),
+            # Non-respiratory injuries lessen need for respiratory checks.
+            ('injury_type', 'ABRASION', -0.3),
+            ('injury_type', 'BROKEN_BONE', -0.3)
+        ],
+
+        ActionTypeEnum.SITREP: [
+            # Situational report is useful for severe but stable conditions.
+            ('injury_severity', 'SEVERE', 0.2),
+            ('injury_severity', 'EXTREME', 0.2),
+            # Unvisited casualties benefit from an initial report.
+            ('visited', False, 0.1),
+            # Minor or superficial injuries lower necessity for SITREP.
+            ('injury_severity', 'MINOR', -0.4),
+            ('injury_type', 'ABRASION', -0.4)
+        ]
+    }
+
+    def assess_action(self, casualty, action_type):
+        """
+        Assesses the appropriateness of an action for a given casualty based on predefined rules.
+        Returns an adjusted score based on the baseline score and heuristic rule matches.
+        """
+        score = self.BASELINE_SCORE
+
+        # Get rules specific to the action type
+        rules = self.ASSESSMENT_RULES.get(action_type, [])
+
+        # Check each rule and adjust the score accordingly
+        for attribute, condition, adjustment in rules:
+            casualty_value = getattr(casualty, attribute, None)
+            if casualty_value == condition:
+                score += adjustment
+
+        # Ensure score stays within bounds [0, 1]
+        score = min(max(score, 0), 1)
+        return score
 
 
 class EvacuationRuleSet:
