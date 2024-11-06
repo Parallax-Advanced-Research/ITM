@@ -699,9 +699,12 @@ class EndSceneRuleset:
             "high_priority_assessment_needed": lambda check_available, casualties: check_available > 0
             and any(self.requires_assessment(casualty) for casualty in casualties),
 
-            # Avoid ending scene if pain medications are available and might interfere with functionality
-            "painmed_contradiction": lambda painmeds_available, casualties: painmeds_available > 0
-            and any(self.is_ambulatory_and_minimal(casualty) for casualty in casualties),
+            # Allow ending scene if pain meds are available only when all casualties are ambulatory and minimal
+            "painmed_contradiction": lambda painmeds_available, casualties: (
+                painmeds_available > 0 and not all(
+                    self.is_ambulatory_and_minimal(casualty) for casualty in casualties)
+            ),
+
 
             # Allow ending if there are no critical unmet needs (default case)
             "end_scene_default": lambda treatment_available, check_available, painmeds_available: treatment_available == 0
