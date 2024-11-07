@@ -67,7 +67,7 @@ class TriageCompetenceAssessor(Assessor):
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
-                    treatment_available, check_available, painmeds_available, casualties, self.tag_predictor)
+                    treatment_available, check_available, painmeds_available, casualties)
 
         return ret_assessments
 
@@ -753,9 +753,15 @@ class EndSceneRuleset:
         """
         Determines if a casualty is of high priority (Immediate or Expectant).
         """
-        if casualty.tag is None:
-            self.tag_predictor.predict_tags(casualty)
-        return casualty.triage_category in {TriageCategory.IMMEDIATE, TriageCategory.EXPECTANT}
+        if casualty.tag is not None:
+            # If tag is already set, use it directly
+            predicted_tags = [TriageCategory(casualty.tag)]
+        else:
+            # Predict tags if not set
+            predicted_tags = self.tag_predictor.predict_tags(casualty)
+
+        # Check if any of the predicted tags are high priority
+        return any(tag in {TriageCategory.IMMEDIATE, TriageCategory.EXPECTANT} for tag in predicted_tags)
 
     @staticmethod
     def requires_assessment(casualty):
@@ -799,6 +805,14 @@ class TriagePredictor:
         all_tags.sort(key=lambda tag: list(TriageCategory).index(tag))
 
         return all_tags  # Most severe tag first
+
+
+def vitals_complete(vitals: Vitals) -> bool:
+    """
+    Checks if all vital signs are complete based on the provided Vitals object.
+    """
+    pass
+    # return all(getattr(vitals, attr) is not None for attr in VITALS_ATTRIBUTES)
 
 
 def get_nested_attribute(obj, attr, default=None):
