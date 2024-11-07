@@ -12,6 +12,14 @@ from enum import Enum
 from dataclasses import dataclass
 
 
+class InjurySeverityEnum(Enum):
+    MINOR = "minor"
+    MODERATE = "moderate"
+    SUBSTANTIAL = "substantial"
+    MAJOR = "major"
+    EXTREME = "extreme"
+
+
 class TreatmentsEnum(Enum):
     TOURNIQUET = "Tourniquet"
     PRESSURE_BANDAGE = "Pressure bandage"

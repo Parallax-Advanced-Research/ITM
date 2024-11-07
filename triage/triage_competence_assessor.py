@@ -124,7 +124,7 @@ class TriageCompetenceAssessor(Assessor):
         elif given_treatment_enum in all_valid_treatments:
             # is it a painmed action?
             if given_treatment_enum in [TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.FENTANYL_LOLLIPOP]:
-                return self.painmed_rule_set.assess_pain_medication(casualty, given_treatment)
+                return self.painmed_rule_set.assess_pain_medication(casualty, given_treatment_enum)
             else:
                 return 1  # Fully valid treatment
 
@@ -497,9 +497,6 @@ class PainMedRuleSet:
 
             elif len(rule) == 4:  # Contraindication with specific treatment
                 attribute, condition, contraindicated_treatment, rule_score = rule
-                casualty_value = get_nested_attribute(
-                    casualty, attribute, None)
-
                 if attribute == "injury_type":
                     # Only iterate injuries if the rule specifically involves injury_type
                     for injury in casualty.injuries:
@@ -507,6 +504,9 @@ class PainMedRuleSet:
                             score = min(score, rule_score)
                 else:
                     # Handle other attributes (e.g., vitals, consciousness, etc.)
+                    casualty_value = get_nested_attribute(
+                        casualty, attribute, None)
+
                     if casualty_value == condition and given_treatment == contraindicated_treatment:
                         score = min(score, rule_score)
 
@@ -749,13 +749,12 @@ class EndSceneRuleset:
 
         return 0.7  # Intermediate score if no specific rule matched but no urgent blockers
 
-    @staticmethod
-    def is_high_priority(casualty):
+    def is_high_priority(self, casualty):
         """
         Determines if a casualty is of high priority (Immediate or Expectant).
         """
         if casualty.tag is None:
-            tag_predictor.predict_tags(casualty)
+            self.tag_predictor.predict_tags(casualty)
         return casualty.triage_category in {TriageCategory.IMMEDIATE, TriageCategory.EXPECTANT}
 
     @staticmethod

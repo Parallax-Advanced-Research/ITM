@@ -1,0 +1,497 @@
+Global seed: 1730987129845036403
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0
+Truth: 0.6 Estimate: 0.6 Error: 0.0
+competence: 0
+Truth: 0.6 Estimate: 0.6 Error: 0.0
+competence: 1
+Truth: 0.6 Estimate: 0.6 Error: 0.0
+competence: 0
+Truth: 0.6 Estimate: 0.6 Error: 0.0
+competence: 0.3
+Truth: 0.6 Estimate: 0.6 Error: 0.0
+competence: 0
+Truth: 0.3 Estimate: 0.3 Error: 0.0
+competence: 0
+Truth: 0.3 Estimate: 0.3 Error: 0.0
+competence: 1
+Truth: 0.3 Estimate: 0.3 Error: 0.0
+competence: 0
+Truth: 0.3 Estimate: 0.3 Error: 0.0
+competence: 0.3
+Truth: 0.3 Estimate: 0.3 Error: 0.0
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0
+Truth: 0.55 Estimate: 0.5648715258426483 Error: 0.014871525842648281
+competence: 0
+Truth: 0.55 Estimate: 0.5648715258426483 Error: 0.014871525842648281
+competence: 1
+Truth: 0.55 Estimate: 0.5648715258426483 Error: 0.014871525842648281
+competence: 0
+Truth: 0.55 Estimate: 0.5648715258426483 Error: 0.014871525842648281
+competence: 0.3
+Truth: 0.55 Estimate: 0.5648715258426483 Error: 0.014871525842648281
+competence: 0
+Truth: 0.2 Estimate: 0.25219709822600195 Error: 0.05219709822600194
+competence: 0
+Truth: 0.2 Estimate: 0.25219709822600195 Error: 0.05219709822600194
+competence: 1
+Truth: 0.2 Estimate: 0.25219709822600195 Error: 0.05219709822600194
+competence: 0
+Truth: 0.2 Estimate: 0.25219709822600195 Error: 0.05219709822600194
+competence: 0.3
+Truth: 0.2 Estimate: 0.25219709822600195 Error: 0.05219709822600194
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0
+Truth: 0.55 Estimate: 0.5729185032682989 Error: 0.022918503268298807
+competence: 0
+Truth: 0.55 Estimate: 0.5729185032682989 Error: 0.022918503268298807
+competence: 1
+Truth: 0.55 Estimate: 0.5729185032682989 Error: 0.022918503268298807
+competence: 0
+Truth: 0.55 Estimate: 0.5729185032682989 Error: 0.022918503268298807
+competence: 0.3
+Truth: 0.55 Estimate: 0.5729185032682989 Error: 0.022918503268298807
+competence: 0
+Truth: 0.1 Estimate: 0.25552472891761663 Error: 0.15552472891761662
+competence: 0
+Truth: 0.1 Estimate: 0.25552472891761663 Error: 0.15552472891761662
+competence: 1
+Truth: 0.1 Estimate: 0.25552472891761663 Error: 0.15552472891761662
+competence: 0
+Truth: 0.1 Estimate: 0.25552472891761663 Error: 0.15552472891761662
+competence: 0.3
+Truth: 0.1 Estimate: 0.25552472891761663 Error: 0.15552472891761662
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0
+Truth: 0.5 Estimate: 0.5607592182284472 Error: 0.06075921822844721
+competence: 0
+Truth: 0.5 Estimate: 0.5607592182284472 Error: 0.06075921822844721
+competence: 1
+Truth: 0.5 Estimate: 0.5607592182284472 Error: 0.06075921822844721
+competence: 0
+Truth: 0.5 Estimate: 0.5607592182284472 Error: 0.06075921822844721
+competence: 0.3
+Truth: 0.5 Estimate: 0.5607592182284472 Error: 0.06075921822844721
+competence: 0
+Truth: 0.0 Estimate: 0.27155468549773965 Error: 0.27155468549773965
+competence: 0
+Truth: 0.0 Estimate: 0.27155468549773965 Error: 0.27155468549773965
+competence: 1
+Truth: 0.0 Estimate: 0.27155468549773965 Error: 0.27155468549773965
+competence: 0
+Truth: 0.0 Estimate: 0.27155468549773965 Error: 0.27155468549773965
+competence: 0.3
+Truth: 0.0 Estimate: 0.27155468549773965 Error: 0.27155468549773965
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.8
+competence: 0.5
+competence: 1
+competence: 0
+competence: 0.8
+competence: 0.5
+competence: 1
+competence: 0
+competence: 1
+Truth: 0.65 Estimate: 0.6 Error: 0.050000000000000044
+competence: 1
+Truth: 0.65 Estimate: 0.6 Error: 0.050000000000000044
+competence: 1
+Truth: 0.65 Estimate: 0.6 Error: 0.050000000000000044
+competence: 0.3
+Truth: 0.65 Estimate: 0.6 Error: 0.050000000000000044
+competence: 1
+Truth: 0.35 Estimate: 0.3324359013911991 Error: 0.01756409860880087
+competence: 1
+Truth: 0.35 Estimate: 0.3324359013911991 Error: 0.01756409860880087
+competence: 1
+Truth: 0.35 Estimate: 0.3324359013911991 Error: 0.01756409860880087
+competence: 0.3
+Truth: 0.35 Estimate: 0.3324359013911991 Error: 0.01756409860880087
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.8
+competence: 0.5
+competence: 1
+competence: 0
+competence: 0.8
+competence: 0.5
+competence: 1
+competence: 0
+competence: 1
+Truth: 0.6 Estimate: 0.6107384543865036 Error: 0.01073845438650367
+competence: 1
+Truth: 0.6 Estimate: 0.6107384543865036 Error: 0.01073845438650367
+competence: 1
+Truth: 0.6 Estimate: 0.6107384543865036 Error: 0.01073845438650367
+competence: 0.3
+Truth: 0.6 Estimate: 0.6107384543865036 Error: 0.01073845438650367
+competence: 1
+Truth: 0.35 Estimate: 0.31206177128381374 Error: 0.03793822871618624
+competence: 1
+Truth: 0.35 Estimate: 0.31206177128381374 Error: 0.03793822871618624
+competence: 1
+Truth: 0.35 Estimate: 0.31206177128381374 Error: 0.03793822871618624
+competence: 0.3
+Truth: 0.35 Estimate: 0.31206177128381374 Error: 0.03793822871618624
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.8
+competence: 0.5
+competence: 1
+competence: 0
+competence: 0.8
+competence: 0.5
+competence: 1
+competence: 0
+competence: 1
+Truth: 0.6 Estimate: 0.617263352393207 Error: 0.017263352393206977
+competence: 1
+Truth: 0.6 Estimate: 0.617263352393207 Error: 0.017263352393206977
+competence: 1
+Truth: 0.6 Estimate: 0.617263352393207 Error: 0.017263352393206977
+competence: 0.3
+Truth: 0.6 Estimate: 0.617263352393207 Error: 0.017263352393206977
+competence: 1
+Truth: 0.3 Estimate: 0.35 Error: 0.04999999999999999
+competence: 1
+Truth: 0.3 Estimate: 0.35 Error: 0.04999999999999999
+competence: 1
+Truth: 0.3 Estimate: 0.35 Error: 0.04999999999999999
+competence: 0.3
+Truth: 0.3 Estimate: 0.35 Error: 0.04999999999999999
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.8
+competence: 0.5
+competence: 1
+competence: 0
+competence: 0.8
+competence: 0.5
+competence: 1
+competence: 0
+competence: 1
+Truth: 0.55 Estimate: 0.5720966478635352 Error: 0.022096647863535157
+competence: 1
+Truth: 0.55 Estimate: 0.5720966478635352 Error: 0.022096647863535157
+competence: 1
+Truth: 0.55 Estimate: 0.5720966478635352 Error: 0.022096647863535157
+competence: 0.3
+Truth: 0.55 Estimate: 0.5720966478635352 Error: 0.022096647863535157
+competence: 1
+Truth: 0.0 Estimate: 0.05379848642924851 Error: 0.05379848642924851
+competence: 1
+Truth: 0.0 Estimate: 0.05379848642924851 Error: 0.05379848642924851
+competence: 1
+Truth: 0.0 Estimate: 0.05379848642924851 Error: 0.05379848642924851
+competence: 0.3
+Truth: 0.0 Estimate: 0.05379848642924851 Error: 0.05379848642924851
+competence: 0
+competence: 1
+competence: 0.8
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 1
+Truth: 1.0 Estimate: 0.9948714624373235 Error: 0.005128537562676505
+competence: 1
+Truth: 1.0 Estimate: 0.9948714624373235 Error: 0.005128537562676505
+competence: 1
+Truth: 1.0 Estimate: 0.9902433008551671 Error: 0.009756699144832903
+competence: 0
+Truth: 1.0 Estimate: 0.9948714624373235 Error: 0.005128537562676505
+competence: 0.3
+Truth: 1.0 Estimate: 0.9948714624373235 Error: 0.005128537562676505
+competence: 0
+Truth: 0.5 Estimate: 0.5 Error: 0.0
+competence: 0
+Truth: 0.5 Estimate: 0.5 Error: 0.0
+competence: 1
+Truth: 0.5 Estimate: 0.5 Error: 0.0
+competence: 0
+Truth: 0.5 Estimate: 0.5 Error: 0.0
+competence: 0.3
+Truth: 0.5 Estimate: 0.5 Error: 0.0
+competence: 0
+competence: 1
+competence: 0.8
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 1
+Truth: 0.9 Estimate: 0.9757577361074907 Error: 0.0757577361074907
+competence: 1
+Truth: 0.9 Estimate: 0.9757577361074907 Error: 0.0757577361074907
+competence: 1
+Truth: 0.9 Estimate: 0.9757577361074908 Error: 0.07575773610749081
+competence: 0
+Truth: 0.9 Estimate: 0.9757577361074907 Error: 0.0757577361074907
+competence: 0.3
+Truth: 0.9 Estimate: 0.9757577361074908 Error: 0.07575773610749081
+competence: 0
+Truth: 0.5 Estimate: 0.4753352984783425 Error: 0.024664701521657506
+competence: 0
+Truth: 0.5 Estimate: 0.4753377891192659 Error: 0.024662210880734114
+competence: 1
+Truth: 0.5 Estimate: 0.4753377891192659 Error: 0.024662210880734114
+competence: 0
+Truth: 0.5 Estimate: 0.4753377891192659 Error: 0.024662210880734114
+competence: 0.3
+Truth: 0.5 Estimate: 0.4753377891192659 Error: 0.024662210880734114
+competence: 0
+competence: 1
+competence: 0.8
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 1
+Truth: 0.8 Estimate: 0.9948714624373236 Error: 0.19487146243732356
+competence: 1
+Truth: 0.8 Estimate: 0.9948714624373236 Error: 0.19487146243732356
+competence: 1
+Truth: 0.8 Estimate: 0.9902433008551671 Error: 0.19024330085516705
+competence: 0
+Truth: 0.8 Estimate: 0.9948714624373236 Error: 0.19487146243732356
+competence: 0.3
+Truth: 0.8 Estimate: 0.9948714624373235 Error: 0.19487146243732345
+competence: 0
+Truth: 0.45 Estimate: 0.5 Error: 0.04999999999999999
+competence: 0
+Truth: 0.45 Estimate: 0.5 Error: 0.04999999999999999
+competence: 1
+Truth: 0.45 Estimate: 0.5 Error: 0.04999999999999999
+competence: 0
+Truth: 0.45 Estimate: 0.5 Error: 0.04999999999999999
+competence: 0.3
+Truth: 0.45 Estimate: 0.5 Error: 0.04999999999999999
+competence: 0
+competence: 1
+competence: 0.8
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 1
+Truth: 0.65 Estimate: 0.8459287529167265 Error: 0.1959287529167265
+competence: 1
+Truth: 0.65 Estimate: 0.8459287529167265 Error: 0.1959287529167265
+competence: 1
+Truth: 0.65 Estimate: 0.7190505597210674 Error: 0.06905055972106733
+competence: 0
+Truth: 0.65 Estimate: 0.8459287529167265 Error: 0.1959287529167265
+competence: 0.3
+Truth: 0.65 Estimate: 0.8459287529167265 Error: 0.1959287529167265
+competence: 0
+Truth: 0.35 Estimate: 0.4759309384728418 Error: 0.1259309384728418
+competence: 0
+Truth: 0.35 Estimate: 0.4759309384728418 Error: 0.1259309384728418
+competence: 1
+Truth: 0.35 Estimate: 0.4759309384728418 Error: 0.1259309384728418
+competence: 0
+Truth: 0.35 Estimate: 0.4759309384728418 Error: 0.1259309384728418
+competence: 0.3
+Truth: 0.35 Estimate: 0.4759309384728418 Error: 0.1259309384728418
+competence: 0.5
+competence: 0
+competence: 0
+competence: 1
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 1
+Truth: 1.0 Estimate: 0.9948879789822321 Error: 0.005112021017767865
+competence: 1
+Truth: 1.0 Estimate: 0.9948879789822321 Error: 0.005112021017767865
+competence: 1
+Truth: 1.0 Estimate: 0.9948879789822321 Error: 0.005112021017767865
+competence: 0
+Truth: 1.0 Estimate: 0.9948879789822321 Error: 0.005112021017767865
+competence: 1.0
+Truth: 1.0 Estimate: 0.9948879789822321 Error: 0.005112021017767865
+competence: 0
+Truth: 0.5 Estimate: 0.4964126890222953 Error: 0.003587310977704705
+competence: 0
+Truth: 0.5 Estimate: 0.4851997266624448 Error: 0.014800273337555181
+competence: 1
+Truth: 0.5 Estimate: 0.4964126890222953 Error: 0.003587310977704705
+competence: 0
+Truth: 0.5 Estimate: 0.5 Error: 0.0
+competence: 0.3
+Truth: 0.5 Estimate: 0.5 Error: 0.0
+competence: 0.5
+competence: 0
+competence: 0
+competence: 1
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 1
+Truth: 0.9 Estimate: 0.9900682576594674 Error: 0.09006825765946735
+competence: 1
+Truth: 0.9 Estimate: 0.9900682576594674 Error: 0.09006825765946735
+competence: 1
+Truth: 0.9 Estimate: 0.9900682576594674 Error: 0.09006825765946735
+competence: 0
+Truth: 0.9 Estimate: 0.9900682576594674 Error: 0.09006825765946735
+competence: 1.0
+Truth: 0.9 Estimate: 0.9900682576594674 Error: 0.09006825765946735
+competence: 0
+Truth: 0.5 Estimate: 0.4766432052499524 Error: 0.023356794750047594
+competence: 0
+Truth: 0.5 Estimate: 0.4767625578976259 Error: 0.023237442102374106
+competence: 1
+Truth: 0.5 Estimate: 0.4766432052499524 Error: 0.023356794750047594
+competence: 0
+Truth: 0.5 Estimate: 0.4768925867959445 Error: 0.023107413204055516
+competence: 0.3
+Truth: 0.5 Estimate: 0.47689294345266814 Error: 0.02310705654733186
+competence: 0.5
+competence: 0
+competence: 0
+competence: 1
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 1
+Truth: 0.8 Estimate: 0.9948879789822321 Error: 0.1948879789822321
+competence: 1
+Truth: 0.8 Estimate: 0.9948879789822321 Error: 0.1948879789822321
+competence: 1
+Truth: 0.8 Estimate: 0.9948879789822321 Error: 0.1948879789822321
+competence: 0
+Truth: 0.8 Estimate: 0.9948879789822321 Error: 0.1948879789822321
+competence: 1.0
+Truth: 0.8 Estimate: 0.9948879789822321 Error: 0.1948879789822321
+competence: 0
+Truth: 0.45 Estimate: 0.5 Error: 0.04999999999999999
+competence: 0
+Truth: 0.45 Estimate: 0.5 Error: 0.04999999999999999
+competence: 1
+Truth: 0.45 Estimate: 0.5 Error: 0.04999999999999999
+competence: 0
+Truth: 0.45 Estimate: 0.4969764844097221 Error: 0.046976484409722075
+competence: 0.3
+Truth: 0.45 Estimate: 0.49693394995979073 Error: 0.04693394995979072
+competence: 0.5
+competence: 0
+competence: 0
+competence: 1
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 0.5
+competence: 0.5
+competence: 1
+competence: 0.8
+competence: 1
+Truth: 0.7 Estimate: 0.9021430145519038 Error: 0.20214301455190387
+competence: 1
+Truth: 0.7 Estimate: 0.9021430145519038 Error: 0.20214301455190387
+competence: 1
+Truth: 0.7 Estimate: 0.9021430145519038 Error: 0.20214301455190387
+competence: 0
+Truth: 0.7 Estimate: 0.9021430145519038 Error: 0.20214301455190387
+competence: 1.0
+Truth: 0.7 Estimate: 0.9021430145519038 Error: 0.20214301455190387
+competence: 0
+Truth: 0.4 Estimate: 0.435590239128511 Error: 0.035590239128511
+competence: 0
+Truth: 0.4 Estimate: 0.4473432537313011 Error: 0.047343253731301105
+competence: 1
+Truth: 0.4 Estimate: 0.435590239128511 Error: 0.035590239128511
+competence: 0
+Truth: 0.4 Estimate: 0.435590239128511 Error: 0.035590239128511
+competence: 0.3
+Truth: 0.4 Estimate: 0.435590239128511 Error: 0.035590239128511
