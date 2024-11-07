@@ -705,6 +705,7 @@ class EndSceneRuleset:
     def __init__(self, tag_predictor):
         # Define rules for determining scene-ending appropriateness
         self.tag_predictor = tag_predictor
+
         self.rules = {
             # Prevent ending scene if high-priority casualties have unmet treatment needs
             "high_priority_treatment_needed": lambda treatment_available, casualties: treatment_available > 0
@@ -733,13 +734,14 @@ class EndSceneRuleset:
         Assesses if ending the scene is appropriate based on available treatments, 
         assessments, and statuses across multiple casualties.
         """
+
         # Iterate over each rule to determine if ending the scene is feasible
         if self.rules["high_priority_treatment_needed"](treatment_available, casualties):
             return 0  # High-priority casualties still require treatment
 
         if self.rules["high_priority_assessment_needed"](check_available, casualties):
             return 0.2  # High-priority casualties still require assessment
-
+        painmeds_available = 1
         if self.rules["painmed_contradiction"](painmeds_available, casualties):
             return 0.5  # Avoid ending if ambulatory casualties might be affected by pain meds
 
@@ -753,29 +755,33 @@ class EndSceneRuleset:
         """
         Determines if a casualty is of high priority (Immediate or Expectant).
         """
-        if casualty.tag is not None:
-            # If tag is already set, use it directly
-            predicted_tags = [TriageCategory(casualty.tag)]
-        else:
-            # Predict tags if not set
-            predicted_tags = self.tag_predictor.predict_tags(casualty)
+        predicted_tags = self.get_predicted_tags(casualty)
 
         # Check if any of the predicted tags are high priority
         return any(tag in {TriageCategory.IMMEDIATE, TriageCategory.EXPECTANT} for tag in predicted_tags)
 
-    @staticmethod
-    def requires_assessment(casualty):
+    def requires_assessment(self, casualty):
         """
-        Determines if a casualty requires further assessment based on incomplete vitals or injury assessment.
+        Determines if a casualty requires further assessment based on whether they were seen or don't have any vitals.
         """
-        return not casualty.vitals_complete or not casualty.injuries_assessed
+        # Check if all vitals are None
+        all_vitals_none = all(
+            getattr(casualty.vitals, attr) is None for attr in vars(casualty.vitals)
+        )
+        return casualty.unseen or all_vitals_none
 
-    @staticmethod
-    def is_ambulatory_and_minimal(casualty):
+    def is_ambulatory_and_minimal(self, casualty):
         """
         Determines if a casualty is ambulatory and categorized as minimal, indicating lower need for strong pain medications.
         """
-        return casualty.is_ambulatory and casualty.triage_category == TriageCategory.MINIMAL
+        predicted_tags = self.get_predicted_tags(casualty)
+        return casualty.vitals.ambulatory and TriageCategory.MINIMAL in predicted_tags
+
+    def get_predicted_tags(self, casualty):
+        if casualty.tag is not None:
+            return [TriageCategory(casualty.tag)]
+        else:
+            return self.tag_predictor.predict_tags(casualty)
 
 
 class TriagePredictor:
