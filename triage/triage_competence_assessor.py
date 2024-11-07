@@ -27,9 +27,9 @@ class TriageCompetenceAssessor(Assessor):
         self.painmed_rule_set = PainMedRuleSet()
         self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset()
         self.assess_evac_rule_set = EvacuationRuleSet()
-        self.end_scene_rule_set = EndSceneRuleset()
         self.tag_predictor = TriagePredictor(
             self.vitals_rule_set, self.injury_rule_set)
+        self.end_scene_rule_set = EndSceneRuleset(self.tag_predictor)
 
     def assess(self, probe: TADProbe) -> dict[Decision, float]:
         treatment_available = sum(
@@ -67,7 +67,7 @@ class TriageCompetenceAssessor(Assessor):
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
-                    treatment_available, check_available, painmeds_available, casualties)
+                    treatment_available, check_available, painmeds_available, casualties, self.tag_predictor)
 
         return ret_assessments
 
@@ -702,8 +702,9 @@ class EndSceneRuleset:
     assessments, and the status of multiple casualties.
     """
 
-    def __init__(self):
+    def __init__(self, tag_predictor):
         # Define rules for determining scene-ending appropriateness
+        self.tag_predictor = tag_predictor
         self.rules = {
             # Prevent ending scene if high-priority casualties have unmet treatment needs
             "high_priority_treatment_needed": lambda treatment_available, casualties: treatment_available > 0
@@ -724,6 +725,7 @@ class EndSceneRuleset:
             "end_scene_default": lambda treatment_available, check_available, painmeds_available: treatment_available == 0
             and check_available == 0
             and painmeds_available == 0
+
         }
 
     def assess_end_scene(self, treatment_available, check_available, painmeds_available, casualties):
@@ -753,7 +755,7 @@ class EndSceneRuleset:
         Determines if a casualty is of high priority (Immediate or Expectant).
         """
         if casualty.tag is None:
-            self.predict_tags(casualty)
+            tag_predictor.predict_tags(casualty)
         return casualty.triage_category in {TriageCategory.IMMEDIATE, TriageCategory.EXPECTANT}
 
     @staticmethod
