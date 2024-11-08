@@ -55,6 +55,30 @@
             "program": "tad_tester.py",
             "console": "integratedTerminal",
             "args": "--session_type soartech --scenario qol-ph1-train-1 --selector keds --training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose"
+        },
+        {
+            "name": "Tad Tester QOL 2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-ph1-train-2 --selector keds --training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose"
+        },
+        {
+            "name": "Tad Tester VOL 1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario vol-ph1-train-1 --selector keds --training --alignment_target \"soartech-dryrun-3\" --assessor triage --decision_verbose"
+        },
+        {
+            "name": "Tad Tester VOL 2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario vol-ph1-train-2 --selector keds --training --alignment_target \"soartech-dryrun-3\" --assessor triage --decision_verbose"
         }
     ]
 }

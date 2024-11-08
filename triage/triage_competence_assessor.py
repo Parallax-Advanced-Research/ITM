@@ -822,14 +822,6 @@ class TriagePredictor:
         return all_tags  # Most severe tag first
 
 
-def vitals_complete(vitals: Vitals) -> bool:
-    """
-    Checks if all vital signs are complete based on the provided Vitals object.
-    """
-    pass
-    # return all(getattr(vitals, attr) is not None for attr in VITALS_ATTRIBUTES)
-
-
 def get_nested_attribute(obj, attr, default=None):
     """Retrieve nested attributes, e.g., 'vitals.mental_status'."""
     attributes = attr.split(".")
