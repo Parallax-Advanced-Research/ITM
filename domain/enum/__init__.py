@@ -11,10 +11,11 @@ from swagger_client.models.avpu_level_enum import AvpuLevelEnum
 from swagger_client.models.blood_oxygen_enum import BloodOxygenEnum
 from swagger_client.models.character_tag_enum import CharacterTagEnum as TagEnum
 
+
 class ParamEnum(object):
     LOCATION = 'location'
     CASUALTY = 'casualty'
     TREATMENT = 'treatment'
     CATEGORY = 'category'
     EVAC_ID = 'aid_id'
-    
+    MESSAGE = 'relevant_state'

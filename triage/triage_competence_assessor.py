@@ -65,6 +65,10 @@ class TriageCompetenceAssessor(Assessor):
                 ret_assessments[dec_key] = self.assess_evacuation(
                     casualty=target_patient)
 
+            elif dec.value.name == ActionTypeEnum.MESSAGE:
+                ret_assessments[dec_key] = self.assess_message(
+                    message=dec.value.params[ParamEnum.MESSAGE])
+
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
                     treatment_available, check_available, painmeds_available, casualties)
@@ -136,6 +140,11 @@ class TriageCompetenceAssessor(Assessor):
 
     def assess_evacuation(self, casualty):
         return self.assess_evac_rule_set.assess_evacuation(casualty)
+
+    def assess_message(self, message):
+        # TODO: Implement message assessment
+        message = message
+        return 1
 
     def check_end_scene_decision(self, treatment_available, check_available, painmeds_available, casualties):
         """ Assess if ending the scene is premature given available actions. """

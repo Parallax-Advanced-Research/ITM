@@ -29,6 +29,15 @@
             "program": "tad_tester.py",
             "console": "integratedTerminal",
             "args": "--session_type adept --scenario DryRunEval.IO2 --selector keds --training --assessor triage --kdma \"Ingroup Bias=0.5\" --decision_verbose"
+        },
+        {
+            // has message
+            "name": "Tad Tester IO3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type adept --scenario DryRunEval.IO3 --selector keds --training --assessor triage --kdma \"Ingroup Bias=0.5\" --decision_verbose"
         }
     ]
 }
