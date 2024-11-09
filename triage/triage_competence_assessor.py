@@ -524,129 +524,87 @@ class PainMedRuleSet:
 
 class AssessmentHeuristicRuleset:
     """
-    Evaluates the appropriateness of specific assessment actions (CHECK_ALL_VITALS, CHECK_BLOOD_OXYGEN, etc.)
-    based on a casualty's condition, injury types, severity, and vitals.
-    Adjusts score based on heuristic matches, where a baseline score is modified up or down according to conditions.
-
-    Theory of Application:
-    - The heuristic model adds relevance to an assessment action based on certain injury patterns or vital conditions. 
-    - For example, respiratory injuries prioritize oxygen and respiration checks, while circulatory injuries make pulse checks more relevant.
-    - Less critical or superficial injuries (e.g., abrasions, minor wounds) reduce the necessity of intensive monitoring.
-    - A **SITREP** is particularly valuable in severe cases where a casualty is stable but critical, or if they are unvisited, to provide an initial overview without exhaustive assessment.
-    - The resulting score indicates the appropriateness of the action
+    Evaluates the appropriateness of specific assessment actions based on casualty conditions.
+    Heuristics consider various vital signs, injury information, injury severity, and assessment requirements.
     """
 
     BASELINE_SCORE = 0.7
 
     ASSESSMENT_RULES = {
-        ActionTypeEnum.CHECK_ALL_VITALS: [
-            # Severe injuries require a full vitals check.
-            ('injury_severity', 'EXTREME', 0.2),
-            ('injury_severity', 'MAJOR', 0.2),
-            # Unresponsive status justifies full vitals check.
-            ('avpu', 'UNRESPONSIVE', 0.2),
-            # Less critical injuries make full vitals check unnecessary.
-            ('injury_type', 'ABRASION', -0.3),
-            ('injury_type', 'ASTHMATIC', -0.3)
-        ],
+        # Prioritize CHECK_ALL_VITALS if casualty is unseen or missing critical vitals
+        ActionTypeEnum.CHECK_ALL_VITALS: lambda casualty: (
+            0.2 if casualty.unseen or all(getattr(casualty.vitals, attr) is None for attr in vars(casualty.vitals))
+            else 0.0
+        ),
 
-        ActionTypeEnum.CHECK_BLOOD_OXYGEN: [
-            # Blood oxygen check is important for chest or respiratory issues.
-            ('injury_type', 'CHEST_COLLAPSE', 0.2),
-            ('injury_type', 'PUNCTURE', 0.2),
-            ('injury_type', 'INTERNAL', 0.2),
-            # Severe injuries increase likelihood of hypoxia.
-            ('injury_severity', 'SEVERE', 0.1),
-            ('injury_severity', 'EXTREME', 0.1),
-            # Minor injuries do not typically require oxygen checks.
-            ('injury_type', 'LACERATION', -0.3),
-            ('injury_type', 'ABRASION', -0.3)
-        ],
+        # Prioritize CHECK_BLOOD_OXYGEN if spO2 is unknown
+        ActionTypeEnum.CHECK_BLOOD_OXYGEN: lambda casualty: (
+            0.2 if casualty.vitals.spo2 is None else 0.0
+        ),
 
-        ActionTypeEnum.CHECK_PULSE: [
-            # Pulse check is critical for blood loss or circulatory issues.
-            ('injury_type', 'AMPUTATION', 0.2),
-            ('injury_type', 'TRAUMATIC_BRAIN_INJURY', 0.2),
-            ('injury_type', 'LACERATION', 0.2),
-            # Severe injuries may compromise pulse.
-            ('injury_severity', 'EXTREME', 0.1),
-            ('injury_severity', 'MAJOR', 0.1),
-            # Non-circulatory injuries do not require pulse checks.
-            ('injury_type', 'ASTHMATIC', -0.3),
-            ('injury_type', 'INTERNAL', -0.3)
-        ],
+        # Prioritize CHECK_PULSE if heart rate is unknown
+        ActionTypeEnum.CHECK_PULSE: lambda casualty: (
+            0.2 if casualty.vitals.hrpmin is None else 0.0
+        ),
 
-        ActionTypeEnum.CHECK_RESPIRATION: [
-            # Respiratory checks are prioritized for breathing issues.
-            ('injury_type', 'CHEST_COLLAPSE', 0.3),
-            ('injury_type', 'PUNCTURE', 0.3),
-            ('injury_type', 'SHRAPNEL', 0.3),
-            # Restricted or absent breathing increases importance.
-            ('breathing', 'RESTRICTED', 0.1),
-            ('breathing', 'NONE', 0.1),
-            # Non-respiratory injuries lessen need for respiratory checks.
-            ('injury_type', 'ABRASION', -0.3),
-            ('injury_type', 'BROKEN_BONE', -0.3)
-        ],
+        # Prioritize CHECK_RESPIRATION if breathing status is unknown
+        ActionTypeEnum.CHECK_RESPIRATION: lambda casualty: (
+            0.2 if casualty.vitals.breathing is None else 0.0
+        ),
 
-        ActionTypeEnum.SITREP: [
-            # Situational report is useful for severe but stable conditions.
-            ('injury_severity', 'SEVERE', 0.2),
-            ('injury_severity', 'EXTREME', 0.2),
-            # Unvisited casualties benefit from an initial report.
-            ('visited', False, 0.1),
-            # Minor or superficial injuries lower necessity for SITREP.
-            ('injury_severity', 'MINOR', -0.4),
-            ('injury_type', 'ABRASION', -0.4)
-        ],
-        ActionTypeEnum.MOVE_TO: [
-            # High-priority MOVE_TO if casualty has severe visible injuries
-            # but lacks full vital signs or detailed information.
-            ("injury_type", InjuryTypeEnum.CHEST_COLLAPSE, 0.9),
-            ("injury_type", InjuryTypeEnum.AMPUTATION, 0.9),
-            ("injury_type", InjuryTypeEnum.OPEN_ABDOMINAL_WOUND, 0.9),
+        # Increase score for SITREP action if there are unknown injuries or severe injuries
+        ActionTypeEnum.SITREP: lambda casualty: (
+            0.2 if not casualty.injuries or any(
+                injury.severity in {
+                    InjurySeverityEnum.MAJOR, InjurySeverityEnum.EXTREME}
+                for injury in casualty.injuries
+            ) else 0.0
+        ),
 
-            # MOVE_TO if there’s an injury but unclear vitals
-            ("vitals_known", False, 0.8),
-        ],
+        # Increase score for SEARCH action if the casualty is unseen or has missing information
+        ActionTypeEnum.SEARCH: lambda casualty: (
+            0.2 if casualty.unseen or any(
+                getattr(casualty.vitals, attr) is None for attr in vars(casualty.vitals)
+            ) or not casualty.injuriesg
+            else 0.0
+        ),
 
-        # SEARCH heuristic
-        ActionTypeEnum.SEARCH: [
-            # Recommended SEARCH action if injury severity is high and detailed
-            # vitals information is incomplete, as there may be hidden complications.
-            ("injury_severity", InjurySeverityEnum.MAJOR, 0.85),
-            ("injury_severity", InjurySeverityEnum.EXTREME, 0.85),
+        # Adjust assessment for injury type: prioritize if there are severe or complex injury types
+        "check_for_critical_injuries": lambda casualty: (
+            0.2 if any(
+                injury.name in {InjuryTypeEnum.CHEST_COLLAPSE,
+                                InjuryTypeEnum.OPEN_ABDOMINAL_WOUND, InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY}
+                for injury in casualty.injuries
+            ) else 0.0
+        ),
 
-            # Perform SEARCH for additional context if certain vitals are missing,
-            # indicating a need to gather more information for accurate triage.
-            ("spo2_known", False, 0.75),
-            ("heart_rate_known", False, 0.75),
-
-            # SEARCH action is useful when there is only partial visibility on injuries
-            # but suspicion of additional unconfirmed injuries or conditions.
-            ("injury_known", False, 0.8),
-        ]
+        # Adjust assessment for injury severity: prioritize for major or extreme injuries
+        "check_for_severe_injuries": lambda casualty: (
+            0.2 if any(
+                injury.severity == InjurySeverityEnum.EXTREME or injury.severity == InjurySeverityEnum.MAJOR
+                for injury in casualty.injuries
+            ) else 0.0
+        ),
     }
 
     def assess_action(self, casualty, action_type):
         """
         Assesses the appropriateness of an action for a given casualty based on predefined rules.
-        Returns an adjusted score based on the baseline score and heuristic rule matches.
+        Each action type is adjusted based on the casualty's condition.
         """
         score = self.BASELINE_SCORE
 
-        # Get rules specific to the action type
-        rules = self.ASSESSMENT_RULES.get(action_type, [])
+        # Apply specific assessment rules based on action type
+        if action_type in self.ASSESSMENT_RULES:
+            rule_score = self.ASSESSMENT_RULES[action_type](casualty)
+            score += rule_score
 
-        # Check each rule and adjust the score accordingly
-        for attribute, condition, adjustment in rules:
-            casualty_value = getattr(casualty, attribute, None)
-            if casualty_value == condition:
-                score += adjustment
+        # Apply injury-based assessments
+        score += self.ASSESSMENT_RULES["check_for_critical_injuries"](casualty)
+        score += self.ASSESSMENT_RULES["check_for_severe_injuries"](casualty)
 
-        # Ensure score stays within bounds [0, 1]
-        score = min(max(score, 0), 1)
-        return score
+        # Ensure the score remains within bounds [0, 1]
+        return min(max(score, 0), 1)
 
 
 class EvacuationRuleSet:
