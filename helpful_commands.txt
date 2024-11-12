@@ -60,6 +60,7 @@ git reset --hard
 git checkout development
 git pull
 git apply -v --index ..\..\repo-cfgs\itm-evaluation-server.patch --reject
-<Manually apply any rejected hunks>
+<Check and manually re-insert any rejected hunks in output of apply command.>
+git add swagger_server\config.ini -f
 cd ..\..
 python save-repo-states.py # Erases prior patch, it should have been already committed for safety
