@@ -30,7 +30,7 @@
             "name": "Tad Tester MJ1",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/tad_tester_log.py",
+            "program": "${workspaceFolder}/tad_tester.py",
             "console": "integratedTerminal",
             "args": [
                 "--session_type",
