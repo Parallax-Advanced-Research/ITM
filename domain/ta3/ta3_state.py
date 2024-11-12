@@ -34,7 +34,8 @@ class Vitals:
     breathing: str
     hrpmin: int
     spo2: str
-    
+    triss: int
+
     @staticmethod
     def from_ta3(data: dict):
         d = dict(data)

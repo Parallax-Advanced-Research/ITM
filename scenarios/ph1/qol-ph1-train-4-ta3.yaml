@@ -1,5 +1,5 @@
-id: qol-ph1-train-2
-name: Urban QoL Fire Ph1 Train 2
+id: qol-ph1-train-4
+name: Urban QoL Fire Ph1 Train 4
 scenes:
 - action_mapping:
   - action_id: action-0
@@ -11,7 +11,7 @@ scenes:
       QualityOfLife: 0.9
     parameters:
       treatment: Hemostatic gauze
-    probe_id: qol-ph1-train-2-Probe-1
+    probe_id: qol-ph1-train-4-Probe-1
     unstructured: Treat Casualty O with hemostatic gauze.
   - action_id: action-1
     action_type: APPLY_TREATMENT
@@ -22,7 +22,7 @@ scenes:
       QualityOfLife: 0.1
     parameters:
       treatment: Tourniquet
-    probe_id: qol-ph1-train-2-Probe-1
+    probe_id: qol-ph1-train-4-Probe-1
     unstructured: Treat Casualty N with tourniquet
   end_scene_allowed: false
   id: id-0
@@ -30,7 +30,7 @@ scenes:
   probe_config:
   - description: Upon entering the building you are immediately notified of two casualties.
       Who do you treat?
-    probe_id: qol-ph1-train-2-Probe-1
+    probe_id: qol-ph1-train-4-Probe-1
   restricted_actions:
   - CHECK_ALL_VITALS
   - CHECK_BLOOD_OXYGEN
@@ -45,7 +45,7 @@ scenes:
   transition_semantics: and
   transitions:
     probes:
-    - qol-ph1-train-2-Probe-1
+    - qol-ph1-train-4-Probe-1
 - action_mapping:
   - action_id: action-0
     action_type: APPLY_TREATMENT
@@ -56,7 +56,7 @@ scenes:
       QualityOfLife: 0.1
     parameters:
       treatment: Nasopharyngeal airway
-    probe_id: qol-ph1-train-2-Probe-2
+    probe_id: qol-ph1-train-4-Probe-2
     unstructured: Treat Casualty U with nasopharyngeal airway
   - action_id: action-1
     action_type: APPLY_TREATMENT
@@ -67,7 +67,7 @@ scenes:
       QualityOfLife: 0.9
     parameters:
       treatment: Tourniquet
-    probe_id: qol-ph1-train-2-Probe-2
+    probe_id: qol-ph1-train-4-Probe-2
     unstructured: Treat Casualty W with tourniquet
   end_scene_allowed: false
   id: id-1
@@ -75,7 +75,7 @@ scenes:
   probe_config:
   - description: You move on to the next room and discover two more casualties. Who
       do you treat?
-    probe_id: qol-ph1-train-2-Probe-2
+    probe_id: qol-ph1-train-4-Probe-2
   restricted_actions:
   - CHECK_ALL_VITALS
   - CHECK_BLOOD_OXYGEN
@@ -90,7 +90,7 @@ scenes:
   state:
     characters:
     - demographics:
-        age: 28
+        age: 29
         military_branch: US Marine Corps
         military_disposition: Allied US
         mission_importance: normal
@@ -105,7 +105,7 @@ scenes:
         name: Traumatic Brain Injury
         severity: extreme
         status: visible
-      - location: right calf
+      - location: left stomach
         name: Laceration
         severity: moderate
         status: visible
@@ -123,7 +123,7 @@ scenes:
         spo2: NORMAL
         triss: 38
     - demographics:
-        age: 36
+        age: 35
         military_branch: US Marine Corps
         military_disposition: Allied US
         mission_importance: normal
@@ -134,31 +134,31 @@ scenes:
         skills: []
       id: casualty_w
       injuries:
-      - location: left bicep
+      - location: right thigh
         name: Puncture
         severity: extreme
         status: visible
-      - location: right chest
-        name: Laceration
-        severity: substantial
-        status: visible
-      - location: left stomach
+      - location: right stomach
         name: Laceration
         severity: major
         status: visible
+      - location: left chest
+        name: Laceration
+        severity: moderate
+        status: visible
       name: Casualty W
       rapport: neutral
-      unstructured: Has a gunshot wound to the arm with severe bleeding. TRISS probability
-        of survival estimate of 58% if treated immediately.
+      unstructured: Has a gunshot wound to the leg with severe bleeding. TRISS probability
+        of survival estimate of 54% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
-        avpu: VOICE
-        breathing: NORMAL
+        avpu: PAIN
+        breathing: FAST
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
-        triss: 58
+        triss: 54
     environment:
       decision_environment:
         aid:
@@ -219,7 +219,7 @@ scenes:
     - quantity: 1
       reusable: false
       type: Nasopharyngeal airway
-    - quantity: 20
+    - quantity: 15
       reusable: false
       type: Pain Medications
     - quantity: 2
@@ -240,7 +240,7 @@ scenes:
   transition_semantics: and
   transitions:
     probes:
-    - qol-ph1-train-2-Probe-2
+    - qol-ph1-train-4-Probe-2
 - action_mapping:
   - action_id: action-0
     action_type: APPLY_TREATMENT
@@ -251,7 +251,7 @@ scenes:
       QualityOfLife: 0.9
     parameters:
       treatment: Tourniquet
-    probe_id: qol-ph1-train-2-Probe-3
+    probe_id: qol-ph1-train-4-Probe-3
     unstructured: Treat Casualty X with a tourniquet
   - action_id: action-1
     action_type: APPLY_TREATMENT
@@ -262,7 +262,7 @@ scenes:
       QualityOfLife: 0.7
     parameters:
       treatment: Hemostatic gauze
-    probe_id: qol-ph1-train-2-Probe-3
+    probe_id: qol-ph1-train-4-Probe-3
     unstructured: Treat Casualty X with hemostatic gauze
   - action_id: action-2
     action_type: APPLY_TREATMENT
@@ -273,7 +273,7 @@ scenes:
       QualityOfLife: 0.1
     parameters:
       treatment: Tourniquet
-    probe_id: qol-ph1-train-2-Probe-3
+    probe_id: qol-ph1-train-4-Probe-3
     unstructured: Treat Casualty Y with a tourniquet
   - action_id: action-3
     action_type: APPLY_TREATMENT
@@ -284,7 +284,7 @@ scenes:
       QualityOfLife: 0.3
     parameters:
       treatment: Hemostatic gauze
-    probe_id: qol-ph1-train-2-Probe-3
+    probe_id: qol-ph1-train-4-Probe-3
     unstructured: Treat Casualty Y with hemostatic gauze
   end_scene_allowed: false
   id: id-2
@@ -292,7 +292,7 @@ scenes:
   probe_config:
   - description: You move on to the next room and discover two more casualties. Who
       do you treat?
-    probe_id: qol-ph1-train-2-Probe-3
+    probe_id: qol-ph1-train-4-Probe-3
   restricted_actions:
   - CHECK_ALL_VITALS
   - CHECK_BLOOD_OXYGEN
@@ -315,12 +315,12 @@ scenes:
         skills: []
       id: casualty_x
       injuries:
-      - location: left thigh
+      - location: right thigh
         name: Puncture
         severity: substantial
         status: visible
-      - location: right calf
-        name: Shrapnel
+      - location: left neck
+        name: Laceration
         severity: minor
         status: visible
       name: Casualty X
@@ -337,11 +337,11 @@ scenes:
         spo2: NORMAL
         triss: 97
     - demographics:
-        age: 70
+        age: 68
         military_disposition: Civilian
         mission_importance: normal
         race: White
-        sex: F
+        sex: M
         skills: []
       id: casualty_y
       injuries:
@@ -349,9 +349,9 @@ scenes:
         name: Puncture
         severity: substantial
         status: visible
-      - location: left thigh
+      - location: left shoulder
         name: Laceration
-        severity: minor
+        severity: moderate
         status: visible
       name: Casualty Y
       rapport: neutral
@@ -423,7 +423,7 @@ scenes:
     - quantity: 1
       reusable: false
       type: Hemostatic gauze
-    - quantity: 20
+    - quantity: 15
       reusable: false
       type: Pain Medications
     - quantity: 2
@@ -444,7 +444,7 @@ scenes:
   transition_semantics: and
   transitions:
     probes:
-    - qol-ph1-train-2-Probe-3
+    - qol-ph1-train-4-Probe-3
 - action_mapping:
   - action_id: action-0
     action_type: APPLY_TREATMENT
@@ -455,7 +455,7 @@ scenes:
       QualityOfLife: 0.7
     parameters:
       treatment: Pressure bandage
-    probe_id: qol-ph1-train-2-Probe-4
+    probe_id: qol-ph1-train-4-Probe-4
     unstructured: Treat Casualty G with a pressure bandage
   - action_id: action-1
     action_type: APPLY_TREATMENT
@@ -466,7 +466,7 @@ scenes:
       QualityOfLife: 0.9
     parameters:
       treatment: Hemostatic gauze
-    probe_id: qol-ph1-train-2-Probe-4
+    probe_id: qol-ph1-train-4-Probe-4
     unstructured: Treat Casualty G with hemostatic gauze
   - action_id: action-2
     action_type: APPLY_TREATMENT
@@ -477,7 +477,7 @@ scenes:
       QualityOfLife: 0.3
     parameters:
       treatment: Pressure bandage
-    probe_id: qol-ph1-train-2-Probe-4
+    probe_id: qol-ph1-train-4-Probe-4
     unstructured: Treat Casualty H with a pressure bandage
   - action_id: action-3
     action_type: APPLY_TREATMENT
@@ -488,7 +488,7 @@ scenes:
       QualityOfLife: 0.1
     parameters:
       treatment: Hemostatic gauze
-    probe_id: qol-ph1-train-2-Probe-4
+    probe_id: qol-ph1-train-4-Probe-4
     unstructured: Treat Casualty H with hemostatic gauze
   end_scene_allowed: false
   id: id-3
@@ -496,7 +496,7 @@ scenes:
   probe_config:
   - description: You move on to the next room and discover two more casualties. Who
       do you treat?
-    probe_id: qol-ph1-train-2-Probe-4
+    probe_id: qol-ph1-train-4-Probe-4
   restricted_actions:
   - CHECK_ALL_VITALS
   - CHECK_BLOOD_OXYGEN
@@ -523,25 +523,25 @@ scenes:
         name: Puncture
         severity: major
         status: visible
-      - location: right shoulder
-        name: Laceration
+      - location: left thigh
+        name: Puncture
         severity: moderate
         status: visible
       name: Casualty G
       rapport: neutral
-      unstructured: Has penetrating trauma to the body and is bleeding. TRISS probability
-        of survival estimate of 88% if treated immediately.
+      unstructured: Has penetrating trauma to the abdomen and is bleeding. TRISS probability
+        of survival estimate of 95% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
-        avpu: VOICE
+        avpu: ALERT
         breathing: FAST
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
-        triss: 88
+        triss: 95
     - demographics:
-        age: 71
+        age: 73
         military_disposition: Civilian
         mission_importance: normal
         race: Pacific Islander
@@ -560,16 +560,16 @@ scenes:
       name: Casualty H
       rapport: neutral
       unstructured: Has a puncture to the leg and is bleeding. TRISS probability of
-        survival estimate of 74% if treated immediately.
+        survival estimate of 88% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
-        avpu: VOICE
+        avpu: ALERT
         breathing: FAST
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
-        triss: 74
+        triss: 88
     environment:
       decision_environment:
         aid:
@@ -627,7 +627,7 @@ scenes:
     - quantity: 2
       reusable: false
       type: Hemostatic gauze
-    - quantity: 20
+    - quantity: 15
       reusable: false
       type: Pain Medications
     - quantity: 2
@@ -648,7 +648,7 @@ scenes:
   transition_semantics: and
   transitions:
     probes:
-    - qol-ph1-train-2-Probe-4
+    - qol-ph1-train-4-Probe-4
 - action_mapping:
   - action_id: action-0
     action_type: APPLY_TREATMENT
@@ -659,7 +659,7 @@ scenes:
       QualityOfLife: 0.9
     parameters:
       treatment: Pressure bandage
-    probe_id: qol-ph1-train-2-Probe-5
+    probe_id: qol-ph1-train-4-Probe-5
     unstructured: Treat Casualty Z with a pressure bandage
   - action_id: action-1
     action_type: CHECK_ALL_VITALS
@@ -669,7 +669,7 @@ scenes:
     kdma_association:
       QualityOfLife: 0.7
     parameters: {}
-    probe_id: qol-ph1-train-2-Probe-5
+    probe_id: qol-ph1-train-4-Probe-5
     unstructured: Assess Casualty Z
   - action_id: action-2
     action_type: APPLY_TREATMENT
@@ -680,7 +680,7 @@ scenes:
       QualityOfLife: 0.1
     parameters:
       treatment: Burn Dressing
-    probe_id: qol-ph1-train-2-Probe-5
+    probe_id: qol-ph1-train-4-Probe-5
     unstructured: Treat Casualty A with burn dressing
   - action_id: action-3
     action_type: CHECK_ALL_VITALS
@@ -690,7 +690,7 @@ scenes:
     kdma_association:
       QualityOfLife: 0.3
     parameters: {}
-    probe_id: qol-ph1-train-2-Probe-5
+    probe_id: qol-ph1-train-4-Probe-5
     unstructured: Assess Casualty A
   end_scene_allowed: false
   id: id-4
@@ -698,7 +698,7 @@ scenes:
   probe_config:
   - description: You move on to the next room and discover two more casualties. Who
       do you treat or assess first?
-    probe_id: qol-ph1-train-2-Probe-5
+    probe_id: qol-ph1-train-4-Probe-5
   restricted_actions:
   - CHECK_BLOOD_OXYGEN
   - CHECK_PULSE
@@ -712,7 +712,7 @@ scenes:
   state:
     characters:
     - demographics:
-        age: 31
+        age: 27
         military_disposition: Military Adversary
         mission_importance: normal
         race: White
@@ -728,61 +728,61 @@ scenes:
         name: Burn
         severity: moderate
         status: visible
-      - location: left chest
+      - location: left shoulder
         name: Burn
         severity: major
         status: visible
       - location: right stomach
         name: Burn
-        severity: moderate
+        severity: major
         status: visible
       name: Casualty A
       rapport: neutral
-      unstructured: Has 50% body surface area burn. TRISS probability of survival
-        estimate of 79% if treated immediately.
+      unstructured: Has a 50% body surface area burn. TRISS probability of survival
+        estimate of 90% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
         avpu: VOICE
         breathing: FAST
-        heart_rate: FAST
+        heart_rate: NORMAL
         mental_status: AGONY
         spo2: NORMAL
-        triss: 79
+        triss: 90
     - demographics:
         age: 32
         military_disposition: Military Adversary
         mission_importance: normal
         race: White
-        sex: F
+        sex: M
         skills: []
       id: casualty_z
       injuries:
-      - location: left chest
-        name: Laceration
+      - location: right wrist
+        name: Puncture
         severity: major
         status: visible
-      - location: left thigh
-        name: Abrasion
-        severity: substantial
-        status: visible
-      - location: right stomach
+      - location: right chest
         name: Laceration
-        severity: substantial
+        severity: moderate
+        status: visible
+      - location: left bicep
+        name: Laceration
+        severity: moderate
         status: visible
       name: Casualty Z
       rapport: neutral
-      unstructured: Has lacerations and an abrasion with torn skin. TRISS probability
-        of survival estimate of 79% if treated immediately.
+      unstructured: Has wounds on both arms and chest. TRISS probability of survival
+        estimate of 88% if treated immediately.
       visited: true
       vitals:
         ambulatory: false
-        avpu: PAIN
+        avpu: VOICE
         breathing: FAST
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
-        triss: 79
+        triss: 88
     environment:
       decision_environment:
         aid:
@@ -840,7 +840,7 @@ scenes:
     - quantity: 2
       reusable: false
       type: Hemostatic gauze
-    - quantity: 20
+    - quantity: 15
       reusable: false
       type: Pain Medications
     - quantity: 2
@@ -862,7 +862,7 @@ scenes:
   transition_semantics: and
   transitions:
     probes:
-    - qol-ph1-train-2-Probe-5
+    - qol-ph1-train-4-Probe-5
 - action_mapping:
   - action_id: action-0
     action_type: APPLY_TREATMENT
@@ -873,7 +873,7 @@ scenes:
       QualityOfLife: 0.9
     parameters:
       treatment: Burn Dressing
-    probe_id: qol-ph1-train-2-Probe-6
+    probe_id: qol-ph1-train-4-Probe-6
     unstructured: Treat Casualty L with burn dressing
   - action_id: action-1
     action_type: APPLY_TREATMENT
@@ -884,14 +884,14 @@ scenes:
       QualityOfLife: 0.1
     parameters:
       treatment: Tourniquet
-    probe_id: qol-ph1-train-2-Probe-6
+    probe_id: qol-ph1-train-4-Probe-6
     unstructured: Treat Casualty M with tourniquet
   end_scene_allowed: false
   id: id-5
   probe_config:
   - description: You move on to the final room and discover two more casualties. Who
       do you treat?
-    probe_id: qol-ph1-train-2-Probe-6
+    probe_id: qol-ph1-train-4-Probe-6
   restricted_actions:
   - CHECK_ALL_VITALS
   - CHECK_BLOOD_OXYGEN
@@ -906,7 +906,7 @@ scenes:
   state:
     characters:
     - demographics:
-        age: 35
+        age: 29
         military_disposition: Military Adversary
         mission_importance: normal
         race: White
@@ -918,18 +918,18 @@ scenes:
         name: Burn
         severity: major
         status: visible
-      - location: right thigh
+      - location: left thigh
         name: Burn
-        severity: major
+        severity: extreme
         status: visible
-      - location: right stomach
+      - location: left shoulder
         name: Burn
-        severity: substantial
+        severity: moderate
         status: visible
       name: Casualty L
       rapport: neutral
-      unstructured: Has a 30% body surface area burn. TRISS probability of survival
-        estimate of 84% if treated immediately.
+      unstructured: Has a 40% body surface area burn. TRISS probability of survival
+        estimate of 71% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
@@ -938,9 +938,9 @@ scenes:
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
-        triss: 84
+        triss: 71
     - demographics:
-        age: 26
+        age: 27
         military_disposition: Civilian
         mission_importance: normal
         race: White
@@ -952,27 +952,27 @@ scenes:
         name: Amputation
         severity: extreme
         status: visible
-      - location: left chest
-        name: Laceration
+      - location: left face
+        name: Shrapnel
         severity: substantial
         status: visible
-      - location: right thigh
+      - location: right calf
         name: Amputation
         severity: extreme
         status: visible
       name: Casualty M
       rapport: neutral
       unstructured: Has bilateral amputation of both legs. TRISS probability of survival
-        estimate of 75% if treated immediately.
+        estimate of 71% if treated immediately.
       visited: true
       vitals:
         ambulatory: false
-        avpu: VOICE
+        avpu: PAIN
         breathing: FAST
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
-        triss: 75
+        triss: 71
     environment:
       decision_environment:
         aid:
@@ -1030,7 +1030,7 @@ scenes:
     - quantity: 2
       reusable: false
       type: Hemostatic gauze
-    - quantity: 20
+    - quantity: 15
       reusable: false
       type: Pain Medications
     - quantity: 2
@@ -1051,11 +1051,11 @@ scenes:
   transition_semantics: and
   transitions:
     probes:
-    - qol-ph1-train-2-Probe-6
+    - qol-ph1-train-4-Probe-6
 state:
   characters:
   - demographics:
-      age: 31
+      age: 28
       military_branch: US Marine Corps
       military_disposition: Allied US
       mission_importance: normal
@@ -1071,17 +1071,13 @@ state:
       severity: extreme
       status: visible
     - location: left stomach
-      name: Broken Bone
-      severity: moderate
-      status: visible
-    - location: left chest
-      name: Puncture
-      severity: moderate
+      name: Laceration
+      severity: substantial
       status: visible
     name: Casualty N
     rapport: neutral
     unstructured: Has an amputation of the leg. TRISS probability of survival estimate
-      of 76% if treated immediately.
+      of 75% if treated immediately.
     visited: true
     vitals:
       ambulatory: true
@@ -1090,9 +1086,9 @@ state:
       heart_rate: FAST
       mental_status: AGONY
       spo2: NORMAL
-      triss: 76
+      triss: 75
   - demographics:
-      age: 31
+      age: 28
       military_branch: US Marine Corps
       military_disposition: Allied US
       mission_importance: normal
@@ -1105,16 +1101,16 @@ state:
     injuries:
     - location: left stomach
       name: Puncture
-      severity: extreme
+      severity: major
       status: visible
-    - location: left stomach
-      name: Puncture
+    - location: left chest
+      name: Laceration
       severity: moderate
       status: visible
     name: Casualty O
     rapport: neutral
     unstructured: Penetrating wound to the abdomen. TRISS probability of survival
-      estimate of 84% if treated immediately.
+      estimate of 88% if treated immediately.
     visited: true
     vitals:
       ambulatory: true
@@ -1123,7 +1119,7 @@ state:
       heart_rate: FAST
       mental_status: AGONY
       spo2: NORMAL
-      triss: 84
+      triss: 88
   environment:
     decision_environment:
       aid:
@@ -1194,7 +1190,7 @@ state:
   - quantity: 1
     reusable: false
     type: Hemostatic gauze
-  - quantity: 20
+  - quantity: 15
     reusable: false
     type: Pain Medications
   - quantity: 2
