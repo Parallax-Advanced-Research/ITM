@@ -792,6 +792,7 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
         add_feature_to_case_with_rank(case, "intent", lambda chr: chr.intent, c, chrs, add_rank=add_rank)
         add_feature_to_case_with_rank(case, "relationship", lambda chr: chr.relationship, c, chrs, add_rank=add_rank)
         add_feature_to_case_with_rank(case, "disposition", lambda chr: chr.demographics.military_disposition, c, chrs, add_rank=add_rank)
+        add_feature_to_case_with_rank(case, "triss", lambda chr: chr.vitals.triss, c, chrs, add_rank=add_rank)
         add_feature_to_case_with_rank(case, "directness_of_causality", 
                                     lambda chr: chr.directness_of_causality, c, chrs, add_rank=add_rank)
         if variant != "baseline":
