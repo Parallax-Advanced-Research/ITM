@@ -90,7 +90,7 @@ scenes:
   state:
     characters:
     - demographics:
-        age: 26
+        age: 24
         military_branch: US Marine Corps
         military_disposition: Allied US
         mission_importance: normal
@@ -105,23 +105,25 @@ scenes:
         name: Traumatic Brain Injury
         severity: extreme
         status: visible
-      - location: right thigh
-        name: Laceration
-        severity: minor
+      - location: left thigh
+        name: Puncture
+        severity: moderate
         status: visible
       name: Casualty U
       rapport: neutral
-      unstructured: Has a head injury with periorbital ecchymosis.
+      unstructured: Has a head injury with periorbital ecchymosis. TRISS probability
+        of survival estimate of 38% if treated immediately.
       visited: true
       vitals:
         ambulatory: false
         avpu: UNRESPONSIVE
-        breathing: NORMAL
+        breathing: NONE
         heart_rate: FAST
         mental_status: UNRESPONSIVE
         spo2: NORMAL
+        triss: 38
     - demographics:
-        age: 30
+        age: 28
         military_branch: US Marine Corps
         military_disposition: Allied US
         mission_importance: normal
@@ -132,21 +134,31 @@ scenes:
         skills: []
       id: casualty_w
       injuries:
-      - location: left thigh
+      - location: left bicep
         name: Puncture
+        severity: extreme
+        status: visible
+      - location: left chest
+        name: Laceration
         severity: major
+        status: visible
+      - location: left stomach
+        name: Laceration
+        severity: substantial
         status: visible
       name: Casualty W
       rapport: neutral
-      unstructured: Has a gunshot wound to the leg with severe bleeding.
+      unstructured: Has a gunshot wound to the arm with severe bleeding. TRISS probability
+        of survival estimate of 58% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
-        avpu: ALERT
-        breathing: FAST
+        avpu: VOICE
+        breathing: NORMAL
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
+        triss: 58
     environment:
       decision_environment:
         aid:
@@ -183,10 +195,17 @@ scenes:
       political_climate: Hostile
       roe: Medical Rules of Engagement are that for this mission the health of the
         hostages takes precedence
-      unstructured: You are part of a special operations tactical team tasked for
-        extraction of hostages in enemy territory. Local support is unlikely, and
-        the plan is for immediate extraction via Blackhawk. The building has several
-        small fires and is becoming increasingly less stable.
+      unstructured: "You are part of a special operations tactical team tasked for\
+        \ extraction of hostages in enemy territory. Local support is unlikely, and\
+        \ the plan is for immediate extraction via Blackhawk. Extraction will take\
+        \ place following intial triage. The building has several small fires and\
+        \ is becoming increasingly less stable.\nTo assist in your triage decisions,\
+        \ each casualty will have a pre-calculated Trauma and Injury Severity Score\
+        \ (TRISS) based on their injuries and current vital signs. \nThe TRISS score\
+        \ estimates the patient\u2019s probability of survival based on initial factors\
+        \ like injury severity and age, offering a standardized reference for prioritizing\
+        \ early treatment within the initial evaluation period.\nPlease note that\
+        \ the score may change if injuries worsen or vital signs change over time."
     supplies:
     - quantity: 5
       reusable: false
@@ -215,8 +234,8 @@ scenes:
     unstructured: You are part of a special operations tactical team tasked for extraction
       of hostages in enemy territory. The hostages are being kept in a building guarded
       by 25 hostile narco-terrorists. Intel suggests the building may be wired with
-      explosives, hostiles are threatening to kill the hostages in the next hour.  Local
-      support is unlikely, and the plan is for immediate extraction via Blackhawk.
+      explosives, hostiles are threatening to kill the hostages in the next hour.
+      Local support is unlikely, and the plan is for immediate extraction via Blackhawk.
       You move on to the next room and discover two more casualties. Who do you treat?
   transition_semantics: and
   transitions:
@@ -288,7 +307,7 @@ scenes:
   state:
     characters:
     - demographics:
-        age: 27
+        age: 23
         military_disposition: Civilian
         mission_importance: normal
         race: Black
@@ -306,7 +325,8 @@ scenes:
         status: visible
       name: Casualty X
       rapport: neutral
-      unstructured: Has a puncture wound to the leg and is bleeding.
+      unstructured: Has a puncture wound to the leg and is bleeding. TRISS probability
+        of survival estimate of 97% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
@@ -315,16 +335,17 @@ scenes:
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
+        triss: 97
     - demographics:
-        age: 68
+        age: 70
         military_disposition: Civilian
         mission_importance: normal
         race: Black
-        sex: M
+        sex: F
         skills: []
       id: casualty_y
       injuries:
-      - location: right shoulder
+      - location: right bicep
         name: Puncture
         severity: substantial
         status: visible
@@ -334,7 +355,8 @@ scenes:
         status: visible
       name: Casualty Y
       rapport: neutral
-      unstructured: Has a puncture to the arm and is bleeding.
+      unstructured: Has a puncture to the arm and is bleeding. TRISS probability of
+        survival estimate of 93% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
@@ -343,6 +365,7 @@ scenes:
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
+        triss: 93
     environment:
       decision_environment:
         aid:
@@ -379,10 +402,17 @@ scenes:
       political_climate: Hostile
       roe: Medical Rules of Engagement are that for this mission the health of the
         hostages takes precedence
-      unstructured: You are part of a special operations tactical team tasked for
-        extraction of hostages in enemy territory. Local support is unlikely, and
-        the plan is for immediate extraction via Blackhawk. The building has several
-        small fires and is becoming increasingly less stable.
+      unstructured: "You are part of a special operations tactical team tasked for\
+        \ extraction of hostages in enemy territory. Local support is unlikely, and\
+        \ the plan is for immediate extraction via Blackhawk. Extraction will take\
+        \ place following intial triage. The building has several small fires and\
+        \ is becoming increasingly less stable.\nTo assist in your triage decisions,\
+        \ each casualty will have a pre-calculated Trauma and Injury Severity Score\
+        \ (TRISS) based on their injuries and current vital signs. \nThe TRISS score\
+        \ estimates the patient\u2019s probability of survival based on initial factors\
+        \ like injury severity and age, offering a standardized reference for prioritizing\
+        \ early treatment within the initial evaluation period.\nPlease note that\
+        \ the score may change if injuries worsen or vital signs change over time."
     supplies:
     - quantity: 5
       reusable: false
@@ -408,8 +438,8 @@ scenes:
     unstructured: You are part of a special operations tactical team tasked for extraction
       of hostages in enemy territory. The hostages are being kept in a building guarded
       by 25 hostile narco-terrorists. Intel suggests the building may be wired with
-      explosives, hostiles are threatening to kill the hostages in the next hour.  Local
-      support is unlikely, and the plan is for immediate extraction via Blackhawk.
+      explosives, hostiles are threatening to kill the hostages in the next hour.
+      Local support is unlikely, and the plan is for immediate extraction via Blackhawk.
       You move on to the next room and discover two more casualties. Who do you treat?
   transition_semantics: and
   transitions:
@@ -481,7 +511,7 @@ scenes:
   state:
     characters:
     - demographics:
-        age: 23
+        age: 22
         military_disposition: Civilian
         mission_importance: normal
         race: Black
@@ -489,23 +519,29 @@ scenes:
         skills: []
       id: casualty_g
       injuries:
-      - location: right stomach
+      - location: right chest
         name: Puncture
         severity: major
         status: visible
+      - location: right shoulder
+        name: Laceration
+        severity: moderate
+        status: visible
       name: Casualty G
       rapport: neutral
-      unstructured: Has penetrating trauma to the abdomen and is bleeding.
+      unstructured: Has penetrating trauma to the body and is bleeding. TRISS probability
+        of survival estimate of 88% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
-        avpu: ALERT
+        avpu: VOICE
         breathing: FAST
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
+        triss: 88
     - demographics:
-        age: 73
+        age: 70
         military_disposition: Civilian
         mission_importance: normal
         race: Black
@@ -519,15 +555,17 @@ scenes:
         status: visible
       name: Casualty H
       rapport: neutral
-      unstructured: Has a puncture to the leg and is bleeding.
+      unstructured: Has a puncture to the leg and is bleeding. TRISS probability of
+        survival estimate of 76% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
-        avpu: ALERT
+        avpu: VOICE
         breathing: FAST
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
+        triss: 76
     environment:
       decision_environment:
         aid:
@@ -564,10 +602,17 @@ scenes:
       political_climate: Hostile
       roe: Medical Rules of Engagement are that for this mission the health of the
         hostages takes precedence
-      unstructured: You are part of a special operations tactical team tasked for
-        extraction of hostages in enemy territory. Local support is unlikely, and
-        the plan is for immediate extraction via Blackhawk. The building has several
-        small fires and is becoming increasingly less stable.
+      unstructured: "You are part of a special operations tactical team tasked for\
+        \ extraction of hostages in enemy territory. Local support is unlikely, and\
+        \ the plan is for immediate extraction via Blackhawk. Extraction will take\
+        \ place following intial triage. The building has several small fires and\
+        \ is becoming increasingly less stable.\nTo assist in your triage decisions,\
+        \ each casualty will have a pre-calculated Trauma and Injury Severity Score\
+        \ (TRISS) based on their injuries and current vital signs. \nThe TRISS score\
+        \ estimates the patient\u2019s probability of survival based on initial factors\
+        \ like injury severity and age, offering a standardized reference for prioritizing\
+        \ early treatment within the initial evaluation period.\nPlease note that\
+        \ the score may change if injuries worsen or vital signs change over time."
     supplies:
     - quantity: 5
       reusable: false
@@ -593,8 +638,8 @@ scenes:
     unstructured: You are part of a special operations tactical team tasked for extraction
       of hostages in enemy territory. The hostages are being kept in a building guarded
       by 25 hostile narco-terrorists. Intel suggests the building may be wired with
-      explosives, hostiles are threatening to kill the hostages in the next hour.  Local
-      support is unlikely, and the plan is for immediate extraction via Blackhawk.
+      explosives, hostiles are threatening to kill the hostages in the next hour.
+      Local support is unlikely, and the plan is for immediate extraction via Blackhawk.
       You move on to the next room and discover two more casualties. Who do you treat?
   transition_semantics: and
   transitions:
@@ -609,9 +654,9 @@ scenes:
     kdma_association:
       QualityOfLife: 0.9
     parameters:
-      treatment: Tourniquet
+      treatment: Pressure bandage
     probe_id: qol-ph1-train-1-Probe-5
-    unstructured: Treat Casualty Z with tourniquet
+    unstructured: Treat Casualty Z with a pressure bandage
   - action_id: action-1
     action_type: CHECK_ALL_VITALS
     character_id: casualty_z
@@ -648,7 +693,7 @@ scenes:
   next_scene: id-5
   probe_config:
   - description: You move on to the next room and discover two more casualties. Who
-      do you treat?
+      do you treat or assess first?
     probe_id: qol-ph1-train-1-Probe-5
   restricted_actions:
   - CHECK_BLOOD_OXYGEN
@@ -663,7 +708,7 @@ scenes:
   state:
     characters:
     - demographics:
-        age: 26
+        age: 22
         military_disposition: Military Adversary
         mission_importance: normal
         race: Black
@@ -671,17 +716,26 @@ scenes:
         skills: []
       id: casualty_a
       injuries:
-      - location: left thigh
+      - location: right chest
         name: Burn
         severity: major
         status: visible
-      - location: left calf
+      - location: right shoulder
+        name: Burn
+        severity: moderate
+        status: visible
+      - location: left chest
         name: Burn
         severity: major
+        status: visible
+      - location: right stomach
+        name: Burn
+        severity: moderate
         status: visible
       name: Casualty A
       rapport: neutral
-      unstructured: Has a 30% body surface area burn.
+      unstructured: Has 50% body surface area burn. TRISS probability of survival
+        estimate of 91% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
@@ -690,12 +744,13 @@ scenes:
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
+        triss: 91
     - demographics:
-        age: 30
+        age: 29
         military_disposition: Military Adversary
         mission_importance: normal
         race: Black
-        sex: M
+        sex: F
         skills: []
       id: casualty_z
       injuries:
@@ -703,21 +758,27 @@ scenes:
         name: Laceration
         severity: major
         status: visible
-      - location: right calf
+      - location: right chest
+        name: Abrasion
+        severity: major
+        status: visible
+      - location: right stomach
         name: Laceration
-        severity: minor
+        severity: moderate
         status: visible
       name: Casualty Z
       rapport: neutral
-      unstructured: Has lacerations to both arms and legs.
+      unstructured: Has lacerations and an abrasion with torn skin. TRISS probability
+        of survival estimate of 76% if treated immediately.
       visited: true
       vitals:
         ambulatory: false
-        avpu: ALERT
+        avpu: PAIN
         breathing: FAST
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
+        triss: 76
     environment:
       decision_environment:
         aid:
@@ -754,10 +815,17 @@ scenes:
       political_climate: Hostile
       roe: Medical Rules of Engagement are that for this mission the health of the
         hostages takes precedence
-      unstructured: You are part of a special operations tactical team tasked for
-        extraction of hostages in enemy territory. Local support is unlikely, and
-        the plan is for immediate extraction via Blackhawk. The building has several
-        small fires and is becoming increasingly less stable.
+      unstructured: "You are part of a special operations tactical team tasked for\
+        \ extraction of hostages in enemy territory. Local support is unlikely, and\
+        \ the plan is for immediate extraction via Blackhawk. Extraction will take\
+        \ place following intial triage. The building has several small fires and\
+        \ is becoming increasingly less stable.\nTo assist in your triage decisions,\
+        \ each casualty will have a pre-calculated Trauma and Injury Severity Score\
+        \ (TRISS) based on their injuries and current vital signs. \nThe TRISS score\
+        \ estimates the patient\u2019s probability of survival based on initial factors\
+        \ like injury severity and age, offering a standardized reference for prioritizing\
+        \ early treatment within the initial evaluation period.\nPlease note that\
+        \ the score may change if injuries worsen or vital signs change over time."
     supplies:
     - quantity: 5
       reusable: false
@@ -783,9 +851,10 @@ scenes:
     unstructured: You are part of a special operations tactical team tasked for extraction
       of hostages in enemy territory. The hostages are being kept in a building guarded
       by 25 hostile narco-terrorists. Intel suggests the building may be wired with
-      explosives, hostiles are threatening to kill the hostages in the next hour.  Local
-      support is unlikely, and the plan is for immediate extraction via Blackhawk.
-      You move on to the next room and discover two more casualties. Who do you treat?
+      explosives, hostiles are threatening to kill the hostages in the next hour.
+      Local support is unlikely, and the plan is for immediate extraction via Blackhawk.
+      You move on to the next room and discover two more casualties. Who do you treat
+      or assess first?
   transition_semantics: and
   transitions:
     probes:
@@ -833,7 +902,7 @@ scenes:
   state:
     characters:
     - demographics:
-        age: 35
+        age: 34
         military_disposition: Military Adversary
         mission_importance: normal
         race: Black
@@ -841,17 +910,22 @@ scenes:
         skills: []
       id: casualty_l
       injuries:
-      - location: right side
+      - location: right shoulder
         name: Burn
         severity: major
         status: visible
-      - location: left thigh
+      - location: right thigh
         name: Burn
-        severity: extreme
+        severity: major
+        status: visible
+      - location: right stomach
+        name: Burn
+        severity: substantial
         status: visible
       name: Casualty L
       rapport: neutral
-      unstructured: Has a 50% body surface area burn.
+      unstructured: Has a 30% body surface area burn. TRISS probability of survival
+        estimate of 90% if treated immediately.
       visited: true
       vitals:
         ambulatory: true
@@ -860,8 +934,9 @@ scenes:
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
+        triss: 90
     - demographics:
-        age: 27
+        age: 24
         military_disposition: Civilian
         mission_importance: normal
         race: Black
@@ -873,21 +948,27 @@ scenes:
         name: Amputation
         severity: extreme
         status: visible
-      - location: right calf
+      - location: right chest
+        name: Laceration
+        severity: substantial
+        status: visible
+      - location: right thigh
         name: Amputation
         severity: extreme
         status: visible
       name: Casualty M
       rapport: neutral
-      unstructured: Has bilateral amputation of both legs.
+      unstructured: Has bilateral amputation of both legs. TRISS probability of survival
+        estimate of 75% if treated immediately.
       visited: true
       vitals:
-        ambulatory: true
+        ambulatory: false
         avpu: VOICE
         breathing: FAST
         heart_rate: FAST
         mental_status: AGONY
         spo2: NORMAL
+        triss: 75
     environment:
       decision_environment:
         aid:
@@ -924,10 +1005,17 @@ scenes:
       political_climate: Hostile
       roe: Medical Rules of Engagement are that for this mission the health of the
         hostages takes precedence
-      unstructured: You are part of a special operations tactical team tasked for
-        extraction of hostages in enemy territory. Local support is unlikely, and
-        the plan is for immediate extraction via Blackhawk. The building has several
-        small fires and is becoming increasingly less stable.
+      unstructured: "You are part of a special operations tactical team tasked for\
+        \ extraction of hostages in enemy territory. Local support is unlikely, and\
+        \ the plan is for immediate extraction via Blackhawk. Extraction will take\
+        \ place following intial triage. The building has several small fires and\
+        \ is becoming increasingly less stable.\nTo assist in your triage decisions,\
+        \ each casualty will have a pre-calculated Trauma and Injury Severity Score\
+        \ (TRISS) based on their injuries and current vital signs. \nThe TRISS score\
+        \ estimates the patient\u2019s probability of survival based on initial factors\
+        \ like injury severity and age, offering a standardized reference for prioritizing\
+        \ early treatment within the initial evaluation period.\nPlease note that\
+        \ the score may change if injuries worsen or vital signs change over time."
     supplies:
     - quantity: 5
       reusable: false
@@ -953,8 +1041,8 @@ scenes:
     unstructured: You are part of a special operations tactical team tasked for extraction
       of hostages in enemy territory. The hostages are being kept in a building guarded
       by 25 hostile narco-terrorists. Intel suggests the building may be wired with
-      explosives, hostiles are threatening to kill the hostages in the next hour.  Local
-      support is unlikely, and the plan is for immediate extraction via Blackhawk.
+      explosives, hostiles are threatening to kill the hostages in the next hour.
+      Local support is unlikely, and the plan is for immediate extraction via Blackhawk.
       You move on to the final room and discover two more casualties. Who do you treat?
   transition_semantics: and
   transitions:
@@ -963,7 +1051,7 @@ scenes:
 state:
   characters:
   - demographics:
-      age: 30
+      age: 28
       military_branch: US Marine Corps
       military_disposition: Allied US
       mission_importance: normal
@@ -978,13 +1066,18 @@ state:
       name: Amputation
       severity: extreme
       status: visible
-    - location: left stomach
-      name: Laceration
-      severity: minor
+    - location: right wrist
+      name: Broken Bone
+      severity: moderate
+      status: visible
+    - location: left chest
+      name: Puncture
+      severity: moderate
       status: visible
     name: Casualty N
     rapport: neutral
-    unstructured: Has an amputation of the leg.
+    unstructured: Has an amputation of the leg. TRISS probability of survival estimate
+      of 81% if treated immediately.
     visited: true
     vitals:
       ambulatory: true
@@ -993,8 +1086,9 @@ state:
       heart_rate: FAST
       mental_status: AGONY
       spo2: NORMAL
+      triss: 81
   - demographics:
-      age: 30
+      age: 28
       military_branch: US Marine Corps
       military_disposition: Allied US
       mission_importance: normal
@@ -1009,13 +1103,14 @@ state:
       name: Puncture
       severity: extreme
       status: visible
-    - location: left calf
-      name: Shrapnel
-      severity: minor
+    - location: left stomach
+      name: Puncture
+      severity: moderate
       status: visible
     name: Casualty O
     rapport: neutral
-    unstructured: Penetrating wound to the abdomen.
+    unstructured: Penetrating wound to the abdomen. TRISS probability of survival
+      estimate of 84% if treated immediately.
     visited: true
     vitals:
       ambulatory: true
@@ -1024,6 +1119,7 @@ state:
       heart_rate: FAST
       mental_status: AGONY
       spo2: NORMAL
+      triss: 84
   environment:
     decision_environment:
       aid:
@@ -1073,10 +1169,17 @@ state:
     political_climate: Hostile
     roe: Medical Rules of Engagement are that for this mission the health of the hostages
       takes precedence
-    unstructured: You are part of a special operations tactical team tasked for extraction
-      of hostages in enemy territory. Local support is unlikely, and the plan is for
-      immediate extraction via Blackhawk. The building has several small fires and
-      is becoming increasingly less stable.
+    unstructured: "You are part of a special operations tactical team tasked for extraction\
+      \ of hostages in enemy territory. Local support is unlikely, and the plan is\
+      \ for immediate extraction via Blackhawk. Extraction will take place following\
+      \ intial triage. The building has several small fires and is becoming increasingly\
+      \ less stable.\nTo assist in your triage decisions, each casualty will have\
+      \ a pre-calculated Trauma and Injury Severity Score (TRISS) based on their injuries\
+      \ and current vital signs. \nThe TRISS score estimates the patient\u2019s probability\
+      \ of survival based on initial factors like injury severity and age, offering\
+      \ a standardized reference for prioritizing early treatment within the initial\
+      \ evaluation period.\nPlease note that the score may change if injuries worsen\
+      \ or vital signs change over time."
   supplies:
   - quantity: 5
     reusable: false
@@ -1102,7 +1205,7 @@ state:
   unstructured: You are part of a special operations tactical team tasked for extraction
     of hostages in enemy territory. The hostages are being kept in a building guarded
     by 25 hostile narco-terrorists. Intel suggests the building may be wired with
-    explosives, hostiles are threatening to kill the hostages in the next hour.  Local
+    explosives, hostiles are threatening to kill the hostages in the next hour. Local
     support is unlikely, and the plan is for immediate extraction via Blackhawk. Upon
     entering the building you are immediately notified of two casualties. Who do you
     treat?
