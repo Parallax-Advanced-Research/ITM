@@ -1,9 +1,9 @@
 diff --git a/swagger_server/config.ini b/swagger_server/config.ini
 new file mode 100755
-index 0000000..3b16cff
+index 0000000..c2a67b0
 --- /dev/null
 +++ b/swagger_server/config.ini
-@@ -0,0 +1,196 @@
+@@ -0,0 +1,201 @@
 +; Copy over this template file and rename it to config.ini
 +; Replace the default configurations below with the desired values
 +
@@ -35,21 +35,21 @@ index 0000000..3b16cff
 +EVAL_NAME=Phase 1 Evaluation
 +EVAL_NUMBER=5
 +
-+SOARTECH_EVAL_FILENAMES=phase1-soartech-eval-qol2.yaml,
-+    phase1-soartech-eval-qol3.yaml,
-+    phase1-soartech-eval-qol4.yaml,
-+    phase1-soartech-eval-vol2.yaml,
-+    phase1-soartech-eval-vol3.yaml,
-+    phase1-soartech-eval-vol4.yaml
++SOARTECH_EVAL_FILENAMES=qol-ph1-eval-2-ta3.yaml,
++    qol-ph1-eval-3-ta3.yaml,
++    qol-ph1-eval-4-ta3.yaml,
++    vol-ph1-eval-2-ta3.yaml,
++    vol-ph1-eval-3-ta3.yaml,
++    vol-ph1-eval-4-ta3.yaml
 +
-+SOARTECH_TRAIN_FILENAMES=phase1-soartech-train-qol1.yaml,
-+    phase1-soartech-train-qol2.yaml,
-+    phase1-soartech-train-qol3.yaml,
-+    phase1-soartech-train-qol4.yaml,
-+    phase1-soartech-train-vol1.yaml,
-+    phase1-soartech-train-vol2.yaml,
-+    phase1-soartech-train-vol3.yaml,
-+    phase1-soartech-train-vol4.yaml
++SOARTECH_TRAIN_FILENAMES=qol-ph1-train-1-ta3.yaml,
++    qol-ph1-train-2-ta3.yaml,
++    qol-ph1-train-3-ta3.yaml,
++    qol-ph1-train-4-ta3.yaml,
++    vol-ph1-train-1-ta3.yaml,
++    vol-ph1-train-2-ta3.yaml,
++    vol-ph1-train-3-ta3.yaml,
++    vol-ph1-train-4-ta3.yaml
 +
 +SOARTECH_EVAL_QOL_SCENARIOS=qol-ph1-eval-2,qol-ph1-eval-3,qol-ph1-eval-4
 +SOARTECH_EVAL_VOL_SCENARIOS=vol-ph1-eval-2,vol-ph1-eval-3,vol-ph1-eval-4
@@ -77,21 +77,26 @@ index 0000000..3b16cff
 +    vol-synth-HighCluster-ph1,
 +    vol-synth-LowCluster-ph1
 +
-+ADEPT_EVAL_FILENAMES=phase1-adept-eval-MJ2.yaml,
-+    phase1-adept-eval-MJ4.yaml,
-+    phase1-adept-eval-MJ5.yaml
++ADEPT_EVAL_FILENAMES=dryrun-adept-eval-MJ2.yaml,
++    dryrun-adept-eval-MJ4.yaml,
++    dryrun-adept-eval-MJ5.yaml
 +
-+ADEPT_TRAIN_FILENAMES=phase1-adept-train-MJ1.yaml,
-+    phase1-adept-train-MJ3.yaml,
-+    phase1-adept-train-IO1.yaml,
-+    phase1-adept-train-IO2.yaml,
-+    phase1-adept-train-IO3.yaml
++ADEPT_TRAIN_FILENAMES=dryrun-adept-train-MJ1.yaml,
++    dryrun-adept-train-MJ1-w-events.yaml,
++    dryrun-adept-train-MJ3.yaml,
++    dryrun-adept-train-IO1.yaml,
++    dryrun-adept-train-IO1exp.yaml,
++    dryrun-adept-train-IO1v2.yaml,
++    dryrun-adept-train-IO1-w-events.yaml,
++    dryrun-adept-train-IO2.yaml,
++    dryrun-adept-train-IO3.yaml
 +
 +ADEPT_EVAL_MJ_SCENARIOS=DryRunEval-MJ2-eval,DryRunEval-MJ4-eval,DryRunEval-MJ5-eval
 +ADEPT_EVAL_IO_SCENARIOS=DryRunEval-MJ2-eval,DryRunEval-MJ4-eval,DryRunEval-MJ5-eval
 +
-+ADEPT_TRAIN_MJ_SCENARIOS=DryRunEval.MJ1,DryRunEval.MJ3
-+ADEPT_TRAIN_IO_SCENARIOS=DryRunEval.IO1,DryRunEval.IO2,DryRunEval.IO3
++ADEPT_TRAIN_MJ_SCENARIOS=DryRunEval.MJ1,DryRunEval.MJ3,DryRunEval.MJ1-w-events
++ADEPT_TRAIN_IO_SCENARIOS=DryRunEval.IO1,DryRunEval.IO2,DryRunEval.IO3,DryRunEval.IO1-w-events,
++    DryRunEval.IO1exp,DryRunEval.IO1v2
 +
 +ADEPT_MJ_ALIGNMENT_TARGETS=ADEPT-DryRun-Moral judgement-0.0,
 +    ADEPT-DryRun-Moral judgement-0.1,
@@ -176,15 +181,15 @@ index 0000000..3b16cff
 +SOARTECH_VOL_ALIGNMENT_TARGETS=vol-group-target-ph1-1,
 +   vol-group-target-ph1-2
 +
-+ADEPT_EVAL_FILENAMES=phase1-adept-eval-MJ2.yaml,
-+    phase1-adept-eval-MJ4.yaml,
-+    phase1-adept-eval-MJ5.yaml
++ADEPT_EVAL_FILENAMES=dryrun-adept-eval-MJ2.yaml,
++    dryrun-adept-eval-MJ4.yaml,
++    dryrun-adept-eval-MJ5.yaml
 +
-+ADEPT_TRAIN_FILENAMES=phase1-adept-train-MJ1.yaml,
-+    phase1-adept-train-MJ3.yaml,
-+    phase1-adept-train-IO1.yaml,
-+    phase1-adept-train-IO2.yaml,
-+    phase1-adept-train-IO3.yaml
++ADEPT_TRAIN_FILENAMES=dryrun-adept-train-MJ1.yaml,
++    dryrun-adept-train-MJ3.yaml,
++    dryrun-adept-train-IO1.yaml,
++    dryrun-adept-train-IO2.yaml,
++    dryrun-adept-train-IO3.yaml
 +
 +ADEPT_EVAL_MJ_SCENARIOS=DryRunEval-MJ2-eval,DryRunEval-MJ4-eval,DryRunEval-MJ5-eval
 +ADEPT_EVAL_IO_SCENARIOS=DryRunEval-MJ2-eval,DryRunEval-MJ4-eval,DryRunEval-MJ5-eval
