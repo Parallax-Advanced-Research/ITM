@@ -597,7 +597,6 @@ class AssessmentHeuristicRuleset:
                 for injury in casualty.injuries
             ) else 0.0
         ),
-
         # Adjust assessment for injury severity: prioritize for major or extreme injuries
         "check_for_severe_injuries": lambda casualty: (
             0.2 if any(
