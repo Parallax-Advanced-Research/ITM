@@ -65,6 +65,8 @@ def main():
         driver.actions_performed = []
         driver.treatments = {}
         args.runs -= 1
+        print(f"{args.runs} runs remaining.")
+    print("Finished runs.")
     if args.analyze:
         kdma_cases = analyze_data.analyze_pre_cases(
             args.output_dir + "/pretraining_cases.json", None, args.output_dir + "/kdma_cases.csv", 
@@ -73,6 +75,7 @@ def main():
             kdma_cases, args.output_dir + "/kdma_weights.json", args.output_dir + "/all_weights.json", 
             "probability" if args.session_type == "soartech" else "avgdiff", 
             args.output_dir + "/pretraining_cases.csv")
+        print("Finished analysis.")
     
 def output_training_cases():
     (cases, training_data) = analyze_data.read_training_data()

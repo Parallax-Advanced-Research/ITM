@@ -29,7 +29,7 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
             with open(self.output_case_file, "r") as infile:
                 old_cases = [json.loads(line) for line in infile]
             for case in old_cases:
-                self.cases[case["hash"]] = case
+                self.commit_case(case)
             self.case_index = len(old_cases)
         else:
             with open(self.output_case_file, "w") as outfile:
