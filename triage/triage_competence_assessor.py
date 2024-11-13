@@ -99,8 +99,7 @@ class TriageCompetenceAssessor(Assessor):
             return 0  # No match
 
     def assess_treatment(self, casualty, given_treatment):
-        # Initialize empty lists to gather valid and contraindicated treatments for all injuries
-
+        # Initialize empty sets to gather valid and contraindicated treatments for all injuries
         given_treatment_enum = TreatmentsEnum(given_treatment)
         all_valid_treatments = set()
         all_contraindicated_treatments = set()
@@ -122,12 +121,34 @@ class TriageCompetenceAssessor(Assessor):
             all_location_contraindicated_treatments.update(
                 location_contraindicated_treatments)
 
-        # Assess the treatment based on the combined lists from all injuries
-        if given_treatment_enum in all_contraindicated_treatments or given_treatment_enum in all_location_contraindicated_treatments:
+        # Check if the given treatment is BLOOD, as it requires additional checks
+        if given_treatment_enum == TreatmentsEnum.BLOOD:
+            # Check if any injuries justify a blood transfusion
+            injuries_require_blood = any(
+                self.treatment_rule_set.is_blood_treatment_valid(injury) for injury in casualty.injuries
+            )
+
+            # Check if vital signs indicate shock
+            vitals_indicate_shock = (
+                casualty.vitals.mental_status in ['SHOCK', 'UNRESPONSIVE'] or
+                casualty.vitals.breathing == 'FAST' or
+                casualty.vitals.hrpmin == 'FAST' or
+                casualty.vitals.spo2 == 'LOW'
+            )
+
+            # Blood is appropriate if either the injury justifies it or the vitals indicate shock
+            if injuries_require_blood or vitals_indicate_shock:
+                return 1  # Blood transfusion is valid
+
+            # If neither condition is met, blood is contraindicated
             return 0
 
+        # Assess other treatments based on the combined lists from all injuries
+        if given_treatment_enum in all_contraindicated_treatments or given_treatment_enum in all_location_contraindicated_treatments:
+            return 0  # Given treatment is contraindicated
+
         elif given_treatment_enum in all_valid_treatments:
-            # is it a painmed action?
+            # Check for special pain medication rules
             if given_treatment_enum in [TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.FENTANYL_LOLLIPOP]:
                 return self.painmed_rule_set.assess_pain_medication(casualty, given_treatment_enum)
             else:
@@ -410,6 +431,32 @@ class TreatmentRuleSet:
             TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE]
     }
 
+    BLOOD_TREATMENT_RULES = {
+        # Blood transfusion is typically appropriate for these severe injuries
+        # where significant blood loss is likely and fluid resuscitation is needed.
+        "valid_injury_types": [
+            # Major blood loss due to limb loss requires blood replacement.
+            InjuryTypeEnum.AMPUTATION,
+            # Internal bleeding often necessitates blood transfusion for stabilization.
+            InjuryTypeEnum.INTERNAL,
+            # Severe blood loss risk with open abdominal wounds.
+            InjuryTypeEnum.OPEN_ABDOMINAL_WOUND
+        ],
+
+        # Blood transfusion is generally contraindicated in head and neck injuries
+        # to avoid increased intracranial pressure or other complications.
+        "contraindicated_injury_locations": [
+            # Blood transfusion in head injuries can worsen intracranial pressure.
+            InjuryLocationEnum.HEAD,
+            # Neck injuries risk airway compromise; blood is not typically prioritized.
+            InjuryLocationEnum.NECK,
+            # Same rationale as neck; high risk of airway and vascular complications.
+            InjuryLocationEnum.LEFT_NECK,
+            # Same as above; avoid blood transfusion due to airway and vascular concerns.
+            InjuryLocationEnum.RIGHT_NECK
+        ]
+    }
+
     def get_valid_treatments(self, injury: Injury) -> List[TreatmentsEnum]:
         """
         Returns a list of valid treatments for the specified injury type.
@@ -428,6 +475,20 @@ class TreatmentRuleSet:
         """
         location_enum = InjuryLocationEnum(injury.location)
         return self.LOCATION_CONTRAINDICATED_TREATMENTS.get(location_enum, [])
+
+    def is_blood_treatment_valid(self, injury: Injury) -> bool:
+        """
+        Determines if 'Blood' treatment is valid for the specified injury.
+        """
+        # Check if the injury type is valid for blood treatment
+        if injury.name not in self.BLOOD_TREATMENT_RULES["valid_injury_types"]:
+            return False
+
+        # Check if the injury location is contraindicated for blood treatment
+        if InjuryLocationEnum(injury.location) in self.BLOOD_TREATMENT_RULES["contraindicated_injury_locations"]:
+            return False
+
+        return True
 
 
 class PainMedRuleSet:
