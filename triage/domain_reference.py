@@ -158,6 +158,14 @@ class BloodOxygenEnum(Enum):
     LOW = "LOW"
 
 
+class RapportEnum(Enum):
+    LOATHING = "loathing"
+    DISLIKE = "dislike"
+    NEUTRAL = "neutral"
+    CLOSE = "close"
+    FAMILIAL = "familial"
+
+
 '''
 # For testing:
 # All injuries must be labeled as either blunt or penetrating injuries
@@ -191,7 +199,7 @@ ISS_Severity_Map = {
     InjurySeverityEnum.EXTREME.value: 25
 }
 
-AVPU_to_GCS = {
+AVPU_to_GCS = {7
     AvpuLevelEnum.ALERT.value: 4,
     AvpuLevelEnum.VOICE.value: 3,
     AvpuLevelEnum.PAIN.value: 2,

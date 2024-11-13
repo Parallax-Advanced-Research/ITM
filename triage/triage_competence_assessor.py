@@ -43,6 +43,7 @@ class TriageCompetenceAssessor(Assessor):
 
         ret_assessments: dict[str, int] = {}
         casualties = probe.state.casualties
+        supplies = probe.state.supplies
 
         for dec in probe.decisions:
             dec_key = str(dec.value)
@@ -59,7 +60,7 @@ class TriageCompetenceAssessor(Assessor):
 
             elif is_check_action(dec.value):
                 ret_assessments[dec_key] = self.assess_check_action(
-                    casualty=target_patient, action_type=dec.value.name)
+                    casualty=target_patient, action_type=dec.value.name, supplies=supplies)
 
             elif is_evac_action(dec.value):
                 ret_assessments[dec_key] = self.assess_evacuation(
@@ -135,8 +136,8 @@ class TriageCompetenceAssessor(Assessor):
         else:
             return 0.555  # Unknown but not explicitly contraindicated
 
-    def assess_check_action(self, casualty, action_type):
-        return self.assessment_heuristic_ruleset.assess_action(casualty, action_type)
+    def assess_check_action(self, casualty, action_type, supplies):
+        return self.assessment_heuristic_ruleset.assess_action(casualty, action_type, supplies)
 
     def assess_evacuation(self, casualty):
         return self.assess_evac_rule_set.assess_evacuation(casualty)
@@ -568,7 +569,26 @@ class AssessmentHeuristicRuleset:
             ) or not casualty.injuriesg
             else 0.0
         ),
-
+        ActionTypeEnum.MOVE_TO: lambda casualty, supplies: (
+            # Increase the competence score for the MOVE_TO action if a decompression needle is available in supplies
+            # and the casualty has a "Chest Collapse" injury. This prioritization reflects that a decompression
+            # needle is a required resource for treating such injuries, making the action more competent.
+            # TODO: Refine the assessment based on the availability of other resources and the casualty's condition.
+            0.3 if any(
+                item.type == "Decompression Needle" and item.quantity > 0 for item in supplies
+            ) and any(
+                injury.name == InjuryTypeEnum.CHEST_COLLAPSE for injury in casualty.injuries
+            ) else 0.0
+        ) + (
+            # Prioritize for casualties with unstable vital signs (low SpO2 or restricted breathing)
+            0.25 if casualty.vitals and casualty.vitals.spo2 == "LOW" else 0.0
+        ) + (
+            0.25 if casualty.vitals and casualty.vitals.breathing == "RESTRICTED" else 0.0
+        ) + (
+            # Prioritize for casualties with altered or unconscious states (AVPU scale = "PAIN" or "UNRESPONSIVE")
+            0.2 if casualty.vitals and casualty.vitals.avpu in {
+                "PAIN", "UNRESPONSIVE"} else 0.0
+        ),
         # Adjust assessment for injury type: prioritize if there are severe or complex injury types
         "check_for_critical_injuries": lambda casualty: (
             0.2 if any(
@@ -584,27 +604,30 @@ class AssessmentHeuristicRuleset:
                 injury.severity == InjurySeverityEnum.EXTREME or injury.severity == InjurySeverityEnum.MAJOR
                 for injury in casualty.injuries
             ) else 0.0
+        ) + (
+            # Prioritize for casualties with untreated high-risk injuries (e.g., Open Abdominal Wound)
+            0.3 if any(
+                injury.name == InjuryTypeEnum.OPEN_ABDOMINAL_WOUND and not injury.treated
+                for injury in casualty.injuries
+            ) else 0.0
         ),
     }
 
-    def assess_action(self, casualty, action_type):
+    @classmethod
+    def assess_action(cls, casualty, action_type, supplies):
         """
-        Assesses the appropriateness of an action for a given casualty based on predefined rules.
-        Each action type is adjusted based on the casualty's condition.
+        Evaluates the appropriateness of a specific assessment action based on casualty conditions.
         """
-        score = self.BASELINE_SCORE
 
-        # Apply specific assessment rules based on action type
-        if action_type in self.ASSESSMENT_RULES:
-            rule_score = self.ASSESSMENT_RULES[action_type](casualty)
-            score += rule_score
+        # Default score if no specific rule applies
+        score = cls.BASELINE_SCORE
 
-        # Apply injury-based assessments
-        score += self.ASSESSMENT_RULES["check_for_critical_injuries"](casualty)
-        score += self.ASSESSMENT_RULES["check_for_severe_injuries"](casualty)
+        # Evaluate each rule to determine the final score
+        if action_type in cls.ASSESSMENT_RULES:
+            rule = cls.ASSESSMENT_RULES[action_type]
+            score += rule(casualty, supplies)
 
-        # Ensure the score remains within bounds [0, 1]
-        return min(max(score, 0), 1)
+        return min(score, 1.0)
 
 
 class EvacuationRuleSet:
