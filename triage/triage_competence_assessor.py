@@ -793,7 +793,7 @@ class EndSceneRuleset:
             return 0.2  # High-priority casualties still require assessment
         painmeds_available = 1
         if self.rules["painmed_contradiction"](painmeds_available, casualties):
-            return 0.5  # Avoid ending if ambulatory casualties might be affected by pain meds
+            return 1  # Ending scen okay if painmeds available but not needed
 
         # Default rule if no blockers remain
         if self.rules["end_scene_default"](treatment_available, check_available, painmeds_available):

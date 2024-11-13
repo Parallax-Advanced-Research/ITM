@@ -18,4 +18,4 @@ class ParamEnum(object):
     TREATMENT = 'treatment'
     CATEGORY = 'category'
     EVAC_ID = 'aid_id'
-    MESSAGE = 'relevant_state'
+    MESSAGE = 'type'

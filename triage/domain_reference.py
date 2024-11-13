@@ -166,6 +166,16 @@ class RapportEnum(Enum):
     FAMILIAL = "familial"
 
 
+class MessageTypeEnum(Enum):
+    ALLOW = "allow"
+    ASK = "ask"
+    DELEGATE = "delegate"
+    DENY = "deny"
+    JUSTIFY = "justify"
+    RECOMMEND = "recommend"
+    WAIT = "wait"
+
+
 '''
 # For testing:
 # All injuries must be labeled as either blunt or penetrating injuries
