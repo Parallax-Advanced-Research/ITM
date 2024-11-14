@@ -15,16 +15,19 @@ KDMA_WEIGHT = 0.25
 
 class DiverseSelector(DecisionSelector, AlignmentTrainer):
 
-    def __init__(self, continue_search = True, output_case_file = CASE_FILE):
+    def __init__(self, continue_search = True, output_case_file = CASE_FILE, maintain_history = True):
+        self.maintain_history = maintain_history
         self.rg = random.Random()
         self.rg.seed()
         self.case_index : int = 0
         self.retainer = KDMACaseBaseRetainer(continue_search = continue_search)
-        self.cases: dict[list[dict[str, Any]]] = dict()
+        if self.maintain_history:
+            self.cases = None
+        else:
+            self.cases: dict[list[dict[str, Any]]] = dict()
         self.new_cases: list[dict[str, Any]] = list()
         self.output_case_file = output_case_file
         self.last_case = None
-        # self.new_cases : list[dict[str, Any]] = list()
         if continue_search and os.path.exists(self.output_case_file):
             with open(self.output_case_file, "r") as infile:
                 old_cases = [json.loads(line) for line in infile]
@@ -58,6 +61,8 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
         return (cur_decision, 0.0)
     
     def commit_case(self, new_case: dict[str, Any]):
+        if not self.maintain_history:
+            return
         chash = hash_case(new_case)
         new_case["hash"] = chash
         hash_list = self.cases.get(chash, None)
@@ -78,8 +83,10 @@ class DiverseSelector(DecisionSelector, AlignmentTrainer):
             for i in cas.injuries:
                 print(str(i))
         current_bar = 0
-        chash = hash_case(make_case_triage(probe, probe.decisions[0], "aligned"))
-        hash_cases = self.cases.get(chash, [])
+        hash_cases = []
+        if self.maintain_history:
+            chash = hash_case(make_case_triage(probe, probe.decisions[0], "aligned"))
+            hash_cases = self.cases.get(chash, [])
         
         patient_choices_with_kdma = \
             sum([1 for d in probe.decisions 
