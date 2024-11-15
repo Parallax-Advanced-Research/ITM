@@ -95,7 +95,7 @@ class TriageCompetenceAssessor(Assessor):
                     # Higher injury severity first
                     -self.get_max_injury_severity(a['casualty']),
                     # More injuries as second criterion
-                    len(a['casualty'].injuries)
+                    len(a['casualty'].injuries) if a['casualty'] and a['casualty'].injuries else 0
                 )
             )
             # TODO: What if the severities are the same. Also, maybe don't rank tag actions?
@@ -860,7 +860,7 @@ class EndSceneRuleset:
             return 1  # Ending scen okay if painmeds available but not needed
 
         # Default rule if no blockers remain
-        if self.rules["end_scene_default"](treatment_available, check_available, painmeds_available):
+        if self.rules["end_scene_default"](treatment_available, check_available, painmeds_available, casualties):
             return 1  # Scene can end
 
         return 0.7  # Intermediate score if no specific rule matched but no urgent blockers
