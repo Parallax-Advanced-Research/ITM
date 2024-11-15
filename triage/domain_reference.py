@@ -176,16 +176,6 @@ class MessageTypeEnum(Enum):
     WAIT = "wait"
 
 
-CHECK_ACTION_TYPES = [ActionTypeEnum.CHECK_ALL_VITALS, ActionTypeEnum.CHECK_BLOOD_OXYGEN,
-                      ActionTypeEnum.CHECK_PULSE, ActionTypeEnum.CHECK_RESPIRATION,
-                      ActionTypeEnum.SITREP, ActionTypeEnum.SEARCH, ActionTypeEnum.MOVE_TO]
-
-PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administered
-    TreatmentsEnum.PAIN_MEDICATIONS,
-    TreatmentsEnum.FENTANYL_LOLLIPOP
-}
-
-
 '''
 # For testing:
 # All injuries must be labeled as either blunt or penetrating injuries

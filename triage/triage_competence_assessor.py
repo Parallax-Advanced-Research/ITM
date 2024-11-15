@@ -7,7 +7,17 @@ from domain.enum import ActionTypeEnum, SupplyTypeEnum, TagEnum, InjuryTypeEnum,
     MentalStatusEnum, HeartRateEnum, BloodOxygenEnum, AvpuLevelEnum, \
     BreathingLevelEnum, ParamEnum
 
-from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum, InjurySeverityEnum, CHECK_ACTION_TYPES, PAINMED_SUPPLIES
+from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum, InjurySeverityEnum
+
+
+CHECK_ACTION_TYPES = [ActionTypeEnum.CHECK_ALL_VITALS, ActionTypeEnum.CHECK_BLOOD_OXYGEN,
+                      ActionTypeEnum.CHECK_PULSE, ActionTypeEnum.CHECK_RESPIRATION,
+                      ActionTypeEnum.SITREP, ActionTypeEnum.SEARCH, ActionTypeEnum.MOVE_TO]
+
+PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administered
+    TreatmentsEnum.PAIN_MEDICATIONS,
+    TreatmentsEnum.FENTANYL_LOLLIPOP
+}
 
 
 class TriageCompetenceAssessor(Assessor):
