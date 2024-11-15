@@ -1,12 +1,13 @@
 from typing import List
+import re
 from components import Assessor
 from domain.internal import TADProbe, Decision, Action
 from domain.ta3 import Casualty, Injury, Vitals
-from domain.enum import ActionTypeEnum, SupplyTypeEnum, TagEnum, InjuryTypeEnum, InjurySeverityEnum, \
+from domain.enum import ActionTypeEnum, SupplyTypeEnum, TagEnum, InjuryTypeEnum, \
     MentalStatusEnum, HeartRateEnum, BloodOxygenEnum, AvpuLevelEnum, \
     BreathingLevelEnum, ParamEnum
 
-from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum
+from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum, InjurySeverityEnum
 
 
 CHECK_ACTION_TYPES = [ActionTypeEnum.CHECK_ALL_VITALS, ActionTypeEnum.CHECK_BLOOD_OXYGEN,
@@ -74,7 +75,62 @@ class TriageCompetenceAssessor(Assessor):
                 ret_assessments[dec_key] = self.check_end_scene_decision(
                     treatment_available, check_available, painmeds_available, casualties)
 
-        return ret_assessments
+        ranked_assessments = self.rank_assessments(ret_assessments, casualties)
+
+        return ranked_assessments
+
+    def rank_assessments(self, assessments: dict[str, float], casualties: List[Casualty]) -> dict[str, float]:
+        # Step 1: Filter assessments with a competence score of 1
+        high_competence_assessments = [
+            {'decision': decision, 'score': score,
+             'casualty': self.get_casualty(decision, casualties)}
+            for decision, score in assessments.items() if score == 1
+        ]
+
+        # Step 2: Rank assessments based on highest injury severity within each casualty
+        if len(high_competence_assessments) > 1:
+            # Sort assessments by maximum injury severity within the casualty
+            high_competence_assessments.sort(
+                key=lambda a: (
+                    # Higher injury severity first
+                    -self.get_max_injury_severity(a['casualty'])
+                )
+            )
+
+            # Step 3: Adjust all but the highest-ranked assessment's score
+            for assessment in high_competence_assessments[1:]:
+                assessment['score'] = 0.9
+
+        # Update the original assessments dictionary with modified scores
+        for assessment in high_competence_assessments[1:]:
+            assessments[assessment['decision']] = assessment['score']
+
+        return assessments
+
+    def get_max_injury_severity(self, casualty: Casualty) -> int:
+        # Helper to return the highest severity level among a casualty's injuries based on InjurySeverityEnum index
+        if not casualty or not casualty.injuries:
+            return -1  # Default to lowest possible severity index if no injuries are present
+
+        # Convert InjurySeverityEnum to a list to retrieve severity index
+        severity_levels = list(InjurySeverityEnum)
+
+        # Get the index of each injury severity in the severity_levels list and find the maximum
+        return max(
+            severity_levels.index(InjurySeverityEnum[injury.severity.upper()])
+            for injury in casualty.injuries if injury.severity.upper() in InjurySeverityEnum.__members__
+        )
+
+    def get_casualty(self, decision_key: str, casualties: List[Casualty]) -> Casualty:
+        # Regular expression to extract casualty ID within parentheses
+        match = re.search(r'\b(casualty_\w+)\b', decision_key)
+        if match:
+            casualty_id = match.group(1)
+            # Find the casualty with the extracted ID
+            for casualty in casualties:
+                if casualty.id == casualty_id:
+                    return casualty
+        return None  # Return None if no matching casualty is found
 
     def assess_tag(self, casualty, given_tag):
         # Get tags from vitals and injuries
@@ -164,8 +220,6 @@ class TriageCompetenceAssessor(Assessor):
         return self.assess_evac_rule_set.assess_evacuation(casualty)
 
     def assess_message(self, message):
-        # TODO: Implement message assessment
-        message = message
         return 1
 
     def check_end_scene_decision(self, treatment_available, check_available, painmeds_available, casualties):
