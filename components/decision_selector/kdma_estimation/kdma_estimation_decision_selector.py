@@ -863,8 +863,13 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
         if probe.id_.startswith("DryRunEval"):
             case['scene'] = probe.id_[11:14] 
         elif probe.id_.startswith("qol-") or probe.id_.startswith("vol-"):
-            case['scene'] = probe.id_[:3] + probe.id_[8:9] 
+            parts = probe.id_.split("-")
+            if parts[1] == 'dre':
+                case['scene'] = parts[0] + parts[2]
+            elif parts[1] == 'ph1':
+                case['scene'] = parts[0] + parts[3]
         case['scene'] += ":" + meta_block["scene_id"]
+    breakpoint()
     return case
 
 
