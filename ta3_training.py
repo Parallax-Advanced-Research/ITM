@@ -27,7 +27,7 @@ def main():
         os.makedirs(args.output_dir)
 
     if args.diverse:
-        args.selector_object = DiverseSelector(not args.reset, args.output_dir + "/pretraining_cases.json")
+        args.selector_object = DiverseSelector(not args.reset, args.output_dir + "/pretraining_cases.json", False)
         if args.runs is None:
             args.runs = 1000
     elif args.exhaustive:
