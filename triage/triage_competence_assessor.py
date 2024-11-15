@@ -93,7 +93,9 @@ class TriageCompetenceAssessor(Assessor):
             high_competence_assessments.sort(
                 key=lambda a: (
                     # Higher injury severity first
-                    -self.get_max_injury_severity(a['casualty'])
+                    -self.get_max_injury_severity(a['casualty']),
+                    # More injuries as second criterion
+                    len(a['casualty'].injuries)
                 )
             )
             # TODO: What if the severities are the same. Also, maybe don't rank tag actions?
