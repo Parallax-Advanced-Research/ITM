@@ -123,14 +123,21 @@ class TriageCompetenceAssessor(Assessor):
         )
 
     def get_casualty(self, decision_key: str, casualties: List[Casualty]) -> Casualty:
-        # Regular expression to extract casualty ID within parentheses
-        match = re.search(r'\b(casualty_\w+)\b', decision_key)
+        """
+        Extracts the casualty ID from the decision key and matches it with a casualty in the casualties list.
+        Handles formats like 'casualty_x' and 'P1 Patient A'.
+        """
+        # Regular expression to extract casualty ID from 'casualty_x' or 'P1 Patient A'
+        match = re.search(
+            r'\b(casualty_\w+|P\d+\s+Patient\s+\w+)\b', decision_key)
         if match:
             casualty_id = match.group(1)
+
             # Find the casualty with the extracted ID
             for casualty in casualties:
                 if casualty.id == casualty_id:
                     return casualty
+
         return None  # Return None if no matching casualty is found
 
     def assess_tag(self, casualty, given_tag):
