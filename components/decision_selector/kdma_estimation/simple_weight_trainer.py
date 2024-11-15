@@ -176,7 +176,7 @@ def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: Cas
     last_adds = [(0, field) for field in groups]
     added_feature = None
     choices = [None]
-    last_node = {"change": "new", "feature": None}
+    last_node = {"change": "new", "feature": None} | weight_dict
     while total_wheel > 0.0001:
         modeller.set_base_weights(last_node)
         prior_error = find_error_measure(prior_error_map, case_count)
