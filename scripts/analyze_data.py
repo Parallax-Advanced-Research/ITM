@@ -18,12 +18,13 @@ import random
 
 NON_NOISY_KEYS = [
     'age', 'tagged', 'visited', 'relationship', 'rank', 'conscious',
-    'environment_type', 'questioning', 'assessing', 'treating', 'tagging', 'leaving', 
+    'environment_type', 'questioning', 'assessing', 'treating', 'tagging', 'leaving',
     'aid_available', 'category', 'SUPPLIES_REMAINING',
     'disposition', 'rapport', 'intent', 'directness_of_causality',
     'HRA Strategy', 'treatment_count', 'treatment_time',
     'mental_status', 'breathing', 'hrpmin', 'avpu',
-    'unvisited_count', 'injured_count', 'others_tagged_or_uninjured'
+    'unvisited_count', 'injured_count', 'others_tagged_or_uninjured',
+    'triage_urgency', 'triss'
 ]
 
 NOISY_KEYS : str = [
@@ -53,7 +54,8 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
         cases = [json.loads(line) for line in infile]
     fields = set()
     for case in cases:
-        for key in case.keys():
+        orig_keys = list(case.keys())
+        for key in orig_keys:
             for pattern in ["casualty_", "nondeterminism"]:
                 if pattern in key.lower():
                     case.pop(key)
@@ -149,7 +151,7 @@ def get_non_noisy_keys(fields):
             lckey = "context.last_case" + ext
             if lckey in fields:
                 nnkeys.append(lckey)
-
+    return nnkeys
 
 def stringify_action_list(actions: list[dict[str, Any]]) -> str:
     return ";".join([stringify_action(a) for a in actions])
