@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "SoarTech qol-ph1-train-1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-ph1-train-1 --selector keds --training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose --no-mc --no-br --no-bayes --no-ebd"
+        },
+        {
             "name": "SoarTech qol-ph1-train-2",
             "type": "debugpy",
             "request": "launch",
@@ -19,7 +27,7 @@
             "request": "launch",
             "program": "tad_tester.py",
             "console": "integratedTerminal",
-            "args": "--session_type soartech --scenario qol-ph1-eval-2 --selector keds --no-training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose --no-mc --no-br --no-bayes --no-ebd"
+            "args": "--session_type soartech  --session_type eval --selector keds --no-training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose --no-mc --no-br --no-bayes --no-ebd"
         },
         {
             "name": "Adept IO1v2",

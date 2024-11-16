@@ -876,7 +876,7 @@ class EndSceneRuleset:
             return 0.2  # High-priority casualties still require assessment
         painmeds_available = 1
         if self.rules["painmed_contradiction"](painmeds_available, casualties):
-            return 1  # Ending scen okay if painmeds available but not needed
+            return 1  # Ending scene okay if painmeds available but not needed
 
         # Default rule if no blockers remain
         if self.rules["end_scene_default"](treatment_available, check_available, painmeds_available, casualties):
