@@ -135,6 +135,8 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
             return lst
         if len([1 for (k, v) in relevant_fields(cur_case, weights, "").items() if v is not None]) == 0:
             return lst
+        if cur_case["action_name"] == "SITREP":
+            return lst
         util.logger.warn(f"No neighbors found. No KDMA prediction made.")
         breakpoint()
         return lst
