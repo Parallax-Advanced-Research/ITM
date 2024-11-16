@@ -935,7 +935,6 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
             elif parts[1] == 'ph1':
                 case['scene'] = parts[0] + parts[3]
         case['scene'] += ":" + meta_block["scene_id"]
-    # breakpoint()
     return case
 
 

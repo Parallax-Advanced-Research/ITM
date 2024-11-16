@@ -134,7 +134,7 @@ def api_test(args, driver = None):
         else:
             kdma_training_val = 'solo'
     else:
-        kdma_training_val = False
+        kdma_training_val = None
     sid = client.start_session(adm_name=f'TAD-{args.variant}', session_type=args.session_type, kdma_training=kdma_training_val)
         
     logger.info(f"Started Session-{sid}")

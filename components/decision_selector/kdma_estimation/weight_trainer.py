@@ -75,9 +75,9 @@ class KEDSModeller(CaseModeller):
                 for ocase in self.cases:
                     compat = kdma_estimation.is_compatible(case, ocase, self.kdma_name, check_scenes = True)
                     self.base_distance_cache[case["index"]][ocase["index"]] = 0 if compat else None
-            node = dict({"change": "new"})
             dummy_node = dict(node)
             dummy_node["change"] = "added"
+            node = dict({"change": "new", "feature": None})
         else: 
             self.set_weight_modification(node)
             self.base_distance_cache = self.derivative_distance_cache
