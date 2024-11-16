@@ -57,7 +57,7 @@ class TriageCompetenceAssessor(Assessor):
             elif is_treatment_action(dec.value):
                 # also includes painmed actions
                 ret_assessments[dec_key] = self.assess_treatment(
-                    casualty=target_patient, given_treatment=dec.value.params[ParamEnum.TREATMENT])
+                    casualty=target_patient, given_treatment=dec.value.params[ParamEnum.TREATMENT], supplies=supplies)
 
             elif is_check_action(dec.value):
                 ret_assessments[dec_key] = self.assess_check_action(
@@ -98,7 +98,6 @@ class TriageCompetenceAssessor(Assessor):
                     len(a['casualty'].injuries) if a['casualty'] and a['casualty'].injuries else 0
                 )
             )
-            # TODO: What if the severities are the same. Also, maybe don't rank tag actions?
 
             # Step 3: Adjust all but the highest-ranked assessment's score
             for assessment in high_competence_assessments[1:]:
@@ -164,7 +163,7 @@ class TriageCompetenceAssessor(Assessor):
         else:
             return 0  # No match
 
-    def assess_treatment(self, casualty, given_treatment):
+    def assess_treatment(self, casualty, given_treatment, supplies):
         # Initialize empty sets to gather valid and contraindicated treatments for all injuries
         given_treatment_enum = TreatmentsEnum(given_treatment)
         all_valid_treatments = set()
@@ -175,7 +174,7 @@ class TriageCompetenceAssessor(Assessor):
         for injury in casualty.injuries:
             # Accumulate valid treatments for each injury
             valid_treatments = self.treatment_rule_set.get_valid_treatments(
-                injury)
+                injury, casualty.vitals, supplies)
             contraindicated_treatments = self.treatment_rule_set.get_contraindicated_treatments(
                 injury)
             location_contraindicated_treatments = self.treatment_rule_set.get_location_contraindicated_treatments(
@@ -459,7 +458,7 @@ class TreatmentRuleSet:
         # Tourniquet, decompression needle, and airway are not suitable for treating fractures.
         InjuryTypeEnum.BROKEN_BONE: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
         # Avoid tourniquet, decompression needle, and airway for internal injuries as they don't address internal trauma.
-        InjuryTypeEnum.INTERNAL: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        InjuryTypeEnum.INTERNAL: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE],
         # Tourniquet, decompression, gauze, and airway management are ineffective and inappropriate for brain injuries.
         InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY: [TreatmentsEnum.TOURNIQUET, TreatmentsEnum.DECOMPRESSION_NEEDLE, TreatmentsEnum.HEMOSTATIC_GAUZE, TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
         # Tourniquet, decompression needle, splint, and airway are unsuitable for abdominal wounds.
@@ -521,11 +520,31 @@ class TreatmentRuleSet:
         ]
     }
 
-    def get_valid_treatments(self, injury: Injury) -> List[TreatmentsEnum]:
+    SUPPLY_AND_VITAL_RULES = {
+        (SupplyTypeEnum.DECOMPRESSION_NEEDLE, 'breathing', BreathingLevelEnum.NONE): [TreatmentsEnum.DECOMPRESSION_NEEDLE],
+        (SupplyTypeEnum.VENTED_CHEST_SEAL, 'spo2', BloodOxygenEnum.LOW): [TreatmentsEnum.VENTED_CHEST_SEAL],
+        (SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY, 'mental_status', MentalStatusEnum.UNRESPONSIVE): [TreatmentsEnum.NASOPHARYNGEAL_AIRWAY],
+        (SupplyTypeEnum.BLOOD, 'spo2', BloodOxygenEnum.LOW): [TreatmentsEnum.BLOOD],
+        (SupplyTypeEnum.IV_BAG, 'hrpmin', HeartRateEnum.FAINT): [TreatmentsEnum.IV_BAG],
+    }
+
+    def get_valid_treatments(self, injury: Injury, vitals: Vitals, supplies: List[SupplyTypeEnum]) -> List[TreatmentsEnum]:
         """
-        Returns a list of valid treatments for the specified injury type.
+        Determines valid treatments based on injury, casualty vitals, and available supplies.
         """
-        return self.VALID_TREATMENTS.get(injury.name, [])
+        valid_treatments = set()
+
+        # Add treatments specific to the injury type
+        injury_valid_treatments = self.VALID_TREATMENTS.get(injury.name, [])
+        valid_treatments.update(injury_valid_treatments)
+
+        # Add treatments based on both supplies and vitals
+        for supply in supplies:
+            for (supply_type, vital_attr, vital_value), treatments in self.SUPPLY_AND_VITAL_RULES.items():
+                if supply.type == supply_type and getattr(vitals, vital_attr, None) == vital_value:
+                    valid_treatments.update(treatments)
+
+        return list(valid_treatments)
 
     def get_contraindicated_treatments(self, injury: Injury) -> List[TreatmentsEnum]:
         """
@@ -583,13 +602,13 @@ class PainMedRuleSet:
 
         # Avoid Fentanyl if AVPU Level is UNRESPONSIVE
         ('vitals.avpu', AvpuLevelEnum.UNRESPONSIVE,
-         TreatmentsEnum.PAIN_MEDICATIONS, 0.3),
+         TreatmentsEnum.PAIN_MEDICATIONS, 0),
         ('vitals.avpu', AvpuLevelEnum.UNRESPONSIVE,
-         TreatmentsEnum.FENTANYL_LOLLIPOP, 0.3),
+         TreatmentsEnum.FENTANYL_LOLLIPOP, 0),
 
         # Avoid any pain meds if patient is flagged as unconscious
-        ('vitals.conscious', False, TreatmentsEnum.PAIN_MEDICATIONS, 0.3),
-        ('vitals.conscious', False, TreatmentsEnum.FENTANYL_LOLLIPOP, 0.3),
+        ('vitals.conscious', False, TreatmentsEnum.PAIN_MEDICATIONS, 0),
+        ('vitals.conscious', False, TreatmentsEnum.FENTANYL_LOLLIPOP, 0),
 
         # Avoid Fentanyl if mental status indicates potential respiratory depression risk
         ('vitals.mental_status', MentalStatusEnum.UNRESPONSIVE,
@@ -604,7 +623,7 @@ class PainMedRuleSet:
 
     def assess_pain_medication(self, casualty, given_treatment):
         """
-        Assesses the appropriateness of administering pain medication to a casualty based on 
+        Assesses the appropriateness of administering pain medication to a casualty based on
         injury severity, mental status, and other contraindications.
         """
         # Default score if no contraindications are found
@@ -737,7 +756,7 @@ class AssessmentHeuristicRuleset:
         ),
     }
 
-    @classmethod
+    @ classmethod
     def assess_action(cls, casualty, action_type, supplies):
         """
         Evaluates the appropriateness of a specific assessment action based on casualty conditions.
@@ -756,8 +775,8 @@ class AssessmentHeuristicRuleset:
 
 class EvacuationRuleSet:
     """
-    Determines evacuation necessity based on casualty's triage tag, injury severity, type, 
-    and location. Prioritizes 'Immediate' and considers factors such as brain injury, 
+    Determines evacuation necessity based on casualty's triage tag, injury severity, type,
+    and location. Prioritizes 'Immediate' and considers factors such as brain injury,
     chest trauma, and location-based criticality.
     """
 
@@ -776,7 +795,7 @@ class EvacuationRuleSet:
 
     def assess_evacuation(self, casualty):
         """
-        Evaluates the necessity for evacuation based on predicted tags, with adjustments 
+        Evaluates the necessity for evacuation based on predicted tags, with adjustments
         for injury severity, type, and location.
         """
         tags = self.predict_tags(casualty)
@@ -812,7 +831,7 @@ class EvacuationRuleSet:
 
 class EndSceneRuleset:
     """
-    Determines if it is appropriate to end the scene based on available treatments, 
+    Determines if it is appropriate to end the scene based on available treatments,
     assessments, and the status of multiple casualties.
     """
 
@@ -845,7 +864,7 @@ class EndSceneRuleset:
 
     def assess_end_scene(self, treatment_available, check_available, painmeds_available, casualties):
         """
-        Assesses if ending the scene is appropriate based on available treatments, 
+        Assesses if ending the scene is appropriate based on available treatments,
         assessments, and statuses across multiple casualties.
         """
 
