@@ -168,6 +168,8 @@ def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: Cas
         addition_penalty = 1
     groups = dict(groups)
     prior_weights = weight_dict
+    last_node = {"change": "new", "feature": None} | weight_dict
+    modeller.set_base_weights(last_node)
     modeller.adjust(prior_weights)
     prior_error_map = modeller.estimate_error()
     prior_choice = "Beginning"
@@ -176,9 +178,9 @@ def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: Cas
     last_adds = [(0, field) for field in groups]
     added_feature = None
     choices = [None]
-    last_node = {"change": "new", "feature": None} | weight_dict
     while total_wheel > 0.0001:
-        modeller.set_base_weights(last_node)
+        if last_node["change"] != "new"
+            modeller.set_base_weights(last_node)
         prior_error = find_error_measure(prior_error_map, case_count)
         if math.isnan(prior_error) or math.isinf(prior_error):
             prior_error = 1
@@ -191,7 +193,6 @@ def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: Cas
         last_adds = []
         refining = False
         for node in node_list:
-            modeller.set_weight_modification(node)
             change = node["change"]
             # if change == "halved" and not refining:
                 # if len(choices) > 0:
