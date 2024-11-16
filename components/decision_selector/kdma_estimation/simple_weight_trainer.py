@@ -179,7 +179,7 @@ def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: Cas
     added_feature = None
     choices = [None]
     while total_wheel > 0.0001:
-        if last_node["change"] != "new"
+        if last_node["change"] != "new":
             modeller.set_base_weights(last_node)
         prior_error = find_error_measure(prior_error_map, case_count)
         if math.isnan(prior_error) or math.isinf(prior_error):
@@ -267,6 +267,8 @@ def greedy_weight_space_search_prob(weight_dict: dict[str, float], modeller: Cas
             added_feature = None
         print(f"Change selected: {prior_choice} New error: {new_error:.5f}, {len(prior_weights)} weights, {duration:.2f} secs, rand = {spinner/total_wheel:.2f}")
 
+    if len(past_choices) == 0:
+        breakpoint()
     for past_choice in past_choices:
         print(past_choice)
     
