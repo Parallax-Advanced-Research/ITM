@@ -221,7 +221,7 @@ class TriageCompetenceAssessor(Assessor):
         return False
 
     def assess_check_action(self, casualty, action_type, supplies):
-        return self.assessment_heuristic_ruleset.assess_action(casualty, action_type, supplies)
+        return self.assessment_heuristic_ruleset.assess_action(casualty, action_type)
 
     def assess_evacuation(self, casualty):
         return self.assess_evac_rule_set.assess_evacuation(casualty)
@@ -711,14 +711,12 @@ class AssessmentHeuristicRuleset:
             ) or not casualty.injuriesg
             else 0.0
         ),
-        ActionTypeEnum.MOVE_TO: lambda casualty, supplies: (
+        ActionTypeEnum.MOVE_TO: lambda casualty: (
             # Increase the competence score for the MOVE_TO action if a decompression needle is available in supplies
             # and the casualty has a "Chest Collapse" injury. This prioritization reflects that a decompression
             # needle is a required resource for treating such injuries, making the action more competent.
             # TODO: Refine the assessment based on the availability of other resources and the casualty's condition.
             0.3 if any(
-                item.type == "Decompression Needle" and item.quantity > 0 for item in supplies
-            ) and any(
                 injury.name == InjuryTypeEnum.CHEST_COLLAPSE for injury in casualty.injuries
             ) else 0.0
         ) + (
@@ -755,7 +753,7 @@ class AssessmentHeuristicRuleset:
     }
 
     @ classmethod
-    def assess_action(cls, casualty, action_type, supplies):
+    def assess_action(cls, casualty, action_type):
         """
         Evaluates the appropriateness of a specific assessment action based on casualty conditions.
         """
