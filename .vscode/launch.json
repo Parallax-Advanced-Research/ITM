@@ -21,13 +21,52 @@
             "args": "--session_type soartech --scenario qol-ph1-train-2 --selector keds --training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose --no-mc --no-br --no-bayes --no-ebd"
         },
         {
-            // can't find scenario
             "name": "SoarTech qol-ph1-eval-2",
             "type": "debugpy",
             "request": "launch",
             "program": "tad_tester.py",
             "console": "integratedTerminal",
-            "args": "--session_type soartech  --session_type eval --selector keds --no-training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose --no-mc --no-br --no-bayes --no-ebd"
+            "args": "--session_type soartech --scenario qol-ph1-eval-2 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech qol-ph1-eval-3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-ph1-eval-3 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech qol-ph1-eval-4",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-ph1-eval-4 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech vol-ph1-eval-2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario vol-ph1-eval-2 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech vol-ph1-eval-3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario vol-ph1-eval-3 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech vol-ph1-eval-4",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario vol-ph1-eval-4 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
         },
         {
             "name": "Adept IO1v2",
