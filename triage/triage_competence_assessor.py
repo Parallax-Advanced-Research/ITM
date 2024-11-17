@@ -164,63 +164,61 @@ class TriageCompetenceAssessor(Assessor):
             return 0  # No match
 
     def assess_treatment(self, casualty, given_treatment, supplies):
-        # Initialize empty sets to gather valid and contraindicated treatments for all injuries
+        """
+        Assess the competence score for applying a given treatment to a casualty.
+        """
         given_treatment_enum = TreatmentsEnum(given_treatment)
-        all_valid_treatments = set()
-        all_contraindicated_treatments = set()
-        all_location_contraindicated_treatments = set()
 
-        # Loop through each injury in the casualty's list of injuries
         for injury in casualty.injuries:
-            # Accumulate valid treatments for each injury
+            # Validate and contraindicate treatments specific to this injury
             valid_treatments = self.treatment_rule_set.get_valid_treatments(
-                injury, casualty.vitals, supplies)
+                injury, casualty.vitals, supplies
+            )
             contraindicated_treatments = self.treatment_rule_set.get_contraindicated_treatments(
-                injury)
+                injury
+            )
             location_contraindicated_treatments = self.treatment_rule_set.get_location_contraindicated_treatments(
-                injury)
-
-            # Update sets to include treatments from each injury
-            all_valid_treatments.update(valid_treatments)
-            all_contraindicated_treatments.update(contraindicated_treatments)
-            all_location_contraindicated_treatments.update(
-                location_contraindicated_treatments)
-
-        # Check if the given treatment is BLOOD, as it requires additional checks
-        if given_treatment_enum == TreatmentsEnum.BLOOD:
-            # Check if any injuries justify a blood transfusion
-            injuries_require_blood = any(
-                self.treatment_rule_set.is_blood_treatment_valid(injury) for injury in casualty.injuries
+                injury
             )
 
-            # Check if vital signs indicate shock
-            vitals_indicate_shock = (
-                casualty.vitals.mental_status in ['SHOCK', 'UNRESPONSIVE'] or
-                casualty.vitals.breathing == 'FAST' or
-                casualty.vitals.hrpmin == 'FAST' or
-                casualty.vitals.spo2 == 'LOW'
-            )
+            # Check contraindications for this injury
+            if given_treatment_enum in contraindicated_treatments or \
+                    given_treatment_enum in location_contraindicated_treatments:
+                return 0  # Contraindicated for this specific injury
 
-            # Blood is appropriate if either the injury justifies it or the vitals indicate shock
-            if injuries_require_blood or vitals_indicate_shock:
-                return 1  # Blood transfusion is valid
+            # Check if the treatment is valid for this injury
+            if given_treatment_enum == TreatmentsEnum.BLOOD:
+                # Handle blood-specific rules
+                if self.is_blood_treatment_appropriate(injury, casualty.vitals):
+                    return 1  # Blood transfusion is valid
+                else:
+                    return 0  # Blood transfusion not valid for this context
 
-            # If neither condition is met, blood is contraindicated
-            return 0
+            # If valid, return success
+            if given_treatment_enum in valid_treatments:
+                return 1
 
-        # Assess other treatments based on the combined lists from all injuries
-        if given_treatment_enum in all_contraindicated_treatments or given_treatment_enum in all_location_contraindicated_treatments:
-            return 0  # Given treatment is contraindicated
+        # If no specific injury validates the treatment but it's not contraindicated, return an intermediate score
+        return 0.555
 
-        elif given_treatment_enum in all_valid_treatments:
-            # Check for special pain medication rules
-            if given_treatment_enum in [TreatmentsEnum.PAIN_MEDICATIONS, TreatmentsEnum.FENTANYL_LOLLIPOP]:
-                return self.painmed_rule_set.assess_pain_medication(casualty, given_treatment_enum)
-            else:
-                return 1  # Fully valid treatment
+    def is_blood_treatment_appropriate(self, injury, vitals):
+        """
+        Determines if blood treatment is appropriate for a specific injury and vitals.
+        """
+        # Check if the injury justifies blood transfusion
+        if self.treatment_rule_set.is_blood_treatment_valid(injury):
+            return True
 
-        else:
-            return 0.555  # Unknown but not explicitly contraindicated
+        # Check if vitals indicate the need for blood transfusion
+        if (
+            vitals.mental_status in [MentalStatusEnum.SHOCK, MentalStatusEnum.UNRESPONSIVE] or
+            vitals.breathing == BreathingLevelEnum.FAST or
+            vitals.hrpmin == HeartRateEnum.FAST or
+            vitals.spo2 == BloodOxygenEnum.LOW
+        ):
+            return True
+
+        return False
 
     def assess_check_action(self, casualty, action_type, supplies):
         return self.assessment_heuristic_ruleset.assess_action(casualty, action_type, supplies)
@@ -842,8 +840,12 @@ class EndSceneRuleset:
         self.rules = {
             # Prevent ending scene if high-priority casualties have unmet treatment needs
             "high_priority_treatment_needed": lambda treatment_available, casualties: treatment_available > 0
-            and any(self.is_high_priority(casualty) for casualty in casualties),
-
+            and any(
+                self.is_high_priority(casualty) or
+                any(InjurySeverityEnum(injury.severity) in {InjurySeverityEnum.SUBSTANTIAL, InjurySeverityEnum.MAJOR,
+                    InjurySeverityEnum.EXTREME} for injury in casualty.injuries)
+                for casualty in casualties
+            ),
             # Prevent ending scene if assessments for high-priority casualties are still required
             "high_priority_assessment_needed": lambda check_available, casualties: check_available > 0
             and any(self.requires_assessment(casualty) for casualty in casualties),
