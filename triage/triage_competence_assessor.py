@@ -764,7 +764,7 @@ class AssessmentHeuristicRuleset:
         # Evaluate each rule to determine the final score
         if action_type in cls.ASSESSMENT_RULES:
             rule = cls.ASSESSMENT_RULES[action_type]
-            score += rule(casualty, supplies)
+            score += rule(casualty)
 
         return min(score, 1.0)
 
