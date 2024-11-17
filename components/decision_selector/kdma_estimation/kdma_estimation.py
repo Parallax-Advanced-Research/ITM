@@ -131,7 +131,8 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
     if len(lst) == 0:
         if len(weights) == 0 or cur_act_type == 'tagging':
             return lst
-        if cur_case["scene"].startswith("vol") and cur_act_type == 'leaving':
+        # if cur_case["scene"].startswith("vol") and cur_act_type == 'leaving':
+        if cur_act_type == 'leaving':
             return lst
         if len([1 for (k, v) in relevant_fields(cur_case, weights, "").items() if v is not None]) == 0:
             return lst
