@@ -1,9 +1,0 @@
-{
-  "kdma_specific_weights": {
-    "PerceivedQuantityOfLivesSaved": {
-      "inj_severity_rank": 1,
-      "treatment": 1
-    }
-  },
-  "default": 0
-}
