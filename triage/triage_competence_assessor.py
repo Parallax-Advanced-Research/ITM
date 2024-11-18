@@ -799,7 +799,7 @@ class EvacuationRuleSet:
         Evaluates the necessity for evacuation based on predicted tags, with adjustments
         for injury severity, type, and location.
         """
-        tags = self.predict_tags(casualty)
+        tags = self.tag_predictor.predict_tags(casualty)
         highest_priority_tag = tags[0] if tags else TriageCategory.UNCATEGORIZED
         score = self.BASE_SCORES.get(highest_priority_tag, 0.5)
 
@@ -822,7 +822,7 @@ class EvacuationRuleSet:
 
         # Location-based adjustments
         critical_locations = {InjuryLocationEnum.HEAD,
-                              InjuryLocationEnum.NECK, InjuryLocationEnum.CHEST}
+                              InjuryLocationEnum.NECK, InjuryLocationEnum.LEFT_CHEST, InjuryLocationEnum.RIGHT_CHEST, InjuryLocationEnum.CENTER_CHEST}
         if any(injury.location in critical_locations for injury in casualty.injuries):
             # Critical area injuries increase evacuation need
             score = min(score + 0.1, 1.0)
