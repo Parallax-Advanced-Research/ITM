@@ -27,9 +27,10 @@ class TriageCompetenceAssessor(Assessor):
         self.treatment_rule_set = TreatmentRuleSet()
         self.painmed_rule_set = PainMedRuleSet()
         self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset()
-        self.assess_evac_rule_set = EvacuationRuleSet()
+
         self.tag_predictor = TriagePredictor(
             self.vitals_rule_set, self.injury_rule_set)
+        self.assess_evac_rule_set = EvacuationRuleSet(self.tag_predictor)
         self.end_scene_rule_set = EndSceneRuleset(self.tag_predictor)
 
     def assess(self, probe: TADProbe) -> dict[Decision, float]:
@@ -775,6 +776,10 @@ class EvacuationRuleSet:
     and location. Prioritizes 'Immediate' and considers factors such as brain injury,
     chest trauma, and location-based criticality.
     """
+
+    def __init__(self, tag_predictor):
+        # Define rules for determining scene-ending appropriateness
+        self.tag_predictor = tag_predictor
 
     BASE_SCORES = {
         # Evacuation is necessary for life-threatening injuries.
