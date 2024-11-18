@@ -109,7 +109,7 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
     if dist_fn == None:
         dist_fn = find_compatible_distance
     lst = []
-    weights = {k: w for (k, w) in oweights.items() if w != 0}
+    weights = {k: w for (k, w) in oweights.items() if w != 0 and not isinstance(w, str)}
     max_distance = 1e9
     cur_act_type = cur_case['action_type']
     is_char_act = cur_act_type in ['treating', 'assessing']
@@ -131,9 +131,12 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
     if len(lst) == 0:
         if len(weights) == 0 or cur_act_type == 'tagging':
             return lst
-        if cur_case["scene"].startswith("vol") and cur_act_type == 'leaving':
+        # if cur_case["scene"].startswith("vol") and cur_act_type == 'leaving':
+        if cur_act_type == 'leaving':
             return lst
         if len([1 for (k, v) in relevant_fields(cur_case, weights, "").items() if v is not None]) == 0:
+            return lst
+        if cur_case["action_name"] == "SITREP":
             return lst
         util.logger.warn(f"No neighbors found. No KDMA prediction made.")
         breakpoint()

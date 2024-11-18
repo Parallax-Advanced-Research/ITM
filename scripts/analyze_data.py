@@ -18,32 +18,36 @@ import random
 
 NON_NOISY_KEYS = [
     'age', 'tagged', 'visited', 'relationship', 'rank', 'conscious',
-    'environment_type', 'questioning', 'assessing', 'treating', 'tagging', 'leaving', 
+    'environment_type', 'questioning', 'assessing', 'treating', 'tagging', 'leaving',
     'aid_available', 'category', 'SUPPLIES_REMAINING',
     'disposition', 'rapport', 'intent', 'directness_of_causality',
     'HRA Strategy', 'treatment_count', 'treatment_time',
     'mental_status', 'breathing', 'hrpmin', 'avpu',
-    'unvisited_count', 'injured_count', 'others_tagged_or_uninjured'
+    'unvisited_count', 'injured_count', 'others_tagged_or_uninjured',
+    'triss', 'age_difference', 'context.topic_injuries', 'context.topic_intent',
+    'context.val_intent1', 'context.val_intent2', 'context.last_location', 'context.last_treatment',
+    'context.topic_supplies', 'context.topic_relationship'
 ]
 
 NOISY_KEYS : str = [
-    "SMOL_MEDICAL_SOUNDNESS", "SMOL_MEDICAL_SOUNDNESS_V2", "MEDSIM_P_DEATH", "entropy", "entropyDeath", 
-    'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding', 
-    'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER', 
-    'SEVERITY_CHANGE',  'AVERAGE_TIME_USED', 
+    "SMOL_MEDICAL_SOUNDNESS", "SMOL_MEDICAL_SOUNDNESS_V2", "MEDSIM_P_DEATH", "entropy", "entropyDeath",
+    'pDeath', 'pPain', 'pBrainInjury', 'pAirwayBlocked', 'pInternalBleeding',
+    'pExternalBleeding', 'MEDSIM_P_DEATH_ONE_MIN_LATER',
+    'SEVERITY_CHANGE',  'AVERAGE_TIME_USED',
     'SEVEREST_SEVERITY', 'SEVEREST_SEVERITY_CHANGE', 'SEVEREST_SEVERITY_CHANGE_variance', 'SEVEREST_SEVERITY_CHANGE_normalized', 'SEVEREST_SEVERITY_CHANGE_percentile',
-    'STANDARD_TIME_SEVERITY', 'STANDARD_TIME_SEVERITY_variance', 'STANDARD_TIME_SEVERITY_normalized', 'STANDARD_TIME_SEVERITY_percentile', 
-    'SEVERITY', 'SEVERITY_variance', 'SEVERITY_normalized', 'SEVERITY_percentile', 
+    'STANDARD_TIME_SEVERITY', 'STANDARD_TIME_SEVERITY_variance', 'STANDARD_TIME_SEVERITY_normalized', 'STANDARD_TIME_SEVERITY_percentile',
+    'SEVERITY', 'SEVERITY_variance', 'SEVERITY_normalized', 'SEVERITY_percentile',
     'DAMAGE_PER_SECOND', 'DAMAGE_PER_SECOND_variance', 'DAMAGE_PER_SECOND_normalized', 'DAMAGE_PER_SECOND_percentile',
-    'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_variance', 'ACTION_TARGET_SEVERITY_normalized', 'ACTION_TARGET_SEVERITY_percentile', 
+    'ACTION_TARGET_SEVERITY', 'ACTION_TARGET_SEVERITY_variance', 'ACTION_TARGET_SEVERITY_normalized', 'ACTION_TARGET_SEVERITY_percentile',
     'ACTION_TARGET_SEVERITY_CHANGE',  'ACTION_TARGET_SEVERITY_CHANGE_variance', 'ACTION_TARGET_SEVERITY_CHANGE_normalized', 'ACTION_TARGET_SEVERITY_CHANGE_percentile',
     'original_severity', 'original_severity_variance', 'original_severity_normalized', 'original_severity_percentile',
+    'triage_urgency_variance', 'triage_urgency_normalized', 'triage_urgency_percentile'
 ]
-     
+
 ALL_KEYS = NON_NOISY_KEYS + NOISY_KEYS
 
 
-def read_training_data(case_file: str = exhaustive_selector.CASE_FILE, 
+def read_training_data(case_file: str = exhaustive_selector.CASE_FILE,
                        feedback_file: str = kdma_case_base_retainer.FEEDBACK_FILE
                       ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     return read_pre_cases(case_file), read_feedback(feedback_file)
@@ -53,14 +57,6 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
         cases = [json.loads(line) for line in infile]
     fields = set()
     for case in cases:
-        for key in case.keys():
-            for pattern in ["casualty_", "nondeterminism"]:
-                if pattern in key.lower():
-                    case.pop(key)
-                    break
-            fields.add(key)
-
-
         case["action-string"] = stringify_action_list(case["actions"])
         case["pre-action-string"] = stringify_action_list(case["actions"][:-1])
         case["action-len"] = len(case["actions"])
@@ -97,6 +93,14 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
         else:
             raise Error()
         case['action_name'] = a['name']
+        orig_keys = list(case.keys())
+        for key in orig_keys:
+            for pattern in ["casualty_", "nondeterminism"]:
+                if pattern in key.lower():
+                    case.pop(key)
+                    break
+            fields.add(key)
+
         
     non_noisy_keys = get_non_noisy_keys(fields)
     for case in cases:
@@ -146,10 +150,10 @@ def get_non_noisy_keys(fields):
                 field_exts.append(key + suffix)
         for ext in field_exts:
             nnkeys.append(ext)
-            lckey = "context.last_case" + ext
+            lckey = "context.last_case." + ext
             if lckey in fields:
                 nnkeys.append(lckey)
-
+    return nnkeys
 
 def stringify_action_list(actions: list[dict[str, Any]]) -> str:
     return ";".join([stringify_action(a) for a in actions])
@@ -348,9 +352,9 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
             "run_index",
             "context.last_case.index",
             "context.last_case.actions",
-            "context.last_case.hash"
+            "context.last_case.hash",
         ]
-        new_case = {k:v for (k, v) in new_case.items() if k not in trash_keys}
+        new_case = {k:v for (k, v) in new_case.items() if k not in trash_keys and "NONDETERMINISM" not in k and "triage_urgency" not in k}
 
         if "run_index" in new_case:
             new_case.pop("run_index")
@@ -386,7 +390,7 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
                     # # elif key == 'mental_status_rank' and new_case["mental_status"] in ["AGONY", "UNRESPONSIVE", "CONFUSED", "UPSET"]:
                         # # new_case[key] = statistics.mean([float(val) for val in vals])
                     # else:
-                    if key == 'scene' and len(vals) == 2 and vals[0][:2] == "IO" and vals[1][:2] == "IO" and vals[0][3:] == vals[1][3:]:
+                    if key == 'scene': # and len(vals) == 2 and vals[0][:2] == "IO" and vals[1][:2] == "IO" and vals[0][3:] == vals[1][3:]:
                         continue
                     if new_case["action_name"] == "END_SCENE" and len(vals) == 2 and vals[0][:3] == "IO2" and vals[1][:3] == "IO2":
                         continue

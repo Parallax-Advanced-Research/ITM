@@ -66,6 +66,7 @@ class KEDSModeller(CaseModeller):
             return 1 if error > self.error_threshold else 0
             
     def set_base_weights(self, node: dict):
+        dummy_node = None
         if node["change"] == "new":
             self.base_total_weight = 0
             self.base_distance_cache = dict()
@@ -74,6 +75,9 @@ class KEDSModeller(CaseModeller):
                 for ocase in self.cases:
                     compat = kdma_estimation.is_compatible(case, ocase, self.kdma_name, check_scenes = True)
                     self.base_distance_cache[case["index"]][ocase["index"]] = 0 if compat else None
+            dummy_node = dict(node)
+            dummy_node["change"] = "added"
+            node = dict({"change": "new", "feature": None})
         else: 
             self.set_weight_modification(node)
             self.base_distance_cache = self.derivative_distance_cache
@@ -83,6 +87,8 @@ class KEDSModeller(CaseModeller):
         for case in self.cases:
             self.derivative_distance_cache[case["index"]] = [None]*len(self.cases)
         self.derivative_total_weight = None
+        if dummy_node is not None:
+            self.set_base_weights(dummy_node)
 
     
     def set_weight_modification(self, node: dict):
