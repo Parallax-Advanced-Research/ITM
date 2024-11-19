@@ -86,11 +86,18 @@ class TA3Elaborator(Elaborator):
                     logger.info("  Competence Assessment: " + str(competence_ratings[str(act.value)]))
                 if len(new_actions) == 0 and len(d.value.params) > 0:
                     logger.error("  No legal groundings found for explicit action " + str(d.value))
+            max_competence = 1
             if len(competence_ratings) > 1:
                 max_competence = max(competence_ratings.values())
                 if max_competence > min(competence_ratings.values()):
-                    logger.warn("  Will ignore lower-competence implementations of this action.")
+                    if verbose:
+                        logger.warn("  Will ignore lower-competence implementations of this action.")
                     new_actions = [act for act in new_actions if competence_ratings[str(act.value)] > max_competence * 0.99]
+            elif len(competence_ratings) == 1:
+                max_competence = list(competence_ratings.values())[0]
+            if max_competence < 0.5 and verbose:
+                logger.error("  Maximum competence less than 0.5 for explicit action " + str(d.value))
+                
                     
             if len(new_actions) == 0 and action_parameter_requirements_fulfilled(d):
                 new_actions = [d]
