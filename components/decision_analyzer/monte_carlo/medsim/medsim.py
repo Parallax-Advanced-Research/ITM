@@ -17,8 +17,6 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
 import util.logger
 from typing import Optional
 import random
-
-from components.elaborator.default import TA3Elaborator
 from domain.internal import Decision, TADProbe
 
 logger = util.logger
