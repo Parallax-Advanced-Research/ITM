@@ -24,6 +24,15 @@ class Demographics:
     role: str
     mission_importance: str
 
+    @staticmethod
+    def from_ta3(data: dict):
+        d = dict(data)
+        for field in ["age", "sex", "race", "rank", "military_disposition", "military_branch", 
+                      "rank_title", "skills", "role", "mission_importance"]:
+            if field not in d:
+                d[field] = None
+        return Demographics(**d)
+
 
 @dataclass
 class Vitals:
@@ -39,11 +48,14 @@ class Vitals:
     @staticmethod
     def from_ta3(data: dict):
         d = dict(data)
-        d["hrpmin"] = data["heart_rate"]
-        if data["avpu"] is None:
+        for field in ["triss", "ambulatory", "mental_status", "breathing", "spo2", "heart_rate", "avpu"]:
+            if field not in d:
+                d[field] = None
+        d["hrpmin"] = d["heart_rate"]
+        if d["avpu"] is None:
             d["conscious"] = None
         else:
-            d["conscious"] = (data["avpu"] == "ALERT")
+            d["conscious"] = (d["avpu"] == "ALERT")
         d.pop("heart_rate")
         return Vitals(**d)
 
@@ -61,7 +73,12 @@ class Injury:
     @staticmethod
     def from_ta3(data: dict):
         d = dict(data)
-        d.pop("treatments_required")
+        if "treatments_required" in d:
+            d.pop("treatments_required")
+        if "source_character" not in d:
+            d["source_character"] = None
+        if "treatments_applied" not in d:
+            d["treatments_applied"] = 0
         # This value is always None, not intended for our consumption. Treated becomes true when 
         # treatments_applied >= treatments_required, but treatments_required is hidden.
         return Injury(**d)
@@ -115,18 +132,18 @@ class Casualty:
             id=data['id'],
             name=data['name'],
             injuries=[Injury.from_ta3(i) for i in data['injuries']],
-            demographics=Demographics(**data['demographics']),
-            vitals=Vitals.from_ta3(data['vitals']),
-            tag=data['tag'],
+            demographics=Demographics.from_ta3(data['demographics']),
+            vitals=Vitals.from_ta3(data.get('vitals', {})),
+            tag=data.get('tag', None),
             assessed=data.get('assessed', data.get('visited', False)),
-            unstructured=data['unstructured'],
-            unstructured_postassess=data['unstructured_postassess'],
-            relationship=data['rapport'],
-            rapport=data['rapport'],
-            treatments=data['treatments'],
-            treatment_time=data['treatment_time'],
-            intent = data['intent'],
-            directness_of_causality = data['directness_of_causality'],
+            unstructured=data.get('unstructured', None),
+            unstructured_postassess=data.get('unstructured_postassess', None),
+            relationship=data.get('rapport', None),
+            rapport=data.get('rapport', None),
+            treatments=data.get('treatments', None),
+            treatment_time=data.get('treatment_time', None),
+            intent = data.get('intent', None),
+            directness_of_causality = data.get('directness_of_causality', None),
             unseen = data.get('unseen', False)
         )
 
@@ -136,6 +153,14 @@ class Supply:
     type: str
     quantity: int
     reusable: bool
+
+    @staticmethod
+    def from_ta3(data: dict):
+        d = data
+        if 'reusable' not in data:
+            d = dict(data)
+            d['reusable'] = False
+        return Supply(**d)
 
 
 class TA3State(State):
@@ -170,7 +195,7 @@ class TA3State(State):
             treatments = data['treatments']
         
         casualties = [Casualty.from_ta3(c) for c in cdatas]
-        supplies = [Supply(**s) for s in sdatas]
+        supplies = [Supply.from_ta3(s) for s in sdatas]
         ta3s = TA3State(unstr, stime, casualties, supplies, actions_performed, treatments)
         ta3s.orig_state = data
         return ta3s

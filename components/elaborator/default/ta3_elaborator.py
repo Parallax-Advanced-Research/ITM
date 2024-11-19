@@ -7,6 +7,9 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import 
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Actions
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from typing import Any
+from util import logger
+from triage import TriageCompetenceAssessor
+
 import os
 
 from domain.enum import ActionTypeEnum, SupplyTypeEnum, InjuryTypeEnum, InjuryLocationEnum, \
@@ -25,7 +28,8 @@ class TA3Elaborator(Elaborator):
     def __init__(self, elab_to_json: bool):
         self.elab_to_json = elab_to_json
 
-    def elaborate(self, scenario: Scenario, probe: TADProbe) -> list[Decision[Action]]:
+    def elaborate(self, scenario: Scenario, probe: TADProbe, verbose = True) -> list[Decision[Action]]:
+        assessor = TriageCompetenceAssessor()
         d: Decision[Action]
         to_return: list[Decision[Action]] = []
         tag_available = len([1 for dtemp in probe.decisions if dtemp.value.name == ActionTypeEnum.TAG_CHARACTER]) > 0
@@ -40,36 +44,62 @@ class TA3Elaborator(Elaborator):
             if d.id_ == "search":
                 continue
             _name = d.value.name
+            if verbose:
+                logger.info("Considering action " + str(d.value))
             d.value.params = {k: v for k, v in d.value.params.items() if v is not None}
             if _name == ActionTypeEnum.APPLY_TREATMENT:
-                to_return += self._treatment(probe.state, d, tag_available=tag_available)
+                new_actions = self._treatment(probe.state, d, tag_available=tag_available)
             elif _name == ActionTypeEnum.SITREP:
-                to_return += self._enumerate_sitrep_actions(probe.state, d)
+                new_actions = self._enumerate_sitrep_actions(probe.state, d)
             elif _name == ActionTypeEnum.DIRECT_MOBILE_CHARACTERS: 
-                to_return += self._enumerate_direct_actions(probe.state, d)
+                new_actions = self._enumerate_direct_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_ALL_VITALS:
-                to_return += self._enumerate_check_actions(probe.state, d)
+                new_actions = self._enumerate_check_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_PULSE:
-                to_return += self._enumerate_check_pulse_actions(probe.state, d)
+                new_actions = self._enumerate_check_pulse_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_BLOOD_OXYGEN:
-                to_return += self._enumerate_check_blood_oxygen_actions(probe.state, d)
+                new_actions = self._enumerate_check_blood_oxygen_actions(probe.state, d)
             elif _name == ActionTypeEnum.CHECK_RESPIRATION:
-                to_return += self._enumerate_check_resp_actions(probe.state, d)
+                new_actions = self._enumerate_check_resp_actions(probe.state, d)
             elif _name == ActionTypeEnum.SEARCH: 
                 # This one doesn't need elaboration, I think?
-                to_return += [d]
+                new_actions = [d]
             elif _name == ActionTypeEnum.TAG_CHARACTER:
-                to_return += self._tag(probe.state.casualties, d)
+                new_actions = self._tag(probe.state.casualties, d)
             elif _name == ActionTypeEnum.END_SCENE:
-                to_return += [d]
+                new_actions = [d]
             elif _name == ActionTypeEnum.MOVE_TO:
-                to_return += self._add_move_options(probe, d)
+                new_actions = self._add_move_options(probe, d)
             elif _name == ActionTypeEnum.MOVE_TO_EVAC:
-                to_return += self._add_evac_options(probe, d)
+                new_actions = self._add_evac_options(probe, d)
             elif _name == ActionTypeEnum.MESSAGE:
-                to_return += self._add_message_options(probe, d)
+                new_actions = self._add_message_options(probe, d)
             else:
-                to_return += self._ground_casualty(probe.state.casualties, d, injured_only = False)
+                new_actions = self._ground_casualty(probe.state.casualties, d, injured_only = False)
+
+            probe.decisions = new_actions
+            competence_ratings = assessor.assess(probe)
+            if verbose:
+                logger.info("Grounded actions:")
+                for act in new_actions:
+                    logger.info("  " + str(act.value))
+                    logger.info("  Competence Assessment: " + str(competence_ratings[str(act.value)]))
+                if len(new_actions) == 0 and len(d.value.params) > 0:
+                    logger.error("  No legal groundings found for explicit action " + str(d.value))
+            if len(competence_ratings) > 1:
+                max_competence = max(competence_ratings.values())
+                if max_competence > min(competence_ratings.values()):
+                    logger.warn("  Will ignore lower-competence implementations of this action.")
+                    new_actions = [act for act in new_actions if competence_ratings[str(act.value)] > max_competence * 0.99]
+                    
+            if len(new_actions) == 0 and action_parameter_requirements_fulfilled(d):
+                new_actions = [d]
+                probe.decisions = new_actions
+                competence_ratings = assessor.assess(probe)
+                logger.warn("  Will try illegally ground action " + str(d.value) + " to gather data.")
+                logger.warn("  Competence Assessment: " + str(competence_ratings[str(d.value)]))
+
+            to_return += new_actions
 
         final_treat_count = \
             len([1 for dtemp in to_return 
@@ -215,6 +245,10 @@ class TA3Elaborator(Elaborator):
         return decisions
 
     def _enumerate_check_actions(self, state: TA3State, decision: Decision[Action]) -> list[Decision[Action]]:
+        # If it's already fully grounded, don't second-guess the server
+        # if (ParamEnum.CASUALTY in decision.value.params):
+            # return [decision]
+
         # Ground the decision for all casualties with injuries
         dec_grounded = self._ground_casualty(state.casualties, decision, injured_only = False)
         dec_applicable = []
@@ -615,3 +649,23 @@ def remove_too_frequent_actions(probe, dec_list):
     if len(bad_actions) > 0:
         breakpoint()
     return [d for d in dec_list if str(d.value) not in bad_actions]
+
+def action_parameter_requirements_fulfilled(d):
+    for req in action_parameter_requirements(d):
+        if req not in d.value.params:
+            return False
+    return True
+
+def action_parameter_requirements(d):
+    if d.value.name in [ActionTypeEnum.CHECK_ALL_VITALS, ActionTypeEnum.CHECK_BLOOD_OXYGEN, 
+                        ActionTypeEnum.CHECK_PULSE, ActionTypeEnum.CHECK_RESPIRATION, 
+                        ActionTypeEnum.MOVE_TO, ActionTypeEnum.MOVE_TO_EVAC]:
+        return [ParamEnum.CASUALTY]
+    if d.value.name in [ActionTypeEnum.TAG_CHARACTER]:
+        return [ParamEnum.CASUALTY, ParamEnum.CATEGORY]
+    if d.value.name in [ActionTypeEnum.APPLY_TREATMENT]:
+        return [ParamEnum.CASUALTY, ParamEnum.LOCATION, ParamEnum.TREATMENT]
+    return []
+    
+
+
