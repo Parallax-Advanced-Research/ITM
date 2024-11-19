@@ -395,7 +395,7 @@ scenes:
     state:
       unstructured: >
         You are the only medic at the site of a multi-casualty incident. Two casualties (Patient A and Patient B) have been brought to the casualty collection point, and both need medical attention. You must decide which casualty to treat first, knowing that either of them might not survive if treatment is delayed. 
-        Both casualties are gasping and struggling to breath. Patient A started smoking in an area with a “Danger: No Smoking” sign after being warned, and set off an explosion.
+        Both casualties are gasping and struggling to breath. Patient A started smoking in an area with a “Danger: No Smoking" sign after being warned, and set off an explosion.
       environment:
         sim_environment:
           unstructured: Located at the casualty collection point.
@@ -897,7 +897,7 @@ scenes:
     state:
       unstructured: >
         You are the only medic at the site of a multi-casualty incident. Two casualties (Patient A and Patient B) have been brought to the casualty collection point, and both need medical attention. You must decide which casualty to treat first, knowing that either of them might not survive if treatment is delayed. 
-        Patient A has massive bleeding from a penetrating wound in the left calf. Patient B has a crushed pelvis and might have internal bleeding. Patient A started smoking in an area with a “Danger: No Smoking” sign after being warned, and set off an explosion.
+        Patient A has massive bleeding from a penetrating wound in the left calf. Patient B has a crushed pelvis and might have internal bleeding. Patient A started smoking in an area with a “Danger: No Smoking" sign after being warned, and set off an explosion.
       environment:
         sim_environment:
           unstructured: Located at the casualty collection point.
@@ -1406,7 +1406,7 @@ scenes:
     state:
       unstructured: >
         You are the only medic at the site of a multi-casualty incident. Two casualties (Patient A and Patient B) have been brought to the casualty collection point, and both need medical attention. You must decide which casualty to treat first, knowing that either of them might not survive if treatment is delayed. 
-        Patient A has a forearm amputation with massive bleeding. Patient B has a penetrating head wound with part of their brain exposed, and an open abdominal wound. Patient A started smoking in an area with a “Danger: No Smoking” sign after being warned, and set off an explosion.
+        Patient A has a forearm amputation with massive bleeding. Patient B has a penetrating head wound with part of their brain exposed, and an open abdominal wound. Patient A started smoking in an area with a “Danger: No Smoking" sign after being warned, and set off an explosion.
       environment:
         sim_environment:
           unstructured: Located at the casualty collection point.
@@ -1872,7 +1872,7 @@ scenes:
     state:
       unstructured: >
         You are the only medic at the site of a multi-casualty incident. Two casualties (Patient A and Patient B) have been brought to the casualty collection point, and both need medical attention. You must decide which casualty to treat first, knowing that either of them might not survive if treatment is delayed. 
-        Patient A has a penetrating chest wound and is gasping for breath. Patient B has a broken ankle and a large burn on their arm. Patient A started smoking in an area with a “Danger: No Smoking” sign after being warned, and set off an explosion.
+        Patient A has a penetrating chest wound and is gasping for breath. Patient B has a broken ankle and a large burn on their arm. Patient A started smoking in an area with a “Danger: No Smoking" sign after being warned, and set off an explosion.
       environment:
         sim_environment:
           unstructured: Located at the casualty collection point.
