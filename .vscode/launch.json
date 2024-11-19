@@ -1,0 +1,213 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "SoarTech qol-ph1-train-1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-ph1-train-1 --selector keds --training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose --no-mc --no-br --no-bayes --no-ebd"
+        },
+        {
+            "name": "SoarTech qol-ph1-train-2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-ph1-train-2 --selector keds --training --alignment_target \"soartech-dryrun-0\" --assessor triage --decision_verbose --no-mc --no-br --no-bayes --no-ebd"
+        },
+        {
+            "name": "SoarTech qol-ph1-eval-2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-ph1-eval-2 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech qol-ph1-eval-3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-ph1-eval-3 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech qol-ph1-eval-4",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario qol-ph1-eval-4 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech vol-ph1-eval-2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario vol-ph1-eval-2 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech vol-ph1-eval-3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario vol-ph1-eval-3 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "SoarTech vol-ph1-eval-4",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type soartech --scenario vol-ph1-eval-4 --no-training --assessor triage --selector keds --alignment_target \"soartech-dryrun-0\" --no-mc --no-br --no-bayes --no-ebd --decision_verbose"
+        },
+        {
+            "name": "Adept IO1v2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--session_type",
+                "adept",
+                "--scenario",
+                "DryRunEval.IO1v2",
+                "--selector",
+                "keds",
+                "--training",
+                "--assessor",
+                "triage",
+                "--kdma",
+                "Ingroup Bias=0.5",
+                "--decision_verbose",
+                "--no-mc",
+                "--no-br",
+                "--no-bayes",
+                "--no-ebd"
+            ],
+        },
+        {
+            "name": "Adept IO2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--session_type",
+                "adept",
+                "--scenario",
+                "DryRunEval.IO2",
+                "--selector",
+                "keds",
+                "--training",
+                "--assessor",
+                "triage",
+                "--kdma",
+                "Ingroup Bias=0.5",
+                "--decision_verbose",
+                "--no-mc",
+                "--no-br",
+                "--no-bayes",
+                "--no-ebd"
+            ],
+        },
+        {
+            "name": "Adept IO3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--session_type",
+                "adept",
+                "--scenario",
+                "DryRunEval.IO3",
+                "--selector",
+                "keds",
+                "--training",
+                "--assessor",
+                "triage",
+                "--kdma",
+                "Ingroup Bias=0.5",
+                "--decision_verbose",
+                "--no-mc",
+                "--no-br",
+                "--no-bayes",
+                "--no-ebd"
+            ],
+        },
+        {
+            "name": "Adept MJ1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--session_type",
+                "adept",
+                "--scenario",
+                "DryRunEval.MJ1",
+                "--selector",
+                "keds",
+                "--training",
+                "--assessor",
+                "triage",
+                "--kdma",
+                "Moral judgement=0.5",
+                "--decision_verbose",
+                "--no-mc",
+                "--no-br",
+                "--no-bayes",
+                "--no-ebd"
+            ],
+        },
+        {
+            "name": "Adept MJ2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--session_type",
+                "adept",
+                "--scenario",
+                "DryRunEval.MJ2",
+                "--selector",
+                "keds",
+                "--training",
+                "--assessor",
+                "triage",
+                "--kdma",
+                "Moral judgement=0.5",
+                "--decision_verbose",
+                "--no-mc",
+                "--no-br",
+                "--no-bayes",
+                "--no-ebd"
+            ],
+        },
+        {
+            "name": "Adept MJ3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type adept --scenario DryRunEval.MJ3 --selector keds --training --assessor triage --kdma \"Moral judgement=0.5\" --decision_verbose --no-mc --no-br --no-bayes --no-ebd"
+        },
+        {
+            "name": "Eval All",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tad_tester.py",
+            "console": "integratedTerminal",
+            "args": "--session_type eval --selector keds --bypass_server_check --no-training --assessor triage --weight_file \"data/case_error_data.json\" --case_file \"data/combined_kdma_cases.csv\""
+        },
+    ]
+}

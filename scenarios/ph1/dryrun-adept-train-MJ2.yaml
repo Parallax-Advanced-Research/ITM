@@ -1,4 +1,4 @@
-id: DryRunEval-MJ2-eval
+id: DryRunEval.MJ2
 # v3.1.0
 #   - Added rapport
 #   - Fixed bug where probe 9-B.1, both choices were 9-B.1-A, made second one 9-B.1-B
