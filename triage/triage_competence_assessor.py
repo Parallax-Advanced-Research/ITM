@@ -12,7 +12,7 @@ from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum
 
 CHECK_ACTION_TYPES = [ActionTypeEnum.CHECK_ALL_VITALS, ActionTypeEnum.CHECK_BLOOD_OXYGEN,
                       ActionTypeEnum.CHECK_PULSE, ActionTypeEnum.CHECK_RESPIRATION,
-                      ActionTypeEnum.SITREP, ActionTypeEnum.SEARCH, ActionTypeEnum.MOVE_TO]
+                      ActionTypeEnum.SITREP, ActionTypeEnum.MOVE_TO]
 
 PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administered
     TreatmentsEnum.PAIN_MEDICATIONS,
@@ -27,7 +27,7 @@ class TriageCompetenceAssessor(Assessor):
         self.treatment_rule_set = TreatmentRuleSet()
         self.painmed_rule_set = PainMedRuleSet()
         self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset()
-
+        self.search_action_ruleset = SearchActionRuleSet()
         self.tag_predictor = TriagePredictor(
             self.vitals_rule_set, self.injury_rule_set)
         self.assess_evac_rule_set = EvacuationRuleSet(self.tag_predictor)
@@ -71,6 +71,11 @@ class TriageCompetenceAssessor(Assessor):
             elif dec.value.name == ActionTypeEnum.MESSAGE:
                 ret_assessments[dec_key] = self.assess_message(
                     message=dec.value.params[ParamEnum.MESSAGE])
+
+            elif dec.value.name == ActionTypeEnum.SEARCH:
+                search_result = self.search_action_ruleset.assess_search_action(
+                    casualties, supplies)
+                ret_assessments[dec_key] = search_result
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
@@ -705,13 +710,7 @@ class AssessmentHeuristicRuleset:
             ) else 0.0
         ),
 
-        # Increase score for SEARCH action if the casualty is unseen or has missing information
-        ActionTypeEnum.SEARCH: lambda casualty: (
-            0.2 if casualty.unseen or any(
-                getattr(casualty.vitals, attr) is None for attr in vars(casualty.vitals)
-            ) or not casualty.injuriesg
-            else 0.0
-        ),
+
         ActionTypeEnum.MOVE_TO: lambda casualty: (
             # Increase the competence score for the MOVE_TO action if a decompression needle is available in supplies
             # and the casualty has a "Chest Collapse" injury. This prioritization reflects that a decompression
@@ -768,6 +767,44 @@ class AssessmentHeuristicRuleset:
             score += rule(casualty)
 
         return min(score, 1.0)
+
+
+class SearchActionRuleSet:
+    """
+    Ruleset specifically for analyzing SEARCH actions.
+    Ensures that the SEARCH action evaluates all casualties instead of individual ones.
+    """
+
+    BASE_SCORE = 0.7  # Baseline competence score for a SEARCH action.
+
+    def assess_search_action(self, casualties, supplies):
+        """
+        Assess the appropriateness of the SEARCH action considering all casualties.
+        """
+        search_scores = {}
+
+        # Iterate over each casualty to check for missing information or unseen status.
+        for casualty in casualties:
+            score = self.BASE_SCORE
+
+            # Increase score if the casualty is unseen or missing critical information.
+            if casualty.unseen:
+                score += 0.2
+            if any(getattr(casualty.vitals, attr) is None for attr in vars(casualty.vitals)):
+                score += 0.1
+            if not casualty.injuries:
+                score += 0.1
+
+            # Cap the score at 1.0
+            search_scores[casualty.id] = min(score, 1.0)
+
+        # Calculate an overall assessment score by averaging individual casualty scores.
+        overall_score = sum(search_scores.values()) / \
+            len(casualties) if casualties else self.BASE_SCORE
+
+        # Return a single overall decision for the SEARCH action
+        return min(overall_score, 1.0)
+
 
 
 class EvacuationRuleSet:
@@ -861,7 +898,7 @@ class EndSceneRuleset:
 
 
             # Allow ending if there are no critical unmet needs (default case)
-            "end_scene_default": lambda treatment_available, check_available, painmeds_available: treatment_available == 0
+            "end_scene_default": lambda treatment_available, check_available, painmeds_available, casualties: treatment_available == 0
             and check_available == 0
             and painmeds_available == 0
 

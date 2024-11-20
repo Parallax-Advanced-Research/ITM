@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: Module",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/*.yaml"
+        },
+        {
             "name": "SoarTech qol-ph1-train-1",
             "type": "debugpy",
             "request": "launch",
