@@ -1,0 +1,64 @@
+import yaml
+import glob
+import argparse
+
+from domain.internal import TADProbe, KDMA, KDMAs, make_new_action_decision
+from domain.ta3 import TA3State
+from components.elaborator.default.ta3_elaborator import TA3Elaborator
+from util import logger
+
+def test_actions(scenario_file):
+    logger.info("\n\nTesting actions in " + scenario_file + ".")
+    elaborator: TA3Elaborator = TA3Elaborator(False)
+    with open(scenario_file, "r") as f:
+        file_contents = f.read()
+    scenario_dict = yaml.load(file_contents, yaml.Loader)
+    state_dict = dict(scenario_dict['state'])
+    st = TA3State.from_dict(state_dict)
+    for scene_dict in scenario_dict['scenes']:
+        logger.info("\n\nLooking into scene " + scene_dict['id'] + ".")
+        if 'state' in scene_dict:
+            if scene_dict.get('persist_characters', False) and 'characters' in scene_dict['state']:
+                new_characters = list(state_dict.get('characters', []))
+                for revised_character in scene_dict['state'].get('characters', []):
+                    new_characters = [old_char for old_char in new_characters if old_char['id'] != revised_character['id']]
+                    new_characters.append(revised_character)
+                scene_dict = scene_dict.copy()
+                scene_dict['state']['characters'] = new_characters
+            state_dict.update(scene_dict['state'])
+            st = TA3State.from_dict(state_dict)
+            st.orig_state = state_dict
+        decisions = []
+        for action_map_dict in scene_dict['action_mapping']:
+            kdmas = None
+            if 'kdma_association' in action_map_dict:
+                kdmas = KDMAs([KDMA(k, v) for k, v in action_map_dict['kdma_association'].items()])
+            params = dict()
+            if 'parameters' in action_map_dict:
+                params.update(action_map_dict['parameters'])
+            if 'character_id' in action_map_dict:
+                params.update({'casualty': action_map_dict['character_id']})
+            decisions.append(make_new_action_decision(action_map_dict['action_id'], 
+                             action_map_dict['action_type'], params, kdmas, 
+                             action_map_dict.get('intent_action', False)))
+        probe_config = scene_dict.get('probe_config', dict())
+        if isinstance(probe_config, list):
+            probe_config = probe_config[0]
+        probe = TADProbe(scene_dict['id'], st, probe_config.get('description', 'What next?'), state_dict['environment'], decisions)
+        probe.state.actions_performed = [d.value for d in decisions if d.value.name != "MESSAGE"][:1]
+        elaborator.elaborate(None, probe, verbose = True)
+        
+    
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input_filenames", metavar="CASEBASE", type=str, nargs = '+',
+                        help="List of csv files with case data"
+                       )
+    args = parser.parse_args()
+    for fileglob in args.input_filenames:
+        for fname in glob.glob(fileglob):
+            test_actions(fname)
+
+if __name__ == '__main__':
+    main()
