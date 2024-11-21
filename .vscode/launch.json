@@ -5,11 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Module",
+            "name": "Action Tester Module",
             "type": "debugpy",
             "request": "launch",
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/*.yaml"
+        },
+        {
+            "name": "MJ4 Action Tester Module",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-eval-MJ4_redacted.yaml"
         },
         {
             "name": "SoarTech qol-ph1-train-1",

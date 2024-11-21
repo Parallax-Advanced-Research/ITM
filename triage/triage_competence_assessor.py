@@ -7,7 +7,7 @@ from domain.enum import ActionTypeEnum, SupplyTypeEnum, TagEnum, InjuryTypeEnum,
     MentalStatusEnum, HeartRateEnum, BloodOxygenEnum, AvpuLevelEnum, \
     BreathingLevelEnum, ParamEnum
 
-from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum, InjurySeverityEnum
+from .domain_reference import TriageCategory, TreatmentsEnum, InjuryLocationEnum, InjurySeverityEnum, ThreatSeverityEnum
 
 
 CHECK_ACTION_TYPES = [ActionTypeEnum.CHECK_ALL_VITALS, ActionTypeEnum.CHECK_BLOOD_OXYGEN,
@@ -65,8 +65,9 @@ class TriageCompetenceAssessor(Assessor):
                     casualty=target_patient, action_type=dec.value.name, supplies=supplies)
 
             elif is_evac_action(dec.value):
+                evac_id = dec.value.params.get(ParamEnum.EVAC_ID, None)
                 ret_assessments[dec_key] = self.assess_evacuation(
-                    casualty=target_patient)
+                    casualty=target_patient, evac_id=evac_id)
 
             elif dec.value.name == ActionTypeEnum.MESSAGE:
                 ret_assessments[dec_key] = self.assess_message(
@@ -229,8 +230,8 @@ class TriageCompetenceAssessor(Assessor):
     def assess_check_action(self, casualty, action_type, supplies):
         return self.assessment_heuristic_ruleset.assess_action(casualty, action_type)
 
-    def assess_evacuation(self, casualty):
-        return self.assess_evac_rule_set.assess_evacuation(casualty)
+    def assess_evacuation(self, casualty, evac_id):
+        return self.assess_evac_rule_set.assess_evacuation(casualty, evac_id)
 
     def assess_message(self, message):
         return 1
@@ -811,12 +812,13 @@ class EvacuationRuleSet:
     """
     Determines evacuation necessity based on casualty's triage tag, injury severity, type,
     and location. Prioritizes 'Immediate' and considers factors such as brain injury,
-    chest trauma, and location-based criticality.
+    chest trauma, vital signs, available resources, and environmental threats.
     """
 
     def __init__(self, tag_predictor):
         # Define rules for determining scene-ending appropriateness
         self.tag_predictor = tag_predictor
+
 
     BASE_SCORES = {
         # Evacuation is necessary for life-threatening injuries.
@@ -831,13 +833,22 @@ class EvacuationRuleSet:
         TriageCategory.UNCATEGORIZED: 0.5
     }
 
-    def assess_evacuation(self, casualty):
+    def assess_evacuation(self, casualty, evac_id):
         """
         Evaluates the necessity for evacuation based on predicted tags, with adjustments
-        for injury severity, type, and location.
+        for injury severity, type, location, vital signs, resource availability, and environmental conditions.
         """
+        transport_available = evac_id is not None
+        
+                
         tags = self.tag_predictor.predict_tags(casualty)
-        highest_priority_tag = tags[0] if tags else TriageCategory.UNCATEGORIZED
+        if tags:
+            # Determine highest priority tag by finding the tag with the highest severity index
+            tag_priority_order = [TriageCategory.MINIMAL, TriageCategory.DELAYED, TriageCategory.IMMEDIATE, TriageCategory.EXPECTANT]
+            highest_priority_tag = max(tags, key=lambda tag: tag_priority_order.index(tag) if tag != TriageCategory.UNCATEGORIZED else -1)
+        else:
+            highest_priority_tag = TriageCategory.UNCATEGORIZED
+
         score = self.BASE_SCORES.get(highest_priority_tag, 0.5)
 
         # Adjust based on severity
@@ -864,7 +875,23 @@ class EvacuationRuleSet:
             # Critical area injuries increase evacuation need
             score = min(score + 0.1, 1.0)
 
+        # Adjust based on vital signs
+        if casualty.vitals.spo2 == BloodOxygenEnum.LOW or casualty.vitals.breathing in [BreathingLevelEnum.RESTRICTED, BreathingLevelEnum.FAST]:
+            # Low oxygen saturation or restricted breathing increases evacuation priority
+            score = min(score + 0.1, 1.0)
+
+        # Transport availability adjustment        
+        if not transport_available:
+            # If no transport is available, deprioritize evacuation
+            score = max(score - 0.2, 0.0)
+
+        # Environmental factors
+        #TODO: Add environmental factors to adjust evacuation priority
+            # If the threat environment is high, evacuation might be prioritized to remove casualties from danger
+            score = min(score + 0.1, 1.0)
+
         return score
+
 
 
 class EndSceneRuleset:
