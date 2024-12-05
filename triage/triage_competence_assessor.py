@@ -888,7 +888,7 @@ class EvacuationRuleSet:
         # Environmental factors
         #TODO: Add environmental factors to adjust evacuation priority
             # If the threat environment is high, evacuation might be prioritized to remove casualties from danger
-            score = min(score + 0.1, 1.0)
+            # score = min(score + 0.1, 1.0)
 
         return score
 
