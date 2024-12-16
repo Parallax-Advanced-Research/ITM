@@ -13,7 +13,7 @@ from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnaly
 from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
 from components.decision_explainer.kdma_decision.kdma_decision_explainer import KDMADecisionExplainer
 from components.attribute_explorer.random_probe_based import RandomProbeBasedAttributeExplorer
-from components.decision_assessor.competence import CompetenceAssessor
+from components.decision_assessor.competence import TCCCCompetenceAssessor
 from components.probe_dumper.probe_dumper import DEFAULT_DUMP
 import domain.external as ext
 from .driver import Driver
@@ -60,7 +60,7 @@ class TA3Driver(Driver):
             
         for assessor in args.assessors:
             if assessor == 'triage':
-                selector.add_assessor("competence", CompetenceAssessor())
+                selector.add_assessor("competence", TCCCCompetenceAssessor())
 
         if args.dump:
             dump_config = DEFAULT_DUMP

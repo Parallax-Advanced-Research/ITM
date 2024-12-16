@@ -16,7 +16,7 @@ from domain.enum import (
     ParamEnum,
 )
 
-from .domain_reference import (
+from .tccc_domain_reference import (
     TriageCategory,
     TreatmentsEnum,
     InjuryLocationEnum,
@@ -40,7 +40,7 @@ PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administ
 }
 
 
-class CompetenceAssessor(Assessor):
+class TCCCCompetenceAssessor(Assessor):
     def __init__(self):
         self.vitals_rule_set = VitalSignsTaggingRuleSet()
         self.injury_rule_set = InjuryTaggingRuleSet()
