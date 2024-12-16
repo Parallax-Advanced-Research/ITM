@@ -3,12 +3,12 @@ from typing import Any, Sequence
 from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, Decision, Action, State
 from domain.ta3 import TA3State, Casualty, Supply
 from components import DecisionSelector, DecisionAnalyzer, Assessor
-from triage import TriageCompetenceAssessor
+from triage import CompetenceAssessor
 import util
 
 class SeverityDecisionSelector(DecisionSelector):
     def __init__(self, args = None):
-        self.competence_assessor = TriageCompetenceAssessor()
+        self.competence_assessor = CompetenceAssessor()
         self.insert_pauses = False
         self.decision_verbose = False
         if args is not None:

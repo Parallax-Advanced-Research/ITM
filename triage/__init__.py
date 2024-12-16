@@ -1,1 +1,1 @@
-from .triage_competence_assessor import TriageCompetenceAssessor
+from .competence_assessor import CompetenceAssessor

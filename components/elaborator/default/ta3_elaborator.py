@@ -8,7 +8,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Ac
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from typing import Any
 from util import logger
-from triage import TriageCompetenceAssessor
+from triage import CompetenceAssessor
 
 import os
 
@@ -29,7 +29,7 @@ class TA3Elaborator(Elaborator):
         self.elab_to_json = elab_to_json
 
     def elaborate(self, scenario: Scenario, probe: TADProbe, verbose = True) -> list[Decision[Action]]:
-        assessor = TriageCompetenceAssessor()
+        assessor = CompetenceAssessor()
         d: Decision[Action]
         to_return: list[Decision[Action]] = []
         tag_available = len([1 for dtemp in probe.decisions if dtemp.value.name == ActionTypeEnum.TAG_CHARACTER]) > 0

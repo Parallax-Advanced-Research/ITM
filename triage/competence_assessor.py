@@ -40,7 +40,7 @@ PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administ
 }
 
 
-class TriageCompetenceAssessor(Assessor):
+class CompetenceAssessor(Assessor):
     def __init__(self):
         self.vitals_rule_set = VitalSignsTaggingRuleSet()
         self.injury_rule_set = InjuryTaggingRuleSet()
