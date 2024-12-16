@@ -3,7 +3,7 @@ from typing import Any, Sequence
 from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, Decision, Action, State
 from domain.ta3 import TA3State, Casualty, Supply
 from components import DecisionSelector, DecisionAnalyzer, Assessor
-from triage import CompetenceAssessor
+from components.decision_assessor.competence import CompetenceAssessor
 import util
 
 class SeverityDecisionSelector(DecisionSelector):

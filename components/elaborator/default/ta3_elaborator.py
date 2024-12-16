@@ -8,7 +8,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Ac
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from typing import Any
 from util import logger
-from triage import CompetenceAssessor
+from components.decision_assessor.competence import CompetenceAssessor
 
 import os
 
