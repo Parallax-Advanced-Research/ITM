@@ -1,14 +1,14 @@
 from typing import List
 import re
 from components import Assessor
-from components.decision_assessor.competence.AssessmentHeuristicRuleset import AssessmentHeuristicRuleset
-from components.decision_assessor.competence.EndSceneRuleset import EndSceneRuleset
-from components.decision_assessor.competence.EvacuationRuleSet import EvacuationRuleSet
-from components.decision_assessor.competence.InjuryTaggingRuleSet import InjuryTaggingRuleSet
-from components.decision_assessor.competence.PainMedRuleSet import PainMedRuleSet
-from components.decision_assessor.competence.SearchActionRuleSet import SearchActionRuleSet
-from components.decision_assessor.competence.TreatmentRuleSet import TreatmentRuleSet
-from components.decision_assessor.competence.VitalSignsTaggingRuleSet import VitalSignsTaggingRuleSet
+from components.decision_assessor.competence.rulesets.AssessmentHeuristicRuleset import AssessmentHeuristicRuleset
+from components.decision_assessor.competence.rulesets.EndSceneRuleset import EndSceneRuleset
+from components.decision_assessor.competence.rulesets.EvacuationRuleSet import EvacuationRuleSet
+from components.decision_assessor.competence.rulesets.InjuryTaggingRuleSet import InjuryTaggingRuleSet
+from components.decision_assessor.competence.rulesets.PainMedRuleSet import PainMedRuleSet
+from components.decision_assessor.competence.rulesets.SearchActionRuleSet import SearchActionRuleSet
+from components.decision_assessor.competence.rulesets.TreatmentRuleSet import TreatmentRuleSet
+from components.decision_assessor.competence.rulesets.VitalSignsTaggingRuleSet import VitalSignsTaggingRuleSet
 from domain.internal import TADProbe, Decision, Action
 from domain.ta3 import Casualty
 from domain.enum import (
