@@ -1,6 +1,4 @@
-from components.decision_assessor.competence.tccc_domain_reference import InjurySeverityEnum, TreatmentsEnum
-from domain.enum import AvpuLevelEnum, InjuryTypeEnum, MentalStatusEnum
-
+from components.decision_assessor.competence.tccc_domain_reference import InjurySeverityEnum, TreatmentsEnum, AvpuLevelEnum, InjuryTypeEnum, MentalStatusEnum
 
 class PainMedRuleSet:
     """

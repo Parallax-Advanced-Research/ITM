@@ -1,5 +1,5 @@
-from components.decision_assessor.competence.tccc_domain_reference import InjuryLocationEnum, InjurySeverityEnum, TriageCategory
-from domain.enum import BloodOxygenEnum, BreathingLevelEnum, InjuryTypeEnum
+from components.decision_assessor.competence.tccc_domain_reference import InjuryLocationEnum, InjurySeverityEnum, TriageCategory, InjuryTypeEnum, BloodOxygenEnum, BreathingLevelEnum, InjuryTypeEnum
+
 
 
 class EvacuationRuleSet:
@@ -19,7 +19,7 @@ class EvacuationRuleSet:
         # Evacuate only if resources allow; deprioritized in combat settings.
         TriageCategory.EXPECTANT: 0.7,
         # Evacuation generally unnecessary; stable condition.
-        TriageCategory.MINIMAL: 0.3, # If this is considered in the rules application, it is probably because there is an option to evac (fuzzy rule for intiuition)
+        TriageCategory.MINIMAL: 0.3, # If this is considered in the rules application, it is probably because there is an option to evac
         # Evacuation can wait but may be required; monitor condition.
         TriageCategory.DELAYED: 0.5,
         # Default score for unclear or uncategorized cases.
@@ -35,7 +35,6 @@ class EvacuationRuleSet:
 
         tags = self.tag_predictor.predict_tags(casualty)
         if tags:
-            # Determine highest priority tag by finding the tag with the highest severity index
             tag_priority_order = [
                 TriageCategory.MINIMAL,
                 TriageCategory.DELAYED,
@@ -55,41 +54,15 @@ class EvacuationRuleSet:
 
         score = self.BASE_SCORES.get(highest_priority_tag, 0.5)
 
-        for injury in casualty.injuries:
-            if injury.severity == InjurySeverityEnum.EXTREME.value:
-                # Evacuate immediately for extreme injuries
-                score = 1.0
-            elif injury.severity == InjurySeverityEnum.MAJOR.value:
-                # Major injuries increase evacuation priority
-                score = min(score + 0.3, 1.0)
-            elif injury.severity == InjurySeverityEnum.SUBSTANTIAL.value:
-                # Substantial injuries increase evacuation priority
-                score = min(score + 0.2, 1.0)
-            elif injury.severity == InjurySeverityEnum.MODERATE.value:
-                # Moderate injuries increase evacuation priority
-                score = min(score + 0.1, 1.0)
-            elif injury.severity == InjurySeverityEnum.MINOR.value:
-                # Minor injuries may not require evacuation
-                score = max(score - 0.1, 0.0)
-        
+        # Initialize severity and location adjustments
+        severity_adjustments = {
+            InjurySeverityEnum.EXTREME.value: 1.0,  # Extreme injuries demand immediate evacuation.
+            InjurySeverityEnum.MAJOR.value: 0.3,    # Major injuries require urgent attention but may allow for some delay.
+            InjurySeverityEnum.SUBSTANTIAL.value: 0.2,  # Substantial injuries are less critical but still significant.
+            InjurySeverityEnum.MODERATE.value: 0.1,  # Moderate injuries require monitoring, with delayed evacuation acceptable.
+            InjurySeverityEnum.MINOR.value: -0.1,   # Minor injuries deprioritize evacuation to conserve resources.
+        }
 
-        # Adjust for specific high-priority injury types
-        if any(
-            injury.name == InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY
-            for injury in casualty.injuries
-        ):
-            # TBI often requires specialized evacuation
-            score = min(score + 0.15, 1.0)
-
-        if any(
-            injury.name
-            in {InjuryTypeEnum.OPEN_ABDOMINAL_WOUND, InjuryTypeEnum.CHEST_COLLAPSE}
-            for injury in casualty.injuries
-        ):
-            # Chest and abdominal wounds increase evacuation priority
-            score = min(score + 0.1, 1.0)
-
-        # Location-based adjustments
         critical_locations = {
             InjuryLocationEnum.HEAD,
             InjuryLocationEnum.NECK,
@@ -97,27 +70,46 @@ class EvacuationRuleSet:
             InjuryLocationEnum.RIGHT_CHEST,
             InjuryLocationEnum.CENTER_CHEST,
         }
-        if any(injury.location in critical_locations for injury in casualty.injuries):
-            # Critical area injuries increase evacuation need
-            score = min(score + 0.1, 1.0)
+
+        # Iterate through injuries once, applying relevant adjustments
+        for injury in casualty.injuries:
+            severity = InjurySeverityEnum(injury.severity)
+            injury_type = InjuryTypeEnum(injury.name)
+            location = InjuryLocationEnum(injury.location)
+
+            # Apply severity adjustment
+            if severity.value in severity_adjustments:
+                adjustment = severity_adjustments[severity.value]
+                score = min(score + adjustment, 1.0) if adjustment > 0 else max(score + adjustment, 0.0)
+
+            # Specific high-priority injury types
+            if injury_type == InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY:
+                # TBIs require rapid evacuation to prevent permanent neurological damage.
+                score = min(score + 0.15, 1.0)
+            elif injury_type in {InjuryTypeEnum.OPEN_ABDOMINAL_WOUND, InjuryTypeEnum.CHEST_COLLAPSE}:
+                # Open abdominal wounds and chest collapse pose significant risk and require quick intervention.
+                score = min(score + 0.1, 1.0)
+
+            # Location-based adjustments
+            if location in critical_locations:
+                # Injuries to the head, neck, or chest increase the likelihood of life-threatening complications.
+                score = min(score + 0.1, 1.0)
 
         # Adjust based on vital signs
-        if (
-            casualty.vitals.spo2 == BloodOxygenEnum.LOW
-            or casualty.vitals.breathing
-            in [BreathingLevelEnum.RESTRICTED, BreathingLevelEnum.FAST]
-        ):
-            # Low oxygen saturation or restricted breathing increases evacuation priority
+        breathing = BreathingLevelEnum(casualty.vitals.breathing)
+        oxygen_level = BloodOxygenEnum(casualty.vitals.spo2)
+
+        if breathing in [BreathingLevelEnum.RESTRICTED, BreathingLevelEnum.FAST]:
+            # Restricted or rapid breathing indicates respiratory distress and requires immediate evacuation consideration.
+            score = min(score + 0.1, 1.0)
+
+        if oxygen_level == BloodOxygenEnum.LOW:
+            # Low oxygen saturation signifies potential hypoxia, necessitating urgent care.
             score = min(score + 0.1, 1.0)
 
         # Transport availability adjustment
         if not transport_available:
-            # If no transport is available, deprioritize evacuation
+            # Lack of transport deprioritizes evacuation to ensure resources are allocated appropriately.
             score = max(score - 0.2, 0.0)
-
-        # Environmental factors
-        # TODO: Add environmental factors to adjust evacuation priority
-        # If the threat environment is high, evacuation might be prioritized to remove casualties from danger
-        # score = min(score + 0.1, 1.0)
 
         return score

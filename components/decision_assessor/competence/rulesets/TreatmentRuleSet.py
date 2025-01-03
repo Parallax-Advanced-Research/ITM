@@ -1,5 +1,4 @@
-from components.decision_assessor.competence.tccc_domain_reference import InjuryLocationEnum, TreatmentsEnum
-from domain.enum import BloodOxygenEnum, BreathingLevelEnum, HeartRateEnum, InjuryTypeEnum, MentalStatusEnum, SupplyTypeEnum
+from components.decision_assessor.competence.tccc_domain_reference import InjuryLocationEnum, TreatmentsEnum , BloodOxygenEnum, BreathingLevelEnum, HeartRateEnum, InjuryTypeEnum, MentalStatusEnum, SupplyTypeEnum
 from domain.ta3 import Injury, Vitals
 
 

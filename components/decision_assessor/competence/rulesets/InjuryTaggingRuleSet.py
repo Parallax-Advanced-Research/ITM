@@ -1,5 +1,4 @@
-from components.decision_assessor.competence.tccc_domain_reference import InjurySeverityEnum, TriageCategory
-from domain.enum import InjuryTypeEnum
+from components.decision_assessor.competence.tccc_domain_reference import InjurySeverityEnum, TriageCategory, InjuryTypeEnum
 from domain.ta3 import Injury
 
 
