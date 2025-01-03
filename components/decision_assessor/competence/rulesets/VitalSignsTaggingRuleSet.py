@@ -28,6 +28,12 @@ class VitalSignsTaggingRuleSet:
             ),
             # No pulse with hypoxia, likely to be fatal without immediate advanced care.
             ("hrpmin", HeartRateEnum.NONE, "spo2", BloodOxygenEnum.LOW),
+            # Non-ambulatory with no breathing indicates fatal condition.
+            ("ambulatory", False, "breathing", BreathingLevelEnum.NONE),
+            # Non-ambulatory with critical hypoxia and no pulse suggests low survival probability.
+            ("ambulatory", False, "spo2", BloodOxygenEnum.LOW, "hrpmin", HeartRateEnum.NONE),
+            # Unresponsive and severe shock combined with non-ambulatory status indicates fatal trauma.
+            ("ambulatory", False, "mental_status", MentalStatusEnum.UNRESPONSIVE, "breathing", BreathingLevelEnum.NONE),
         ],
         # IMMEDIATE - Critical conditions that require urgent intervention
         TriageCategory.IMMEDIATE: [
@@ -50,6 +56,12 @@ class VitalSignsTaggingRuleSet:
                 "hrpmin",
                 HeartRateEnum.FAST,
             ),
+            # Non-ambulatory with restricted breathing or severe shock.
+            ("ambulatory", False, "breathing", BreathingLevelEnum.RESTRICTED, "mental_status", MentalStatusEnum.SHOCK),
+            # Non-ambulatory with faint pulse or rapid heart rate requiring intervention.
+            ("ambulatory", False, "hrpmin", HeartRateEnum.FAINT),
+            # Severe hypoxia and restricted breathing in non-ambulatory casualty.
+            ("ambulatory", False, "spo2", BloodOxygenEnum.LOW, "breathing", BreathingLevelEnum.RESTRICTED),
         ],
         # DELAYED - Serious conditions that can wait but require monitoring
         TriageCategory.DELAYED: [
@@ -63,6 +75,12 @@ class VitalSignsTaggingRuleSet:
             ("avpu", AvpuLevelEnum.PAIN, "spo2", BloodOxygenEnum.NORMAL),
             # Responds to voice with no hypoxia, indicating stable condition.
             ("avpu", AvpuLevelEnum.VOICE, "spo2", BloodOxygenEnum.NORMAL),
+            # Non-ambulatory with mild hypoxia and normal breathing.
+            ("ambulatory", False, "breathing", BreathingLevelEnum.NORMAL, "spo2", BloodOxygenEnum.LOW),
+            # Stable but non-ambulatory casualties with moderate injuries.
+            ("ambulatory", False, "mental_status", MentalStatusEnum.CONFUSED, "hrpmin", HeartRateEnum.NORMAL),
+            # Non-ambulatory due to substantial injuries but vital signs stable.
+            ("ambulatory", False, "mental_status", MentalStatusEnum.CALM, "spo2", BloodOxygenEnum.NORMAL), # evacute the casualty if non-ambulatory it is alloweed even if everything else is stable
         ],
         # MINIMAL - Stable conditions with no immediate risk
         TriageCategory.MINIMAL: [

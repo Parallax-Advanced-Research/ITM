@@ -338,3 +338,4 @@ data/rag_input
 *pretraining_cases.json
 *.tgz
 triage/data
+components/decision_assessor/onto/data/pym.sqlite3
