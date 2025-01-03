@@ -19,7 +19,7 @@ class EvacuationRuleSet:
         # Evacuate only if resources allow; deprioritized in combat settings.
         TriageCategory.EXPECTANT: 0.7,
         # Evacuation generally unnecessary; stable condition.
-        TriageCategory.MINIMAL: 0.0,
+        TriageCategory.MINIMAL: 0.3, # If this is considered in the rules application, it is probably because there is an option to evac (fuzzy rule for intiuition)
         # Evacuation can wait but may be required; monitor condition.
         TriageCategory.DELAYED: 0.5,
         # Default score for unclear or uncategorized cases.

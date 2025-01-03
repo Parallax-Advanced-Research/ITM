@@ -80,7 +80,7 @@ class VitalSignsTaggingRuleSet:
             # Stable but non-ambulatory casualties with moderate injuries.
             ("ambulatory", False, "mental_status", MentalStatusEnum.CONFUSED, "hrpmin", HeartRateEnum.NORMAL),
             # Non-ambulatory due to substantial injuries but vital signs stable.
-            ("ambulatory", False, "mental_status", MentalStatusEnum.CALM, "spo2", BloodOxygenEnum.NORMAL), # evacute the casualty if non-ambulatory it is alloweed even if everything else is stable
+            ("ambulatory", False, "mental_status", MentalStatusEnum.CALM, "spo2", BloodOxygenEnum.NORMAL), # evacute the casualty if non-ambulatory if it is allowed even if everything else is stable
         ],
         # MINIMAL - Stable conditions with no immediate risk
         TriageCategory.MINIMAL: [
