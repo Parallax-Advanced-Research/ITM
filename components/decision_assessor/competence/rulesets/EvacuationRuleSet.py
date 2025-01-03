@@ -56,16 +56,21 @@ class EvacuationRuleSet:
         score = self.BASE_SCORES.get(highest_priority_tag, 0.5)
 
         # Adjust based on severity
-        if any(
-            injury.severity == InjurySeverityEnum.EXTREME
-            for injury in casualty.injuries
-        ):
-            score = min(score + 0.2, 1.0)  # High priority for severe cases
-        elif all(
-            injury.severity == InjurySeverityEnum.MINOR for injury in casualty.injuries
-        ):
+        if any(injury.severity == InjurySeverityEnum.EXTREME for injury in casualty.injuries):
+            # Highest priority adjustment for extreme injuries
+            score = min(score + 0.3, 1.0)
+        elif any(injury.severity == InjurySeverityEnum.MAJOR for injury in casualty.injuries):
+            # High priority adjustment for major injuries
+            score = min(score + 0.25, 1.0)
+        elif any(injury.severity == InjurySeverityEnum.SUBSTANTIAL for injury in casualty.injuries):
+            # Moderate priority adjustment for substantial injuries
+            score = min(score + 0.2, 1.0)
+        elif any(injury.severity == InjurySeverityEnum.MODERATE for injury in casualty.injuries):
+            # Low priority adjustment for moderate injuries
+            score = min(score + 0.1, 1.0)
+        elif all(injury.severity == InjurySeverityEnum.MINOR for injury in casualty.injuries):
             # Lower priority if all injuries are minor
-            score = max(score - 0.2, 0.0)
+            score = max(score - 0.2, 0.3)  # Ensure minimum priority score doesn't go below 0.3
 
         # Adjust for specific high-priority injury types
         if any(
