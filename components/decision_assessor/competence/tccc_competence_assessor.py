@@ -11,16 +11,14 @@ from components.decision_assessor.competence.rulesets.TreatmentRuleSet import Tr
 from components.decision_assessor.competence.rulesets.VitalSignsTaggingRuleSet import VitalSignsTaggingRuleSet
 from domain.internal import TADProbe, Decision, Action
 from domain.ta3 import Casualty
-from domain.enum import (
-    ActionTypeEnum,
-    ParamEnum,
-)
 
 from .tccc_domain_reference import (
+    ActionTypeEnum,
     BloodOxygenEnum,
     BreathingLevelEnum,
     MentalStatusEnum,
     HeartRateEnum,
+    ParamEnum,
     TriageCategory,
     TreatmentsEnum,
     InjurySeverityEnum,
@@ -354,7 +352,7 @@ def id_treatable(probe: TADProbe, id: str):
 
 
 def is_treatment_action(act: Action):
-    return act.name == ActionTypeEnum.APPLY_TREATMENT
+    return ActionTypeEnum(act.name) == ActionTypeEnum.APPLY_TREATMENT
 
 
 def is_painmed_action(act: Action):
