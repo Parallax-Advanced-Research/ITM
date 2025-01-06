@@ -12,7 +12,13 @@
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/*.yaml"
         },
-        //MOVE_TO_EVAC
+        {            
+            "name": "MJ2 Action Tester Module",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-MJ2.yaml"
+        },
         {            
             "name": "MJ4 Action Tester Module",
             "type": "debugpy",
@@ -34,13 +40,7 @@
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/dryrun-adept-train-IO1exp.yaml"
         },
-        {            
-            "name": "MJ2 Action Tester Module",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "scripts.scenario_action_tester",
-            "args": "scenarios/ph1/dryrun-adept-train-MJ2.yaml"
-        },
+
 
 
         // TAD TESTER --------------------------

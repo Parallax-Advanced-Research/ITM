@@ -13,18 +13,17 @@ from domain.internal import TADProbe, Decision, Action
 from domain.ta3 import Casualty
 from domain.enum import (
     ActionTypeEnum,
-    MentalStatusEnum,
-    HeartRateEnum,
-    BloodOxygenEnum,
-    BreathingLevelEnum,
     ParamEnum,
 )
 
 from .tccc_domain_reference import (
+    BloodOxygenEnum,
+    BreathingLevelEnum,
+    MentalStatusEnum,
+    HeartRateEnum,
     TriageCategory,
     TreatmentsEnum,
     InjurySeverityEnum,
-    ThreatSeverityEnum,
 )
 
 
@@ -186,6 +185,7 @@ class TCCCCompetenceAssessor(Assessor):
         """
         # Regular expression to extract casualty ID from 'casualty_x' or 'P1 Patient A'
         match = re.search(r"\b(casualty_\w+|P\d+\s+Patient\s+\w+)\b", decision_key)
+        
         if match:
             casualty_id = match.group(1)
 
