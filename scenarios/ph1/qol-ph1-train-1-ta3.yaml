@@ -105,7 +105,7 @@ scenes:
         name: Traumatic Brain Injury
         severity: extreme
         status: visible
-      - location: left thigh
+      - location: left bicep
         name: Puncture
         severity: moderate
         status: visible
