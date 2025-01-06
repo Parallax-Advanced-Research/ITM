@@ -17,7 +17,7 @@ def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str
 def estimate_KDMAs_from_probs(kdma_probs: dict[str, dict[float, float]]) -> dict[str, float]:
     kdma_estimates = {}
     for (kdma, prob_dict) in kdma_probs.items():
-        if len(prob_dict) == 0:
+        if len(prob_dict) == 0 or prob_dict == "irrelevant":
             kdma_estimates[kdma] = None
         else:
             kdma_estimates[kdma] = estimate_value_from_probability_dict(prob_dict)
@@ -45,6 +45,9 @@ def get_KDMA_probabilities(cur_case: dict[str, Any], weights: dict[str, float], 
                  neighbor_count = neighbor_count, dist_fn = dist_fn)
     if len(topk) == 0:
         return {},[]
+        
+    if topk[0][0] == "irrelevant":
+        return "irrelevant", topk
 
     dists = [max(dist, 0.01) for (dist, case) in topk]
     total = sum(dists)
@@ -83,9 +86,7 @@ def sorted_distances(cur_case: dict[str, Any], weights: dict[str, float], kdma: 
         lst.sort(key=first)
     return lst
     
-def is_compatible(case1, case2, kdma, check_scenes : bool = True) -> float:
-    if case1.get(kdma, None) is None:
-        return False
+def is_compatible(case1, case2, check_scenes : bool = True) -> float:
     case1_act_type = case1['action_type']
     case2_act_type = case2['action_type']
     if case1_act_type != case2_act_type:
@@ -98,7 +99,15 @@ def is_compatible(case1, case2, kdma, check_scenes : bool = True) -> float:
     return True
 
 def find_compatible_distance(case1, case2, weights, kdma, check_scenes : bool = True) -> float:
-    if is_compatible(case1, case2, kdma, check_scenes = check_scenes):
+    if case1.get(kdma, None) is None:
+        return None
+    elif is_compatible(case1, case2, check_scenes = check_scenes):
+        return calculate_distance(case1, case2, weights, local_compare)
+    else:
+        return None
+
+def find_relevance_distance(case1, case2, weights, kdma, check_scenes : bool = True) -> float:
+    if is_compatible(case1, case2, check_scenes = check_scenes):
         return calculate_distance(case1, case2, weights, local_compare)
     else:
         return None
@@ -141,6 +150,16 @@ def top_K(cur_case: dict[str, Any], oweights: dict[str, float], kdma: str, cases
         util.logger.warn(f"No neighbors found. No KDMA prediction made.")
         breakpoint()
         return lst
+    if lst[0][1][kdma] is None:
+        if print_neighbors:
+            util.logger.warn(f"Nearest neighbor is irrelevant. Irrelevance predicted.")
+        return [("irrelevant", lst[0][1])]
+    irrelevant_votes = sum([1 for (dist, c) in lst if c[kdma] is None])
+    if irrelevant_votes > 0 and irrelevant_votes / len(lst) >= 0.49:
+        if print_neighbors:
+            util.logger.warn(f"50+% of nearest neighbors are irrelevant. Irrelevance predicted.")
+        return [("irrelevant", c) for (dist, c) in lst if c[kdma] is None]
+    lst = [(dist, c)  for (dist, c) in lst if c[kdma] is not None]
     kdma_preds = [(c[kdma], (dist, c))  for (dist, c) in lst]
     case_max = max(kdma_preds, key=first)[1]
     case_min = min(kdma_preds, key=first)[1]
