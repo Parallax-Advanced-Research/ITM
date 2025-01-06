@@ -338,3 +338,5 @@ data/rag_input
 *pretraining_cases.json
 *.tgz
 triage/data
+/scenarios/*/*Copy.yaml
+/bkup
