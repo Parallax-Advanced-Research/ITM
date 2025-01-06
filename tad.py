@@ -73,7 +73,7 @@ def parse_kdmas(kdma_args: list[str]):
         k, v = kdmastr.replace("-", "=").split('=')
         kdma_names.append(k)
         kdma_values[k] = float(v)
-    return AlignmentTarget("CmdLine", kdma_names, kdma_values, AlignmentTargetType.SCALAR)
+    return AlignmentTarget(str(kdma_args), kdma_names, kdma_values, AlignmentTargetType.SCALAR)
 
 
 def ltest(args):
@@ -172,7 +172,7 @@ def api_test(args, driver = None):
                     driver.reset_memory()
             else:
                 new_scene = None
-            if args.training and (args.session_type == "adept" or new_probe is None):
+            if args.training and new_probe is None: # (args.session_type == "adept" or new_probe is None):
                 for alignment in client.get_session_alignments():
                     driver.train(alignment, new_probe is None, new_scene != scene, scene)
                     logger.info(f"{alignment.alignment_target_id}: {alignment.score}")
