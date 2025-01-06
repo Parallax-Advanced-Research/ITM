@@ -30,8 +30,6 @@ CHECK_ACTION_TYPES = [
     ActionTypeEnum.CHECK_BLOOD_OXYGEN,
     ActionTypeEnum.CHECK_PULSE,
     ActionTypeEnum.CHECK_RESPIRATION,
-    ActionTypeEnum.SITREP,
-    ActionTypeEnum.MOVE_TO,
 ]
 
 PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administered
@@ -114,7 +112,10 @@ class TriageCompetenceAssessor(Assessor):
                 ret_assessments[dec_key] = self.check_end_scene_decision(
                     treatment_available, check_available, painmeds_available, casualties
                 )
-
+                
+            else:
+                ret_assessments[dec_key] = 1
+                
         ranked_assessments = self.rank_assessments(ret_assessments, casualties)
 
         return ranked_assessments
