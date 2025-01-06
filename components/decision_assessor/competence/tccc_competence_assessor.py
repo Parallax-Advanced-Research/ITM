@@ -1,29 +1,48 @@
 from typing import List
 import re
 from components import Assessor
-from components.decision_assessor.competence.rulesets.AssessmentHeuristicRuleset import AssessmentHeuristicRuleset
-from components.decision_assessor.competence.rulesets.EndSceneRuleset import EndSceneRuleset
-from components.decision_assessor.competence.rulesets.EvacuationRuleSet import EvacuationRuleSet
-from components.decision_assessor.competence.rulesets.InjuryTaggingRuleSet import InjuryTaggingRuleSet
-from components.decision_assessor.competence.rulesets.PainMedRuleSet import PainMedRuleSet
-from components.decision_assessor.competence.rulesets.SearchActionRuleSet import SearchActionRuleSet
-from components.decision_assessor.competence.rulesets.TreatmentRuleSet import TreatmentRuleSet
-from components.decision_assessor.competence.rulesets.VitalSignsTaggingRuleSet import VitalSignsTaggingRuleSet
+from components.decision_assessor.competence.rulesets.AssessmentHeuristicRuleset import (
+    AssessmentHeuristicRuleset,
+)
+from components.decision_assessor.competence.rulesets.EndSceneRuleset import (
+    EndSceneRuleset,
+)
+from components.decision_assessor.competence.rulesets.EvacuationRuleSet import (
+    EvacuationRuleSet,
+)
+from components.decision_assessor.competence.rulesets.InjuryTaggingRuleSet import (
+    InjuryTaggingRuleSet,
+)
+from components.decision_assessor.competence.rulesets.PainMedRuleSet import (
+    PainMedRuleSet,
+)
+from components.decision_assessor.competence.rulesets.SearchActionRuleSet import (
+    SearchActionRuleSet,
+)
+from components.decision_assessor.competence.rulesets.TreatmentRuleSet import (
+    TreatmentRuleSet,
+)
+from components.decision_assessor.competence.rulesets.VitalSignsTaggingRuleSet import (
+    VitalSignsTaggingRuleSet,
+)
 from domain.internal import TADProbe, Decision, Action
 from domain.ta3 import Casualty
 
-from .tccc_domain_reference import (
+
+from domain.enum import (
     ActionTypeEnum,
-    BloodOxygenEnum,
-    BreathingLevelEnum,
-    MentalStatusEnum,
+    SupplyTypeEnum,
     HeartRateEnum,
-    ParamEnum,
-    TriageCategory,
-    TreatmentsEnum,
     InjurySeverityEnum,
+    ParamEnum,
+    MentalStatusEnum,
+    BreathingLevelEnum,
+    SupplyTypeEnum,
+    BloodOxygenEnum,
+    TriageCategory,
 )
 
+from domain.enum import SupplyTypeEnum as TreatmentsEnum
 
 CHECK_ACTION_TYPES = [
     ActionTypeEnum.CHECK_ALL_VITALS,
@@ -35,8 +54,8 @@ CHECK_ACTION_TYPES = [
 ]
 
 PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administered
-    TreatmentsEnum.PAIN_MEDICATIONS,
-    TreatmentsEnum.FENTANYL_LOLLIPOP,
+    SupplyTypeEnum.PAIN_MEDICATIONS,
+    SupplyTypeEnum.FENTANYL_LOLLIPOP,
 }
 
 
@@ -167,14 +186,13 @@ class TCCCCompetenceAssessor(Assessor):
             )  # Default to lowest possible severity index if no injuries are present
 
         # Convert InjurySeverityEnum to a list to retrieve severity index
-        severity_levels = list(InjurySeverityEnum)
+        severity_levels = {"MINOR": 0, "MODERATE": 1, "SUBSTANTIAL": 2, "MAJOR": 3, "EXTREME": 4}
 
         # Get the index of each injury severity in the severity_levels list and find the maximum
-        return max(
-            severity_levels.index(InjurySeverityEnum[injury.severity.upper()])
-            for injury in casualty.injuries
-            if injury.severity.upper() in InjurySeverityEnum.__members__
+        max_severity = max(
+            severity_levels[injury.severity.upper()] for injury in casualty.injuries
         )
+        return max_severity
 
     def get_casualty(self, decision_key: str, casualties: List[Casualty]) -> Casualty:
         """
@@ -183,7 +201,7 @@ class TCCCCompetenceAssessor(Assessor):
         """
         # Regular expression to extract casualty ID from 'casualty_x' or 'P1 Patient A'
         match = re.search(r"\b(casualty_\w+|P\d+\s+Patient\s+\w+)\b", decision_key)
-        
+
         if match:
             casualty_id = match.group(1)
 
@@ -219,7 +237,7 @@ class TCCCCompetenceAssessor(Assessor):
         """
         Assess the competence score for applying a given treatment to a casualty.
         """
-        given_treatment_enum = TreatmentsEnum(given_treatment)
+        given_treatment_enum = given_treatment
 
         for injury in casualty.injuries:
             # Validate and contraindicate treatments specific to this injury
@@ -352,7 +370,7 @@ def id_treatable(probe: TADProbe, id: str):
 
 
 def is_treatment_action(act: Action):
-    return ActionTypeEnum(act.name) == ActionTypeEnum.APPLY_TREATMENT
+    return act.name == ActionTypeEnum.APPLY_TREATMENT
 
 
 def is_painmed_action(act: Action):

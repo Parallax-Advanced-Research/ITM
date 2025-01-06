@@ -1,5 +1,4 @@
-from components.decision_assessor.competence.tccc_domain_reference import TriageCategory
-from domain.enum import AvpuLevelEnum, BloodOxygenEnum, BreathingLevelEnum, HeartRateEnum, MentalStatusEnum
+from domain.enum import AvpuLevelEnum, BloodOxygenEnum, BreathingLevelEnum, HeartRateEnum, MentalStatusEnum, TriageCategory
 from domain.ta3 import Vitals
 
 

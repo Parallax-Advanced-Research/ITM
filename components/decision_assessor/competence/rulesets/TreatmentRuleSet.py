@@ -1,4 +1,4 @@
-from components.decision_assessor.competence.tccc_domain_reference import InjuryLocationEnum, TreatmentsEnum , BloodOxygenEnum, BreathingLevelEnum, HeartRateEnum, InjuryTypeEnum, MentalStatusEnum, SupplyTypeEnum
+from domain.enum import InjuryLocationEnum, SupplyTypeEnum, BloodOxygenEnum, BreathingLevelEnum, HeartRateEnum, InjuryTypeEnum, MentalStatusEnum, TreatmentsEnum
 from domain.ta3 import Injury, Vitals
 
 
@@ -303,11 +303,11 @@ class TreatmentRuleSet:
 
     def get_location_contraindicated_treatments(
         self, injury: Injury
-    ) -> List[TreatmentsEnum]:
+    ) -> List[SupplyTypeEnum]:
         """
         Returns a list of contraindicated treatments based on injury location.
         """
-        location_enum = InjuryLocationEnum(injury.location)
+        location_enum = injury.location
         return self.LOCATION_CONTRAINDICATED_TREATMENTS.get(location_enum, [])
 
     def is_blood_treatment_valid(self, injury: Injury) -> bool:

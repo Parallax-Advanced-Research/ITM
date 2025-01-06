@@ -1,4 +1,4 @@
-from components.decision_assessor.competence.tccc_domain_reference import InjurySeverityEnum, ActionTypeEnum, InjuryTypeEnum
+from domain.enum import InjurySeverityEnum, ActionTypeEnum, InjuryTypeEnum
 
 class AssessmentHeuristicRuleset:
     """

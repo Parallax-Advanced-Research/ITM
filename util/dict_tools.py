@@ -208,3 +208,12 @@ def _is_different(obj1: Any, obj2: Any) -> bool:
     
     # n.b. casting because the possibility of operator overloading means it isn't guaranteed bool
     return bool(obj1 != obj2) 
+
+def get_nested_attribute(obj, attr, default=None):
+    """Retrieve nested attributes, e.g., 'vitals.mental_status'."""
+    attributes = attr.split(".")
+    for attribute in attributes:
+        obj = getattr(obj, attribute, default)
+        if obj is None:
+            return default
+    return obj

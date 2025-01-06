@@ -1,5 +1,6 @@
-from components.decision_assessor.competence.tccc_domain_reference import InjurySeverityEnum, TreatmentsEnum, AvpuLevelEnum, InjuryTypeEnum, MentalStatusEnum
-
+from domain.enum import InjurySeverityEnum, AvpuLevelEnum, InjuryTypeEnum, MentalStatusEnum
+from domain.enum import SupplyTypeEnum as TreatmentsEnum
+from util.dict_tools import get_nested_attribute
 class PainMedRuleSet:
     """
     Evaluates the appropriateness of pain medication administration based on injury severity,
