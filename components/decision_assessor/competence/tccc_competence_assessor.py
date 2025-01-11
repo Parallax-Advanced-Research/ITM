@@ -1,28 +1,14 @@
 from typing import List
 import re
 from components import Assessor
-from components.decision_assessor.competence.rulesets.AssessmentHeuristicRuleset import (
+from components.decision_assessor.competence.rulesets import (
     AssessmentHeuristicRuleset,
-)
-from components.decision_assessor.competence.rulesets.EndSceneRuleset import (
     EndSceneRuleset,
-)
-from components.decision_assessor.competence.rulesets.EvacuationRuleSet import (
     EvacuationRuleSet,
-)
-from components.decision_assessor.competence.rulesets.InjuryTaggingRuleSet import (
     InjuryTaggingRuleSet,
-)
-from components.decision_assessor.competence.rulesets.PainMedRuleSet import (
     PainMedRuleSet,
-)
-from components.decision_assessor.competence.rulesets.SearchActionRuleSet import (
     SearchActionRuleSet,
-)
-from components.decision_assessor.competence.rulesets.TreatmentRuleSet import (
     TreatmentRuleSet,
-)
-from components.decision_assessor.competence.rulesets.VitalSignsTaggingRuleSet import (
     VitalSignsTaggingRuleSet,
 )
 from domain.internal import TADProbe, Decision, Action
@@ -33,7 +19,6 @@ from domain.enum import (
     ActionTypeEnum,
     SupplyTypeEnum,
     HeartRateEnum,
-    InjurySeverityEnum,
     ParamEnum,
     MentalStatusEnum,
     BreathingLevelEnum,
@@ -61,32 +46,25 @@ PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administ
 
 class TCCCCompetenceAssessor(Assessor):
     def __init__(self):
-        self.vitals_rule_set = VitalSignsTaggingRuleSet()
-        self.injury_rule_set = InjuryTaggingRuleSet()
-        self.treatment_rule_set = TreatmentRuleSet()
-        self.painmed_rule_set = PainMedRuleSet()
-        self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset()
-        self.search_action_ruleset = SearchActionRuleSet()
+        self.vitals_rule_set = VitalSignsTaggingRuleSet.VitalSignsTaggingRuleSet()
+        self.injury_rule_set = InjuryTaggingRuleSet.InjuryTaggingRuleSet()
+        self.treatment_rule_set = TreatmentRuleSet.TreatmentRuleSet()
+        self.painmed_rule_set = PainMedRuleSet.PainMedRuleSet()
+        self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset.AssessmentHeuristicRuleset()
+        self.search_action_ruleset = SearchActionRuleSet.SearchActionRuleSet()
         self.tag_predictor = TriagePredictor(self.vitals_rule_set, self.injury_rule_set)
-        self.assess_evac_rule_set = EvacuationRuleSet(self.tag_predictor)
-        self.end_scene_rule_set = EndSceneRuleset(self.tag_predictor)
+        self.assess_evac_rule_set = EvacuationRuleSet.EvacuationRuleSet(self.tag_predictor)
+        self.end_scene_rule_set = EndSceneRuleset.EndSceneRuleset(self.tag_predictor)
 
-    def assess(self, probe: TADProbe) -> dict[Decision, float]:
-        treatment_available = sum(
-            [1 for dec in probe.decisions if is_treatment_action(dec.value)]
-        )
-        painmeds_available = sum(
-            [1 for dec in probe.decisions if is_painmed_action(dec.value)]
-        )
-        check_available = sum(
-            [1 for dec in probe.decisions if is_check_action(dec.value)]
-        )
-        tag_available = sum([1 for dec in probe.decisions if is_tag_action(dec.value)])
-
-        ret_assessments: dict[str, int] = {}
+    def assess(self, probe: TADProbe) -> dict[str, float]:
+        """
+        Evaluates and ranks all actions within a single scene (probe) based on their competence.
+        """
+        ret_assessments: dict[str, float] = {}
         casualties = probe.state.casualties
         supplies = probe.state.supplies
 
+        # Evaluate all decisions in the probe
         for dec in probe.decisions:
             dec_key = str(dec.value)
             target_patient = get_target_patient(probe, dec)
@@ -98,7 +76,6 @@ class TCCCCompetenceAssessor(Assessor):
                 )
 
             elif is_treatment_action(dec.value):
-                # also includes painmed actions
                 ret_assessments[dec_key] = self.assess_treatment(
                     casualty=target_patient,
                     given_treatment=dec.value.params[ParamEnum.TREATMENT],
@@ -124,59 +101,66 @@ class TCCCCompetenceAssessor(Assessor):
                 )
 
             elif dec.value.name == ActionTypeEnum.SEARCH:
-                search_result = self.search_action_ruleset.assess_search_action(
+                ret_assessments[dec_key] = self.search_action_ruleset.assess_search_action(
                     casualties, supplies
                 )
-                ret_assessments[dec_key] = search_result
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
                 ret_assessments[dec_key] = self.check_end_scene_decision(
-                    treatment_available, check_available, painmeds_available, casualties
+                    treatment_available=len(
+                        [1 for d in probe.decisions if is_treatment_action(d.value)]
+                    ),
+                    check_available=len(
+                        [1 for d in probe.decisions if is_check_action(d.value)]
+                    ),
+                    painmeds_available=len(
+                        [1 for d in probe.decisions if is_painmed_action(d.value)]
+                    ),
+                    casualties=casualties,
                 )
 
+        # Rank all actions within this scene
         ranked_assessments = self.rank_assessments(ret_assessments, casualties)
-
         return ranked_assessments
+
 
     def rank_assessments(
         self, assessments: dict[str, float], casualties: List[Casualty]
     ) -> dict[str, float]:
-        # Step 1: Filter assessments with a competence score of 1
-        high_competence_assessments = [
-            {
-                "decision": decision,
-                "score": score,
-                "casualty": self.get_casualty(decision, casualties),
-            }
-            for decision, score in assessments.items()
-            if score == 1
-        ]
+        """
+        Ranks all actions in a scene, ensuring only one has a competence score of 1.0.
+        Ties are resolved based on casualty injury severity and number of injuries.
+        """
+        # Step 1: Constrain all scores to [0, 1]
+        for decision, score in assessments.items():
+            assessments[decision] = min(max(score, 0.0), 1.0)
 
-        # Step 2: Rank assessments based on highest injury severity within each casualty
-        if len(high_competence_assessments) > 1:
-            # Sort assessments by maximum injury severity within the casualty
-            high_competence_assessments.sort(
-                key=lambda a: (
-                    # Higher injury severity first
-                    -self.get_max_injury_severity(a["casualty"]),
-                    # More injuries as second criterion
-                    (
-                        len(a["casualty"].injuries)
-                        if a["casualty"] and a["casualty"].injuries
-                        else 0
-                    ),
-                )
-            )
+        # Step 2: Sort by competence, injury severity, and number of injuries
+        sorted_assessments = sorted(
+            assessments.items(),
+            key=lambda item: (
+                -item[1],  # Higher competence score first
+                -self.get_max_injury_severity(self.get_casualty(item[0], casualties)),  # Severity
+                -len(self.get_casualty(item[0], casualties).injuries or [])  # Injury count
+                if self.get_casualty(item[0], casualties) else 0,
+            ),
+        )
 
-            # Step 3: Adjust all but the highest-ranked assessment's score
-            for assessment in high_competence_assessments[1:]:
-                assessment["score"] = 0.9
+        # Step 3: Ensure only one action has a score of 1.0
+        adjusted_assessments = {}
+        highest_score_set = False
 
-        # Update the original assessments dictionary with modified scores
-        for assessment in high_competence_assessments[1:]:
-            assessments[assessment["decision"]] = assessment["score"]
+        for index, (decision, score) in enumerate(sorted_assessments):
+            casualty = self.get_casualty(decision, casualties)
 
-        return assessments
+            if not highest_score_set:
+                adjusted_assessments[decision] = 1.0  # Assign highest score to the first action
+                highest_score_set = True
+            else:
+                decrement = 0.1 * (index + 1)  # Adjust scores for descending rank
+                adjusted_assessments[decision] = max(0.0, score - decrement)
+
+        return adjusted_assessments
 
     def get_max_injury_severity(self, casualty: Casualty) -> int:
         # Helper to return the highest severity level among a casualty's injuries based on InjurySeverityEnum index
@@ -186,7 +170,13 @@ class TCCCCompetenceAssessor(Assessor):
             )  # Default to lowest possible severity index if no injuries are present
 
         # Convert InjurySeverityEnum to a list to retrieve severity index
-        severity_levels = {"MINOR": 0, "MODERATE": 1, "SUBSTANTIAL": 2, "MAJOR": 3, "EXTREME": 4}
+        severity_levels = {
+            "MINOR": 0,
+            "MODERATE": 1,
+            "SUBSTANTIAL": 2,
+            "MAJOR": 3,
+            "EXTREME": 4,
+        }
 
         # Get the index of each injury severity in the severity_levels list and find the maximum
         max_severity = max(

@@ -4,7 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        // All Scenarios
+        // ADEPT EVAL --------------------------
         {
             "name": "Action Tester Module",
             "type": "debugpy",
@@ -12,36 +12,203 @@
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/*.yaml"
         },
-        {            
-            "name": "MJ2 Action Tester Module",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "scripts.scenario_action_tester",
-            "args": "scenarios/ph1/dryrun-adept-train-MJ2.yaml"
-        },
-        {            
-            "name": "MJ4 Action Tester Module",
+        //MOVE_TO_EVAC
+        {
+            "name": "adept-eval-MJ4_redacted",
             "type": "debugpy",
             "request": "launch",
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/dryrun-adept-eval-MJ4_redacted.yaml"
         },
-        {            
-            "name": "MJ5 Action Tester Module",
+        {
+            "name": "adept-eval-MJ5_redacted",
             "type": "debugpy",
             "request": "launch",
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/dryrun-adept-eval-MJ5_redacted.yaml"
         },
-        {            
-            "name": "IO1 Action Tester Module",
+        // ADEPT TRAINING --------------------------
+        //// IO1
+        {
+            "name": "adept-train-IO1-w-events",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-IO1-w-events.yaml"
+        },
+        {
+            "name": "adept-train-IO1",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-IO1.yaml"
+        },
+        {
+            "name": "adept-train-IO1exp",
             "type": "debugpy",
             "request": "launch",
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/dryrun-adept-train-IO1exp.yaml"
         },
+        {
+            "name": "adept-train-IO1v2",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-IO1v2.yaml"
+        },
+        //// IO2
+        {
+            "name": "adept-train-IO2",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-IO2.yaml"
+        },
+        //// IO3
+        {
+            "name": "adept-train-IO3",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-IO3.yaml"
+        },
+        //// MJ1
+        {
+            "name": "adept-train-MJ1-w-events",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-MJ1-w-events.yaml"
+        },
+        {
+            "name": "adept-train-MJ1",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-MJ1.yaml"
+        },
+        //// MJ2
+        {
+            "name": "adept-train-MJ2",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-MJ2.yaml"
+        },
+        //// MJ3
+        {
+            "name": "adept-train-MJ3",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/dryrun-adept-train-MJ3.yaml"
+        },
 
+        // SOARTECH EVAL ---------------------------
+        {
+            "name": "qol-ph1-eval-2",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/qol-ph1-eval-2-ta3.yaml"
+        },
+        {
+            "name": "qol-ph1-eval-3",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/qol-ph1-eval-3-ta3.yaml"
+        },
+        {
+            "name": "qol-ph1-eval-4",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/qol-ph1-eval-4-ta3.yaml"
+        },
+        {
+            "name": "vol-ph1-eval-2",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/vol-ph1-eval-2-ta3.yaml"
+        },
+        {
+            "name": "vol-ph1-eval-3",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/vol-ph1-eval-3-ta3.yaml"
+        },
+        {
+            "name": "vol-ph1-eval-4",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/vol-ph1-eval-4-ta3.yaml"
+        },
+        // SOARTECH TRAIN ---------------------------
+        // QOL
+        {
+            "name": "qol-ph1-train-1",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/qol-ph1-train-1-ta3.yaml"
+        },
+        {
+            "name": "qol-ph1-train-2",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/qol-ph1-train-2-ta3.yaml"
+        },
+        {
+            "name": "qol-ph1-train-3",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/qol-ph1-train-3-ta3.yaml"
+        },
+        {
+            "name": "qol-ph1-train-4",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/qol-ph1-train-4-ta3.yaml"
+        },
+        // VOL
+        {
+            "name": "vol-ph1-train-1",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/vol-ph1-train-1-ta3.yaml"
+        },
+        {
+            "name": "vol-ph1-train-2",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/vol-ph1-train-2-ta3.yaml"
+        },
+        {
+            "name": "vol-ph1-train-3",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/vol-ph1-train-3-ta3.yaml"
+        },
+        {
+            "name": "vol-ph1-train-4",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": "scenarios/ph1/vol-ph1-train-4-ta3.yaml"
+        },
 
+        
 
         // TAD TESTER --------------------------
         {
