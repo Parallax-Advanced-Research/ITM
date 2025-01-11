@@ -1,5 +1,6 @@
 from typing import List
 import re
+
 from components import Assessor
 from components.decision_assessor.competence.rulesets import (
     AssessmentHeuristicRuleset,
@@ -11,23 +12,20 @@ from components.decision_assessor.competence.rulesets import (
     TreatmentRuleSet,
     VitalSignsTaggingRuleSet,
 )
+from domain.enum import (
+    ActionTypeEnum,
+    BloodOxygenEnum,
+    BreathingLevelEnum,
+    HeartRateEnum,
+    MentalStatusEnum,
+    ParamEnum,
+    SupplyTypeEnum,
+    SupplyTypeEnum as TreatmentsEnum,
+    TriageCategory,
+)
 from domain.internal import TADProbe, Decision, Action
 from domain.ta3 import Casualty
 
-
-from domain.enum import (
-    ActionTypeEnum,
-    SupplyTypeEnum,
-    HeartRateEnum,
-    ParamEnum,
-    MentalStatusEnum,
-    BreathingLevelEnum,
-    SupplyTypeEnum,
-    BloodOxygenEnum,
-    TriageCategory,
-)
-
-from domain.enum import SupplyTypeEnum as TreatmentsEnum
 
 CHECK_ACTION_TYPES = [
     ActionTypeEnum.CHECK_ALL_VITALS,
@@ -101,8 +99,10 @@ class TCCCCompetenceAssessor(Assessor):
                 )
 
             elif dec.value.name == ActionTypeEnum.SEARCH:
-                ret_assessments[dec_key] = self.search_action_ruleset.assess_search_action(
-                    casualties, supplies
+                ret_assessments[dec_key] = (
+                    self.search_action_ruleset.assess_search_action(
+                        casualties, supplies
+                    )
                 )
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
@@ -120,13 +120,14 @@ class TCCCCompetenceAssessor(Assessor):
                 )
 
         # Rank all actions within this scene
-        ranked_assessments = self.rank_assessments(ret_assessments, casualties)
-        return ranked_assessments
+        if len(ret_assessments) > 1:
+            ranked_assessments = self.rank_assessments(ret_assessments, casualties)
+            return ranked_assessments
+        else:
+            return ret_assessments
 
-
-    def rank_assessments(
-        self, assessments: dict[str, float], casualties: List[Casualty]
-    ) -> dict[str, float]:
+   
+    def rank_assessments(self, assessments: dict[str, float], casualties: List[Casualty]) -> dict[str, float]:
         """
         Ranks all actions in a scene, ensuring only one has a competence score of 1.0.
         Ties are resolved based on casualty injury severity and number of injuries.
@@ -140,9 +141,16 @@ class TCCCCompetenceAssessor(Assessor):
             assessments.items(),
             key=lambda item: (
                 -item[1],  # Higher competence score first
-                -self.get_max_injury_severity(self.get_casualty(item[0], casualties)),  # Severity
-                -len(self.get_casualty(item[0], casualties).injuries or [])  # Injury count
-                if self.get_casualty(item[0], casualties) else 0,
+                -self.get_max_injury_severity(
+                    self.get_casualty(item[0], casualties)
+                ),  # Severity
+                (
+                    -len(
+                        self.get_casualty(item[0], casualties).injuries or []
+                    )  # Injury count
+                    if self.get_casualty(item[0], casualties)
+                    else 0
+                ),
             ),
         )
 
@@ -154,7 +162,9 @@ class TCCCCompetenceAssessor(Assessor):
             casualty = self.get_casualty(decision, casualties)
 
             if not highest_score_set:
-                adjusted_assessments[decision] = 1.0  # Assign highest score to the first action
+                adjusted_assessments[decision] = (
+                    1.0  # Assign highest score to the first action
+                )
                 highest_score_set = True
             else:
                 decrement = 0.1 * (index + 1)  # Adjust scores for descending rank

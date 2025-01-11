@@ -83,7 +83,7 @@ class TA3Elaborator(Elaborator):
                 logger.info("Grounded actions:")
                 for act in new_actions:
                     logger.info("  " + str(act.value))
-                    logger.info("  Competence Assessment: " + str(competence_ratings[str(act.value)]))
+                    logger.info("  Action Competence Assessment: " + str(competence_ratings[str(act.value)]))
                 if len(new_actions) == 0 and len(d.value.params) > 0:
                     logger.error("  No legal groundings found for explicit action " + str(d.value))
             max_competence = 1
