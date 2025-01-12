@@ -320,7 +320,7 @@ class TreatmentRuleSet:
 
         # Check if the injury location is contraindicated for blood treatment
         if (
-            InjuryLocationEnum(injury.location)
+            injury.location
             in self.BLOOD_TREATMENT_RULES["contraindicated_injury_locations"]
         ):
             return False

@@ -17,7 +17,7 @@ class EndSceneRuleset:
             and any(
                 self.is_high_priority(casualty)
                 or any(
-                    InjurySeverityEnum(injury.severity)
+                    injury.severity
                     in {
                         InjurySeverityEnum.SUBSTANTIAL,
                         InjurySeverityEnum.MAJOR,

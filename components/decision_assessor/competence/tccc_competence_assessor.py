@@ -217,7 +217,7 @@ class TCCCCompetenceAssessor(Assessor):
         }
 
         # Get the index of each injury severity in the severity_levels list and find the maximum
-        max_severity = max((severity_levels[injury.severity.upper()].value for injury in casualty.injuries), default=-1)
+        max_severity = max((severity_levels[injury.severity.upper()] for injury in casualty.injuries), default=-1)
         return max_severity
 
     def get_casualty(self, decision_key: str, casualties: List[Casualty]) -> Casualty:

@@ -10,7 +10,7 @@ Missing information is:
 Scoring combines: 1. Baseline score (`BASELINE_SCORE`). 2. Adjustments for missing information (+0.3). 3. Injury
 severity + adjustments (if known))
 
-The score for missing data is so high because most times CHECK_ALL_VITALS is a proxy for patient ordering and the vitals
+The score for missing data is so high because sometimes CHECK_ALL_VITALS is a proxy for patient ordering and the vitals
 data is already known.
 """
 
