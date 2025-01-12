@@ -1,6 +1,8 @@
-from typing import List
+from typing import Tuple, Dict, List
 from dataclasses import dataclass
 import re
+from collections import defaultdict
+from enum import Enum
 
 from components import Assessor
 from components.decision_assessor.competence.rulesets import (
@@ -143,67 +145,60 @@ class TCCCCompetenceAssessor(Assessor):
                 ret_assessments[dec_key] = AssessmentResult(score, ruleset, dec.id_)
 
         if len(ret_assessments) > 1:
-        # Extract competence scores for ranking
+            # Extract competence scores for ranking
             competence_scores = {key: value.competence_score for key, value in ret_assessments.items()}
-            ranked_assessments = self.rank_assessments(competence_scores, casualties)
+            ranked_assessments, adjustments_made = self.rank_assessments(competence_scores, casualties)
             
             # Update ret_assessments with ranked scores
             for key, score in ranked_assessments.items():
                 ret_assessments[key].competence_score = score
+                if adjustments_made:
+                    ret_assessments[key].ruleset_description.append("Score adjusted based on severity and injury count")
 
         return ret_assessments
 
-    def rank_assessments(
-        self, assessments: dict[str, float], casualties: List[Casualty]
-    ) -> dict[str, float]:
+
+    def rank_assessments(self, assessments: Dict[str, float], casualties: List[Casualty]) -> Tuple[Dict[str, float], bool]:
         """
-        Ranks all actions in a scene, ensuring only one has a competence score of 1.0.
-        Ties are resolved based on casualty injury severity and number of injuries.
+        Ranks all actions in a scene, resolving ties based on casualty injury severity and number of injuries.
+        Returns the adjusted assessments and a flag indicating if any adjustments were made.
         """
         # Step 1: Constrain all scores to [0, 1]
+        assessments = {decision: min(max(score, 0.0), 1.0) for decision, score in assessments.items()}
+
+        # Step 2: Group assessments by score
+        score_groups = defaultdict(list)
         for decision, score in assessments.items():
-            assessments[decision] = min(max(score, 0.0), 1.0)
+            score_groups[score].append(decision)
 
-        # Step 2: Sort by competence, injury severity, and number of injuries
-        sorted_assessments = sorted(
-            assessments.items(),
-            key=lambda item: (
-                -item[1],  # Higher competence score first
-                -self.get_max_injury_severity(
-                    self.get_casualty(item[0], casualties)
-                ),  # Severity
-                (
-                    -len(
-                        self.get_casualty(item[0], casualties).injuries or []
-                    )  # Injury count
-                    if self.get_casualty(item[0], casualties)
-                    else 0
-                ),
-            ),
-        )
-
-        # Step 3: Ensure only one action has a score of 1.0
+        # Step 3: Adjust scores for groups with more than one assessment
         adjusted_assessments = {}
-        highest_score_set = False
-
-        for index, (decision, score) in enumerate(sorted_assessments):
-            casualty = self.get_casualty(decision, casualties)
-
-            if not highest_score_set:
-                adjusted_assessments[decision] = (
-                    1.0  # Assign highest score to the first action
+        adjustments_made = False
+        for score, decisions in score_groups.items():
+            if len(decisions) > 1:
+                adjustments_made = True
+                # Sort by injury severity and number of injuries
+                sorted_decisions = sorted(
+                    decisions,
+                    key=lambda decision: (
+                        -self.get_max_injury_severity(self.get_casualty(decision, casualties)),  # Severity
+                        -len(self.get_casualty(decision, casualties).injuries or [])  # Injury count
+                        if self.get_casualty(decision, casualties) else 0
+                    )
                 )
-                highest_score_set = True
+                # Adjust scores for descending rank
+                for index, decision in enumerate(sorted_decisions):
+                    decrement = 0.1 * index
+                    adjusted_assessments[decision] = max(0.0, score - decrement)
             else:
-                decrement = 0.1 * (index + 1)  # Adjust scores for descending rank
-                adjusted_assessments[decision] = max(0.0, score - decrement)
+                adjusted_assessments[decisions[0]] = score
 
         # Sort adjusted assessments from highest to lowest score
         sorted_adjusted_assessments = dict(
             sorted(adjusted_assessments.items(), key=lambda item: -item[1])
         )
 
-        return adjusted_assessments
+        return sorted_adjusted_assessments, adjustments_made
 
     def get_max_injury_severity(self, casualty: Casualty) -> int:
         # Helper to return the highest severity level among a casualty's injuries based on InjurySeverityEnum index
@@ -222,9 +217,7 @@ class TCCCCompetenceAssessor(Assessor):
         }
 
         # Get the index of each injury severity in the severity_levels list and find the maximum
-        max_severity = max(
-            severity_levels[injury.severity.upper()] for injury in casualty.injuries
-        )
+        max_severity = max((severity_levels[injury.severity.upper()].value for injury in casualty.injuries), default=-1)
         return max_severity
 
     def get_casualty(self, decision_key: str, casualties: List[Casualty]) -> Casualty:
@@ -340,9 +333,10 @@ class TCCCCompetenceAssessor(Assessor):
         return False
 
     def assess_check_action(self, casualty, action_type, supplies):
-        return self.assessment_heuristic_ruleset.assess_action(casualty, action_type), [
-            "AssessmentHeuristicRuleset"
-        ]
+        score, ruleset_description = self.assessment_heuristic_ruleset.assess_check_action(casualty, action_type)
+        ruleset_description.append("AssessmentHeuristicRuleset")
+        return score, ruleset_description
+            
 
     def assess_evacuation(self, casualty, evac_id):
         return self.assess_evac_rule_set.assess_evacuation(casualty, evac_id), [
