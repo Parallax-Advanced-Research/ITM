@@ -79,24 +79,25 @@ class TA3Elaborator(Elaborator):
 
             probe.decisions = new_actions
             competence_ratings = assessor.assess(probe)
-            competence_ratings = {key: value.competence_score for key, value in competence_ratings.items()}
+            competence_scores = {key: value.competence_score for key, value in competence_ratings.items()}
 
             if verbose:
                 logger.info("Grounded actions:")
                 for act in new_actions:
+                    decision_value = str(act.value)
                     logger.info("  " + str(act.value))
-                    logger.info("  Action Competence Assessment: " + str(competence_ratings[str(act.value)]))
+                    logger.info("  Action Competence Assessment: " + str(competence_ratings[decision_value]))
                 if len(new_actions) == 0 and len(d.value.params) > 0:
                     logger.error("  No legal groundings found for explicit action " + str(d.value))
             max_competence = 1
             if len(competence_ratings) > 1:
-                max_competence = max(competence_ratings.values())
-                if max_competence > min(competence_ratings.values()):
+                max_competence = max(competence_scores.values())
+                if max_competence > min(competence_scores.values()):
                     if verbose:
                         logger.warn("  Will ignore lower-competence implementations of this action.")
-                    new_actions = [act for act in new_actions if competence_ratings[str(act.value)] > max_competence * 0.99]
+                    new_actions = [act for act in new_actions if competence_scores[str(act.value)] > max_competence * 0.99]
             elif len(competence_ratings) == 1:
-                max_competence = list(competence_ratings.values())[0]
+                max_competence = list(competence_scores.values())[0]
             if max_competence < 0.5 and verbose:
                 logger.error("  Maximum competence less than 0.5 for explicit action " + str(d.value))
                 
@@ -105,8 +106,9 @@ class TA3Elaborator(Elaborator):
                 new_actions = [d]
                 probe.decisions = new_actions
                 competence_ratings = assessor.assess(probe)
+                competence_scores = {key: value.competence_score for key, value in competence_ratings.items()}
                 logger.warn("  Will try illegally ground action " + str(d.value) + " to gather data.")
-                logger.warn("  Competence Assessment: " + str(competence_ratings[str(d.value)]))
+                logger.warn("  Competence Assessment: " + str(competence_scores[str(d.value)]))
 
             to_return += new_actions
 
