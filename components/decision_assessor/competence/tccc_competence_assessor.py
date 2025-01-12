@@ -1,4 +1,5 @@
 from typing import List
+from dataclasses import dataclass
 import re
 
 from components import Assessor
@@ -42,71 +43,92 @@ PAINMED_SUPPLIES = {  # Define available pain meds supplies that may be administ
 }
 
 
+@dataclass
+class AssessmentResult:
+    competence_score: float
+    ruleset_description: str
+    action_id: str
+
+    def __str__(self):
+        return f"{self.competence_score} {self.ruleset_description}"
+
+
 class TCCCCompetenceAssessor(Assessor):
     def __init__(self):
         self.vitals_rule_set = VitalSignsTaggingRuleSet.VitalSignsTaggingRuleSet()
         self.injury_rule_set = InjuryTaggingRuleSet.InjuryTaggingRuleSet()
         self.treatment_rule_set = TreatmentRuleSet.TreatmentRuleSet()
         self.painmed_rule_set = PainMedRuleSet.PainMedRuleSet()
-        self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset.AssessmentHeuristicRuleset()
+        self.assessment_heuristic_ruleset = (
+            AssessmentHeuristicRuleset.AssessmentHeuristicRuleset()
+        )
         self.search_action_ruleset = SearchActionRuleSet.SearchActionRuleSet()
         self.tag_predictor = TriagePredictor(self.vitals_rule_set, self.injury_rule_set)
-        self.assess_evac_rule_set = EvacuationRuleSet.EvacuationRuleSet(self.tag_predictor)
+        self.assess_evac_rule_set = EvacuationRuleSet.EvacuationRuleSet(
+            self.tag_predictor
+        )
         self.end_scene_rule_set = EndSceneRuleset.EndSceneRuleset(self.tag_predictor)
 
-    def assess(self, probe: TADProbe) -> dict[str, float]:
+    def assess(self, probe: TADProbe) -> dict[str, AssessmentResult]:
         """
         Evaluates and ranks all actions within a single scene (probe) based on their competence.
+        Returns a dictionary mapping actions to an AssessmentResult object.
         """
-        ret_assessments: dict[str, float] = {}
+        ret_assessments: dict[str, AssessmentResult] = {}
         casualties = probe.state.casualties
         supplies = probe.state.supplies
 
-        # Evaluate all decisions in the probe
         for dec in probe.decisions:
             dec_key = str(dec.value)
             target_patient = get_target_patient(probe, dec)
 
             if is_tag_action(dec.value):
-                ret_assessments[dec_key] = self.assess_tag(
+                score, ruleset = self.assess_tag(
                     casualty=target_patient,
                     given_tag=dec.value.params[ParamEnum.CATEGORY],
                 )
+                ret_assessments[dec_key] = AssessmentResult(score, ruleset, dec.id_)
 
             elif is_treatment_action(dec.value):
-                ret_assessments[dec_key] = self.assess_treatment(
+                score, ruleset = self.assess_treatment(
                     casualty=target_patient,
                     given_treatment=dec.value.params[ParamEnum.TREATMENT],
                     supplies=supplies,
                 )
+                ret_assessments[dec_key] = AssessmentResult(score, ruleset, dec.id_)
 
             elif is_check_action(dec.value):
-                ret_assessments[dec_key] = self.assess_check_action(
+                score, ruleset = self.assess_check_action(
                     casualty=target_patient,
                     action_type=dec.value.name,
                     supplies=supplies,
                 )
+                ret_assessments[dec_key] = AssessmentResult(score, ruleset, dec.id_)
 
             elif is_evac_action(dec.value):
                 evac_id = dec.value.params.get(ParamEnum.EVAC_ID, None)
-                ret_assessments[dec_key] = self.assess_evacuation(
+                score, ruleset = self.assess_evacuation(
                     casualty=target_patient, evac_id=evac_id
                 )
+                ret_assessments[dec_key] = AssessmentResult(score, ruleset, dec.id_)
 
             elif dec.value.name == ActionTypeEnum.MESSAGE:
-                ret_assessments[dec_key] = self.assess_message(
+                score, ruleset = self.assess_message(
                     message=dec.value.params[ParamEnum.MESSAGE]
                 )
+                ret_assessments[dec_key] = AssessmentResult(score, ruleset, dec.id_)
 
             elif dec.value.name == ActionTypeEnum.SEARCH:
-                ret_assessments[dec_key] = (
+                score, ruleset = (
                     self.search_action_ruleset.assess_search_action(
                         casualties, supplies
-                    )
+                    ),
+                    "SearchActionRuleSet",
                 )
+                ret_assessments[dec_key] = AssessmentResult(score, ruleset, dec.id_)
 
             elif dec.value.name == ActionTypeEnum.END_SCENE:
-                ret_assessments[dec_key] = self.check_end_scene_decision(
+                score, ruleset = self.check_end_scene_decision(
                     treatment_available=len(
                         [1 for d in probe.decisions if is_treatment_action(d.value)]
                     ),
@@ -118,16 +140,13 @@ class TCCCCompetenceAssessor(Assessor):
                     ),
                     casualties=casualties,
                 )
+                ret_assessments[dec_key] = AssessmentResult(score, ruleset, dec.id_)
 
-        # Rank all actions within this scene
-        if len(ret_assessments) > 1:
-            ranked_assessments = self.rank_assessments(ret_assessments, casualties)
-            return ranked_assessments
-        else:
-            return ret_assessments
+        return ret_assessments
 
-   
-    def rank_assessments(self, assessments: dict[str, float], casualties: List[Casualty]) -> dict[str, float]:
+    def rank_assessments(
+        self, assessments: dict[str, float], casualties: List[Casualty]
+    ) -> dict[str, float]:
         """
         Ranks all actions in a scene, ensuring only one has a competence score of 1.0.
         Ties are resolved based on casualty injury severity and number of injuries.
@@ -223,21 +242,28 @@ class TCCCCompetenceAssessor(Assessor):
         given_tag_index = list(TriageCategory).index(given_tag_enum)
         most_severe_index = list(TriageCategory).index(most_severe_tag)
 
+        ruleset_description = []
+
         # Assign score based on the relationship between given_tag and most_severe_tag
         if given_tag_enum == most_severe_tag:
-            return 1  # Exact match
+            ruleset_description.append("Exact match")
+            return 1, ruleset_description
         elif given_tag_enum in all_tags:
-            return 0.8  # Present but not the most severe
+            ruleset_description.append("Present but not the most severe")
+            return 0.8, ruleset_description
         elif abs(given_tag_index - most_severe_index) == 1:
-            return 0.5  # Within a distance of one of the most severe
+            ruleset_description.append("Adjacent to the most severe")
+            return 0.5, ruleset_description
         else:
-            return 0  # No match
+            ruleset_description.append("Not present or not adjacent to the most severe")
+            return 0, ruleset_description
 
     def assess_treatment(self, casualty, given_treatment, supplies):
         """
         Assess the competence score for applying a given treatment to a casualty.
         """
         given_treatment_enum = given_treatment
+        ruleset_description = []
 
         for injury in casualty.injuries:
             # Validate and contraindicate treatments specific to this injury
@@ -252,26 +278,32 @@ class TCCCCompetenceAssessor(Assessor):
             )
 
             # Check contraindications for this injury
-            if (
-                given_treatment_enum in contraindicated_treatments
-                or given_treatment_enum in location_contraindicated_treatments
-            ):
-                return 0  # Contraindicated for this specific injury
+            if given_treatment_enum in contraindicated_treatments:
+                ruleset_description.append(f"Contraindicated treatment for injury: {injury.name}")
+                return 0, ruleset_description  # Contraindicated for this specific injury
+
+            if given_treatment_enum in location_contraindicated_treatments:
+                ruleset_description.append(f"Location contraindicated treatment for injury: {injury.name}")
+                return 0, ruleset_description  # Location contraindicated for this specific injury
 
             # Check if the treatment is valid for this injury
             if given_treatment_enum == TreatmentsEnum.BLOOD:
                 # Handle blood-specific rules
                 if self.is_blood_treatment_appropriate(injury, casualty.vitals):
-                    return 1  # Blood transfusion is valid
+                    ruleset_description.append("Blood transfusion is valid")
+                    return 1, ruleset_description  # Blood transfusion is valid
                 else:
-                    return 0  # Blood transfusion not valid for this context
+                    ruleset_description.append("Blood transfusion not valid for this context")
+                    return 0, ruleset_description  # Blood transfusion not valid for this context
 
             # If valid, return success
             if given_treatment_enum in valid_treatments:
-                return 1
+                ruleset_description.append(f"Valid treatment for injury: {injury.name}")
+                return 1, ruleset_description
 
         # If no specific injury validates the treatment but it's not contraindicated, return an intermediate score
-        return 0.555
+        ruleset_description.append("Intermediate score for non-specific injury")
+        return 0.555, ruleset_description
 
     def is_blood_treatment_appropriate(self, injury, vitals):
         """
@@ -294,13 +326,17 @@ class TCCCCompetenceAssessor(Assessor):
         return False
 
     def assess_check_action(self, casualty, action_type, supplies):
-        return self.assessment_heuristic_ruleset.assess_action(casualty, action_type)
+        return self.assessment_heuristic_ruleset.assess_action(casualty, action_type), [
+            "AssessmentHeuristicRuleset"
+        ]
 
     def assess_evacuation(self, casualty, evac_id):
-        return self.assess_evac_rule_set.assess_evacuation(casualty, evac_id)
+        return self.assess_evac_rule_set.assess_evacuation(casualty, evac_id), [
+            "EvacuationRuleSet"
+        ]
 
     def assess_message(self, message):
-        return 1
+        return 1, ["Message"]
 
     def check_end_scene_decision(
         self, treatment_available, check_available, painmeds_available, casualties
@@ -308,7 +344,7 @@ class TCCCCompetenceAssessor(Assessor):
         """Assess if ending the scene is premature given available actions."""
         return self.end_scene_rule_set.assess_end_scene(
             treatment_available, check_available, painmeds_available, casualties
-        )
+        ), ["EndSceneRuleset"]
 
 
 class TriagePredictor:

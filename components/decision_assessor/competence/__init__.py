@@ -1,1 +1,1 @@
-from .tccc_competence_assessor import TCCCCompetenceAssessor
+from .tccc_competence_assessor import TCCCCompetenceAssessor, AssessmentResult

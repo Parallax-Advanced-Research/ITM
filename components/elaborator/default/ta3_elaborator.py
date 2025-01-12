@@ -8,7 +8,7 @@ from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Ac
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_state import MedsimAction
 from typing import Any
 from util import logger
-from components.decision_assessor.competence import TCCCCompetenceAssessor
+from components.decision_assessor.competence import TCCCCompetenceAssessor, AssessmentResult
 
 import os
 
@@ -79,6 +79,8 @@ class TA3Elaborator(Elaborator):
 
             probe.decisions = new_actions
             competence_ratings = assessor.assess(probe)
+            competence_ratings = {key: value.competence_score for key, value in competence_ratings.items()}
+
             if verbose:
                 logger.info("Grounded actions:")
                 for act in new_actions:
