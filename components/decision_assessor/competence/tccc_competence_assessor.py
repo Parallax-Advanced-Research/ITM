@@ -153,7 +153,7 @@ class TCCCCompetenceAssessor(Assessor):
             for key, score in ranked_assessments.items():
                 ret_assessments[key].competence_score = score
                 if adjustments_made:
-                    ret_assessments[key].ruleset_description.append("Score adjusted based on severity and injury count")
+                    ret_assessments[key].ruleset_description.append("Ranking/score adjusted based on severity and injury count")
 
         return ret_assessments
 

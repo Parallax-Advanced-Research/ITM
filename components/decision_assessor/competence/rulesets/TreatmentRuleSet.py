@@ -270,7 +270,7 @@ class TreatmentRuleSet:
 
     def get_valid_treatments(
         self, injury: Injury, vitals: Vitals, supplies: List[SupplyTypeEnum]
-    ) -> List[TreatmentsEnum]:
+    ) -> List[SupplyTypeEnum]:
         """
         Determines valid treatments based on injury, casualty vitals, and available supplies.
         """
@@ -295,7 +295,7 @@ class TreatmentRuleSet:
 
         return list(valid_treatments)
 
-    def get_contraindicated_treatments(self, injury: Injury) -> List[TreatmentsEnum]:
+    def get_contraindicated_treatments(self, injury: Injury) -> List[SupplyTypeEnum]:
         """
         Returns a list of treatments that are contraindicated for the specified injury type.
         """

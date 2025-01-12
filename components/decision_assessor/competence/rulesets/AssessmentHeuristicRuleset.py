@@ -1,21 +1,4 @@
-"""
-Evaluates information seeking actions (e.g., checking vitals) based on casualty conditions, prioritizing missing
-information and injury severity.
-
-Missing information is:
-1. The casualty is unseen.
-2. A None value in any vital sign data (e.g., mental status, breathing, heart rate, SpO2). 
-3. Injuries with statuses: HIDDEN, DISCOVERABLE, PARTIALLY_TREATED.
-
-Scoring combines: 1. Baseline score (`BASELINE_SCORE`). 2. Adjustments for missing information (+0.3). 3. Injury
-severity + adjustments (if known))
-
-The score for missing data is so high because sometimes CHECK_ALL_VITALS is a proxy for patient ordering and the vitals
-data is already known.
-"""
-
 from domain.enum import InjurySeverityEnum, ActionTypeEnum, InjuryTypeEnum
-
 
 class AssessmentHeuristicRuleset:
     BASELINE_SCORE = 0.5  # Base score for any action
@@ -29,31 +12,49 @@ class AssessmentHeuristicRuleset:
         InjurySeverityEnum.EXTREME: 0.2,
     }
 
-    ASSESSMENT_RULES = {
-        # Rule Set 1: Prioritize missing information
-        ActionTypeEnum.CHECK_ALL_VITALS: lambda casualty: (
-            (0.3, "Missing information")  # Adjust score by 0.2
+    # Rule Set 1: Prioritize missing information
+    def missing_information_rule(casualty):
+        return (
+            (0.3, "Missing information")  # Adjust score by 0.3
             if (
-                casualty.unseen
-                or any(
-                    getattr(casualty.vitals, attr) is None
-                    for attr in ["mental_status", "breathing", "hrpmin", "spo2"]
-                )
-                or any(
-                    injury.status in ["HIDDEN", "DISCOVERABLE", "PARTIALLY_TREATED"]
-                    for injury in casualty.injuries
-                )
+                casualty.unseen or
+                any(getattr(casualty.vitals, attr) is None for attr in ['mental_status', 'breathing', 'hrpmin', 'spo2']) or
+                any(injury.status in ["HIDDEN", "DISCOVERABLE", "VISIBLE"] for injury in casualty.injuries)
             )
-            else (
-                0.0,
-                "Vitals known and not unseen.",
-            )  
-        ),
+            else (0.0, "Vitals known and not unseen.")  # No adjustment
+        )
+
+    def check_blood_oxygen_rule(casualty):
+        return (
+            (0.3, "Missing blood oxygen information")  # Adjust score by 0.3
+            if getattr(casualty.vitals, 'spo2') is None
+            else (0.0, "Blood oxygen information known.")  # No adjustment
+        )
+
+    def check_pulse_rule(casualty):
+        return (
+            (0.3, "Missing pulse information")  # Adjust score by 0.3
+            if getattr(casualty.vitals, 'hrpmin') is None
+            else (0.0, "Pulse information known.")  # No adjustment
+        )
+
+    def check_respiration_rule(casualty):
+        return (
+            (0.3, "Missing respiration information")  # Adjust score by 0.3
+            if getattr(casualty.vitals, 'breathing') is None
+            else (0.0, "Respiration information known.")  # No adjustment
+        )
+
+    ASSESSMENT_RULES = {
+        ActionTypeEnum.CHECK_ALL_VITALS: missing_information_rule,
+        ActionTypeEnum.SITREP: missing_information_rule,
+        ActionTypeEnum.MOVE_TO: missing_information_rule,
+        ActionTypeEnum.CHECK_BLOOD_OXYGEN: check_blood_oxygen_rule,
+        ActionTypeEnum.CHECK_PULSE: check_pulse_rule,
+        ActionTypeEnum.CHECK_RESPIRATION: check_respiration_rule,
     }
 
-    MAX_ADJUSTMENT = (
-        BASELINE_SCORE + 0.2 + 0.3
-    )  # BASELINE + EXTREME + Missing Information
+    MAX_ADJUSTMENT = BASELINE_SCORE + 0.2 + 0.3  # BASELINE + EXTREME + Missing Information
 
     @classmethod
     def adjust_score_for_severity(cls, casualty):
@@ -68,11 +69,10 @@ class AssessmentHeuristicRuleset:
                 adjustment = cls.SEVERITY_ADJUSTMENTS[injury.severity]
                 severity_score += adjustment
                 sign = "+" if adjustment > 0 else ""
-                severity_description.append(
-                    f"{injury.name} with severity {injury.severity} ({sign}{adjustment})"
-                )
+                severity_description.append(f"{injury.name} with severity {injury.severity} ({sign}{adjustment})")
 
-        return min(severity_score, 0.3), severity_description
+        # Cap the severity adjustment at 0.2 to align with EXTREME severity
+        return min(severity_score, 0.2), severity_description
 
     @classmethod
     def assess_check_action(cls, casualty, action_type):
@@ -84,11 +84,9 @@ class AssessmentHeuristicRuleset:
         score = cls.BASELINE_SCORE
         ruleset_description = ["Baseline score"]
 
-        # Add Rule Set 1 adjustments to the ruleset_description (e.g., missing information)
-        if action_type == ActionTypeEnum.CHECK_ALL_VITALS:
-            rule_score, rule_description = cls.ASSESSMENT_RULES[
-                ActionTypeEnum.CHECK_ALL_VITALS
-            ](casualty)
+        # Add Rule Set 1 adjustments (e.g., missing information)
+        if action_type in cls.ASSESSMENT_RULES:
+            rule_score, rule_description = cls.ASSESSMENT_RULES[action_type](casualty)
             score += rule_score
             if rule_description:
                 ruleset_description.append(rule_description)
@@ -98,7 +96,7 @@ class AssessmentHeuristicRuleset:
         score += severity_score
         ruleset_description.extend(severity_description)
 
-        # Normalize the score to [0, 1] if the above values change
+        # Normalize the score to [0, 1]
         normalized_score = min(score / cls.MAX_ADJUSTMENT, 1.0)
 
         # Round to two decimal places
