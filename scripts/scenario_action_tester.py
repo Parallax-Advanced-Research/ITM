@@ -61,7 +61,7 @@ def test_actions(scenario_file):
         elaborated_decisions = elaborator.elaborate(None, probe, verbose=True)
 
         # Log the final decisions and competence scores
-        logger.info(f"Ranked assessments for scene {scene_dict['id']}:")
+        logger.info(f"Ranked adjusted assessments for {scene_dict['id']}:")
         for decision in elaborated_decisions:
             competence_score = TCCCCompetenceAssessor().assess(probe)[str(decision.value)]
             logger.info(f"  Decision: {decision.value} -> Competence: {competence_score}")

@@ -142,6 +142,15 @@ class TCCCCompetenceAssessor(Assessor):
                 )
                 ret_assessments[dec_key] = AssessmentResult(score, ruleset, dec.id_)
 
+        if len(ret_assessments) > 1:
+        # Extract competence scores for ranking
+            competence_scores = {key: value.competence_score for key, value in ret_assessments.items()}
+            ranked_assessments = self.rank_assessments(competence_scores, casualties)
+            
+            # Update ret_assessments with ranked scores
+            for key, score in ranked_assessments.items():
+                ret_assessments[key].competence_score = score
+
         return ret_assessments
 
     def rank_assessments(
@@ -188,6 +197,11 @@ class TCCCCompetenceAssessor(Assessor):
             else:
                 decrement = 0.1 * (index + 1)  # Adjust scores for descending rank
                 adjusted_assessments[decision] = max(0.0, score - decrement)
+
+        # Sort adjusted assessments from highest to lowest score
+        sorted_adjusted_assessments = dict(
+            sorted(adjusted_assessments.items(), key=lambda item: -item[1])
+        )
 
         return adjusted_assessments
 
