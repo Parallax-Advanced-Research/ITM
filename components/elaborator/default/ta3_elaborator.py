@@ -85,21 +85,25 @@ class TA3Elaborator(Elaborator):
                 logger.info("Grounded actions:")
                 for act in new_actions:
                     decision_value = str(act.value)
-                    logger.info("  " + str(act.value))
-                    logger.info("  Action Competence Assessment: " + str(competence_ratings[decision_value]))
-                if len(new_actions) == 0 and len(d.value.params) > 0:
-                    logger.error("  No legal groundings found for explicit action " + str(d.value))
+                    logger.info(f"  {decision_value}")
+                    logger.info(f"  Action Competence Assessment: {competence_ratings[decision_value]}")
+                if not new_actions and d.value.params:
+                    logger.error(f"  No legal groundings found for explicit action {d.value}")
+
+            # Determine the maximum competence score
             max_competence = 1
             if len(competence_ratings) > 1:
                 max_competence = max(competence_scores.values())
                 if max_competence > min(competence_scores.values()):
                     if verbose:
-                        logger.warn("  Will ignore lower-competence implementations of this action.")
+                        logger.warning("  Will ignore lower-competence implementations of this action.")
                     new_actions = [act for act in new_actions if competence_scores[str(act.value)] > max_competence * 0.99]
             elif len(competence_ratings) == 1:
                 max_competence = list(competence_scores.values())[0]
+
+            # Log an error if the maximum competence is less than 0.5
             if max_competence < 0.5 and verbose:
-                logger.error("  Maximum competence less than 0.5 for explicit action " + str(d.value))
+                logger.error(f"  Maximum competence less than 0.5 for explicit action {d.value}")
                 
                     
             if len(new_actions) == 0 and action_parameter_requirements_fulfilled(d):
@@ -677,6 +681,3 @@ def action_parameter_requirements(d):
     if d.value.name in [ActionTypeEnum.APPLY_TREATMENT]:
         return [ParamEnum.CASUALTY, ParamEnum.LOCATION, ParamEnum.TREATMENT]
     return []
-    
-
-
