@@ -1,6 +1,7 @@
 import yaml
 import glob
 import argparse
+import os
 
 from components.decision_assessor.competence.tccc_competence_assessor import TCCCCompetenceAssessor
 from domain.internal import TADProbe, KDMA, KDMAs, make_new_action_decision
@@ -68,6 +69,7 @@ def test_actions(scenario_file, interactive):
 
         if interactive:
             input("Press Enter to continue to the next scene...")
+            os.system('cls' if os.name == 'nt' else 'clear')
 
 def main():
     parser = argparse.ArgumentParser()
