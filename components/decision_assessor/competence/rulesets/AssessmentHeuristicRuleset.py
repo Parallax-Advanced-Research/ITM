@@ -82,7 +82,7 @@ class AssessmentHeuristicRuleset:
         """
         # Base score
         score = cls.BASELINE_SCORE
-        ruleset_description = ["Baseline score"]
+        ruleset_description = [f"Baseline score: ({cls.BASELINE_SCORE})"]
 
         # Add Rule Set 1 adjustments (e.g., missing information)
         if action_type in cls.ASSESSMENT_RULES:

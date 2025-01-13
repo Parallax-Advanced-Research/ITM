@@ -4,7 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        // ADEPT EVAL --------------------------
         {
             "name": "Action Tester Module",
             "type": "debugpy",
@@ -12,7 +11,18 @@
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/*.yaml"
         },
-        //MOVE_TO_EVAC
+        // New configuration with interactive mode
+        {
+            "name": "Action Tester Module Interactive",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": [
+                "scenarios/ph1/*.yaml",
+                "--interactive"
+            ]
+        },
+        // ADEPT EVAL --------------------------
         {
             "name": "adept-eval-MJ4_redacted",
             "type": "debugpy",
@@ -104,7 +114,6 @@
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/dryrun-adept-train-MJ3.yaml"
         },
-
         // SOARTECH EVAL ---------------------------
         {
             "name": "qol-ph1-eval-2",
@@ -207,9 +216,6 @@
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/vol-ph1-train-4-ta3.yaml"
         },
-
-        
-
         // TAD TESTER --------------------------
         {
             "name": "SoarTech qol-ph1-train-1",

@@ -8,7 +8,7 @@ from domain.ta3 import TA3State
 from components.elaborator.default.ta3_elaborator import TA3Elaborator
 from util import logger
 
-def test_actions(scenario_file):
+def test_actions(scenario_file, interactive):
     logger.info("\n\nTesting actions in " + scenario_file + ".")
     elaborator: TA3Elaborator = TA3Elaborator(False)
 
@@ -66,17 +66,19 @@ def test_actions(scenario_file):
             competence_score = TCCCCompetenceAssessor().assess(probe)[str(decision.value)]
             logger.info(f"  Decision: {decision.value} -> Competence: {competence_score}")
 
-    
+        if interactive:
+            input("Press Enter to continue to the next scene...")
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_filenames", metavar="CASEBASE", type=str, nargs = '+',
-                        help="List of csv files with case data"
-                       )
+    parser.add_argument("input_filenames", metavar="CASEBASE", type=str, nargs='+',
+                        help="List of csv files with case data")
+    parser.add_argument("--interactive", action="store_true",
+                        help="Process one scene at a time, move to the next scene if Enter is pressed")
     args = parser.parse_args()
     for fileglob in args.input_filenames:
         for fname in glob.glob(fileglob):
-            test_actions(fname)
-
+            test_actions(fname, args.interactive)
+            
 if __name__ == '__main__':
     main()

@@ -52,7 +52,8 @@ class AssessmentResult:
     action_id: str
 
     def __str__(self):
-        return f"{self.competence_score} {self.ruleset_description}"
+        ruleset_lines = "\n".join(f"\t\t{line}" for line in self.ruleset_description)
+        return f"{self.competence_score}\n{ruleset_lines}"
 
 
 class TCCCCompetenceAssessor(Assessor):
@@ -334,7 +335,7 @@ class TCCCCompetenceAssessor(Assessor):
 
     def assess_check_action(self, casualty, action_type, supplies):
         score, ruleset_description = self.assessment_heuristic_ruleset.assess_check_action(casualty, action_type)
-        ruleset_description.append("AssessmentHeuristicRuleset")
+        # ruleset_description.append("AssessmentHeuristicRuleset")
         return score, ruleset_description
             
 

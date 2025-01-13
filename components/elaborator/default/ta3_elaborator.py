@@ -111,8 +111,8 @@ class TA3Elaborator(Elaborator):
                 probe.decisions = new_actions
                 competence_ratings = assessor.assess(probe)
                 competence_scores = {key: value.competence_score for key, value in competence_ratings.items()}
-                logger.warn("  Will try illegally ground action " + str(d.value) + " to gather data.")
-                logger.warn("  Competence Assessment: " + str(competence_scores[str(d.value)]))
+                logger.warning("  Will try illegally ground action " + str(d.value) + " to gather data.")
+                logger.warning("  Competence Assessment: " + str(competence_scores[str(d.value)]))
 
             to_return += new_actions
 
