@@ -38,6 +38,7 @@ class EvacuationRuleSet:
         for injury severity, type, location, vital signs, resource availability, and environmental conditions.
         """
         transport_available = evac_id is not None
+        ruleset_description = []
 
         tags = self.tag_predictor.predict_tags(casualty)
         if tags:
@@ -59,6 +60,7 @@ class EvacuationRuleSet:
             highest_priority_tag = TriageCategory.UNCATEGORIZED
 
         score = self.BASE_SCORES.get(highest_priority_tag, 0.5)
+        ruleset_description.append(f"Base score from triage category {highest_priority_tag}: {score}")
 
         # Initialize severity and location adjustments
         severity_adjustments = {
@@ -91,22 +93,26 @@ class EvacuationRuleSet:
                     if adjustment > 0
                     else max(score + adjustment, 0.0)
                 )
+                ruleset_description.append(f"Adjusted for injury severity {severity}: {adjustment}")
 
             # Specific high-priority injury types
             if injury_type == InjuryTypeEnum.TRAUMATIC_BRAIN_INJURY:
                 # TBIs require rapid evacuation to prevent permanent neurological damage.
                 score = min(score + 0.15, 1.0)
+                ruleset_description.append("Adjusted for traumatic brain injury: +0.15")
             elif injury_type in {
                 InjuryTypeEnum.OPEN_ABDOMINAL_WOUND,
                 InjuryTypeEnum.CHEST_COLLAPSE,
             }:
                 # Open abdominal wounds and chest collapse pose significant risk and require quick intervention.
                 score = min(score + 0.1, 1.0)
+                ruleset_description.append(f"Adjusted for injury type {injury_type}: +0.1")
 
             # Location-based adjustments
             if location in critical_locations:
                 # Injuries to the head, neck, or chest increase the likelihood of life-threatening complications.
                 score = min(score + 0.1, 1.0)
+                ruleset_description.append(f"Adjusted for critical injury location {location}: +0.1")
 
         # Adjust based on vital signs
         breathing = casualty.vitals.breathing
@@ -115,14 +121,17 @@ class EvacuationRuleSet:
         if breathing in [BreathingLevelEnum.RESTRICTED, BreathingLevelEnum.FAST]:
             # Restricted or rapid breathing indicates respiratory distress and requires immediate evacuation consideration.
             score = min(score + 0.1, 1.0)
+            ruleset_description.append("Adjusted for restricted or rapid breathing: +0.1")
 
         if oxygen_level == BloodOxygenEnum.LOW:
             # Low oxygen saturation signifies potential hypoxia, necessitating urgent care.
             score = min(score + 0.1, 1.0)
+            ruleset_description.append("Adjusted for low oxygen saturation: +0.1")
 
         # Transport availability adjustment
         if not transport_available:
             # Lack of transport deprioritizes evacuation to ensure resources are allocated appropriately.
             score = max(score - 0.2, 0.0)
+            ruleset_description.append("Adjusted for lack of transport: -0.2")
 
-        return score
+        return score, ruleset_description

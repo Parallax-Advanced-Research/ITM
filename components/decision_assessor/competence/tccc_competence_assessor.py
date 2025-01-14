@@ -340,9 +340,8 @@ class TCCCCompetenceAssessor(Assessor):
             
 
     def assess_evacuation(self, casualty, evac_id):
-        return self.assess_evac_rule_set.assess_evacuation(casualty, evac_id), [
-            "EvacuationRuleSet"
-        ]
+        score, ruleset_description = self.assess_evac_rule_set.assess_evacuation(casualty, evac_id)
+        return score, ruleset_description
 
     def assess_message(self, message):
         return 1, ["Message"]
