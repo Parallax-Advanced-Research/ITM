@@ -351,9 +351,12 @@ class TCCCCompetenceAssessor(Assessor):
         self, treatment_available, check_available, painmeds_available, casualties
     ):
         """Assess if ending the scene is premature given available actions."""
-        return self.end_scene_rule_set.assess_end_scene(
+        
+        score, ruleset_description = self.end_scene_rule_set.assess_end_scene(
             treatment_available, check_available, painmeds_available, casualties
-        ), ["EndSceneRuleset"]
+        )
+        return score, ruleset_description
+        
 
 
 class TriagePredictor:

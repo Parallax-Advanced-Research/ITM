@@ -52,28 +52,26 @@ class EndSceneRuleset:
         Assesses if ending the scene is appropriate based on available treatments,
         assessments, and statuses across multiple casualties.
         """
+        ruleset_description = []
 
-        # Iterate over each rule to determine if ending the scene is feasible
-        if self.rules["high_priority_treatment_needed"](
-            treatment_available, casualties
-        ):
-            return 0  # High-priority casualties still require treatment
+        if self.rules["high_priority_treatment_needed"](treatment_available, casualties):
+            ruleset_description.append("High-priority casualties still require treatment.")
+            return 0.0, ruleset_description
 
         if self.rules["high_priority_assessment_needed"](check_available, casualties):
-            return 0.2  # High-priority casualties still require assessment
-        painmeds_available = 1
+            ruleset_description.append("High-priority casualties still require assessment.")
+            return 0.2, ruleset_description
+
         if self.rules["painmed_contradiction"](painmeds_available, casualties):
-            return 1  # Ending scene okay if painmeds available but not needed
+            ruleset_description.append("Pain meds available but not needed.")
+            return 1.0, ruleset_description
 
-        # Default rule if no blockers remain
-        if self.rules["end_scene_default"](
-            treatment_available, check_available, painmeds_available, casualties
-        ):
-            return 1  # Scene can end
+        if self.rules["end_scene_default"](treatment_available, check_available, painmeds_available, casualties):
+            ruleset_description.append("No critical unmet needs.")
+            return 1.0, ruleset_description
 
-        return (
-            0.7  # Intermediate score if no specific rule matched but no urgent blockers
-        )
+        ruleset_description.append("Intermediate score if no specific rule matched but no urgent blockers.")
+        return 0.7, ruleset_description
 
     def is_high_priority(self, casualty):
         """

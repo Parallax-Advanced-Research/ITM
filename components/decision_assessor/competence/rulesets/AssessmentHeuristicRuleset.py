@@ -15,7 +15,7 @@ class AssessmentHeuristicRuleset:
     # Rule Set 1: Prioritize missing information
     def missing_information_rule(casualty):
         return (
-            (0.3, "Missing information")  # Adjust score by 0.3
+            (0.3, "Missing information.")  # Adjust score by 0.3
             if (
                 casualty.unseen or
                 any(getattr(casualty.vitals, attr) is None for attr in ['mental_status', 'breathing', 'hrpmin', 'spo2']) or
@@ -26,21 +26,21 @@ class AssessmentHeuristicRuleset:
 
     def check_blood_oxygen_rule(casualty):
         return (
-            (0.3, "Missing blood oxygen information")  # Adjust score by 0.3
+            (0.3, "Missing blood oxygen information.")  # Adjust score by 0.3
             if getattr(casualty.vitals, 'spo2') is None
             else (0.0, "Blood oxygen information known.")  # No adjustment
         )
 
     def check_pulse_rule(casualty):
         return (
-            (0.3, "Missing pulse information")  # Adjust score by 0.3
+            (0.3, "Missing pulse information.")  # Adjust score by 0.3
             if getattr(casualty.vitals, 'hrpmin') is None
             else (0.0, "Pulse information known.")  # No adjustment
         )
 
     def check_respiration_rule(casualty):
         return (
-            (0.3, "Missing respiration information")  # Adjust score by 0.3
+            (0.3, "Missing respiration information.")  # Adjust score by 0.3
             if getattr(casualty.vitals, 'breathing') is None
             else (0.0, "Respiration information known.")  # No adjustment
         )
