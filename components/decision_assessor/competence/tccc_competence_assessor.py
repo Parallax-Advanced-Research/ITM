@@ -299,16 +299,21 @@ class TCCCCompetenceAssessor(Assessor):
 
            # Check if the treatment is marginal for this injury
             if given_treatment_enum in marginal_treatments:
-                if TreatmentsEnum.HEMOSTATIC_GAUZE in supplies or TreatmentsEnum.PRESSURE_BANDAGE in supplies:
-                    if injury.severity != InjurySeverityEnum.EXTREME and injury.status != InjuryStatus.PARTIALLY_TREATED:
+                hemostatic_gauze_available = any(supply.type == 'Hemostatic gauze' and supply.quantity > 0 for supply in supplies)
+                pressure_bandage_available = any(supply.type == 'Pressure bandage' and supply.quantity > 0 for supply in supplies)
+                
+                if hemostatic_gauze_available or pressure_bandage_available:
+                    if injury.severity != InjurySeverityEnum.EXTREME and injury.status != InjuryStatusEnum.PARTIALLY_TREATED:
+                        # Unless injury extreme, supplies unavailable or partially treated.
                         ruleset_description.append(f"Marginal treatment for injury: {injury.name}. Use hemostatic gauze or pressure bandage first.")
-                        return 0.2, ruleset_description  # Low score for marginal treatment with available supplies
+                        return 0.3, ruleset_description  # Low score for marginal treatment with available supplies
                     else:
-                        ruleset_description.append(f"Valid treatment for injury: {injury.name} due to extreme severity or partial treatment.")
+                        ruleset_description.append(f"Valid treatment for injury: {injury.name} due to extreme severity or prior attempted treatment.")
                         return 0.8, ruleset_description  # Higher score for marginal treatment due to extreme severity or partial treatment
                 else:
                     ruleset_description.append(f"Valid treatment for injury: {injury.name} due to unavailable supplies.")
                     return 0.8, ruleset_description  # Higher score for marginal treatment without available supplies
+
 
             # Check if the treatment is valid for this injury
             if given_treatment_enum == TreatmentsEnum.BLOOD:
