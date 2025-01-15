@@ -89,6 +89,14 @@ class TreatmentRuleSet:
             TreatmentsEnum.IV_BAG,
         ],
     }
+    
+    MARGINAL_TREATMENTS = {
+        # Tourniquet should only be applied to LACERATION, PUNCTURE or SHRAPNEL if no PRESSURE_BANDAGE or HEMOSTATIC_GAUZE is
+        # available.
+        InjuryTypeEnum.LACERATION: [TreatmentsEnum.TOURNIQUET],
+        InjuryTypeEnum.PUNCTURE: [TreatmentsEnum.TOURNIQUET],
+        InjuryTypeEnum.SHRAPNEL: [TreatmentsEnum.TOURNIQUET],
+    }
 
     CONTRAINDICATED_TREATMENTS = {
         # Applying a tourniquet, decompression needle, or airway for ear bleeding is inappropriate.
@@ -106,16 +114,13 @@ class TreatmentRuleSet:
         # Decompression needles and tourniquets are unnecessary and harmful for surface cuts.
         InjuryTypeEnum.LACERATION: [
             TreatmentsEnum.DECOMPRESSION_NEEDLE,
-            TreatmentsEnum.TOURNIQUET,
         ],
         # Avoid tourniquet and decompression for puncture wounds, as these treatments don’t address the injury type.
         InjuryTypeEnum.PUNCTURE: [
             TreatmentsEnum.DECOMPRESSION_NEEDLE,
-            TreatmentsEnum.TOURNIQUET,
         ],
         # Tourniquet and decompression needle are inappropriate for managing shrapnel injuries.
         InjuryTypeEnum.SHRAPNEL: [
-            TreatmentsEnum.TOURNIQUET,
             TreatmentsEnum.DECOMPRESSION_NEEDLE,
         ],
         # Avoid tourniquet, bandage, and airway for collapsed lung as they do not aid respiratory issues effectively.
@@ -326,3 +331,11 @@ class TreatmentRuleSet:
             return False
 
         return True
+    
+    
+    def get_marginal_treatments(self, injury: Injury) -> List[SupplyTypeEnum]:
+        """
+        Returns a list of treatments that are marginal for the specified injury type.
+        """
+        return self.MARGINAL_TREATMENTS.get(injury.name, [])
+
