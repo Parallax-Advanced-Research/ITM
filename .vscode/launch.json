@@ -16,7 +16,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "scripts.scenario_action_tester",
-            "args": ["scenarios/ph1/*.yaml", "--log_file", "output.txt"]
+            "args": ["scenarios/ph1/*.yaml", "--log_file", "scenario_tester_output.txt"]
         },
         // New configuration with interactive mode
         {

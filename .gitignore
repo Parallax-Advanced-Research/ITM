@@ -339,3 +339,4 @@ data/rag_input
 *.tgz
 triage/data
 components/decision_assessor/onto/data/pym.sqlite3
+/logs

@@ -7,15 +7,39 @@ from components.decision_assessor.competence.tccc_competence_assessor import TCC
 from domain.internal import TADProbe, KDMA, KDMAs, make_new_action_decision
 from domain.ta3 import TA3State
 from components.elaborator.default.ta3_elaborator import TA3Elaborator
+from util.logger import logger, CustomFormatter  # Import the logger and CustomFormatter from util
+
+class SimpleFormatter(logging.Formatter):
+    format_str = "%(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+    
+    def format(self, record):
+        formatter = logging.Formatter(self.format_str)
+        return formatter.format(record)
 
 def configure_logger(log_file=None):
-    if log_file:
-        logging.basicConfig(level=logging.INFO, filename=log_file, filemode='w',
-                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    else:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logger.setLevel(logging.DEBUG)  # Set to the lowest level to capture all messages
 
-logger = logging.getLogger(__name__)
+    # Remove any existing handlers
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    # Create a console handler with CustomFormatter
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    console_formatter = CustomFormatter()
+    console_handler.setFormatter(console_formatter)
+    logger.addHandler(console_handler)
+
+    # Create a file handler with SimpleFormatter if log_file is specified
+    if log_file:
+        log_dir = os.path.dirname(log_file)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        file_handler = logging.FileHandler(log_file, mode='w')
+        file_handler.setLevel(logging.DEBUG)
+        file_formatter = SimpleFormatter()
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
 
 def test_actions(scenario_file, interactive):
     logger.info("\n\nTesting actions in " + scenario_file + ".")
@@ -88,7 +112,10 @@ def main():
     parser.add_argument("--log_file", type=str, help="File to write log output")
     args = parser.parse_args()
 
-    configure_logger(args.log_file)
+    log_file = args.log_file
+    if log_file:
+        log_file = os.path.join('logs', log_file)
+    configure_logger(log_file)
 
     for fileglob in args.input_filenames:
         for fname in glob.glob(fileglob):
