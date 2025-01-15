@@ -11,6 +11,13 @@
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/*.yaml"
         },
+        {
+            "name": "Log Action Tester Module",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scripts.scenario_action_tester",
+            "args": ["scenarios/ph1/*.yaml", "--log_file", "output.txt"]
+        },
         // New configuration with interactive mode
         {
             "name": "Action Tester Module Interactive",

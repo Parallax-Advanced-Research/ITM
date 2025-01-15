@@ -1,13 +1,21 @@
-import yaml
-import glob
 import argparse
+import logging
 import os
-
+import glob
+import yaml
 from components.decision_assessor.competence.tccc_competence_assessor import TCCCCompetenceAssessor
 from domain.internal import TADProbe, KDMA, KDMAs, make_new_action_decision
 from domain.ta3 import TA3State
 from components.elaborator.default.ta3_elaborator import TA3Elaborator
-from util import logger
+
+def configure_logger(log_file=None):
+    if log_file:
+        logging.basicConfig(level=logging.INFO, filename=log_file, filemode='w',
+                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger(__name__)
 
 def test_actions(scenario_file, interactive):
     logger.info("\n\nTesting actions in " + scenario_file + ".")
@@ -77,7 +85,11 @@ def main():
                         help="List of csv files with case data")
     parser.add_argument("--interactive", action="store_true",
                         help="Process one scene at a time, move to the next scene if Enter is pressed")
+    parser.add_argument("--log_file", type=str, help="File to write log output")
     args = parser.parse_args()
+
+    configure_logger(args.log_file)
+
     for fileglob in args.input_filenames:
         for fname in glob.glob(fileglob):
             test_actions(fname, args.interactive)
