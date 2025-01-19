@@ -3,18 +3,10 @@ from dataclasses import dataclass
 import re
 from collections import defaultdict
 from enum import Enum
-
 from components import Assessor
-from components.decision_assessor.competence.rulesets import (
-    AssessmentHeuristicRuleset,
-    EndSceneRuleset,
-    EvacuationRuleSet,
-    InjuryTaggingRuleSet,
-    PainMedRuleSet,
-    SearchActionRuleSet,
-    TreatmentRuleSet,
-    VitalSignsTaggingRuleSet,
-)
+
+from components.decision_assessor.competence.rulesets import *
+
 from domain.enum import (
     ActionTypeEnum,
     BloodOxygenEnum,
@@ -29,8 +21,8 @@ from domain.enum import (
     InjurySeverityEnum,
 )
 from domain.internal import TADProbe, Decision, Action
-from domain.ta3 import Casualty
 
+from domain.ta3 import Casualty
 
 CHECK_ACTION_TYPES = [
     ActionTypeEnum.CHECK_ALL_VITALS,
@@ -145,25 +137,35 @@ class TCCCCompetenceAssessor(Assessor):
 
         if len(ret_assessments) > 1:
             # Extract competence scores for ranking
-            competence_scores = {key: value.competence_score for key, value in ret_assessments.items()}
-            ranked_assessments, adjustments_made = self.rank_assessments(competence_scores, casualties)
-            
+            competence_scores = {
+                key: value.competence_score for key, value in ret_assessments.items()
+            }
+            ranked_assessments, adjustments_made = self.rank_assessments(
+                competence_scores, casualties
+            )
+
             # Update ret_assessments with ranked scores
             for key, score in ranked_assessments.items():
                 ret_assessments[key].competence_score = score
                 if adjustments_made:
-                    ret_assessments[key].ruleset_description.append("Ranking/score adjusted based on severity and injury count")
+                    ret_assessments[key].ruleset_description.append(
+                        "Ranking/score adjusted based on severity and injury count"
+                    )
 
         return ret_assessments
 
-
-    def rank_assessments(self, assessments: Dict[str, float], casualties: List[Casualty]) -> Tuple[Dict[str, float], bool]:
+    def rank_assessments(
+        self, assessments: Dict[str, float], casualties: List[Casualty]
+    ) -> Tuple[Dict[str, float], bool]:
         """
         Ranks all actions in a scene, resolving ties based on casualty injury severity and number of injuries.
         Returns the adjusted assessments and a flag indicating if any adjustments were made.
         """
         # Step 1: Constrain all scores to [0, 1]
-        assessments = {decision: min(max(score, 0.0), 1.0) for decision, score in assessments.items()}
+        assessments = {
+            decision: min(max(score, 0.0), 1.0)
+            for decision, score in assessments.items()
+        }
 
         # Step 2: Group assessments by score
         score_groups = defaultdict(list)
@@ -180,10 +182,17 @@ class TCCCCompetenceAssessor(Assessor):
                 sorted_decisions = sorted(
                     decisions,
                     key=lambda decision: (
-                        -self.get_max_injury_severity(self.get_casualty(decision, casualties)),  # Severity
-                        -len(self.get_casualty(decision, casualties).injuries or [])  # Injury count
-                        if self.get_casualty(decision, casualties) else 0
-                    )
+                        -self.get_max_injury_severity(
+                            self.get_casualty(decision, casualties)
+                        ),  # Severity
+                        (
+                            -len(
+                                self.get_casualty(decision, casualties).injuries or []
+                            )  # Injury count
+                            if self.get_casualty(decision, casualties)
+                            else 0
+                        ),
+                    ),
                 )
                 # Adjust scores for descending rank
                 for index, decision in enumerate(sorted_decisions):
@@ -216,7 +225,10 @@ class TCCCCompetenceAssessor(Assessor):
         }
 
         # Get the index of each injury severity in the severity_levels list and find the maximum
-        max_severity = max((severity_levels[injury.severity.upper()] for injury in casualty.injuries), default=-1)
+        max_severity = max(
+            (severity_levels[injury.severity.upper()] for injury in casualty.injuries),
+            default=-1,
+        )
         return max_severity
 
     def get_casualty(self, decision_key: str, casualties: List[Casualty]) -> Casualty:
@@ -282,34 +294,69 @@ class TCCCCompetenceAssessor(Assessor):
             location_contraindicated_treatments = (
                 self.treatment_rule_set.get_location_contraindicated_treatments(injury)
             )
-            marginal_treatments = self.treatment_rule_set.get_marginal_treatments(injury)
+            marginal_treatments = self.treatment_rule_set.get_marginal_treatments(
+                injury
+            )
 
             # Check contraindications for this injury
             if given_treatment_enum in contraindicated_treatments:
-                ruleset_description.append(f"Contraindicated treatment for injury: {injury.name}")
-                return 0, ruleset_description  # Contraindicated for this specific injury
+                ruleset_description.append(
+                    f"Contraindicated treatment for injury: {injury.name}"
+                )
+                return (
+                    0,
+                    ruleset_description,
+                )  # Contraindicated for this specific injury
 
             if given_treatment_enum in location_contraindicated_treatments:
-                ruleset_description.append(f"Location contraindicated treatment for injury: {injury.name}")
-                return 0, ruleset_description  # Location contraindicated for this specific injury
+                ruleset_description.append(
+                    f"Location contraindicated treatment for injury: {injury.name}"
+                )
+                return (
+                    0,
+                    ruleset_description,
+                )  # Location contraindicated for this specific injury
 
-           # Check if the treatment is marginal for this injury
+            # Check if the treatment is marginal for this injury
             if given_treatment_enum in marginal_treatments:
-                hemostatic_gauze_available = any(supply.type == 'Hemostatic gauze' and supply.quantity > 0 for supply in supplies)
-                pressure_bandage_available = any(supply.type == 'Pressure bandage' and supply.quantity > 0 for supply in supplies)
-                
-                if hemostatic_gauze_available or pressure_bandage_available:
-                    if injury.severity != InjurySeverityEnum.EXTREME and injury.status != InjuryStatusEnum.PARTIALLY_TREATED:
-                        # Unless injury extreme, supplies unavailable or partially treated.
-                        ruleset_description.append(f"Marginal treatment for injury: {injury.name}. Use hemostatic gauze or pressure bandage first.")
-                        return 0.3, ruleset_description  # Low score for marginal treatment with available supplies
-                    else:
-                        ruleset_description.append(f"Valid treatment for injury: {injury.name} due to extreme severity or prior attempted treatment.")
-                        return 0.8, ruleset_description  # Higher score for marginal treatment due to extreme severity or partial treatment
-                else:
-                    ruleset_description.append(f"Valid treatment for injury: {injury.name} due to unavailable supplies.")
-                    return 0.8, ruleset_description  # Higher score for marginal treatment without available supplies
+                hemostatic_gauze_available = any(
+                    supply.type == "Hemostatic gauze" and supply.quantity > 0
+                    for supply in supplies
+                )
+                pressure_bandage_available = any(
+                    supply.type == "Pressure bandage" and supply.quantity > 0
+                    for supply in supplies
+                )
 
+                if hemostatic_gauze_available or pressure_bandage_available:
+                    if (
+                        injury.severity != InjurySeverityEnum.EXTREME
+                        and injury.status != InjuryStatusEnum.PARTIALLY_TREATED
+                    ):
+                        # Unless injury extreme, supplies unavailable or partially treated.
+                        ruleset_description.append(
+                            f"Marginal treatment for injury: {injury.name}. Use hemostatic gauze or pressure bandage first."
+                        )
+                        return (
+                            0.3,
+                            ruleset_description,
+                        )  # Low score for marginal treatment with available supplies
+                    else:
+                        ruleset_description.append(
+                            f"Valid treatment for injury: {injury.name} due to extreme severity or prior attempted treatment."
+                        )
+                        return (
+                            0.8,
+                            ruleset_description,
+                        )  # Higher score for marginal treatment due to extreme severity or partial treatment
+                else:
+                    ruleset_description.append(
+                        f"Valid treatment for injury: {injury.name} due to unavailable supplies."
+                    )
+                    return (
+                        0.8,
+                        ruleset_description,
+                    )  # Higher score for marginal treatment without available supplies
 
             # Check if the treatment is valid for this injury
             if given_treatment_enum == TreatmentsEnum.BLOOD:
@@ -318,8 +365,13 @@ class TCCCCompetenceAssessor(Assessor):
                     ruleset_description.append("Blood transfusion is valid")
                     return 1, ruleset_description  # Blood transfusion is valid
                 else:
-                    ruleset_description.append("Blood transfusion not valid for this context")
-                    return 0, ruleset_description  # Blood transfusion not valid for this context
+                    ruleset_description.append(
+                        "Blood transfusion not valid for this context"
+                    )
+                    return (
+                        0,
+                        ruleset_description,
+                    )  # Blood transfusion not valid for this context
 
             # If valid, return success
             if given_treatment_enum in valid_treatments:
@@ -351,13 +403,16 @@ class TCCCCompetenceAssessor(Assessor):
         return False
 
     def assess_check_action(self, casualty, action_type, supplies):
-        score, ruleset_description = self.assessment_heuristic_ruleset.assess_check_action(casualty, action_type)
+        score, ruleset_description = (
+            self.assessment_heuristic_ruleset.assess_check_action(casualty, action_type)
+        )
         # ruleset_description.append("AssessmentHeuristicRuleset")
         return score, ruleset_description
-            
 
     def assess_evacuation(self, casualty, evac_id):
-        score, ruleset_description = self.assess_evac_rule_set.assess_evacuation(casualty, evac_id)
+        score, ruleset_description = self.assess_evac_rule_set.assess_evacuation(
+            casualty, evac_id
+        )
         return score, ruleset_description
 
     def assess_message(self, message):
@@ -367,12 +422,11 @@ class TCCCCompetenceAssessor(Assessor):
         self, treatment_available, check_available, painmeds_available, casualties
     ):
         """Assess if ending the scene is premature given available actions."""
-        
+
         score, ruleset_description = self.end_scene_rule_set.assess_end_scene(
             treatment_available, check_available, painmeds_available, casualties
         )
         return score, ruleset_description
-        
 
 
 class TriagePredictor:
