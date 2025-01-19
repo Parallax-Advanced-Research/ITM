@@ -60,19 +60,15 @@ class AssessmentResult:
 
 class TCCCCompetenceAssessor(Assessor):
     def __init__(self):
-        self.vitals_rule_set = VitalSignsTaggingRuleSet.VitalSignsTaggingRuleSet()
-        self.injury_rule_set = InjuryTaggingRuleSet.InjuryTaggingRuleSet()
-        self.treatment_rule_set = TreatmentRuleSet.TreatmentRuleSet()
-        self.painmed_rule_set = PainMedRuleSet.PainMedRuleSet()
-        self.assessment_heuristic_ruleset = (
-            AssessmentHeuristicRuleset.AssessmentHeuristicRuleset()
-        )
-        self.search_action_ruleset = SearchActionRuleSet.SearchActionRuleSet()
+        self.vitals_rule_set = VitalSignsTaggingRuleSet()
+        self.injury_rule_set = InjuryTaggingRuleSet()
+        self.treatment_rule_set = TreatmentRuleSet()
+        self.painmed_rule_set = PainMedRuleSet()
+        self.assessment_heuristic_ruleset = AssessmentHeuristicRuleset()
+        self.search_action_ruleset = SearchActionRuleSet()
         self.tag_predictor = TriagePredictor(self.vitals_rule_set, self.injury_rule_set)
-        self.assess_evac_rule_set = EvacuationRuleSet.EvacuationRuleSet(
-            self.tag_predictor
-        )
-        self.end_scene_rule_set = EndSceneRuleset.EndSceneRuleset(self.tag_predictor)
+        self.assess_evac_rule_set = EvacuationRuleSet(self.tag_predictor)
+        self.end_scene_rule_set = EndSceneRuleset(self.tag_predictor)
 
     def assess(self, probe: TADProbe) -> dict[str, AssessmentResult]:
         """
