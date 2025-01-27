@@ -149,7 +149,7 @@ class TCCCCompetenceAssessor(Assessor):
                 ret_assessments[key].competence_score = score
                 if adjustments_made:
                     ret_assessments[key].ruleset_description.append(
-                        "Ranking/score adjusted based on severity and injury count"
+                        "Ranking/score adjusted based on MARCH, severity and injury count"
                     )
 
         return ret_assessments
@@ -158,7 +158,9 @@ class TCCCCompetenceAssessor(Assessor):
         self, assessments: Dict[str, float], casualties: List[Casualty]
     ) -> Tuple[Dict[str, float], bool]:
         """
-        Ranks all actions in a scene, resolving ties based on casualty injury severity and number of injuries.
+        Ranks all actions in a scene, resolving ties based on the MARCH algorithm, then 
+        casualty injury severity and number of injuries.
+        
         Returns the adjusted assessments and a flag indicating if any adjustments were made.
         """
         # Step 1: Constrain all scores to [0, 1]
@@ -166,6 +168,35 @@ class TCCCCompetenceAssessor(Assessor):
             decision: min(max(score, 0.0), 1.0)
             for decision, score in assessments.items()
         }
+
+        # Define MARCH priority order
+        march_priority = {
+            'Massive Hemorrhage': [
+                SupplyTypeEnum.TOURNIQUET, 
+                SupplyTypeEnum.PRESSURE_BANDAGE, 
+                SupplyTypeEnum.HEMOSTATIC_GAUZE
+            ],
+            'Airway': [SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY],
+            'Respiration': [SupplyTypeEnum.VENTED_CHEST_SEAL, SupplyTypeEnum.DECOMPRESSION_NEEDLE],
+            'Circulation': [SupplyTypeEnum.BLOOD, SupplyTypeEnum.IV_BAG],
+            'Other': [  # Placeholder for Hypothermia and other treatments
+                SupplyTypeEnum.BLANKET,
+                SupplyTypeEnum.BURN_DRESSING,
+                SupplyTypeEnum.PAIN_MEDICATIONS,
+                SupplyTypeEnum.FENTANYL_LOLLIPOP,
+                SupplyTypeEnum.EPI_PEN,
+                SupplyTypeEnum.SPLINT,
+                SupplyTypeEnum.PULSE_OXIMETER
+            ],
+        }
+        # Map treatments to MARCH steps
+        action_to_march_step = {action: step for step, supplies in march_priority.items() for action in supplies}
+
+        # Helper to extract the treatment associated with a decision
+        def get_treatment_action(decision):
+            # Ensure the decision has the correct structure
+            treatment = getattr(assessments[decision], 'params', {}).get(ParamEnum.TREATMENT, None)
+            return treatment
 
         # Step 2: Group assessments by score
         score_groups = defaultdict(list)
@@ -178,10 +209,11 @@ class TCCCCompetenceAssessor(Assessor):
         for score, decisions in score_groups.items():
             if len(decisions) > 1:
                 adjustments_made = True
-                # Sort by injury severity and number of injuries
+                # Sort by MARCH priority, then by injury severity and number of injuries
                 sorted_decisions = sorted(
                     decisions,
                     key=lambda decision: (
+                        action_to_march_step.get(get_treatment_action(decision), float('inf')),
                         -self.get_max_injury_severity(
                             self.get_casualty(decision, casualties)
                         ),  # Severity
