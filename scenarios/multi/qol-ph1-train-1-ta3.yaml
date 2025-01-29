@@ -105,7 +105,7 @@ scenes:
         name: Traumatic Brain Injury
         severity: extreme
         status: visible
-      - location: left bicep
+      - location: left thigh
         name: Puncture
         severity: moderate
         status: visible
@@ -903,7 +903,7 @@ scenes:
     characters:
     - demographics:
         age: 34
-        military_disposition: Military Adversary
+        military_disposition: Civilian
         mission_importance: normal
         race: Black
         sex: M

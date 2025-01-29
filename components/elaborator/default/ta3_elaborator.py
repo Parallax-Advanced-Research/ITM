@@ -85,7 +85,40 @@ class TA3Elaborator(Elaborator):
                     logger.info("  " + str(act.value))
                     logger.info("  Competence Assessment: " + str(competence_ratings[str(act.value)]))
                 if len(new_actions) == 0 and len(d.value.params) > 0:
-                    logger.error("  No legal groundings found for explicit action " + str(d.value))
+                    if tag_available and _name == ActionTypeEnum.APPLY_TREATMENT:
+                        test_actions = self._treatment(probe.state, d, tag_available=False)
+                        if len(test_actions) == 0:
+                            logger.error("  No legal groundings found for explicit action " + str(d.value))
+                            # if d.value.name == ActionTypeEnum.APPLY_TREATMENT \
+                                # and 'treatment' in d.value.params \
+                                # and d.value.params['treatment'] == SupplyTypeEnum.TOURNIQUET \
+                                # and 'casualty' in d.value.params \
+                                # and d.value.params['casualty'] in ['casualty_x', 'casualty_y']:
+                                # pass
+                            # else:
+                                # breakpoint()
+                    else:
+                        logger.error("  No legal groundings found for explicit action " + str(d.value))
+                        # if d.value.name == ActionTypeEnum.CHECK_ALL_VITALS \
+                            # and 'casualty' in d.value.params \
+                            # and get_casualty_by_id(d.value.params['casualty'], probe.state.casualties).assessed:
+                            # pass
+                        # elif d.value.name == ActionTypeEnum.APPLY_TREATMENT \
+                            # and 'casualty' in d.value.params \
+                            # and d.value.params['casualty'] == 'attacker' \
+                            # and 'location' not in d.value.params:
+                            # pass
+                        # elif d.value.name == ActionTypeEnum.APPLY_TREATMENT \
+                            # and 'location' in d.value.params \
+                            # and 'casualty' in d.value.params \
+                            # and injury_treated(probe.state, d.value.params['casualty'], d.value.params['location']):
+                            # pass
+                        # elif d.value.name == ActionTypeEnum.APPLY_TREATMENT \
+                            # and not TA3Elaborator._supply_available(probe.state, d.value.params[ParamEnum.TREATMENT]):
+                            # pass
+                        # else:
+                            # breakpoint()
+
             max_competence = 1
             if len(competence_ratings) > 1:
                 max_competence = max(competence_ratings.values())
@@ -97,9 +130,28 @@ class TA3Elaborator(Elaborator):
                 max_competence = list(competence_ratings.values())[0]
             if max_competence < 0.5 and verbose:
                 logger.error("  Maximum competence less than 0.5 for explicit action " + str(d.value))
+                # if d.value.name == ActionTypeEnum.APPLY_TREATMENT \
+                    # and 'treatment' in d.value.params \
+                    # and d.value.params['treatment'] == SupplyTypeEnum.NASOPHARYNGEAL_AIRWAY \
+                    # and get_casualty_by_id(d.value.params['casualty'], probe.state.casualties).vitals.breathing == 'NONE':
+                    # pass
+                # elif d.value.name == ActionTypeEnum.APPLY_TREATMENT \
+                    # and 'treatment' in d.value.params \
+                    # and d.value.params['treatment'] == SupplyTypeEnum.TOURNIQUET:
+                    # pass
+                # elif d.value.name == ActionTypeEnum.CHECK_ALL_VITALS \
+                    # and 'casualty' in d.value.params \
+                    # and get_casualty_by_id(d.value.params['casualty'], probe.state.casualties).assessed:
+                    # pass
+                # elif d.value.name == ActionTypeEnum.MOVE_TO_EVAC:
+                    # pass
+                # else:
+                    # breakpoint()
                 
                     
-            if len(new_actions) == 0 and action_parameter_requirements_fulfilled(d):
+            if len(new_actions) == 0 and action_parameter_requirements_fulfilled(d) \
+                 and (d.value.name != ActionTypeEnum.APPLY_TREATMENT
+                      or TA3Elaborator._supply_available(probe.state, d.value.params[ParamEnum.TREATMENT])):
                 new_actions = [d]
                 probe.decisions = new_actions
                 competence_ratings = assessor.assess(probe)
@@ -593,8 +645,14 @@ def injury_treated(state: TA3State, cas_id: str, loc_id: str):
             return True
     return False
             
-    
-        
+def injury_treatments(state: TA3State, cas_id: str, loc_id: str) -> int:
+    cas = get_casualty_by_id(cas_id, state.casualties)
+    injs = get_injuries_by_location(loc_id, cas.injuries)
+    for inj in injs:
+        if inj.treatments_applied is not None:
+            return inj.treatments_applied
+    return 0
+            
 def consistent_decision_key(dec : Decision) -> str:
     return (dec.value.name + "(" + dec.value.params.get(ParamEnum.CASUALTY, "") + ","
                                  + dec.value.params.get(ParamEnum.TREATMENT, "") + ","
@@ -666,7 +724,8 @@ def action_parameter_requirements_fulfilled(d):
 def action_parameter_requirements(d):
     if d.value.name in [ActionTypeEnum.CHECK_ALL_VITALS, ActionTypeEnum.CHECK_BLOOD_OXYGEN, 
                         ActionTypeEnum.CHECK_PULSE, ActionTypeEnum.CHECK_RESPIRATION, 
-                        ActionTypeEnum.MOVE_TO, ActionTypeEnum.MOVE_TO_EVAC]:
+                        ActionTypeEnum.MOVE_TO, ActionTypeEnum.MOVE_TO_EVAC, 
+                        ActionTypeEnum.DIRECT_MOBILE_CHARACTERS]:
         return [ParamEnum.CASUALTY]
     if d.value.name in [ActionTypeEnum.TAG_CHARACTER]:
         return [ParamEnum.CASUALTY, ParamEnum.CATEGORY]

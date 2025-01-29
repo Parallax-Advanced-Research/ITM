@@ -169,3 +169,18 @@ class MessageTypeEnum(Enum):
     JUSTIFY = "justify"
     RECOMMEND = "recommend"
     WAIT = "wait"
+
+class ParamEnum(object):
+    LOCATION = 'location'
+    CASUALTY = 'casualty'
+    TREATMENT = 'treatment'
+    CATEGORY = 'category'
+    EVAC_ID = 'aid_id'
+    MESSAGE = 'type'
+
+class ThreatSeverityEnum(Enum):
+    LOW = "low"
+    MODERATE = "moderate"
+    SUBSTANTIAL = "substantial"
+    SEVERE = "severe"
+    EXTREME = "extreme"

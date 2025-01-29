@@ -1,3 +1,4 @@
+import datetime
 import os
 import json
 import math
@@ -79,11 +80,14 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.record_explanations = True
         self.record_considered_decisions = False
         self.insert_pauses = False
+        self.check_for_relevance = True
         self.kdma_choice_history = []
         self.possible_kdma_choices = {}
         self.assessors = {}
         self.setup_weights({})
         self.error_data = None
+        self.estimates = []
+        self.estimate_file = os.path.join("temp", "estimates.csv")
         if args is not None:
             self.initialize_with_args(args)
 
@@ -109,6 +113,13 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.variant: str = args.variant
         self.print_neighbors = args.decision_verbose
         self.insert_pauses = args.insert_pauses
+        self.check_for_relevance = not args.ignore_relevance
+        if args.exp_name is not None:
+            self.exp_dir = os.path.join("local", args.exp_name)
+            if not os.path.exists(self.exp_dir):
+                os.makedirs(self.exp_dir)
+            self.estimate_file = os.path.join("local", args.exp_name, "estimates.csv")
+
         if args.weight_file is None:
             global _default_weight_file
             if self.use_drexel_format:
@@ -145,7 +156,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     if self.error_data == "blank":
                         self.error_data = None
                     case_hash = util.hashing.hash_file(self.case_file)
-                    if case_hash != json_obj["case_base"]:
+                    if "case_base" in json_obj and case_hash != json_obj["case_base"]:
                         raise Exception(
                             "Weight file is not tuned for this case file.")
                 elif isinstance(json_obj, dict):
@@ -386,6 +397,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if target is None:
             raise Exception(
                 "KDMA Estimation Decision Selector needs an alignment target to operate correctly.")
+        dist_fn = None
+        if self.check_for_relevance:
+            dist_fn = kdma_estimation.find_relevance_distance
         assessments = {}
         for (name, assessor) in self.assessors.items():
             assessments[name] = assessor.assess(probe)
@@ -414,10 +428,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                 weights_set = self.kdma_weights.get(kdma_name.lower(), None)
                 if weights_set is None:
                     weights_set = self.kdma_weights["default"]
-
+                irrelevant_votes = 0
+                relevant_votes = 0
+                undetermined_votes = 0
                 if kdma_name in assessments:
-                    assessment_val = assessments[kdma_name][str(
-                        cur_decision.value)]
+                    assessment_val = assessments[kdma_name][str(cur_decision.value)]
                     kdma_probs = {assessment_val: 1}
                 else:
                     individual_estimates = []
@@ -427,10 +442,22 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                                 cur_case, weights, kdma_name.lower(), self.cb,
                                 print_neighbors=False, mutable_case=True,
                                 reject_same_scene=self.training,
-                                neighbor_count=triage_constants.DEFAULT_ERROR_NEIGHBOR_COUNT)
-                        individual_estimates.append(
-                            (weights.get("weight_id", None), kdma_val_probs, topK))
-                    if self.error_data is not None:
+                                neighbor_count=triage_constants.DEFAULT_ERROR_NEIGHBOR_COUNT,
+                                dist_fn=dist_fn)
+                        if kdma_val_probs == "irrelevant":
+                            irrelevant_votes += 1
+                        elif len(kdma_val_probs) == 0:
+                            undetermined_votes += 1
+                        else:
+                            relevant_votes += 1
+                            individual_estimates.append(
+                                (weights.get("weight_id", None), kdma_val_probs, topK))
+                            
+                            
+                    if relevant_votes <= irrelevant_votes:
+                        kdma_val_probs = "irrelevant"
+                        topK = []
+                    elif self.error_data is not None:
                         if triage_constants.DEFAULT_KDMA_NEIGHBOR_COUNT == 1:
                             kdma_val_probs, topK, ratings = self.trust_nearest_vote(
                                 kdma_name.lower(), individual_estimates, target)
@@ -446,32 +473,49 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
 
                     if kdma_val_probs is None:
                         continue
-                    if self.print_neighbors and cur_decision.kdmas is not None:
+                    if self.print_neighbors:
                         error = 0
-                        truth = cur_decision.kdmas[kdma_name]
-                        if target.type == AlignmentTargetType.SCALAR:
-                            if len(kdma_val_probs) == 0:
-                                print(
-                                    f"Truth: {truth} Estimate: No estimate made.")
-                            else:
-                                est = 0
-                                tot = 0
-                                for (kdma, prob) in kdma_val_probs.items():
-                                    est += kdma * prob
-                                    tot += prob
-                                error = abs(est/tot - truth)
-                                print(
-                                    f"Truth: {truth} Estimate: {est/tot} Error: {error}")
+                        truth = None
+                        estimate = None
+                        if cur_decision.kdmas is None:
+                            truth = None
                         else:
-                            error = 1 - \
-                                kdma_val_probs.get(
-                                    cur_decision.kdmas[kdma_name], 0)
-                            print(
-                                f"Truth: {truth} Probabilities: {kdma_val_probs} Error: {error}")
-                        if error > 0.1:
-                            util.logger.warning(
-                                "Probabilities off by " + str(error))
-                            # breakpoint()
+                            truth = cur_decision.kdmas.kdma_map.get(kdma_name, None)
+                            if target.type == AlignmentTargetType.SCALAR:
+                                if kdma_val_probs == "irrelevant" or len(kdma_val_probs) == 0:
+                                    if truth is None:
+                                        error = 0
+                                    else:
+                                        error = 1
+                                else:
+                                    est = 0
+                                    tot = 0
+                                    for (kdma, prob) in kdma_val_probs.items():
+                                        est += kdma * prob
+                                        tot += prob
+                                    estimate = est/tot
+                                    if truth is None:
+                                        error = 1
+                                        # Observed to occur correctly.
+                                        # breakpoint()
+                                    else:
+                                        error = truth - estimate
+                                print(f"{kdma_name} Truth: {truth} Estimate: {estimate} Error: {error}")
+                                self.output_estimates(cur_case, target, cur_decision, kdma_name, truth, estimate, error)
+                            else:
+                                if kdma_val_probs == "irrelevant":
+                                    if truth is None:
+                                        error = 0
+                                    else:
+                                        error = 1
+                                else:
+                                    error = 1 - kdma_val_probs.get(cur_decision.kdmas.kdma_map.get(kdma_name, 0), 0)
+                                print(
+                                    f"{kdma_name} Truth: {truth} Probabilities: {kdma_val_probs} Error: {error}")
+                                self.output_estimates(cur_case, target, cur_decision, kdma_name, truth, kdma_val_probs, error)
+                            if error > 0.1:
+                                util.logger.warning("Probabilities off by " + str(error))
+                                # breakpoint()
                 if "kdma_probs" not in cur_case:
                     cur_case["kdma_probs"] = {}
                 cur_case["kdma_probs"][kdma_name] = kdma_val_probs
@@ -505,12 +549,12 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             best_kdma_estimates = kdma_estimation.estimate_KDMAs_from_probs(
                 best_kdma_probs)
             util.logger.info(
-                f"Chosen Decision: {best_decision.value} Estimates: {best_kdma_estimates} Mins: {min_kdma_probs} Maxes: {max_kdma_probs}")
+                f"Chosen Decision: {best_decision.value} Estimates: {best_kdma_estimates} " + 
+                f"Mins: {min_kdma_probs} Maxes: {max_kdma_probs}")
             util.logger.info(f"Distance: {best_case['distance']}")
             for name in assessments:
                 if name not in target.kdma_names:
-                    util.logger.info(
-                        f"{name}: {assessments[name][str(best_decision.value)]:.4f}")
+                    util.logger.info(f"{name}: {assessments[name][str(best_decision.value)]:.4f}")
 
         if self.insert_pauses:
             breakpoint()
@@ -532,10 +576,30 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             self.kdma_choice_history.append(
                 (best_kdma_probs, min_kdma_probs, max_kdma_probs))
             for (kdma_name, kdma_probs) in best_kdma_probs.items():
+                if kdma_probs in ["irrelevant", None]:
+                    continue
                 self.possible_kdma_choices[kdma_name] = self.get_updated_kdma_choices(
                     kdma_probs, kdma_name)
         self.last_choice = best_case
         return (best_decision, best_case["distance"])
+
+    def output_estimates(self, case, target, cur_decision, kdma_name, truth, estimate, error):
+        self.estimates.append(
+            {
+                "time": datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
+                "relevance": self.check_for_relevance,
+                "target": target.name,
+                "scene": case["scene"],
+                "action_id": str(cur_decision.id_),
+                "action": str(cur_decision.value),
+                "kdma": kdma_name,
+                "truth": truth,
+                "error": error,
+                "estimate": estimate
+            }
+        )
+        write_case_base(self.estimate_file, self.estimates)
+
 
     def update_kdma_probabilities(self, kdma_probs: dict[str, float], new_kdma_probs: dict[str, float], fn: Callable[[float, float], float] = min):
         ret_kdma_probs = dict()
@@ -553,9 +617,9 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
 
     def update_probability_dict(self, item_probs: dict[str, float], new_item_probs: dict[str, float], fn: Callable[[Any, Any], Any] = min):
         ret_probs = dict()
-        if len(item_probs) == 0:
+        if len(item_probs) == 0 or item_probs == "irrelevant":
             return new_item_probs
-        if len(new_item_probs) == 0:
+        if len(new_item_probs) == 0 or new_item_probs == "irrelevant":
             return item_probs
         for (item1, prob1) in item_probs.items():
             for (item2, prob2) in new_item_probs.items():
@@ -573,8 +637,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             minDecisions = [(decision, case, ests) for (
                 dist, decision, case, ests) in valued_decisions if dist == minDist]
         if len(minDecisions) > 1:
-            minDecision = [
-                util.get_global_random_generator().choice(minDecisions)]
+            minDecision = [util.get_global_random_generator().choice(minDecisions)]
         return minDecisions[0]
 
     def judge_distance(self, decision: Decision, case: dict[str, Any], ests: dict[str, dict[str, float]], assessments: dict[str, dict[str, float]]):
@@ -588,7 +651,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
 
     def empty_probs(self, estimates: dict[str, dict[str, float]]):
         for value in estimates.values():
-            if len(value) > 0:
+            if len(value) > 0 and value != 'irrelevant':
                 return False
         return True
 
@@ -646,13 +709,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         return est_score / prob_sum
 
     def get_updated_kdma_choices(self, cur_kdma_probs, kdma_name) -> list[KDMACountLikelihood]:
-        new_possible_kdma_choices: dict[tuple[tuple[float, int]], KDMACountLikelihood] = {
-        }
+        new_possible_kdma_choices: dict[tuple[tuple[float, int]], KDMACountLikelihood] = {}
         for kcl in self.possible_kdma_choices[kdma_name]:
             for child in kcl.children(cur_kdma_probs):
                 index_obj = child.get_index_obj()
-                existing_likelihood = new_possible_kdma_choices.get(
-                    index_obj, None)
+                existing_likelihood = new_possible_kdma_choices.get(index_obj, None)
                 if existing_likelihood is None:
                     new_possible_kdma_choices[index_obj] = child
                 else:
@@ -691,7 +752,7 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             # case["distance2"] = -1
             for kdma_name in target.kdma_names:
                 kdma_probs = kdma_prob_dict.get(kdma_name, None)
-                if kdma_probs is None or len(kdma_probs) == 0:
+                if kdma_probs is None or kdma_probs == "irrelevant" or len(kdma_probs) == 0:
                     continue
                 case["distance"] = max(0, case["distance"])
                 # case["distance2"] = max(0, case["distance2"])
@@ -939,6 +1000,8 @@ def make_case_triage(probe: TADProbe, d: Decision, variant: str) -> dict[str, An
                 case['scene'] = parts[0] + parts[2]
             elif parts[1] == 'ph1':
                 case['scene'] = parts[0] + parts[3]
+        elif probe.id_.startswith("Bonus"):
+            case['scene'] = "IOB"
         case['scene'] += ":" + meta_block["scene_id"]
     return case
 

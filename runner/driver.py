@@ -7,6 +7,7 @@ from components.probe_dumper.probe_dumper import ProbeDumper, DumpConfig, DEFAUL
 from domain.internal import Scenario, State, TADProbe, Decision, Action, KDMA, KDMAs, AlignmentTarget, AlignmentFeedback, make_new_action_decision, target
 from util import logger
 import uuid
+import math
 
 
 class Driver:
@@ -61,13 +62,22 @@ class Driver:
         return probe
         
     def translate_feedback(self, results: ta3.AlignmentResults) -> AlignmentFeedback:
-        if len(results.alignment_source) != 1:
-            return None
+        # if len(results.alignment_source) != 1:
+            # return None
+        if results.kdma_values is None: 
+            return AlignmentFeedback(
+                        results.alignment_target_id,
+                        {},
+                        math.nan,
+                        [],
+                        {}
+                        )
         return AlignmentFeedback(
                     results.alignment_target_id,
                     {kvo.kdma:kvo.value for kvo in results.kdma_values},
                     results.score,
-                    results.alignment_source[0].probes
+                    results.alignment_source[0].probes,
+                    {kvo.kdma:kvo.scores for kvo in results.kdma_values}
                     )
 
     def elaborate(self, probe: TADProbe) -> list[Decision[Action]]:

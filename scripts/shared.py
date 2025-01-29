@@ -125,6 +125,12 @@ def get_default_parser() -> argparse.ArgumentParser:
                         help="Causes a decision selector to output extra information explaining its selections.")
     parser.add_argument('--insert_pauses', action=argparse.BooleanOptionalAction, default=False, 
                         help="Causes a decision selector to break after selection decisions.")
+    parser.add_argument('--ignore_relevance', action=argparse.BooleanOptionalAction, default=False, 
+                        help="Causes the KDMA decision selector to estimate KDMAs without reference "
+                              + "any examples that might show the KDMA to be irrelevant. This is "
+                              + "more efficient, but will give poor results if multiple KDMAs are "
+                              + "targeted.")
+    parser.add_argument('--exp_name', type=str, default=None, help="Name for experiment.")
     parser.add_argument('--elab_output', action=argparse.BooleanOptionalAction, default=False,
                         help="Outputs the elaborator actions into json file (used to help compare to llm).")
     parser.add_argument('--record_considered_decisions', action=argparse.BooleanOptionalAction, default=False, 
