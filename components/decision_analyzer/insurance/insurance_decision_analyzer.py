@@ -17,9 +17,11 @@ class InsuranceDecisionAnalyzer(BaselineDecisionAnalyzer):
                 "Random": InsuranceDecisionMetric(
                     name="Random",
                     description="A random value",
-                    value=random.random()
+                    value={"amount": random.random()}  # Ensure value is a dictionary
                 )
             }
+            if decision.metrics is None:
+                decision.metrics = {}
             decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
         return analysis

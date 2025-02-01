@@ -23,8 +23,18 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
             with open(f'{self.data_dir}/{raw_csv}', 'r') as data_file:
                 reader = csv.DictReader(data_file)
                 for line in reader:
-                    decisions = [Decision(id_=line['id'], value=line['value'])]
-                    probe = InsuranceTADProbe(id_=line['id'], state=state, prompt=line['prompt'], decisions=decisions)
+                    decisions = [
+                        Decision(id_='val1', value={"amount": line['val1']}),
+                        Decision(id_='val2', value={"amount": line['val2']}),
+                        Decision(id_='val3', value={"amount": line['val3']}),
+                        Decision(id_='val4', value={"amount": line['val4']})
+                    ]
+                    probe = InsuranceTADProbe(
+                        id_=line.get('id'),  # Use .get() to avoid KeyError
+                        state=state,
+                        prompt=line.get('prompt'),  # Use .get() to avoid KeyError
+                        decisions=decisions
+                    )
                     probes.append(probe)
 
         return scen, probes
