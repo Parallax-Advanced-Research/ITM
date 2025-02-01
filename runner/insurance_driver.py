@@ -13,5 +13,5 @@ class InsuranceDriver:
         scen, probes = self.ingestor.ingest_as_internal()
         for probe in probes:
             analysis = self.analyzer.analyze(scen, probe)
-            print(f"Analysis for probe {probe.id_}: {analysis}\n")
+            
 
