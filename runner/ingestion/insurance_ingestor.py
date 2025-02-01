@@ -6,9 +6,11 @@ from domain.insurance.models.insurance_state import InsuranceState
 from domain.insurance.models.decision import Decision
 from domain.insurance.models.insurance_scenario import InsuranceScenario
 from pydantic.tools import parse_obj_as
+from .ingestor import Ingestor
 
-class InsuranceIngestor:
+class InsuranceIngestor(Ingestor):  # Extend Ingestor
     def __init__(self, data_dir: str):
+        super().__init__(data_dir)  # Call the parent class constructor
         self.data_dir = data_dir
 
     def ingest_as_internal(self) -> Tuple[InsuranceScenario, List[InsuranceTADProbe]]:
