@@ -143,10 +143,10 @@ components:
           description: List of KDMAs associated with the decision
         favors_choice:
           type: boolean
-          description: Whether the decision-maker favors choice
+          description: Whether the decision favors choice
         favors_risk:
           type: boolean
-          description: Whether the decision-maker favors risk
+          description: Whether the decision favors risk
 
     TADProbe:
       type: object

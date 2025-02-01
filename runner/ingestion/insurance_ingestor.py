@@ -1,5 +1,6 @@
 import os
 import csv
+import uuid
 from typing import List, Tuple
 from domain.insurance.models.insurance_tad_probe import InsuranceTADProbe
 from domain.insurance.models.insurance_state import InsuranceState
@@ -23,15 +24,7 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
         for raw_csv in [f for f in os.listdir(self.data_dir) if f.endswith('.csv')]:
             with open(f'{self.data_dir}/{raw_csv}', 'r') as data_file:
                 reader = csv.DictReader(data_file)
-                
-                # Print headers to verify
-                # headers = reader.fieldnames
-                # print(f"CSV Headers: {headers}")
-                
-                for line in reader:
-                    # Print line to verify
-                    # print(f"CSV Line: {line}")
-                    
+                for row_num, line in enumerate(reader):
                     # Ensure network_status is in the proper format
                     network_status = line.get('network_status', '').strip()
                     if network_status not in ['TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND']:
@@ -59,15 +52,18 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         "kdma_depends_on": line.get('kdma_depends_on'),
                         "persona": line.get('persona')
                     })
+                    favors_risk = state.kdma_depends_on == 'RISK'
+                    favors_choice = state.kdma_depends_on == 'CHOICE'
+
                     decisions = [
-                        Decision(id_='val1', value=DecisionValue(name='val1', params={"amount": state.val1})),
-                        Decision(id_='val2', value=DecisionValue(name='val2', params={"amount": state.val2})),
-                        Decision(id_='val3', value=DecisionValue(name='val3', params={"amount": state.val3})),
-                        Decision(id_='val4', value=DecisionValue(name='val4', params={"amount": state.val4}))
+                        Decision(id_='val1', value=DecisionValue(name='val1', params={"amount": state.val1}), favors_risk=favors_risk, favors_choice=favors_choice),
+                        Decision(id_='val2', value=DecisionValue(name='val2', params={"amount": state.val2}), favors_risk=favors_risk, favors_choice=favors_choice),
+                        Decision(id_='val3', value=DecisionValue(name='val3', params={"amount": state.val3}), favors_risk=favors_risk, favors_choice=favors_choice),
+                        Decision(id_='val4', value=DecisionValue(name='val4', params={"amount": state.val4}), favors_risk=favors_risk, favors_choice=favors_choice)
                     ]
 
                     probe = InsuranceTADProbe(
-                        id_=line.get('id'),  
+                        id_=f'probe_{row_num}_{uuid.uuid4()}',  # Generate a unique ID
                         state=state,
                         prompt=line.get('prompt'), 
                         decisions=decisions

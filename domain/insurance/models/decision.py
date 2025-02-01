@@ -35,8 +35,8 @@ class Decision(BaseModel):
     explanations: Optional[List[DecisionExplanationsInner]] = Field(default=None, description="List of explanations for the decision")
     metrics: Optional[Dict[str, DecisionMetric]] = None
     kdmas: Optional[List[Dict[str, Any]]] = Field(default=None, description="List of KDMAs associated with the decision")
-    favors_choice: Optional[StrictBool] = Field(default=None, description="Whether the decision-maker favors choice")
-    favors_risk: Optional[StrictBool] = Field(default=None, description="Whether the decision-maker favors risk")
+    favors_choice: Optional[StrictBool] = Field(default=None, description="Whether the decision favors choice")
+    favors_risk: Optional[StrictBool] = Field(default=None, description="Whether the decision favors risk")
     __properties: ClassVar[List[str]] = ["id_", "value", "justifications", "explanations", "metrics", "kdmas", "favors_choice", "favors_risk"]
 
     model_config = ConfigDict(
