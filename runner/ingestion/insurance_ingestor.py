@@ -4,6 +4,7 @@ from typing import List, Tuple
 from domain.insurance.models.insurance_tad_probe import InsuranceTADProbe
 from domain.insurance.models.insurance_state import InsuranceState
 from domain.insurance.models.decision import Decision
+from domain.insurance.models.decision_value import DecisionValue
 from domain.insurance.models.insurance_scenario import InsuranceScenario
 from pydantic.tools import parse_obj_as
 from .ingestor import Ingestor
@@ -24,12 +25,12 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                 reader = csv.DictReader(data_file)
                 
                 # Print headers to verify
-                headers = reader.fieldnames
-                print(f"CSV Headers: {headers}")
+                # headers = reader.fieldnames
+                # print(f"CSV Headers: {headers}")
                 
                 for line in reader:
                     # Print line to verify
-                    print(f"CSV Line: {line}")
+                    # print(f"CSV Line: {line}")
                     
                     # Ensure network_status is in the proper format
                     network_status = line.get('network_status', '').strip()
@@ -59,15 +60,16 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         "persona": line.get('persona')
                     })
                     decisions = [
-                        Decision(id_='val1', value={"amount": line['val1']}),
-                        Decision(id_='val2', value={"amount": line['val2']}),
-                        Decision(id_='val3', value={"amount": line['val3']}),
-                        Decision(id_='val4', value={"amount": line['val4']})
+                        Decision(id_='val1', value=DecisionValue(name='val1', params={"amount": state.val1})),
+                        Decision(id_='val2', value=DecisionValue(name='val2', params={"amount": state.val2})),
+                        Decision(id_='val3', value=DecisionValue(name='val3', params={"amount": state.val3})),
+                        Decision(id_='val4', value=DecisionValue(name='val4', params={"amount": state.val4}))
                     ]
+
                     probe = InsuranceTADProbe(
-                        id_=line.get('id'),  # Use .get() to avoid KeyError
+                        id_=line.get('id'),  
                         state=state,
-                        prompt=line.get('prompt'),  # Use .get() to avoid KeyError
+                        prompt=line.get('prompt'), 
                         decisions=decisions
                     )
                     probes.append(probe)

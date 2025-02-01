@@ -13,9 +13,5 @@ class InsuranceDriver:
         scen, probes = self.ingestor.ingest_as_internal()
         for probe in probes:
             analysis = self.analyzer.analyze(scen, probe)
-            print(f"Analysis for probe {probe.id_}: {analysis}")
+            print(f"Analysis for probe {probe.id_}: {analysis}\n")
 
-if __name__ == '__main__':
-    data_dir = os.path.join(os.path.dirname(__file__), '..', 'domain', 'insurance', 'data')
-    driver = InsuranceDriver(data_dir)
-    driver.run()
