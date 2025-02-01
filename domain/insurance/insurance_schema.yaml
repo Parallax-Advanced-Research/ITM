@@ -17,6 +17,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/InsuranceTADProbe'
 
+  /scenario:
+    get:
+      operationId: getScenario
+      summary: Retrieve a Scenario instance
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+
 components:
   schemas:
     State:
@@ -46,6 +58,34 @@ components:
             - type: boolean
             - type: object
               additionalProperties: true
+
+    Scenario:
+      type: object
+      properties:
+        id_:
+          type: string
+          description: Unique identifier for the scenario
+        description:
+          type: string
+          description: Description of the scenario
+        state:
+          $ref: '#/components/schemas/State'
+        decisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Decision'
+        metrics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DecisionMetric'
+
+    InsuranceScenario:
+      allOf:
+        - $ref: '#/components/schemas/Scenario'
+        - type: object
+          properties:
+            state:
+              $ref: '#/components/schemas/InsuranceState'
 
     Decision:
       type: object
@@ -91,34 +131,22 @@ components:
                     - type: boolean
                     - type: object
                       additionalProperties: true
-                description: Parameters of the explanation item
           description: List of explanations for the decision
         metrics:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/DecisionMetric'
-          description: Metrics associated with the decision
         kdmas:
           type: array
           items:
             type: object
-            properties:
-              id_:
-                type: string
-                description: Unique identifier for the KDMA
-              value:
-                type: number
-                format: float
-                description: Value of the KDMA
           description: List of KDMAs associated with the decision
         favors_choice:
           type: boolean
           description: Whether the decision-maker favors choice
-          default: false
         favors_risk:
           type: boolean
           description: Whether the decision-maker favors risk
-          default: false
 
     TADProbe:
       type: object
