@@ -4,6 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "Test Insurance",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "test_insurance.py",
+            "console": "integratedTerminal",
+        },
         // All Scenarios
         {
             "name": "Action Tester Module",
@@ -13,36 +20,34 @@
             "args": "scenarios/ph1/*.yaml"
         },
         //MOVE_TO_EVAC
-        {            
+        {
             "name": "MJ4 Action Tester Module",
             "type": "debugpy",
             "request": "launch",
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/dryrun-adept-eval-MJ4_redacted.yaml"
         },
-        {            
+        {
             "name": "MJ5 Action Tester Module",
             "type": "debugpy",
             "request": "launch",
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/dryrun-adept-eval-MJ5_redacted.yaml"
         },
-        {            
+        {
             "name": "IO1 Action Tester Module",
             "type": "debugpy",
             "request": "launch",
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/dryrun-adept-train-IO1exp.yaml"
         },
-        {            
+        {
             "name": "MJ2 Action Tester Module",
             "type": "debugpy",
             "request": "launch",
             "module": "scripts.scenario_action_tester",
             "args": "scenarios/ph1/dryrun-adept-train-MJ2.yaml"
         },
-
-
         // TAD TESTER --------------------------
         {
             "name": "SoarTech qol-ph1-train-1",

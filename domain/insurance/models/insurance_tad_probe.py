@@ -19,9 +19,9 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
-from insurance.models.decision import Decision
-from insurance.models.insurance_state import InsuranceState
-from insurance.models.tad_probe_environment import TADProbeEnvironment
+from .decision import Decision
+from .insurance_state import InsuranceState
+from .tad_probe_environment import TADProbeEnvironment
 from typing import Optional, Set
 from typing_extensions import Self
 

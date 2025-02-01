@@ -19,9 +19,9 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from insurance.models.decision_explanations_inner import DecisionExplanationsInner
-from insurance.models.decision_metric import DecisionMetric
-from insurance.models.decision_value import DecisionValue
+from .decision_explanations_inner import DecisionExplanationsInner
+from .decision_metric import DecisionMetric
+from .decision_value import DecisionValue
 from typing import Optional, Set
 from typing_extensions import Self
 

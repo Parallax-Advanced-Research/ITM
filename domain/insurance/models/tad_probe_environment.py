@@ -19,7 +19,7 @@ import json
 
 from pydantic import BaseModel, ConfigDict
 from typing import Any, ClassVar, Dict, List, Optional
-from insurance.models.tad_probe_environment_decision_environment import TADProbeEnvironmentDecisionEnvironment
+from .tad_probe_environment_decision_environment import TADProbeEnvironmentDecisionEnvironment
 from typing import Optional, Set
 from typing_extensions import Self
 

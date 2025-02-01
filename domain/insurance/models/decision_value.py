@@ -19,7 +19,7 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from insurance.models.decision_metric_value import DecisionMetricValue
+from .decision_metric_value import DecisionMetricValue
 from typing import Optional, Set
 from typing_extensions import Self
 

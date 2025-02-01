@@ -19,9 +19,9 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from insurance.models.decision import Decision
-from insurance.models.decision_metric import DecisionMetric
-from insurance.models.insurance_state import InsuranceState
+from .decision import Decision
+from .decision_metric import DecisionMetric
+from .insurance_state import InsuranceState
 from typing import Optional, Set
 from typing_extensions import Self
 
