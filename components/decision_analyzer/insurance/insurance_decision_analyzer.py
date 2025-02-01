@@ -20,7 +20,6 @@ class InsuranceDecisionAnalyzer(BaselineDecisionAnalyzer):
                     value=random.random()
                 )
             }
-            # Update the metrics in the decision with our currently calculated metrics
             decision.metrics.update(metrics)
             analysis[decision.id_] = metrics
         return analysis
