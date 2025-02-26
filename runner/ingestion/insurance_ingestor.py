@@ -4,9 +4,9 @@ import uuid
 from typing import List, Tuple
 from domain.insurance.models.insurance_tad_probe import InsuranceTADProbe
 from domain.insurance.models.insurance_state import InsuranceState
-from domain.insurance.models.decision import Decision
-from domain.insurance.models.decision_value import DecisionValue
 from domain.insurance.models.insurance_scenario import InsuranceScenario
+from domain.insurance.models.decision import Decision as InsuranceDecision
+from domain.insurance.models.decision_value import DecisionValue
 from pydantic.tools import parse_obj_as
 from .ingestor import Ingestor
 
@@ -30,10 +30,21 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                     if network_status not in ['TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND']:
                         network_status = 'GENERIC'  # Default value if not valid
 
+                    # Convert kdma_value to float or int
+                    kdma_value = line.get('kdma_value')
+                    try:
+                        kdma_value = float(kdma_value) if '.' in kdma_value else int(kdma_value)
+                    except ValueError:
+                        kdma_value = None
+
                     state = parse_obj_as(InsuranceState, {
                         "children_under_4": int(line.get('children_under_4', 0)),
+                        "children_under_12": int(line.get('children_under_12', 0)),
+                        "children_under_18": int(line.get('children_under_18', 0)),
+                        "children_under_26": int(line.get('children_under_26', 0)),
                         "employment_type": line.get('employment_type'),
-                        "travel_location_known": line.get('travel_location_known') == 'True',
+                        "distance_dm_home_to_employer_hq": int(line.get('distance_dm_home_to_employer_hq', 0)),
+                        "travel_location_known": line.get('travel_location_known') == '1',
                         "owns_rents": line.get('owns_rents'),
                         "no_of_medical_visits_previous_year": int(line.get('no_of_medical_visits_previous_year', 0)),
                         "percent_family_members_with_chronic_condition": float(line.get('percent_family_members_with_chronic_condition', 0.0)),
@@ -44,30 +55,24 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         "val2": float(line.get('val2', 0.0)),
                         "val3": float(line.get('val3', 0.0)),
                         "val4": float(line.get('val4', 0.0)),
-                        "action": line.get('action'),
-                        "plan": line.get('plan'),
-                        "estimate_medical_visits": int(line.get('estimate_medical_visits', 0)),
-                        "risk_aversion": line.get('risk_aversion'),
-                        "choice": line.get('choice'),
-                        "kdma_depends_on": line.get('kdma_depends_on'),
-                        "persona": line.get('persona')
+                        "kdma": line.get('kdma'),
+                        "kdma_value": kdma_value
                     })
-                    favors_risk = state.kdma_depends_on == 'RISK'
-                    favors_choice = state.kdma_depends_on == 'CHOICE'
-
-                    decisions = [
-                        Decision(id_='val1', value=DecisionValue(name='val1', params={"amount": state.val1}), favors_risk=favors_risk, favors_choice=favors_choice),
-                        Decision(id_='val2', value=DecisionValue(name='val2', params={"amount": state.val2}), favors_risk=favors_risk, favors_choice=favors_choice),
-                        Decision(id_='val3', value=DecisionValue(name='val3', params={"amount": state.val3}), favors_risk=favors_risk, favors_choice=favors_choice),
-                        Decision(id_='val4', value=DecisionValue(name='val4', params={"amount": state.val4}), favors_risk=favors_risk, favors_choice=favors_choice)
-                    ]
 
                     probe = InsuranceTADProbe(
                         id_=f'probe_{row_num}_{uuid.uuid4()}',  # Generate a unique ID
                         state=state,
-                        prompt=line.get('prompt'), 
-                        decisions=decisions
+                        prompt=line.get('probe')
                     )
+
+                    # Check for the existence of the 'action' column and assign decision if it exists
+                    if 'action' in line:
+                        decision = InsuranceDecision(
+                            id_=f'decision_{row_num}_{uuid.uuid4()}',
+                            value=DecisionValue(name=line.get('action'))
+                        )
+                        probe.decisions = [decision]
+
                     probes.append(probe)
 
         return scen, probes

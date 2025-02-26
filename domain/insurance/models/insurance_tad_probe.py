@@ -17,105 +17,89 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
-from typing import Any, ClassVar, Dict, List, Optional
+
+from typing import List, Optional
+from pydantic import BaseModel, Field, StrictStr, conlist, validator
 from .decision import Decision
 from .insurance_state import InsuranceState
 from .tad_probe_environment import TADProbeEnvironment
-from typing import Optional, Set
-from typing_extensions import Self
 
 class InsuranceTADProbe(BaseModel):
     """
     InsuranceTADProbe
-    """ # noqa: E501
-    id_: Optional[StrictStr] = Field(default=None, description="Unique identifier for the probe")
-    state: Optional[InsuranceState] = None
-    prompt: Optional[StrictStr] = Field(default=None, description="Prompt associated with the probe")
+    """
+    decisions: Optional[conlist(Decision)] = Field(default=None, description="List of decisions associated with the probe")
     environment: Optional[TADProbeEnvironment] = None
-    decisions: Optional[List[Decision]] = Field(default=None, description="List of decisions associated with the probe")
+    id_: Optional[StrictStr] = Field(default=None, description="Unique identifier for the probe")
+    prompt: Optional[StrictStr] = Field(default=None, description="Prompt associated with the probe")
+    state: Optional[InsuranceState] = None
     probe_type: Optional[StrictStr] = Field(default=None, description="The type of insurance-related probe being assessed")
-    __properties: ClassVar[List[str]] = ["id_", "state", "prompt", "environment", "decisions", "probe_type"]
+    __properties = ["decisions", "environment", "id_", "prompt", "state", "probe_type"]
 
-    @field_validator('probe_type')
+    @validator('probe_type')
     def probe_type_validate_enum(cls, value):
         """Validates the enum"""
         if value is None:
             return value
 
-        if value not in set(['DEDUCTIBLE', 'OUT-OF-POCKET MAXIMUM', 'PREVENTIVE CARE SERVICES', 'PRIMARY CARE PHYSICIAN (PCP)', 'TELE-MEDICINE', 'SPECIALIST OFFICE VISIT', 'OUTPATIENT SERVICES (SURGERY)', 'URGENT CARE CENTER', 'RETAIL PHARMACY (UP TO A 30-DAY SUPPLY)', 'MAIL ORDER (UP TO A 90-DAY SUPPLY)']):
+        if value not in ('DEDUCTIBLE', 'OUT-OF-POCKET MAXIMUM', 'PREVENTIVE CARE SERVICES', 'PRIMARY CARE PHYSICIAN (PCP)', 'TELE-MEDICINE', 'SPECIALIST OFFICE VISIT', 'OUTPATIENT SERVICES (SURGERY)', 'URGENT CARE CENTER', 'RETAIL PHARMACY (UP TO A 30-DAY SUPPLY)', 'MAIL ORDER (UP TO A 90-DAY SUPPLY)',):
             raise ValueError("must be one of enum values ('DEDUCTIBLE', 'OUT-OF-POCKET MAXIMUM', 'PREVENTIVE CARE SERVICES', 'PRIMARY CARE PHYSICIAN (PCP)', 'TELE-MEDICINE', 'SPECIALIST OFFICE VISIT', 'OUTPATIENT SERVICES (SURGERY)', 'URGENT CARE CENTER', 'RETAIL PHARMACY (UP TO A 30-DAY SUPPLY)', 'MAIL ORDER (UP TO A 90-DAY SUPPLY)')")
         return value
 
-    model_config = ConfigDict(
-        populate_by_name=True,
-        validate_assignment=True,
-        protected_namespaces=(),
-    )
-
+    class Config:
+        """Pydantic configuration"""
+        allow_population_by_field_name = True
+        validate_assignment = True
 
     def to_str(self) -> str:
         """Returns the string representation of the model using alias"""
-        return pprint.pformat(self.model_dump(by_alias=True))
+        return pprint.pformat(self.dict(by_alias=True))
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Optional[Self]:
+    def from_json(cls, json_str: str) -> InsuranceTADProbe:
         """Create an instance of InsuranceTADProbe from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Return the dictionary representation of the model using alias.
-
-        This has the following differences from calling pydantic's
-        `self.model_dump(by_alias=True)`:
-
-        * `None` is only added to the output dict for nullable fields that
-          were set at model initialization. Other fields with value `None`
-          are ignored.
-        """
-        excluded_fields: Set[str] = set([
-        ])
-
-        _dict = self.model_dump(
-            by_alias=True,
-            exclude=excluded_fields,
-            exclude_none=True,
-        )
-        # override the default output from pydantic by calling `to_dict()` of state
-        if self.state:
-            _dict['state'] = self.state.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of environment
-        if self.environment:
-            _dict['environment'] = self.environment.to_dict()
+    def to_dict(self):
+        """Returns the dictionary representation of the model using alias"""
+        _dict = self.dict(by_alias=True,
+                          exclude={
+                          },
+                          exclude_none=True)
         # override the default output from pydantic by calling `to_dict()` of each item in decisions (list)
         _items = []
         if self.decisions:
-            for _item_decisions in self.decisions:
-                if _item_decisions:
-                    _items.append(_item_decisions.to_dict())
+            for _item in self.decisions:
+                if _item:
+                    _items.append(_item.to_dict())
             _dict['decisions'] = _items
+        # override the default output from pydantic by calling `to_dict()` of environment
+        if self.environment:
+            _dict['environment'] = self.environment.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of state
+        if self.state:
+            _dict['state'] = self.state.to_dict()
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
+    def from_dict(cls, obj: dict) -> InsuranceTADProbe:
         """Create an instance of InsuranceTADProbe from a dict"""
         if obj is None:
             return None
 
         if not isinstance(obj, dict):
-            return cls.model_validate(obj)
+            return InsuranceTADProbe.parse_obj(obj)
 
-        _obj = cls.model_validate({
+        _obj = InsuranceTADProbe.parse_obj({
+            "decisions": [Decision.from_dict(_item) for _item in obj.get("decisions")] if obj.get("decisions") is not None else None,
+            "environment": TADProbeEnvironment.from_dict(obj.get("environment")) if obj.get("environment") is not None else None,
             "id_": obj.get("id_"),
-            "state": InsuranceState.from_dict(obj["state"]) if obj.get("state") is not None else None,
             "prompt": obj.get("prompt"),
-            "environment": TADProbeEnvironment.from_dict(obj["environment"]) if obj.get("environment") is not None else None,
-            "decisions": [Decision.from_dict(_item) for _item in obj["decisions"]] if obj.get("decisions") is not None else None,
+            "state": InsuranceState.from_dict(obj.get("state")) if obj.get("state") is not None else None,
             "probe_type": obj.get("probe_type")
         })
         return _obj

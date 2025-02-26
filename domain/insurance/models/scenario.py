@@ -17,103 +17,87 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
-from typing import Any, ClassVar, Dict, List, Optional
+
+from typing import Dict, List, Optional
+from pydantic import BaseModel, Field, StrictStr, conlist
 from .decision import Decision
 from .decision_metric import DecisionMetric
 from .state import State
-from typing import Optional, Set
-from typing_extensions import Self
 
 class Scenario(BaseModel):
     """
     Scenario
-    """ # noqa: E501
-    id_: Optional[StrictStr] = Field(default=None, description="Unique identifier for the scenario")
+    """
+    decisions: Optional[conlist(Decision)] = None
     description: Optional[StrictStr] = Field(default=None, description="Description of the scenario")
-    state: Optional[State] = None
-    decisions: Optional[List[Decision]] = None
+    id_: Optional[StrictStr] = Field(default=None, description="Unique identifier for the scenario")
     metrics: Optional[Dict[str, DecisionMetric]] = None
-    __properties: ClassVar[List[str]] = ["id_", "description", "state", "decisions", "metrics"]
+    state: Optional[State] = None
+    __properties = ["decisions", "description", "id_", "metrics", "state"]
 
-    model_config = ConfigDict(
-        populate_by_name=True,
-        validate_assignment=True,
-        protected_namespaces=(),
-    )
-
+    class Config:
+        """Pydantic configuration"""
+        allow_population_by_field_name = True
+        validate_assignment = True
 
     def to_str(self) -> str:
         """Returns the string representation of the model using alias"""
-        return pprint.pformat(self.model_dump(by_alias=True))
+        return pprint.pformat(self.dict(by_alias=True))
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Optional[Self]:
+    def from_json(cls, json_str: str) -> Scenario:
         """Create an instance of Scenario from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Return the dictionary representation of the model using alias.
-
-        This has the following differences from calling pydantic's
-        `self.model_dump(by_alias=True)`:
-
-        * `None` is only added to the output dict for nullable fields that
-          were set at model initialization. Other fields with value `None`
-          are ignored.
-        """
-        excluded_fields: Set[str] = set([
-        ])
-
-        _dict = self.model_dump(
-            by_alias=True,
-            exclude=excluded_fields,
-            exclude_none=True,
-        )
-        # override the default output from pydantic by calling `to_dict()` of state
-        if self.state:
-            _dict['state'] = self.state.to_dict()
+    def to_dict(self):
+        """Returns the dictionary representation of the model using alias"""
+        _dict = self.dict(by_alias=True,
+                          exclude={
+                          },
+                          exclude_none=True)
         # override the default output from pydantic by calling `to_dict()` of each item in decisions (list)
         _items = []
         if self.decisions:
-            for _item_decisions in self.decisions:
-                if _item_decisions:
-                    _items.append(_item_decisions.to_dict())
+            for _item in self.decisions:
+                if _item:
+                    _items.append(_item.to_dict())
             _dict['decisions'] = _items
         # override the default output from pydantic by calling `to_dict()` of each value in metrics (dict)
         _field_dict = {}
         if self.metrics:
-            for _key_metrics in self.metrics:
-                if self.metrics[_key_metrics]:
-                    _field_dict[_key_metrics] = self.metrics[_key_metrics].to_dict()
+            for _key in self.metrics:
+                if self.metrics[_key]:
+                    _field_dict[_key] = self.metrics[_key].to_dict()
             _dict['metrics'] = _field_dict
+        # override the default output from pydantic by calling `to_dict()` of state
+        if self.state:
+            _dict['state'] = self.state.to_dict()
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
+    def from_dict(cls, obj: dict) -> Scenario:
         """Create an instance of Scenario from a dict"""
         if obj is None:
             return None
 
         if not isinstance(obj, dict):
-            return cls.model_validate(obj)
+            return Scenario.parse_obj(obj)
 
-        _obj = cls.model_validate({
-            "id_": obj.get("id_"),
+        _obj = Scenario.parse_obj({
+            "decisions": [Decision.from_dict(_item) for _item in obj.get("decisions")] if obj.get("decisions") is not None else None,
             "description": obj.get("description"),
-            "state": State.from_dict(obj["state"]) if obj.get("state") is not None else None,
-            "decisions": [Decision.from_dict(_item) for _item in obj["decisions"]] if obj.get("decisions") is not None else None,
+            "id_": obj.get("id_"),
             "metrics": dict(
                 (_k, DecisionMetric.from_dict(_v))
-                for _k, _v in obj["metrics"].items()
+                for _k, _v in obj.get("metrics").items()
             )
             if obj.get("metrics") is not None
-            else None
+            else None,
+            "state": State.from_dict(obj.get("state")) if obj.get("state") is not None else None
         })
         return _obj
 
