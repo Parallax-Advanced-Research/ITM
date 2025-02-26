@@ -20,9 +20,9 @@ import json
 
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, StrictStr, conlist
-from insurance.models.decision import Decision
-from insurance.models.decision_metric import DecisionMetric
-from insurance.models.state import State
+from .decision import Decision
+from .decision_metric import DecisionMetric
+from .state import State
 
 class Scenario(BaseModel):
     """

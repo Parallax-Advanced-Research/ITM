@@ -20,7 +20,7 @@ import json
 
 from typing import Optional
 from pydantic import BaseModel, Field, StrictStr
-from insurance.models.decision_explanations_inner_params_value import DecisionExplanationsInnerParamsValue
+from .decision_explanations_inner_params_value import DecisionExplanationsInnerParamsValue
 
 class DecisionMetric(BaseModel):
     """

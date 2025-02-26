@@ -20,9 +20,9 @@ import json
 
 from typing import List, Optional
 from pydantic import BaseModel, Field, StrictStr, conlist
-from insurance.models.decision import Decision
-from insurance.models.state import State
-from insurance.models.tad_probe_environment import TADProbeEnvironment
+from .decision import Decision
+from .state import State
+from .tad_probe_environment import TADProbeEnvironment
 
 class TADProbe(BaseModel):
     """

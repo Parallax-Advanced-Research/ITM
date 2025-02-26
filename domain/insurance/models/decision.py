@@ -20,9 +20,9 @@ import json
 
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, StrictBool, StrictStr, conlist
-from insurance.models.decision_explanations_inner import DecisionExplanationsInner
-from insurance.models.decision_metric import DecisionMetric
-from insurance.models.decision_value import DecisionValue
+from .decision_explanations_inner import DecisionExplanationsInner
+from .decision_metric import DecisionMetric
+from .decision_value import DecisionValue
 
 class Decision(BaseModel):
     """

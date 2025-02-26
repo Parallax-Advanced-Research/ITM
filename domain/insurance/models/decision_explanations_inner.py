@@ -20,7 +20,7 @@ import json
 
 from typing import Dict, Optional
 from pydantic import BaseModel, Field, StrictStr
-from decision_explanations_inner_params_value import DecisionExplanationsInnerParamsValue
+from domain.insurance.models.decision_explanations_inner_params_value import DecisionExplanationsInnerParamsValue
 
 class DecisionExplanationsInner(BaseModel):
     """

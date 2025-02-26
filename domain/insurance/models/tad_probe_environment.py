@@ -20,7 +20,7 @@ import json
 
 from typing import Optional
 from pydantic import BaseModel
-from insurance.models.tad_probe_environment_decision_environment import TADProbeEnvironmentDecisionEnvironment
+from .tad_probe_environment_decision_environment import TADProbeEnvironmentDecisionEnvironment
 
 class TADProbeEnvironment(BaseModel):
     """
