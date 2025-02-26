@@ -340,3 +340,4 @@ data/rag_input
 triage/data
 /scenarios/*/*Copy.yaml
 /bkup
+components/decision_analyzer/event_based_diagnosis/eltm.txt
