@@ -17,178 +17,130 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictBool, StrictFloat, StrictInt, StrictStr, field_validator
-from typing import Any, ClassVar, Dict, List, Optional, Union
-from typing import Optional, Set
-from typing_extensions import Self
+
+from typing import Optional, Union
+from pydantic import BaseModel, StrictBool, StrictFloat, StrictInt, StrictStr, validator
 
 class InsuranceState(BaseModel):
     """
     InsuranceState
-    """ # noqa: E501
+    """
+    children_under_12: Optional[StrictInt] = None
+    children_under_18: Optional[StrictInt] = None
+    children_under_26: Optional[StrictInt] = None
     children_under_4: Optional[StrictInt] = None
+    distance_dm_home_to_employer_hq: Optional[Union[StrictFloat, StrictInt]] = None
     employment_type: Optional[StrictStr] = None
-    travel_location_known: Optional[StrictBool] = None
-    owns_rents: Optional[StrictStr] = None
-    no_of_medical_visits_previous_year: Optional[StrictInt] = None
-    percent_family_members_with_chronic_condition: Optional[Union[StrictFloat, StrictInt]] = None
-    percent_family_members_that_play_sports: Optional[Union[StrictFloat, StrictInt]] = None
-    network_status: Optional[StrictStr] = None
     expense_type: Optional[StrictStr] = None
+    kdma: Optional[StrictStr] = None
+    kdma_value: Optional[Union[StrictFloat, StrictInt]] = None
+    network_status: Optional[StrictStr] = None
+    no_of_medical_visits_previous_year: Optional[StrictInt] = None
+    owns_rents: Optional[StrictStr] = None
+    percent_family_members_that_play_sports: Optional[Union[StrictFloat, StrictInt]] = None
+    percent_family_members_with_chronic_condition: Optional[Union[StrictFloat, StrictInt]] = None
+    travel_location_known: Optional[StrictBool] = None
     val1: Optional[Union[StrictFloat, StrictInt]] = None
     val2: Optional[Union[StrictFloat, StrictInt]] = None
     val3: Optional[Union[StrictFloat, StrictInt]] = None
     val4: Optional[Union[StrictFloat, StrictInt]] = None
-    action: Optional[StrictStr] = None
-    plan: Optional[StrictStr] = None
-    estimate_medical_visits: Optional[StrictInt] = None
-    risk_aversion: Optional[StrictStr] = None
-    choice: Optional[StrictStr] = None
-    kdma_depends_on: Optional[StrictStr] = None
-    persona: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["children_under_4", "employment_type", "travel_location_known", "owns_rents", "no_of_medical_visits_previous_year", "percent_family_members_with_chronic_condition", "percent_family_members_that_play_sports", "network_status", "expense_type", "val1", "val2", "val3", "val4", "action", "plan", "estimate_medical_visits", "risk_aversion", "choice", "kdma_depends_on", "persona"]
+    __properties = ["children_under_12", "children_under_18", "children_under_26", "children_under_4", "distance_dm_home_to_employer_hq", "employment_type", "expense_type", "kdma", "kdma_value", "network_status", "no_of_medical_visits_previous_year", "owns_rents", "percent_family_members_that_play_sports", "percent_family_members_with_chronic_condition", "travel_location_known", "val1", "val2", "val3", "val4"]
 
-    @field_validator('employment_type')
+    @validator('employment_type')
     def employment_type_validate_enum(cls, value):
         """Validates the enum"""
         if value is None:
             return value
 
-        if value not in set(['Salaried', 'Bonus', 'Hourly']):
+        if value not in ('Salaried', 'Bonus', 'Hourly',):
             raise ValueError("must be one of enum values ('Salaried', 'Bonus', 'Hourly')")
         return value
 
-    @field_validator('owns_rents')
-    def owns_rents_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['Rents', 'Owns']):
-            raise ValueError("must be one of enum values ('Rents', 'Owns')")
-        return value
-
-    @field_validator('network_status')
-    def network_status_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND']):
-            raise ValueError("must be one of enum values ('TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND')")
-        return value
-
-    @field_validator('expense_type')
+    @validator('expense_type')
     def expense_type_validate_enum(cls, value):
         """Validates the enum"""
         if value is None:
             return value
 
-        if value not in set(['COST IN $', 'MAXIMUM COST', 'PERCENT PLAN PAYS', 'CO-PAY IN $']):
+        if value not in ('COST IN $', 'MAXIMUM COST', 'PERCENT PLAN PAYS', 'CO-PAY IN $',):
             raise ValueError("must be one of enum values ('COST IN $', 'MAXIMUM COST', 'PERCENT PLAN PAYS', 'CO-PAY IN $')")
         return value
 
-    @field_validator('risk_aversion')
-    def risk_aversion_validate_enum(cls, value):
+    @validator('network_status')
+    def network_status_validate_enum(cls, value):
         """Validates the enum"""
         if value is None:
             return value
 
-        if value not in set(['low', 'high']):
-            raise ValueError("must be one of enum values ('low', 'high')")
+        if value not in ('TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND',):
+            raise ValueError("must be one of enum values ('TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND')")
         return value
 
-    @field_validator('choice')
-    def choice_validate_enum(cls, value):
+    @validator('owns_rents')
+    def owns_rents_validate_enum(cls, value):
         """Validates the enum"""
         if value is None:
             return value
 
-        if value not in set(['low', 'high']):
-            raise ValueError("must be one of enum values ('low', 'high')")
+        if value not in ('Rents', 'Owns',):
+            raise ValueError("must be one of enum values ('Rents', 'Owns')")
         return value
 
-    @field_validator('kdma_depends_on')
-    def kdma_depends_on_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['RISK', 'CHOICE']):
-            raise ValueError("must be one of enum values ('RISK', 'CHOICE')")
-        return value
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-        validate_assignment=True,
-        protected_namespaces=(),
-    )
-
+    class Config:
+        """Pydantic configuration"""
+        allow_population_by_field_name = True
+        validate_assignment = True
 
     def to_str(self) -> str:
         """Returns the string representation of the model using alias"""
-        return pprint.pformat(self.model_dump(by_alias=True))
+        return pprint.pformat(self.dict(by_alias=True))
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Optional[Self]:
+    def from_json(cls, json_str: str) -> InsuranceState:
         """Create an instance of InsuranceState from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Return the dictionary representation of the model using alias.
-
-        This has the following differences from calling pydantic's
-        `self.model_dump(by_alias=True)`:
-
-        * `None` is only added to the output dict for nullable fields that
-          were set at model initialization. Other fields with value `None`
-          are ignored.
-        """
-        excluded_fields: Set[str] = set([
-        ])
-
-        _dict = self.model_dump(
-            by_alias=True,
-            exclude=excluded_fields,
-            exclude_none=True,
-        )
+    def to_dict(self):
+        """Returns the dictionary representation of the model using alias"""
+        _dict = self.dict(by_alias=True,
+                          exclude={
+                          },
+                          exclude_none=True)
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
+    def from_dict(cls, obj: dict) -> InsuranceState:
         """Create an instance of InsuranceState from a dict"""
         if obj is None:
             return None
 
         if not isinstance(obj, dict):
-            return cls.model_validate(obj)
+            return InsuranceState.parse_obj(obj)
 
-        _obj = cls.model_validate({
+        _obj = InsuranceState.parse_obj({
+            "children_under_12": obj.get("children_under_12"),
+            "children_under_18": obj.get("children_under_18"),
+            "children_under_26": obj.get("children_under_26"),
             "children_under_4": obj.get("children_under_4"),
+            "distance_dm_home_to_employer_hq": obj.get("distance_dm_home_to_employer_hq"),
             "employment_type": obj.get("employment_type"),
-            "travel_location_known": obj.get("travel_location_known"),
-            "owns_rents": obj.get("owns_rents"),
-            "no_of_medical_visits_previous_year": obj.get("no_of_medical_visits_previous_year"),
-            "percent_family_members_with_chronic_condition": obj.get("percent_family_members_with_chronic_condition"),
-            "percent_family_members_that_play_sports": obj.get("percent_family_members_that_play_sports"),
-            "network_status": obj.get("network_status"),
             "expense_type": obj.get("expense_type"),
+            "kdma": obj.get("kdma"),
+            "kdma_value": obj.get("kdma_value"),
+            "network_status": obj.get("network_status"),
+            "no_of_medical_visits_previous_year": obj.get("no_of_medical_visits_previous_year"),
+            "owns_rents": obj.get("owns_rents"),
+            "percent_family_members_that_play_sports": obj.get("percent_family_members_that_play_sports"),
+            "percent_family_members_with_chronic_condition": obj.get("percent_family_members_with_chronic_condition"),
+            "travel_location_known": obj.get("travel_location_known"),
             "val1": obj.get("val1"),
             "val2": obj.get("val2"),
             "val3": obj.get("val3"),
-            "val4": obj.get("val4"),
-            "action": obj.get("action"),
-            "plan": obj.get("plan"),
-            "estimate_medical_visits": obj.get("estimate_medical_visits"),
-            "risk_aversion": obj.get("risk_aversion"),
-            "choice": obj.get("choice"),
-            "kdma_depends_on": obj.get("kdma_depends_on"),
-            "persona": obj.get("persona")
+            "val4": obj.get("val4")
         })
         return _obj
 

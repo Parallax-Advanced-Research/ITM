@@ -1,0 +1,258 @@
+components:
+  schemas:
+    Decision:
+      properties:
+        explanations:
+          description: List of explanations for the decision
+          items:
+            properties:
+              decision_type:
+                description: Type of the decision
+                type: string
+              params:
+                additionalProperties:
+                  oneOf:
+                  - type: string
+                  - type: number
+                  - type: boolean
+                  - additionalProperties: true
+                    type: object
+                type: object
+            type: object
+          type: array
+        favors_choice:
+          description: Whether the decision favors choice
+          type: boolean
+        favors_risk:
+          description: Whether the decision favors risk
+          type: boolean
+        id_:
+          description: Unique identifier for the decision
+          type: string
+        justifications:
+          description: List of justifications for the decision
+          items:
+            type: string
+          type: array
+        kdmas:
+          description: List of KDMAs associated with the decision
+          items:
+            type: object
+          type: array
+        metrics:
+          additionalProperties:
+            $ref: '#/components/schemas/DecisionMetric'
+          type: object
+        value:
+          properties:
+            name:
+              description: Name of the action
+              type: string
+            params:
+              additionalProperties:
+                oneOf:
+                - type: string
+                - type: number
+                - type: boolean
+                - additionalProperties: true
+                  type: object
+              description: Parameters of the action
+              type: object
+          type: object
+      type: object
+    DecisionMetric:
+      properties:
+        description:
+          description: Description of the decision metric
+          type: string
+        name:
+          description: Name of the decision metric
+          type: string
+        value:
+          oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - additionalProperties: true
+            type: object
+      type: object
+    InsuranceScenario:
+      allOf:
+      - $ref: '#/components/schemas/Scenario'
+      - properties:
+          state:
+            $ref: '#/components/schemas/InsuranceState'
+        type: object
+    InsuranceState:
+      properties:
+        children_under_12:
+          type: integer
+        children_under_18:
+          type: integer
+        children_under_26:
+          type: integer
+        children_under_4:
+          type: integer
+        distance_dm_home_to_employer_hq:
+          format: float
+          type: number
+        employment_type:
+          enum:
+          - Salaried
+          - Bonus
+          - Hourly
+          type: string
+        expense_type:
+          enum:
+          - COST IN $
+          - MAXIMUM COST
+          - PERCENT PLAN PAYS
+          - CO-PAY IN $
+          type: string
+        kdma:
+          type: string
+        kdma_value:
+          format: float
+          type: number
+        network_status:
+          enum:
+          - TIER 1 NETWORK
+          - IN-NETWORK
+          - OUT-OF-NETWORK
+          - GENERIC
+          - ANY CHOICE BRAND
+          type: string
+        no_of_medical_visits_previous_year:
+          type: integer
+        owns_rents:
+          enum:
+          - Rents
+          - Owns
+          type: string
+        percent_family_members_that_play_sports:
+          format: float
+          type: number
+        percent_family_members_with_chronic_condition:
+          format: float
+          type: number
+        travel_location_known:
+          type: boolean
+        val1:
+          format: float
+          type: number
+        val2:
+          format: float
+          type: number
+        val3:
+          format: float
+          type: number
+        val4:
+          format: float
+          type: number
+      type: object
+    InsuranceTADProbe:
+      allOf:
+      - $ref: '#/components/schemas/TADProbe'
+      - properties:
+          probe_type:
+            description: The type of insurance-related probe being assessed
+            enum:
+            - DEDUCTIBLE
+            - OUT-OF-POCKET MAXIMUM
+            - PREVENTIVE CARE SERVICES
+            - PRIMARY CARE PHYSICIAN (PCP)
+            - TELE-MEDICINE
+            - SPECIALIST OFFICE VISIT
+            - OUTPATIENT SERVICES (SURGERY)
+            - URGENT CARE CENTER
+            - RETAIL PHARMACY (UP TO A 30-DAY SUPPLY)
+            - MAIL ORDER (UP TO A 90-DAY SUPPLY)
+            type: string
+          state:
+            $ref: '#/components/schemas/InsuranceState'
+        type: object
+    Scenario:
+      properties:
+        decisions:
+          items:
+            $ref: '#/components/schemas/Decision'
+          type: array
+        description:
+          description: Description of the scenario
+          type: string
+        id_:
+          description: Unique identifier for the scenario
+          type: string
+        metrics:
+          additionalProperties:
+            $ref: '#/components/schemas/DecisionMetric'
+          type: object
+        state:
+          $ref: '#/components/schemas/State'
+      type: object
+    State:
+      properties:
+        id_:
+          description: Unique identifier for the state
+          type: string
+        time_:
+          description: Time associated with the state
+          format: float
+          type: number
+      type: object
+    TADProbe:
+      properties:
+        decisions:
+          description: List of decisions associated with the probe
+          items:
+            $ref: '#/components/schemas/Decision'
+          type: array
+        environment:
+          description: Environment details for the probe
+          properties:
+            decision_environment:
+              properties:
+                risk_factors:
+                  items:
+                    description: Risk factors in the environment
+                    type: string
+                  type: array
+              type: object
+          type: object
+        id_:
+          description: Unique identifier for the probe
+          type: string
+        prompt:
+          description: Prompt associated with the probe
+          type: string
+        state:
+          $ref: '#/components/schemas/State'
+      type: object
+info:
+  description: OpenAPI schema defining insurance-related decision-making structures.
+  title: Insurance Policy Schema
+  version: 1.0.0
+openapi: 3.0.3
+paths:
+  /insurance-tadprobe:
+    get:
+      operationId: getInsuranceTADProbe
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsuranceTADProbe'
+          description: Successful response
+      summary: Retrieve an InsuranceTADProbe instance
+  /scenario:
+    get:
+      operationId: getScenario
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+          description: Successful response
+      summary: Retrieve a Scenario instance
