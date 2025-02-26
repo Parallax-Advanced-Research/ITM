@@ -5,6 +5,8 @@ from typing import List, Tuple
 from domain.insurance.models.insurance_tad_probe import InsuranceTADProbe
 from domain.insurance.models.insurance_state import InsuranceState
 from domain.insurance.models.insurance_scenario import InsuranceScenario
+from domain.insurance.models.decision import Decision as InsuranceDecision
+from domain.insurance.models.decision_value import DecisionValue
 from pydantic.tools import parse_obj_as
 from .ingestor import Ingestor
 
@@ -62,6 +64,15 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         state=state,
                         prompt=line.get('probe')
                     )
+
+                    # Check for the existence of the 'action' column and assign decision if it exists
+                    if 'action' in line:
+                        decision = InsuranceDecision(
+                            id_=f'decision_{row_num}_{uuid.uuid4()}',
+                            value=DecisionValue(name=line.get('action'))
+                        )
+                        probe.decisions = [decision]
+
                     probes.append(probe)
 
         return scen, probes
