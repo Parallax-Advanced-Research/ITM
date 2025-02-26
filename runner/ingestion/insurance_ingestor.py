@@ -28,6 +28,13 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                     if network_status not in ['TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND']:
                         network_status = 'GENERIC'  # Default value if not valid
 
+                    # Convert kdma_value to float or int
+                    kdma_value = line.get('kdma_value')
+                    try:
+                        kdma_value = float(kdma_value) if '.' in kdma_value else int(kdma_value)
+                    except ValueError:
+                        kdma_value = None
+
                     state = parse_obj_as(InsuranceState, {
                         "children_under_4": int(line.get('children_under_4', 0)),
                         "children_under_12": int(line.get('children_under_12', 0)),
@@ -47,7 +54,7 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         "val3": float(line.get('val3', 0.0)),
                         "val4": float(line.get('val4', 0.0)),
                         "kdma": line.get('kdma'),
-                        "kdma_value": line.get('kdma_value')
+                        "kdma_value": kdma_value
                     })
 
                     probe = InsuranceTADProbe(
