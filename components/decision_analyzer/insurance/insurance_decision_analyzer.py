@@ -12,7 +12,7 @@ class InsuranceDecisionAnalyzer(BaselineDecisionAnalyzer):
 
     def analyze(self, scen: InsuranceScenario, probe: InsuranceTADProbe) -> dict[str, dict[str, InsuranceDecisionMetric]]:
         analysis = {}
-        print(f"Prompt: {probe.prompt}")
+        # print(f"Prompt: {probe.prompt}")
         for decision in probe.decisions:
             metrics = {
                 "Random": InsuranceDecisionMetric(
@@ -27,9 +27,9 @@ class InsuranceDecisionAnalyzer(BaselineDecisionAnalyzer):
             analysis[decision.id_] = metrics
 
         for decision_id, metrics in analysis.items():
-            print(f"Analysis for decision {decision_id}:")
+            # print(f"Analysis for decision {decision_id}:")
             for metric_name, metric in metrics.items():
                 actual_instance = metric.value if metric.value else None
-                print(f"  - {metric.name}: {actual_instance}")
+                # print(f"  - {metric.name}: {actual_instance}")
 
         return analysis

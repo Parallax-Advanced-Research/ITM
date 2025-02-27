@@ -15,13 +15,13 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
         super().__init__(data_dir)  # Call the parent class constructor
         self.data_dir = data_dir
 
-    def ingest_as_internal(self) -> Tuple[InsuranceScenario, List[InsuranceTADProbe]]:
+    def ingest_as_internal(self, file_name: str) -> Tuple[InsuranceScenario, List[InsuranceTADProbe]]:
         ext_scen = parse_obj_as(InsuranceScenario, {"id": "insurance_scenario", "state": {}})
         state = InsuranceState()
         scen = InsuranceScenario(id_=ext_scen.id_, state=state)
 
         probes = []
-        for raw_csv in [f for f in os.listdir(self.data_dir) if f.endswith('.csv')]:
+        for raw_csv in [f for f in os.listdir(self.data_dir) if f == file_name]:
             with open(f'{self.data_dir}/{raw_csv}', 'r') as data_file:
                 reader = csv.DictReader(data_file)
                 for row_num, line in enumerate(reader):
