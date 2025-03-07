@@ -10,10 +10,11 @@ from sklearn.preprocessing import LabelEncoder
 
 
 class InsuranceSelector(DecisionSelector):
-    def __init__(self, case_base: list[InsuranceTADProbe], variant: str = 'aligned', add_kdma: bool = False):
+    def __init__(self, case_base: list[InsuranceTADProbe], variant: str = 'aligned', add_kdma: bool = False, add_da_metrics: bool = False):
         self.cb: list[InsuranceTADProbe] = case_base  # this is the training dataset
         self.variant = variant
         self.add_kdma = add_kdma
+        self.add_da_metrics = add_da_metrics
         self.knn_detectible = None
         self.knn_out_of_pocket = None
         self.knn_preventive = None
@@ -126,7 +127,10 @@ class InsuranceSelector(DecisionSelector):
             X.append(InsuranceSelector.convert_kdma(state.kdma))
             X.append(InsuranceSelector.convert_kdma_value(state.kdma_value))
 
-        # if self.add_metrics:
+        if self.add_da_metrics:
+            X.append(case.decisions[0].metrics['num_med_visits'].to_dict()['value']['value'])
+            X.append(case.decisions[0].metrics['family_change'].to_dict()['value']['value'])
+            X.append(case.decisions[0].metrics['chance_of_hospitalization'].to_dict()['value']['value'])
 
         return X, y
 
