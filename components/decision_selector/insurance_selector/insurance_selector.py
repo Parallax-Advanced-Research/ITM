@@ -240,8 +240,14 @@ class InsuranceSelector(DecisionSelector):
                     found_match = True
                     break
         if not found_match:
-            print(f"predicted value: {predicted[0]}, valid options: {vals}")
+            # print(f"predicted value: {predicted[0]}, valid options: {vals}")
             find_closest_val = min(vals, key=lambda x: abs(x - int(predicted[0])))
-            print(f"closest value: {find_closest_val}")
+            # print(f"closest value: {find_closest_val}")
             selected_decision = find_closest_val
-        return selected_decision
+
+        decision = Decision(
+            # id_=f'decision_{row_num}_{uuid.uuid4()}',
+            value=DecisionValue(name=str(selected_decision))
+        )
+        probe.decisions = [decision]
+        return decision

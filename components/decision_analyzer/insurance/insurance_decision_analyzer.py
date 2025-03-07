@@ -18,8 +18,13 @@ class InsuranceDecisionAnalyzer(BaselineDecisionAnalyzer):
                 "Random": InsuranceDecisionMetric(
                     name="Random",
                     description="A random value",
-                    value={"amount": random.random()}
-                )
+                    value={"value": random.random()}
+                ),
+                # "num_med_viists": InsuranceDecisionMetric(
+                #     name="Random",
+                #     description="A random value",
+                #     value={"value": call_my_new_function()}
+                # )
             }
             if decision.metrics is None:
                 decision.metrics = {}

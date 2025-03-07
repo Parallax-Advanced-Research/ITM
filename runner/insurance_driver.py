@@ -23,7 +23,7 @@ class InsuranceDriver:
                 invalid_count += 1
         print(f'invalid options selected count: {invalid_count}')
 
-        for probe in probes:
+        for probe in test_probes:
             analysis = self.analyzer.analyze(scen, probe)
             
 
