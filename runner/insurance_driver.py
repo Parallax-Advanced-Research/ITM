@@ -19,6 +19,13 @@ class InsuranceDriver:
         insurance_selector_kdma = InsuranceSelector(train_probes_kdma, add_kdma=True)
         insurance_selector_kdma.train()
 
+        train_scen_kdma_metrics, train_probes_kdma_metrics = self.ingestor.ingest_as_internal("train-50-50.csv")  # load the training data
+        insurance_selector_kdma_metrics = InsuranceSelector(train_probes_kdma_metrics, add_kdma=True)  # i will add kdma metrics option
+        insurance_selector_kdma_metrics.train()
+
+        for probe in train_probes_kdma_metrics:
+            analysis = self.analyzer.analyze(train_scen_kdma_metrics, probe)
+
         test_scen, test_probes = self.ingestor.ingest_as_internal("test-50-50.csv")  # load the test data
         invalid_count = 0
         for test_probe in test_probes:
@@ -26,8 +33,5 @@ class InsuranceDriver:
             if selection is None:
                 invalid_count += 1
         print(f'invalid options selected count: {invalid_count}')
-
-        for probe in test_probes:
-            analysis = self.analyzer.analyze(test_scen, probe)
             
 
