@@ -13,99 +13,215 @@ class InsuranceSelector(DecisionSelector):
     def __init__(self, case_base: list[InsuranceTADProbe], variant: str = 'aligned'):
         self.cb: list[InsuranceTADProbe] = case_base  # this is the training dataset
         self.variant = variant
-        self.knn = None
+        self.knn_detectible = None
+        self.knn_out_of_pocket = None
+        self.knn_preventive = None
+        self.knn_pcp = None
+        self.knn_telemedicine = None
+        self.knn_specialist = None
+        self.knn_outpatient_surgery = None
+        self.knn_urgent = None
+        self.knn_retail_pharmacy = None
+        self.knn_mail_order = None
 
+    @staticmethod
+    def convert_probe(value):
+        if value == "DEDUCTIBLE":
+            return 0
+        elif value == "OUT-OF-POCKET MAXIMUM":
+            return 1
+        elif value == "PREVENTIVE CARE SERVICES ":
+            return 2
+        elif value == "PRIMARY CARE PHYSICIAN (PCP) ":
+            return 3
+        elif value == "TELE-MEDICINE":
+            return 4
+        elif value == "SPECIALIST OFFICE VISIT":
+            return 5
+        elif value == "OUTPATIENT SERVICES (SURGERY)":
+            return 6
+        elif value == "URGENT CARE CENTER":
+            return 7
+        elif value == "RETAIL PHARMACY (UP TO A 30-DAY SUPPLY)":
+            return 8
+        elif value == "MAIL ORDER (UP TO A 90-DAY SUPPLY)":
+            return 9
 
-    def convert_case_base_to_knn(self, case_base: list[InsuranceTADProbe]):
-        def convert_probe(value):
-            if value == "DEDUCTIBLE":
-                return 0
-            elif value == "OUT-OF-POCKET MAXIMUM":
-                return 1
-            elif value == "PREVENTIVE CARE SERVICES ":
-                return 2
-            elif value == "PRIMARY CARE PHYSICIAN (PCP) ":
-                return 3
-            elif value == "TELE-MEDICINE":
-                return 4
-            elif value == "SPECIALIST OFFICE VISIT":
-                return 5
-            elif value == "OUTPATIENT SERVICES (SURGERY)":
-                return 6
-            elif value == "URGENT CARE CENTER":
-                return 7
-            elif value == "RETAIL PHARMACY (UP TO A 30-DAY SUPPLY)":
-                return 8
-            elif value == "MAIL ORDER (UP TO A 90-DAY SUPPLY)":
-                return 9
-        def convert_network_status(value):
-            if value == "TIER 1 NETWORK":
-                return 0
-            elif value == "IN-NETWORK":
-                return 1
-            elif value == "OUT-OF-NETWORK":
-                return 2
-            elif value == "GENERIC":
-                return 3
-            elif value == "ANY CHOICE BRAND":
-                return 4
-        def convert_expense_type(value):
-            if value == "COST IN $":
-                return 0
-            elif value == "MAXIMUM COST":
-                return 1
-            elif value == "PERCENT PLAN PAYS":
-                return 2
-            elif value == "CO-PAY IN $":
-                return 3
-        def convert_employment_type(value):
-            if value == 'Hourly':
-                return 0
-            elif value == 'Salaried':
-                return 1
-            elif value == 'Bonus':
-                return 2
-        def convert_owns_rents(value):
-            if value == 'Owns':
-                return 0
-            elif value == 'Rents':
-                return 1
-        def convert_travel_location(value):
-            return int(value)
+    @staticmethod
+    def convert_network_status(value):
+        if value == "TIER 1 NETWORK":
+            return 0
+        elif value == "IN-NETWORK":
+            return 1
+        elif value == "OUT-OF-NETWORK":
+            return 2
+        elif value == "GENERIC":
+            return 3
+        elif value == "ANY CHOICE BRAND":
+            return 4
 
-        # label_encoder = LabelEncoder()
+    @staticmethod
+    def convert_expense_type(value):
+        if value == "COST IN $":
+            return 0
+        elif value == "MAXIMUM COST":
+            return 1
+        elif value == "PERCENT PLAN PAYS":
+            return 2
+        elif value == "CO-PAY IN $":
+            return 3
 
-        X = []
-        y = []
-        for case in case_base:
-            state = case.state
-            # X_str = [case.probe_type, state.network_status,
-            #          state.expense_type, state.children_under_4, state.children_under_12,
-            #          state.children_under_18, state.children_under_26, state.employment_type,
-            #          state.distance_dm_home_to_employer_hq, state.travel_location_known,
-            #          state.owns_rents, state.no_of_medical_visits_previous_year,
-            #          state.percent_family_members_with_chronic_condition, state.percent_family_members_that_play_sports]
-            # X.append(label_encoder.fit_transform(X_str))
+    @staticmethod
+    def convert_employment_type(value):
+        if value == 'Hourly':
+            return 0
+        elif value == 'Salaried':
+            return 1
+        elif value == 'Bonus':
+            return 2
 
+    @staticmethod
+    def convert_owns_rents(value):
+        if value == 'Owns':
+            return 0
+        elif value == 'Rents':
+            return 1
 
-            X.append([convert_probe(case.prompt), convert_network_status(state.network_status), convert_expense_type(state.expense_type), state.children_under_4, state.children_under_12,
-                      state.children_under_18, state.children_under_26, convert_employment_type(state.employment_type), state.distance_dm_home_to_employer_hq, convert_travel_location(state.travel_location_known),
-                      convert_owns_rents(state.owns_rents), state.no_of_medical_visits_previous_year, state.percent_family_members_with_chronic_condition, state.percent_family_members_that_play_sports])
-            if case.decisions:
-                y.append(case.decisions[0].value.name)
+    @staticmethod
+    def convert_travel_location(value):
+        return int(value)
 
+    @staticmethod
+    def convert_to_x_y(state, case):
+        y = None
+        X = [InsuranceSelector.convert_network_status(state.network_status), InsuranceSelector.convert_expense_type(state.expense_type),
+             state.children_under_4,
+             state.children_under_12, state.children_under_18, state.children_under_26,
+             InsuranceSelector.convert_employment_type(state.employment_type),
+             state.distance_dm_home_to_employer_hq,
+             InsuranceSelector.convert_travel_location(state.travel_location_known),
+             InsuranceSelector.convert_owns_rents(state.owns_rents), state.no_of_medical_visits_previous_year,
+             state.percent_family_members_with_chronic_condition,
+             state.percent_family_members_that_play_sports]
+        if case.decisions:
+            y = case.decisions[0].value.name
         return X, y
 
+    def convert_case_base_to_knn(self, case_base: list[InsuranceTADProbe]):
+        X_deductible, y_deductible = [], []
+        X_out_of_pocket, y_out_of_pocket = [], []
+        X_preventive, y_preventive = [], []
+        X_pcp, y_pcp = [], []
+        X_telemedicine, y_telemedicine = [], []
+        X_specialist, y_specialist = [], []
+        X_outpatient_surgery, y_outpatient_surgery = [], []
+        X_urgent, y_urgent = [], []
+        X_retail_pharmacy, y_retail_pharmacy = [], []
+        X_mail_order, y_mail_order = [], []
+
+        for case in case_base:
+            state = case.state
+            # X.append([convert_probe(case.prompt), convert_network_status(state.network_status), convert_expense_type(state.expense_type), state.children_under_4, state.children_under_12,
+            #           state.children_under_18, state.children_under_26, convert_employment_type(state.employment_type), state.distance_dm_home_to_employer_hq, convert_travel_location(state.travel_location_known),
+            #           convert_owns_rents(state.owns_rents), state.no_of_medical_visits_previous_year, state.percent_family_members_with_chronic_condition, state.percent_family_members_that_play_sports])
+            # if case.decisions:
+            #     y.append(case.decisions[0].value.name)
+
+            if case.prompt == "DEDUCTIBLE":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_deductible.append(converted_x)
+                y_deductible.append(converted_y)
+            elif case.prompt == "OUT-OF-POCKET MAXIMUM":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_out_of_pocket.append(converted_x)
+                y_out_of_pocket.append(converted_y)
+            elif case.prompt == "PREVENTIVE CARE SERVICES ":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_preventive.append(converted_x)
+                y_preventive.append(converted_y)
+            elif case.prompt == "PRIMARY CARE PHYSICIAN (PCP) ":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_pcp.append(converted_x)
+                y_pcp.append(converted_y)
+            elif case.prompt == "TELE-MEDICINE":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_telemedicine.append(converted_x)
+                y_telemedicine.append(converted_y)
+            elif case.prompt == "SPECIALIST OFFICE VISIT":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_specialist.append(converted_x)
+                y_specialist.append(converted_y)
+            elif case.prompt == "OUTPATIENT SERVICES (SURGERY)":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_outpatient_surgery.append(converted_x)
+                y_outpatient_surgery.append(converted_y)
+            elif case.prompt == "URGENT CARE CENTER":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_urgent.append(converted_x)
+                y_urgent.append(converted_y)
+            elif case.prompt == "RETAIL PHARMACY (UP TO A 30-DAY SUPPLY)":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_retail_pharmacy.append(converted_x)
+                y_retail_pharmacy.append(converted_y)
+            elif case.prompt == "MAIL ORDER (UP TO A 90-DAY SUPPLY)":
+                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                X_mail_order.append(converted_x)
+                y_mail_order.append(converted_y)
+
+        return (X_deductible, y_deductible, X_out_of_pocket, y_out_of_pocket, X_preventive, y_preventive, X_pcp, y_pcp,
+                X_telemedicine, y_telemedicine, X_specialist, y_specialist, X_outpatient_surgery, y_outpatient_surgery,
+                X_urgent, y_urgent, X_retail_pharmacy, y_retail_pharmacy, X_mail_order, y_mail_order)
+
     def train(self):
-        self.knn = KNeighborsClassifier(n_neighbors=1)
-        X, y = self.convert_case_base_to_knn(self.cb)
-        self.knn.fit(X, y)
+        self.knn_detectible = KNeighborsClassifier(n_neighbors=1)
+        self.knn_out_of_pocket = KNeighborsClassifier(n_neighbors=1)
+        self.knn_preventive = KNeighborsClassifier(n_neighbors=1)
+        self.knn_pcp = KNeighborsClassifier(n_neighbors=1)
+        self.knn_telemedicine = KNeighborsClassifier(n_neighbors=1)
+        self.knn_specialist = KNeighborsClassifier(n_neighbors=1)
+        self.knn_outpatient_surgery = KNeighborsClassifier(n_neighbors=1)
+        self.knn_urgent = KNeighborsClassifier(n_neighbors=1)
+        self.knn_retail_pharmacy = KNeighborsClassifier(n_neighbors=1)
+        self.knn_mail_order = KNeighborsClassifier(n_neighbors=1)
+
+        X_deductible, y_deductible, X_out_of_pocket, y_out_of_pocket, X_preventive, y_preventive, X_pcp, y_pcp, X_telemedicine, y_telemedicine, X_specialist, y_specialist, X_outpatient_surgery, y_outpatient_surgery, X_urgent, y_urgent, X_retail_pharmacy, y_retail_pharmacy, X_mail_order, y_mail_order = self.convert_case_base_to_knn(self.cb)
+        self.knn_detectible.fit(X_deductible, y_deductible)
+        self.knn_out_of_pocket.fit(X_out_of_pocket, y_out_of_pocket)
+        self.knn_preventive.fit(X_preventive, y_preventive)
+        self.knn_pcp.fit(X_pcp, y_pcp)
+        self.knn_telemedicine.fit(X_telemedicine, y_telemedicine)
+        self.knn_specialist.fit(X_specialist, y_specialist)
+        self.knn_outpatient_surgery.fit(X_outpatient_surgery, y_outpatient_surgery)
+        self.knn_urgent.fit(X_urgent, y_urgent)
+        self.knn_retail_pharmacy.fit(X_retail_pharmacy, y_retail_pharmacy)
+        self.knn_mail_order.fit(X_mail_order, y_mail_order)
 
     # scenario is everything but val 1-4, probe is val 1-4, target is kdmas
     def select(self, scenario: InsuranceScenario, probe: InsuranceTADProbe, target: AlignmentTarget) -> Decision | int:  # return should prob be just decision, for now return the value
         selected_decision = None
-        X_test, y_test = self.convert_case_base_to_knn([probe])
-        predicted = self.knn.predict(X_test)
+        X_test, y_test = InsuranceSelector.convert_to_x_y(probe.state, probe)
+        X_test = [X_test]
+        predicted = None
+        if probe.prompt == "DEDUCTIBLE":
+            predicted = self.knn_detectible.predict(X_test)
+        elif probe.prompt == "OUT-OF-POCKET MAXIMUM":
+            predicted = self.knn_out_of_pocket.predict(X_test)
+        elif probe.prompt == "PREVENTIVE CARE SERVICES ":
+            predicted = self.knn_preventive.predict(X_test)
+        elif probe.prompt == "PRIMARY CARE PHYSICIAN (PCP) ":
+            predicted = self.knn_pcp.predict(X_test)
+        elif probe.prompt == "TELE-MEDICINE":
+            predicted = self.knn_telemedicine.predict(X_test)
+        elif probe.prompt == "SPECIALIST OFFICE VISIT":
+            predicted = self.knn_specialist.predict(X_test)
+        elif probe.prompt == "OUTPATIENT SERVICES (SURGERY)":
+            predicted = self.knn_outpatient_surgery.predict(X_test)
+        elif probe.prompt == "URGENT CARE CENTER":
+            predicted = self.knn_urgent.predict(X_test)
+        elif probe.prompt == "RETAIL PHARMACY (UP TO A 30-DAY SUPPLY)":
+            predicted = self.knn_retail_pharmacy.predict(X_test)
+        elif probe.prompt == "MAIL ORDER (UP TO A 90-DAY SUPPLY)":
+            predicted = self.knn_mail_order.predict(X_test)
 
         # would like to do this, but can't since the test data does not have the decision (correct answer)
         # for decision in probe.decisions:
@@ -114,10 +230,15 @@ class InsuranceSelector(DecisionSelector):
 
         # so instead I am going to loop through the val1-4 and make sure we selected a valid option
         # going to return None if the predicted value is not in the list of valid options
+        found_match = False
+        vals = []
         for data_key, data_item in probe.state.to_dict().items():
             if data_key in ['val1', 'val2', 'val3', 'val4']:
+                vals.append(data_item)
                 if data_item == int(predicted[0]):
                     selected_decision = int(predicted[0])
+                    found_match = True
                     break
-        # print(selected_decision)
+        if not found_match:
+            print(f"predicted value: {predicted[0]}, valid options: {vals}")
         return selected_decision
