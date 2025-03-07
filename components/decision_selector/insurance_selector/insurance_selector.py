@@ -182,7 +182,7 @@ class InsuranceSelector(DecisionSelector):
         self.knn_outpatient_surgery = KNeighborsClassifier(n_neighbors=1)
         self.knn_urgent = KNeighborsClassifier(n_neighbors=1)
         self.knn_retail_pharmacy = KNeighborsClassifier(n_neighbors=1)
-        self.knn_mail_order = KNeighborsClassifier(n_neighbors=1)
+        self.knn_mail_order = KNeighborsClassifier(n_neighbors=5)
 
         X_deductible, y_deductible, X_out_of_pocket, y_out_of_pocket, X_preventive, y_preventive, X_pcp, y_pcp, X_telemedicine, y_telemedicine, X_specialist, y_specialist, X_outpatient_surgery, y_outpatient_surgery, X_urgent, y_urgent, X_retail_pharmacy, y_retail_pharmacy, X_mail_order, y_mail_order = self.convert_case_base_to_knn(self.cb)
         self.knn_detectible.fit(X_deductible, y_deductible)
@@ -241,4 +241,7 @@ class InsuranceSelector(DecisionSelector):
                     break
         if not found_match:
             print(f"predicted value: {predicted[0]}, valid options: {vals}")
+            find_closest_val = min(vals, key=lambda x: abs(x - int(predicted[0])))
+            print(f"closest value: {find_closest_val}")
+            selected_decision = find_closest_val
         return selected_decision
