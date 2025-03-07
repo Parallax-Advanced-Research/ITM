@@ -126,6 +126,8 @@ class InsuranceSelector(DecisionSelector):
             X.append(InsuranceSelector.convert_kdma(state.kdma))
             X.append(InsuranceSelector.convert_kdma_value(state.kdma_value))
 
+        # if self.add_metrics:
+
         return X, y
 
     def convert_case_base_to_knn(self, case_base: list[InsuranceTADProbe]):

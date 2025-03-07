@@ -20,11 +20,11 @@ class InsuranceDriver:
         insurance_selector_kdma.train()
 
         train_scen_kdma_metrics, train_probes_kdma_metrics = self.ingestor.ingest_as_internal("train-50-50.csv")  # load the training data
+        for probe in train_probes_kdma_metrics:
+            analysis = self.analyzer.analyze(train_scen_kdma_metrics, probe)
         insurance_selector_kdma_metrics = InsuranceSelector(train_probes_kdma_metrics, add_kdma=True)  # i will add kdma metrics option
         insurance_selector_kdma_metrics.train()
 
-        for probe in train_probes_kdma_metrics:
-            analysis = self.analyzer.analyze(train_scen_kdma_metrics, probe)
 
         test_scen, test_probes = self.ingestor.ingest_as_internal("test-50-50.csv")  # load the test data
         invalid_count = 0
