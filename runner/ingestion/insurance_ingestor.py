@@ -32,10 +32,12 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
 
                     # Convert kdma_value to float or int
                     kdma_value = line.get('kdma_value')
-                    try:
-                        kdma_value = float(kdma_value) if '.' in kdma_value else int(kdma_value)
-                    except ValueError:
-                        kdma_value = None
+
+                    # no idea what this is doing since the kdma_value is low or high
+                    # try:
+                    #     kdma_value = float(kdma_value) if '.' in kdma_value else int(kdma_value)
+                    # except ValueError:
+                    #     kdma_value = None
 
                     state = parse_obj_as(InsuranceState, {
                         "children_under_4": int(line.get('children_under_4', 0)),

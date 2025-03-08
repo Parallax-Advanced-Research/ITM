@@ -10,9 +10,11 @@ from sklearn.preprocessing import LabelEncoder
 
 
 class InsuranceSelector(DecisionSelector):
-    def __init__(self, case_base: list[InsuranceTADProbe], variant: str = 'aligned'):
+    def __init__(self, case_base: list[InsuranceTADProbe], variant: str = 'aligned', add_kdma: bool = False, add_da_metrics: bool = False):
         self.cb: list[InsuranceTADProbe] = case_base  # this is the training dataset
         self.variant = variant
+        self.add_kdma = add_kdma
+        self.add_da_metrics = add_da_metrics
         self.knn_detectible = None
         self.knn_out_of_pocket = None
         self.knn_preventive = None
@@ -92,7 +94,21 @@ class InsuranceSelector(DecisionSelector):
         return int(value)
 
     @staticmethod
-    def convert_to_x_y(state, case):
+    def convert_kdma(value):
+        if value == 'RISK':
+            return 0
+        elif value == 'CHOICE':
+            return 1
+
+    @staticmethod
+    def convert_kdma_value(value):
+        if value == 'low':
+            return 0
+        elif value == 'high':
+            return 1
+
+
+    def convert_to_x_y(self, state, case):
         y = None
         X = [InsuranceSelector.convert_network_status(state.network_status), InsuranceSelector.convert_expense_type(state.expense_type),
              state.children_under_4,
@@ -105,6 +121,17 @@ class InsuranceSelector(DecisionSelector):
              state.percent_family_members_that_play_sports]
         if case.decisions:
             y = case.decisions[0].value.name
+
+        # add kdma
+        if self.add_kdma:
+            X.append(InsuranceSelector.convert_kdma(state.kdma))
+            X.append(InsuranceSelector.convert_kdma_value(state.kdma_value))
+
+        if self.add_da_metrics:
+            X.append(case.decisions[0].metrics['num_med_visits'].to_dict()['value']['value'])
+            X.append(case.decisions[0].metrics['family_change'].to_dict()['value']['value'])
+            X.append(case.decisions[0].metrics['chance_of_hospitalization'].to_dict()['value']['value'])
+
         return X, y
 
     def convert_case_base_to_knn(self, case_base: list[InsuranceTADProbe]):
@@ -128,43 +155,43 @@ class InsuranceSelector(DecisionSelector):
             #     y.append(case.decisions[0].value.name)
 
             if case.prompt == "DEDUCTIBLE":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_deductible.append(converted_x)
                 y_deductible.append(converted_y)
             elif case.prompt == "OUT-OF-POCKET MAXIMUM":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_out_of_pocket.append(converted_x)
                 y_out_of_pocket.append(converted_y)
             elif case.prompt == "PREVENTIVE CARE SERVICES ":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_preventive.append(converted_x)
                 y_preventive.append(converted_y)
             elif case.prompt == "PRIMARY CARE PHYSICIAN (PCP) ":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_pcp.append(converted_x)
                 y_pcp.append(converted_y)
             elif case.prompt == "TELE-MEDICINE":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_telemedicine.append(converted_x)
                 y_telemedicine.append(converted_y)
             elif case.prompt == "SPECIALIST OFFICE VISIT":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_specialist.append(converted_x)
                 y_specialist.append(converted_y)
             elif case.prompt == "OUTPATIENT SERVICES (SURGERY)":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_outpatient_surgery.append(converted_x)
                 y_outpatient_surgery.append(converted_y)
             elif case.prompt == "URGENT CARE CENTER":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_urgent.append(converted_x)
                 y_urgent.append(converted_y)
             elif case.prompt == "RETAIL PHARMACY (UP TO A 30-DAY SUPPLY)":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_retail_pharmacy.append(converted_x)
                 y_retail_pharmacy.append(converted_y)
             elif case.prompt == "MAIL ORDER (UP TO A 90-DAY SUPPLY)":
-                converted_x, converted_y = InsuranceSelector.convert_to_x_y(state, case)
+                converted_x, converted_y = self.convert_to_x_y(state, case)
                 X_mail_order.append(converted_x)
                 y_mail_order.append(converted_y)
 
@@ -199,7 +226,7 @@ class InsuranceSelector(DecisionSelector):
     # scenario is everything but val 1-4, probe is val 1-4, target is kdmas
     def select(self, scenario: InsuranceScenario, probe: InsuranceTADProbe, target: AlignmentTarget) -> Decision | int:  # return should prob be just decision, for now return the value
         selected_decision = None
-        X_test, y_test = InsuranceSelector.convert_to_x_y(probe.state, probe)
+        X_test, y_test = self.convert_to_x_y(probe.state, probe)
         X_test = [X_test]
         predicted = None
         if probe.prompt == "DEDUCTIBLE":

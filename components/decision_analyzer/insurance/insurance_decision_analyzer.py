@@ -1,3 +1,5 @@
+from components.decision_analyzer.insurance.add_features import add_expected_medical_visits_next_year, \
+    add_expected_family_change, add_chance_of_hospitalization
 from domain.insurance.models.insurance_tad_probe import InsuranceTADProbe
 from domain.insurance.models.decision import Decision as InsuranceDecision
 from domain.insurance.models.decision_metric import DecisionMetric as InsuranceDecisionMetric
@@ -14,18 +16,48 @@ class InsuranceDecisionAnalyzer(BaselineDecisionAnalyzer):
         analysis = {}
         # print(f"Prompt: {probe.prompt}")
         for decision in probe.decisions:
+            num_visits_metrics = InsuranceDecisionMetric()
+            num_visits_metrics = num_visits_metrics.from_dict({
+                'name' : "num_med_visits",
+                'description' : "A number of medical visits next year",
+                'value' : {"value": add_expected_medical_visits_next_year(probe.state)}
+            })
+            family_change_metrics = InsuranceDecisionMetric()
+            family_change_metrics = family_change_metrics.from_dict({
+                'name': "family_change",
+                'description': "Prediction of if there will be a new baby next year",
+                'value': {"value": add_expected_family_change(probe.state)}
+            })
+            chance_of_hospitalization_metrics = InsuranceDecisionMetric()
+            chance_of_hospitalization_metrics = chance_of_hospitalization_metrics.from_dict({
+                'name': "chance_of_hospitalization",
+                'description': "Chance to end up in the hospital",
+                'value': {"value": add_chance_of_hospitalization(probe.state)}
+            })
             metrics = {
-                "Random": InsuranceDecisionMetric(
-                    name="Random",
-                    description="A random value",
-                    value={"value": random.random()}
-                ),
-                # "num_med_viists": InsuranceDecisionMetric(
-                #     name="Random",
-                #     description="A random value",
-                #     value={"value": call_my_new_function()}
-                # )
+                "num_med_visits": num_visits_metrics,
+                "family_change": family_change_metrics,
+                "chance_of_hospitalization": chance_of_hospitalization_metrics
             }
+            # no idea why this wouldn't work, but leaving in to see if someone else can figure it out
+            #  had to do it the above way to get the metrics to show up
+            # metrics = {
+            #     "num_med_visits": InsuranceDecisionMetric(
+            #         name="num_med_visits",
+            #         description="A number of medical visits next year",
+            #         value={"value": add_expected_medical_visits_next_year(probe.state)}
+            #     ),
+            #     "family_change": InsuranceDecisionMetric(
+            #         name="family_change",
+            #         description="Prediction of if there will be a new baby next year",
+            #         value={"value": add_expected_family_change(probe.state)}
+            #     ),
+            #     "chance_of_hospitalization": InsuranceDecisionMetric(
+            #         name="chance_of_hospitalization",
+            #         description="Chance to end up in the hospital",
+            #         value={"value": add_chance_of_hospitalization(probe.state)}
+            #     )
+            # }
             if decision.metrics is None:
                 decision.metrics = {}
             decision.metrics.update(metrics)

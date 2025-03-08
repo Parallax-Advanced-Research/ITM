@@ -33,7 +33,7 @@ class InsuranceState(BaseModel):
     employment_type: Optional[StrictStr] = None
     expense_type: Optional[StrictStr] = None
     kdma: Optional[StrictStr] = None
-    kdma_value: Optional[Union[StrictFloat, StrictInt]] = None
+    kdma_value: Optional[StrictStr] = None  # old way of it, kdma is low/high, not number Optional[Union[StrictFloat, StrictInt]] = None
     network_status: Optional[StrictStr] = None
     no_of_medical_visits_previous_year: Optional[StrictInt] = None
     owns_rents: Optional[StrictStr] = None
