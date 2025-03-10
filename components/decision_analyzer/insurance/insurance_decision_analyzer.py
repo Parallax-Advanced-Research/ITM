@@ -1,5 +1,9 @@
+import uuid
+import numpy as np
+
 from components.decision_analyzer.insurance.add_features import add_expected_medical_visits_next_year, \
     add_expected_family_change, add_chance_of_hospitalization
+from domain.insurance.models import DecisionValue
 from domain.insurance.models.insurance_tad_probe import InsuranceTADProbe
 from domain.insurance.models.decision import Decision as InsuranceDecision
 from domain.insurance.models.decision_metric import DecisionMetric as InsuranceDecisionMetric
@@ -15,6 +19,12 @@ class InsuranceDecisionAnalyzer(BaselineDecisionAnalyzer):
     def analyze(self, scen: InsuranceScenario, probe: InsuranceTADProbe) -> dict[str, dict[str, InsuranceDecisionMetric]]:
         analysis = {}
         # print(f"Prompt: {probe.prompt}")
+        if probe.decisions is None:
+                decision = InsuranceDecision(
+                id_=str(uuid.uuid4()),
+                value=DecisionValue(name=str(int(np.mean([probe.state.val1, probe.state.val2, probe.state.val3, probe.state.val4])))))  # dummy til we get real gt
+                probe.decisions = [decision]
+
         for decision in probe.decisions:
             num_visits_metrics = InsuranceDecisionMetric()
             num_visits_metrics = num_visits_metrics.from_dict({
@@ -39,25 +49,7 @@ class InsuranceDecisionAnalyzer(BaselineDecisionAnalyzer):
                 "family_change": family_change_metrics,
                 "chance_of_hospitalization": chance_of_hospitalization_metrics
             }
-            # no idea why this wouldn't work, but leaving in to see if someone else can figure it out
-            #  had to do it the above way to get the metrics to show up
-            # metrics = {
-            #     "num_med_visits": InsuranceDecisionMetric(
-            #         name="num_med_visits",
-            #         description="A number of medical visits next year",
-            #         value={"value": add_expected_medical_visits_next_year(probe.state)}
-            #     ),
-            #     "family_change": InsuranceDecisionMetric(
-            #         name="family_change",
-            #         description="Prediction of if there will be a new baby next year",
-            #         value={"value": add_expected_family_change(probe.state)}
-            #     ),
-            #     "chance_of_hospitalization": InsuranceDecisionMetric(
-            #         name="chance_of_hospitalization",
-            #         description="Chance to end up in the hospital",
-            #         value={"value": add_chance_of_hospitalization(probe.state)}
-            #     )
-            # }
+
             if decision.metrics is None:
                 decision.metrics = {}
             decision.metrics.update(metrics)

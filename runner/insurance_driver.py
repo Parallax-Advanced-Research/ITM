@@ -47,3 +47,7 @@ class InsuranceDriver:
         evaluator = DecisionScorer(selections, test_probes)
         kdma_eval = DecisionScorer(kdma_selections, test_probes_kdma)
         metric_eval = DecisionScorer(metric_selections, test_probes_kdma_metrics)
+
+        evaluator.score_probes()
+        kdma_eval.score_probes()
+        metric_eval.score_probes()
