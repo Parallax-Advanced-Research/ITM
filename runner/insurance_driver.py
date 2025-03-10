@@ -32,9 +32,21 @@ class InsuranceDriver:
         test_scen_kdma, test_probes_kdma = self.ingestor.ingest_as_internal("test-50-50.csv")  # load the test data
         test_scen_kdma_metrics, test_probes_kdma_metrics = self.ingestor.ingest_as_internal("test-50-50.csv")  # load the test data
         invalid_count = 0
+
+        print("beginning analysis")
+        for probe in test_probes:
+            self.analyzer.analyze(test_scen, probe)
+
+        for probe in test_probes_kdma:
+            self.analyzer.analyze(test_scen_kdma, probe)
+
         for probe in test_probes_kdma_metrics:
             self.analyzer.analyze(test_scen_kdma_metrics, probe)
+
+        print("Done analysis")
+
         selections, kdma_selections, metric_selections = [], [], []
+        idx = 0
         for test_probe, with_kdma, with_da_metrics in zip(test_probes, test_probes_kdma, test_probes_kdma_metrics):
             selection = insurance_selector_no_kdma.select(test_scen, test_probe, None)
             kdma_slection = insurance_selector_kdma.select(test_scen_kdma, with_kdma, target=None)
@@ -43,11 +55,18 @@ class InsuranceDriver:
             selections.append(selection)
             kdma_selections.append(kdma_slection)
             metric_selections.append(metric_selection)
-
+            if idx % 1000 == 0:
+                print(idx)
+            idx += 1
         evaluator = DecisionScorer(selections, test_probes)
         kdma_eval = DecisionScorer(kdma_selections, test_probes_kdma)
         metric_eval = DecisionScorer(metric_selections, test_probes_kdma_metrics)
 
-        evaluator.score_probes()
-        kdma_eval.score_probes()
-        metric_eval.score_probes()
+        simple_analysis = evaluator.score_probes()
+        kdma_analysis = kdma_eval.score_probes()
+        metrric_analysis = metric_eval.score_probes()
+
+        import pprint
+        pprint.pprint(simple_analysis)
+        pprint.pprint(kdma_analysis)
+        pprint.pprint(metrric_analysis)

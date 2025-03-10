@@ -17,7 +17,7 @@ class DecisionScorer(object):
         for decision, probe in zip(self.decisions, self.probes):
             score, is_correct = self.score_probe(decision, probe)
             predictions.append(int(float(decision.value.name)))
-            targets.append(int(float(probe.decisions[0].value.name)))
+            targets.append(int(float(probe.decisions[0].value.name)))  # should be action
             if is_correct:
                 correct += 1
             else:

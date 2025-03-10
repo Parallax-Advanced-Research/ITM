@@ -8,6 +8,7 @@ from domain.insurance.models.insurance_scenario import InsuranceScenario
 from domain.insurance.models.decision import Decision as InsuranceDecision
 from domain.insurance.models.decision_value import DecisionValue
 from pydantic.tools import parse_obj_as
+import numpy as np
 from .ingestor import Ingestor
 
 class InsuranceIngestor(Ingestor):  # Extend Ingestor
@@ -73,6 +74,12 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                             id_=f'decision_{row_num}_{uuid.uuid4()}',
                             value=DecisionValue(name=line.get('action'))
                         )
+                        probe.decisions = [decision]
+                    else:
+                        decision = InsuranceDecision(
+                            id_=str(uuid.uuid4()),
+                            value=DecisionValue(name=str(int(np.mean(
+                                [probe.state.val1, probe.state.val2, probe.state.val3, probe.state.val4])))))
                         probe.decisions = [decision]
 
                     probes.append(probe)

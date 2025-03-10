@@ -19,7 +19,7 @@ class InsuranceDecisionAnalyzer(BaselineDecisionAnalyzer):
     def analyze(self, scen: InsuranceScenario, probe: InsuranceTADProbe) -> dict[str, dict[str, InsuranceDecisionMetric]]:
         analysis = {}
         # print(f"Prompt: {probe.prompt}")
-        if probe.decisions is None:
+        if probe.decisions is None:  # I think this was wrong and a pita. This was overwriting the prediction to mean val
                 decision = InsuranceDecision(
                 id_=str(uuid.uuid4()),
                 value=DecisionValue(name=str(int(np.mean([probe.state.val1, probe.state.val2, probe.state.val3, probe.state.val4])))))  # dummy til we get real gt

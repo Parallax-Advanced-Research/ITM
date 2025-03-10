@@ -276,5 +276,5 @@ class InsuranceSelector(DecisionSelector):
             # id_=f'decision_{row_num}_{uuid.uuid4()}',
             value=DecisionValue(name=str(selected_decision))
         )
-        probe.decisions = [decision]
+        # probe.decisions = [decision] found the overwrite!
         return decision
