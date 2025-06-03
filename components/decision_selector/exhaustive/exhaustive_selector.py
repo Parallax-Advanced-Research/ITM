@@ -3,7 +3,7 @@ import os
 from components import DecisionSelector
 from domain.internal import Scenario, TADProbe, Action, AlignmentTarget, Decision
 from components.decision_selector.kdma_estimation import write_case_base, read_case_base
-from components.decision_selector.kdma_estimation.kdma_estimation_decision_selector import make_case_triage
+from triage.triage_case_creator import make_case_triage
 from typing import Any
 
 STATE_FILE: str = "temp/exhaustive_state.json"

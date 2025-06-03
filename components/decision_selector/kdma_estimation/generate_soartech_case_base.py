@@ -1,5 +1,6 @@
 from .kdma_estimation_decision_selector import *
 from .case_base_functions import *
+from triage.triage_case_creator import make_case_triage
 
 TAGS = ["MINIMAL", "DELAYED", "IMMEDIATE", "EXPECTANT"]
 TREATMENTS = ["Hemostatic gauze", "Decompression Needle", "Pressure bandage", "Tourniquet", "Nasopharyngeal airway"]
@@ -173,22 +174,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st: State = make_previsit_state(["casualty-A", "casualty-B", "casualty-C", "casualty-D"])
     p: TADProbe = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers_without_HRA)
-    cb.append(make_case(p, get_decision(p, casualty="casualty-A")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-A"))
               | analyze_fn({"mission": [2,2,2,2], 
                             "denial":  [2,8,2,2], 
                             "risktol": [7,8,8,3],
                             "urgency": [7,2,2,2]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-B")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-B"))
               | analyze_fn({"mission": [4,7,7,7], 
                             "denial":  [2,7,7,2], 
                             "risktol": [6,7,7,4],
                             "urgency": [6,3,3,2]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-C")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-C"))
               | analyze_fn({"mission": [8,8,8,8], 
                             "denial":  [2,7,8,2], 
                             "risktol": [3,3,8,6],
                             "urgency": [7,3,3,3]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-D")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-D"))
               | analyze_fn({"mission": [4,8,3,6], 
                             "denial":  [2,3,8,2], 
                             "risktol": [2,7,7,8],
@@ -196,22 +197,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_previsit_state(["casualty-A", "casualty-B", "casualty-D", "casualty-E"])
     p = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers_without_HRA)
-    cb.append(make_case(p, get_decision(p, casualty="casualty-A")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-A"))
               | analyze_fn({"mission": [2,2,2,2], 
                             "denial":  [2,8,2,2], 
                             "risktol": [7,8,8,3],
                             "urgency": [7,2,2,2]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-B")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-B"))
               | analyze_fn({"mission": [4,3,8,7], 
                             "denial":  [2,7,8,2], 
                             "risktol": [6,7,3,3],
                             "urgency": [6,7,7,4]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-D")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-D"))
               | analyze_fn({"mission": [4,3,8,7], 
                             "denial":  [2,8,8,8], 
                             "risktol": [2,3,2,8],
                             "urgency": [4,3,8,6]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-E")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-E"))
               | analyze_fn({"mission": [4,2,2,2], 
                             "denial":  [2,3,3,3], 
                             "risktol": [3,7,8,2],
@@ -219,22 +220,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
    
     st = make_previsit_state(["casualty-B", "casualty-C", "casualty-D", "casualty-E"])
     p = perform_analysis(st, make_vague_treatment_decision_list(st), analyzers_without_HRA)
-    cb.append(make_case(p, get_decision(p, casualty="casualty-B")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-B"))
               | analyze_fn({"mission": [4,3,8,8], 
                             "denial":  [2,7,2,3], 
                             "risktol": [7,7,8,3],
                             "urgency": [6,2,3,2]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-C")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-C"))
               | analyze_fn({"mission": [8,7,8,2], 
                             "denial":  [2,2,8,3], 
                             "risktol": [3,3,3,3],
                             "urgency": [7,7,3,6]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-D")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-D"))
               | analyze_fn({"mission": [4,2,2,8], 
                             "denial":  [2,2,8,8], 
                             "risktol": [2,7,2,8],
                             "urgency": [4,3,8,7]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-E")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-E"))
               | analyze_fn({"mission": [4,2,2,2], 
                             "denial":  [2,2,2,3], 
                             "risktol": [3,7,8,2],
@@ -247,106 +248,106 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_previsit_state(["casualty-A", "casualty-B", "casualty-C", "casualty-D", "casualty-E"])
     p = perform_analysis(st, make_decision_list(st), analyzers)
-    cb.append(make_case(p, get_decision(p, casualty="casualty-A", action_name="CHECK_ALL_VITALS")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-A", action_name="CHECK_ALL_VITALS"))
               | analyze_fn({"mission": [4,2,2,8], 
                             "denial":  [3,3,6,3], 
                             "risktol": [2,8,8,6],
                             "urgency": [2,3,2,8]}))
-    # cb.append(make_case(p, get_decision(p, casualty="casualty-A", treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, casualty="casualty-A", treatment="Pain medication"))
               # | analyze_fn({"mission": [6,4,8,8], 
                             # "denial":  [7,3,2,3], 
                             # "risktol": [3,2,2,3],
                             # "urgency": [3,7,3,8]}))
-    # cb.append(make_case(p, get_decision(p, casualty="casualty-A", treatment="IV kit")) 
+    # cb.append(make_case_triage(p, get_decision(p, casualty="casualty-A", treatment="IV kit"))
               # | analyze_fn({"mission": [4,2,2,2], 
                             # "denial":  [2,7,2,3], 
                             # "risktol": [2,7,7,3],
                             # "urgency": [2,2,2,6]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-A", treatment="Pressure bandage")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-A", treatment="Pressure bandage"))
               | analyze_fn({"mission": [0,2,2,3], 
                             "denial":  [2,7,2,3], 
                             "risktol": [8,8,8,3],
                             "urgency": [2,2,2,6]}))
 
-    cb.append(make_case(p, get_decision(p, casualty="casualty-B", action_name="CHECK_ALL_VITALS")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-B", action_name="CHECK_ALL_VITALS"))
               | analyze_fn({"mission": [6,2,8,6], 
                             "denial":  [3,3,7,3], 
                             "risktol": [2,8,2,3],
                             "urgency": [2,3,2,8]}))
-    # cb.append(make_case(p, get_decision(p, casualty="casualty-B", treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, casualty="casualty-B", treatment="Pain medication"))
               # | analyze_fn({"mission": [6,4,7,6], 
                             # "denial":  [7,3,2,3], 
                             # "risktol": [3,2,4,6],
                             # "urgency": [3,7,4,8]}))
-    # cb.append(make_case(p, get_decision(p, casualty="casualty-B", treatment="IV kit")) 
+    # cb.append(make_case_triage(p, get_decision(p, casualty="casualty-B", treatment="IV kit"))
               # | analyze_fn({"mission": [4,2,7,7], 
                             # "denial":  [2,3,3,3], 
                             # "risktol": [2,7,4,7],
                             # "urgency": [2,2,7,8]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-B", treatment="Pressure bandage")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-B", treatment="Pressure bandage"))
               | analyze_fn({"mission": [0,2,2,8], 
                             "denial":  [2,3,2,7], 
                             "risktol": [7,2,2,8],
                             "urgency": [2,2,7,8]}))
 
-    cb.append(make_case(p, get_decision(p, casualty="casualty-C", action_name="CHECK_ALL_VITALS")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-C", action_name="CHECK_ALL_VITALS"))
               | analyze_fn({"mission": [8,7,8,8], 
                             "denial":  [3,3,2,7], 
                             "risktol": [2,3,2,8],
                             "urgency": [2,3,7,8]}))
-    # cb.append(make_case(p, get_decision(p, casualty="casualty-C", treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, casualty="casualty-C", treatment="Pain medication"))
               # | analyze_fn({"mission": [7,4,2,7], 
                             # "denial":  [3,3,2,3], 
                             # "risktol": [3,3,3,3],
                             # "urgency": [3,4,2,8]}))
-    # cb.append(make_case(p, get_decision(p, casualty="casualty-C", treatment="IV kit")) 
+    # cb.append(make_case_triage(p, get_decision(p, casualty="casualty-C", treatment="IV kit"))
               # | analyze_fn({"mission": [0,4,7,6], 
                             # "denial":  [2,3,2,3], 
                             # "risktol": [2,2,6,7],
                             # "urgency": [2,2,8,7]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-C", treatment="Pressure bandage")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-C", treatment="Pressure bandage"))
               | analyze_fn({"mission": [4,7,2,8], 
                             "denial":  [2,3,2,3], 
                             "risktol": [2,3,3,3],
                             "urgency": [2,4,2,4]}))
 
-    cb.append(make_case(p, get_decision(p, casualty="casualty-D", action_name="CHECK_ALL_VITALS")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-D", action_name="CHECK_ALL_VITALS"))
               | analyze_fn({"mission": [6,3,6,4],
                             "denial":  [3,3,2,3],
                             "risktol": [2,6,7,6],
                             "urgency": [2,6,3,8]}))
-    # cb.append(make_case(p, get_decision(p, casualty="casualty-D", treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, casualty="casualty-D", treatment="Pain medication"))
               # | analyze_fn({"mission": [6,3,2,3], 
                             # "denial":  [3,3,2,3], 
                             # "risktol": [3,6,8,2],
                             # "urgency": [3,6,2,8]}))
-    # cb.append(make_case(p, get_decision(p, casualty="casualty-D", treatment="IV kit")) 
+    # cb.append(make_case_triage(p, get_decision(p, casualty="casualty-D", treatment="IV kit"))
               # | analyze_fn({"mission": [4,2,2,2], 
                             # "denial":  [2,3,2,2], 
                             # "risktol": [2,7,8,6],
                             # "urgency": [2,8,2,6]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-D", treatment="Tourniquet")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-D", treatment="Tourniquet"))
               | analyze_fn({"mission": [4,4,7,8], 
                             "denial":  [2,3,2,7], 
                             "risktol": [6,6,2,8],
                             "urgency": [2,4,8,7]}))
     
-    cb.append(make_case(p, get_decision(p, casualty="casualty-E", action_name="CHECK_ALL_VITALS")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-E", action_name="CHECK_ALL_VITALS"))
               | analyze_fn({"mission": [6,2,2,8],
                             "denial":  [3,3,2,2],
                             "risktol": [2,7,7,6],
                             "urgency": [2,4,6,8]}))
-    # cb.append(make_case(p, get_decision(p, casualty="casualty-E", treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, casualty="casualty-E", treatment="Pain medication"))
               # | analyze_fn({"mission": [6,2,2,2], 
                             # "denial":  [0,3,2,2], 
                             # "risktol": [3,7,7,2],
                             # "urgency": [3,4,2,7]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-E", treatment="Hemostatic gauze")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-E", treatment="Hemostatic gauze"))
               | analyze_fn({"mission": [4,2,2,2], 
                             "denial":  [2,3,2,2], 
                             "risktol": [2,7,7,3],
                             "urgency": [2,2,2,7]}))
-    cb.append(make_case(p, get_decision(p, casualty="casualty-E", treatment="Decompression Needle")) 
+    cb.append(make_case_triage(p, get_decision(p, casualty="casualty-E", treatment="Decompression Needle"))
               | analyze_fn({"mission": [4,2,2,2], 
                             "denial":  [2,3,2,2], 
                             "risktol": [6,6,7,8],
@@ -358,22 +359,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-A"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(p, get_decision(p, action_name="END_SCENE")) 
+    cb.append(make_case_triage(p, get_decision(p, action_name="END_SCENE"))
               | analyze_fn({"mission": [8,8,6,8], 
                             "denial":  [8,7,8,3], 
                             "risktol": [2,2,4,2],
                             "urgency": [8,8,8,2]}))
-    # cb.append(make_case(p, get_decision(p, treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, treatment="Pain medication"))
               # | analyze_fn({"mission": [7,3,6,7], 
                             # "denial":  [7,7,2,2], 
                             # "risktol": [3,6,7,8],
                             # "urgency": [4,7,2,8]}))
-    # cb.append(make_case(p, get_decision(p, treatment="IV kit")) 
+    # cb.append(make_case_triage(p, get_decision(p, treatment="IV kit"))
               # | analyze_fn({"mission": [2,3,2,3], 
                             # "denial":  [2,8,2,2], 
                             # "risktol": [4,7,8,3],
                             # "urgency": [3,3,2,4]}))
-    cb.append(make_case(p, get_decision(p, treatment="Pressure bandage")) 
+    cb.append(make_case_triage(p, get_decision(p, treatment="Pressure bandage"))
               | analyze_fn({"mission": [2,3,2,2], 
                             "denial":  [2,8,2,2], 
                             "risktol": [2,8,7,2],
@@ -381,22 +382,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-B"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(p, get_decision(p, action_name="END_SCENE")) 
+    cb.append(make_case_triage(p, get_decision(p, action_name="END_SCENE"))
               | analyze_fn({"mission": [3,7,2,3], 
                             "denial":  [4,8,8,3], 
                             "risktol": [4,2,8,2],
                             "urgency": [4,8,7,2]}))
-    # cb.append(make_case(p, get_decision(p, treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, treatment="Pain medication"))
               # | analyze_fn({"mission": [6,7,6,7], 
                             # "denial":  [4,6,2,3], 
                             # "risktol": [4,3,3,2],
                             # "urgency": [4,7,2,6]}))
-    # cb.append(make_case(p, get_decision(p, treatment="IV kit")) 
+    # cb.append(make_case_triage(p, get_decision(p, treatment="IV kit"))
               # | analyze_fn({"mission": [6,3,6,6], 
                             # "denial":  [4,3,3,3], 
                             # "risktol": [4,4,7,8],
                             # "urgency": [4,6,3,8]}))
-    cb.append(make_case(p, get_decision(p, treatment="Pressure bandage")) 
+    cb.append(make_case_triage(p, get_decision(p, treatment="Pressure bandage"))
               | analyze_fn({"mission": [0,3,6,8], 
                             "denial":  [3,2,2,3], 
                             "risktol": [3,7,3,2],
@@ -404,22 +405,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-C"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(p, get_decision(p, action_name="END_SCENE")) 
+    cb.append(make_case_triage(p, get_decision(p, action_name="END_SCENE"))
               | analyze_fn({"mission": [2,2,2,2], 
                             "denial":  [8,7,8,3], 
                             "risktol": [7,8,8,2],
                             "urgency": [8,8,8,2]}))
-    # cb.append(make_case(p, get_decision(p, treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, treatment="Pain medication"))
               # | analyze_fn({"mission": [6,3,8,7], 
                             # "denial":  [3,6,2,3], 
                             # "risktol": [0,6,2,7],
                             # "urgency": [4,7,2,6]}))
-    # cb.append(make_case(p, get_decision(p, treatment="IV kit")) 
+    # cb.append(make_case_triage(p, get_decision(p, treatment="IV kit"))
               # | analyze_fn({"mission": [0,2,7,7], 
                             # "denial":  [2,3,3,3], 
                             # "risktol": [2,3,2,7],
                             # "urgency": [2,3,3,6]}))
-    cb.append(make_case(p, get_decision(p, treatment="Pressure bandage")) 
+    cb.append(make_case_triage(p, get_decision(p, treatment="Pressure bandage"))
               | analyze_fn({"mission": [8,7,7,8], 
                             "denial":  [2,7,2,3], 
                             "risktol": [2,7,4,8],
@@ -427,22 +428,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-D"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(p, get_decision(p, action_name="END_SCENE")) 
+    cb.append(make_case_triage(p, get_decision(p, action_name="END_SCENE"))
               | analyze_fn({"mission": [7,8,2,2], 
                             "denial":  [8,8,8,2], 
                             "risktol": [8,2,8,2],
                             "urgency": [8,8,8,2]}))
-    # cb.append(make_case(p, get_decision(p, treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, treatment="Pain medication"))
               # | analyze_fn({"mission": [6,7,2,3], 
                             # "denial":  [3,7,2,3], 
                             # "risktol": [6,3,8,7],
                             # "urgency": [3,7,2,2]}))
-    # cb.append(make_case(p, get_decision(p, treatment="IV kit")) 
+    # cb.append(make_case_triage(p, get_decision(p, treatment="IV kit"))
               # | analyze_fn({"mission": [0,4,2,2], 
                             # "denial":  [2,7,2,3], 
                             # "risktol": [4,2,8,6],
                             # "urgency": [3,3,2,2]}))
-    cb.append(make_case(p, get_decision(p, treatment="Tourniquet")) 
+    cb.append(make_case_triage(p, get_decision(p, treatment="Tourniquet"))
               | analyze_fn({"mission": [4,6,7,3], 
                             "denial":  [2,7,2,2], 
                             "risktol": [4,7,2,8],
@@ -450,22 +451,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_posttag_state(["casualty-E"])
     p = perform_analysis(st, make_decision_list(st, include_end = True), analyzers)
-    cb.append(make_case(p, get_decision(p, action_name="END_SCENE")) 
+    cb.append(make_case_triage(p, get_decision(p, action_name="END_SCENE"))
               | analyze_fn({"mission": [7,8,7,2], 
                             "denial":  [8,2,8,2], 
                             "risktol": [8,2,3,2],
                             "urgency": [8,8,8,2]}))
-    # cb.append(make_case(p, get_decision(p, treatment="Pain medication")) 
+    # cb.append(make_case_triage(p, get_decision(p, treatment="Pain medication"))
               # | analyze_fn({"mission": [4,7,2,2], 
                             # "denial":  [3,6,2,2], 
                             # "risktol": [6,3,2,2],
                             # "urgency": [3,6,2,4]}))
-    cb.append(make_case(p, get_decision(p, treatment="Hemostatic gauze")) 
+    cb.append(make_case_triage(p, get_decision(p, treatment="Hemostatic gauze"))
               | analyze_fn({"mission": [0,3,2,2], 
                             "denial":  [2,7,2,2], 
                             "risktol": [4,2,2,6],
                             "urgency": [2,2,3,6]}))
-    cb.append(make_case(p, get_decision(p, treatment="Decompression Needle")) 
+    cb.append(make_case_triage(p, get_decision(p, treatment="Decompression Needle"))
               | analyze_fn({"mission": [4,7,2,2], 
                             "denial":  [2,7,2,2], 
                             "risktol": [4,3,2,8],
@@ -476,22 +477,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
     upd = {"tagging" : True, "treating": False, "injured_count": None, "unvisited_count": None, "others_tagged": None, "others_visited": None}
     st = make_postvisit_state(["casualty-A"])
     p = perform_analysis(st, make_tag_decision_list(st), analyzers)
-    cb.append(make_case(p, get_decision(p, category="MINIMAL")) 
+    cb.append(make_case_triage(p, get_decision(p, category="MINIMAL"))
               | analyze_fn({"mission": [0,2,2,2], 
                             "denial":  [2,2,2,2], 
                             "risktol": [2,2,8,2],
                             "urgency": [8,8,2,2]}))
-    cb.append(make_case(p, get_decision(p, category="DELAYED")) 
+    cb.append(make_case_triage(p, get_decision(p, category="DELAYED"))
               | analyze_fn({"mission": [0,2,2,2], 
                             "denial":  [2,7,2,3], 
                             "risktol": [2,7,7,3],
                             "urgency": [2,6,3,3]}))
-    cb.append(make_case(p, get_decision(p, category="IMMEDIATE")) 
+    cb.append(make_case_triage(p, get_decision(p, category="IMMEDIATE"))
               | analyze_fn({"mission": [0,2,8,2], 
                             "denial":  [3,8,2,6], 
                             "risktol": [7,8,3,3],
                             "urgency": [7,7,8,7]}))
-    cb.append(make_case(p, get_decision(p, category="EXPECTANT"))
+    cb.append(make_case_triage(p, get_decision(p, category="EXPECTANT"))
               | analyze_fn({"mission": [8,2,8,8], 
                             "denial":  [8,8,8,7], 
                             "risktol": [2,2,2,8],
@@ -499,22 +500,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_postvisit_state(["casualty-B"])
     p = perform_analysis(st, make_tag_decision_list(st), analyzers)
-    cb.append(make_case(p, get_decision(p, category="MINIMAL")) 
+    cb.append(make_case_triage(p, get_decision(p, category="MINIMAL"))
               | analyze_fn({"mission": [6,3,3,8], 
                             "denial":  [2,7,8,3], 
                             "risktol": [6,3,8,3],
                             "urgency": [8,2,2,3]}))
-    cb.append(make_case(p, get_decision(p, category="DELAYED")) 
+    cb.append(make_case_triage(p, get_decision(p, category="DELAYED"))
               | analyze_fn({"mission": [7,7,8,8], 
                             "denial":  [4,6,7,8], 
                             "risktol": [4,7,7,6],
                             "urgency": [8,2,2,6]}))
-    cb.append(make_case(p, get_decision(p, category="IMMEDIATE")) 
+    cb.append(make_case_triage(p, get_decision(p, category="IMMEDIATE"))
               | analyze_fn({"mission": [2,2,2,2], 
                             "denial":  [6,8,2,6], 
                             "risktol": [3,8,8,3],
                             "urgency": [4,7,8,6]}))
-    cb.append(make_case(p, get_decision(p, category="EXPECTANT"))
+    cb.append(make_case_triage(p, get_decision(p, category="EXPECTANT"))
               | analyze_fn({"mission": [2,7,2,2], 
                             "denial":  [8,2,8,2], 
                             "risktol": [7,2,8,2],
@@ -522,22 +523,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_postvisit_state(["casualty-C"])
     p = perform_analysis(st, make_tag_decision_list(st), analyzers)
-    cb.append(make_case(p, get_decision(p, category="MINIMAL")) 
+    cb.append(make_case_triage(p, get_decision(p, category="MINIMAL"))
               | analyze_fn({"mission": [7,2,3,8], 
                             "denial":  [8,2,2,3], 
                             "risktol": [0,8,8,3],
                             "urgency": [8,2,2,6]}))
-    cb.append(make_case(p, get_decision(p, category="DELAYED")) 
+    cb.append(make_case_triage(p, get_decision(p, category="DELAYED"))
               | analyze_fn({"mission": [4,7,7,8], 
                             "denial":  [8,6,2,8], 
                             "risktol": [2,7,7,6],
                             "urgency": [6,3,3,6]}))
-    cb.append(make_case(p, get_decision(p, category="IMMEDIATE")) 
+    cb.append(make_case_triage(p, get_decision(p, category="IMMEDIATE"))
               | analyze_fn({"mission": [6,8,8,4], 
                             "denial":  [2,2,2,3], 
                             "risktol": [2,6,2,3],
                             "urgency": [0,7,7,6]}))
-    cb.append(make_case(p, get_decision(p, category="EXPECTANT"))
+    cb.append(make_case_triage(p, get_decision(p, category="EXPECTANT"))
               | analyze_fn({"mission": [2,2,2,2], 
                             "denial":  [8,8,8,2], 
                             "risktol": [0,3,8,2],
@@ -545,22 +546,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_postvisit_state(["casualty-D"])
     p = perform_analysis(st, make_tag_decision_list(st), analyzers)
-    cb.append(make_case(p, get_decision(p, category="MINIMAL")) 
+    cb.append(make_case_triage(p, get_decision(p, category="MINIMAL"))
               | analyze_fn({"mission": [0,2,3,3], 
                             "denial":  [8,8,8,8], 
                             "risktol": [8,2,8,8],
                             "urgency": [8,2,2,8]}))
-    cb.append(make_case(p, get_decision(p, category="DELAYED")) 
+    cb.append(make_case_triage(p, get_decision(p, category="DELAYED"))
               | analyze_fn({"mission": [0,3,3,8], 
                             "denial":  [6,7,4,7], 
                             "risktol": [7,3,7,7],
                             "urgency": [6,4,7,6]}))
-    cb.append(make_case(p, get_decision(p, category="IMMEDIATE")) 
+    cb.append(make_case_triage(p, get_decision(p, category="IMMEDIATE"))
               | analyze_fn({"mission": [0,2,7,3], 
                             "denial":  [3,3,2,6], 
                             "risktol": [2,7,3,3],
                             "urgency": [4,2,8,7]}))
-    cb.append(make_case(p, get_decision(p, category="EXPECTANT"))
+    cb.append(make_case_triage(p, get_decision(p, category="EXPECTANT"))
               | analyze_fn({"mission": [7,3,8,2], 
                             "denial":  [8,2,8,2], 
                             "risktol": [8,2,8,2],
@@ -568,22 +569,22 @@ def make_soartech_case_base(analyze_fn: Callable[[dict[str, list[float]]], dict[
 
     st = make_postvisit_state(["casualty-E"])
     p = perform_analysis(st, make_tag_decision_list(st), analyzers)
-    cb.append(make_case(p, get_decision(p, category="MINIMAL")) 
+    cb.append(make_case_triage(p, get_decision(p, category="MINIMAL"))
               | analyze_fn({"mission": [0,8,8,2], 
                             "denial":  [8,2,7,2], 
                             "risktol": [8,2,7,4],
                             "urgency": [8,2,2,2]}))
-    cb.append(make_case(p, get_decision(p, category="DELAYED")) 
+    cb.append(make_case_triage(p, get_decision(p, category="DELAYED"))
               | analyze_fn({"mission": [0,6,2,3], 
                             "denial":  [4,3,3,6], 
                             "risktol": [4,7,6,6],
                             "urgency": [8,3,7,3]}))
-    cb.append(make_case(p, get_decision(p, category="IMMEDIATE")) 
+    cb.append(make_case_triage(p, get_decision(p, category="IMMEDIATE"))
               | analyze_fn({"mission": [0,4,2,8], 
                             "denial":  [4,8,2,8], 
                             "risktol": [2,8,3,6],
                             "urgency": [4,7,8,8]}))
-    cb.append(make_case(p, get_decision(p, category="EXPECTANT"))
+    cb.append(make_case_triage(p, get_decision(p, category="EXPECTANT"))
               | analyze_fn({"mission": [7,8,8,3], 
                             "denial":  [8,2,8,4], 
                             "risktol": [8,2,8,2],
