@@ -14,6 +14,7 @@ from domain.internal import AlignmentTarget, AlignmentTargetType
 import util
 from data import target_library
 from util import logger, LogLevel, use_simple_logger, dict_difference
+import triage
 
 MVP_DIR = './data/mvp'
 MODEL_DIR = f'{MVP_DIR}/models'
@@ -120,6 +121,7 @@ def ltest(args):
 
 
 def api_test(args, driver = None):
+    args.domain = triage.TriageDomain()
     if args.verbose:
         logger.setLevel(VERBOSE_LEVEL)
     else:

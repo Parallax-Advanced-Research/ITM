@@ -1,4 +1,5 @@
 import argparse, sys, util
+import importlib
 
 def validate_args(args: argparse.Namespace) -> None:
 
@@ -71,7 +72,9 @@ def validate_args(args: argparse.Namespace) -> None:
         args.uniform_weight = args.uniform_weight
     args.uniformweight = 0
     
-    
+    tempDomainClass = getattr(importlib.import_module(args.domain_package), args.domain_class_name)
+    # Instantiate the class (pass arguments to the constructor, if needed)
+    args.domain = tempDomainClass()
     
     #args.keds = ('keds' == args.selector)
     #args.kedsd = ('kedsd' == args.selector)
@@ -137,6 +140,10 @@ def get_default_parser() -> argparse.ArgumentParser:
                         help="Causes a decision selector to log the decisions it considered.")
     parser.add_argument('--bypass_server_check', action=argparse.BooleanOptionalAction, default=False, 
                         help="Allow TAD to start without looking for servers first.")
+    parser.add_argument('--domain_package', type=str, default="domain.internal",
+                        help="Package for finding domain-specific code.")
+    parser.add_argument('--domain_class_name', type=str, default="Domain",
+                        help="Class name to call for generating domain-specific objects.")
 
 
 
