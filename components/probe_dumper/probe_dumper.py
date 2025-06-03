@@ -56,8 +56,9 @@ class ProbeDumper:
             return probe_id
         return '-'.join(probe_id.split('-')[:-1])
 
-    def dump(self, probe, decision, session_uuid, env_haz):
+    def dump(self, probe, decision, session_uuid):
         opened_dump = None
+        env_haz = probe.get_environment_hazard()
         new_id = ProbeDumper.fix_probe_id(probe.id_)
         for dump_artifact in os.listdir(self.dump_path):
             if 'pkl' not in dump_artifact:
