@@ -12,8 +12,9 @@ class TADProbe(typing.Generic[StateType]):
         self.decisions: list[Decision] = decisions
         self.environment = environment
 
+    def get_features(self) -> dict[str, typing.Any]:
+        return dict()
+
     def __repr__(self):
         return f"{self.id_}: {self.prompt}"
 
-    def get_environment_hazard(self):
-        return self.environment['decision_environment']['injury_triggers']
