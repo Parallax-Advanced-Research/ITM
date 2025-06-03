@@ -4,6 +4,7 @@ from .decision_metric import DecisionMetrics, DecisionName, DecisionMetric
 from .justification import Justification
 from .explanation import ExplanationItem
 from .kdmas import KDMAs
+import util
 
 T = typing.TypeVar('T')
 
@@ -70,13 +71,25 @@ class Decision(typing.Generic[T]):
             return self.id_ < other.id_
         return self.metrics['DAMAGE_PER_SECOND'].value == other.metrics['DAMAGE_PER_SECOND'].value
 
+    def get_features(self) -> dict:
+        case = {}
+        case['action_name'] = self.value.name
+        case.update(self.value.params)
+        for dm in self.metrics.values():
+            if type(dm.value) is not dict:
+                case[dm.name] = dm.value
+            else:
+                for (inner_key, inner_value) in util.flatten(dm.name, dm.value).items():
+                    case[inner_key] = inner_value
+        return case
 
-def make_new_action_decision(
-            id_: str, action_type: str, params: dict[str, typing.Any],
-            kdmas: KDMAs, intend: bool) -> Decision[Action]:
-    return Decision(id_, Action(action_type, params), [],[], None, kdmas, intend);
+#These are removed to ensure only Domain versions are used.
+#def make_new_action_decision(
+            #id_: str, action_type: str, params: dict[str, typing.Any],
+            #kdmas: KDMAs, intend: bool) -> Decision[Action]:
+    #return Decision(id_, Action(action_type, params), [],[], None, kdmas, intend)
 
 
-def update_decision_parameters(
-            d: Decision, params: dict[str, typing.Any]) -> Decision[Action]:
-    return Decision(d.id_, Action(d.value.name, params.copy()), d.justifications, d.explanations, d.metrics, d.kdmas, d.intend)
+#def update_decision_parameters(
+            #d: Decision, params: dict[str, typing.Any]) -> Decision[Action]:
+    #return Decision(d.id_, Action(d.value.name, params.copy()), d.justifications, d.explanations, d.metrics, d.kdmas, d.intend)

@@ -1,7 +1,7 @@
 import json
 
 from domain.ta3 import TA3State, Casualty, TagCategory, Supply, Injury
-from domain.internal import Decision, Action, Scenario, TADProbe, make_new_action_decision, update_decision_parameters
+from domain.internal import Decision, Action, Scenario, TADProbe
 from components import Elaborator
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_actions import supply_injury_match, supply_location_match
 from components.decision_analyzer.monte_carlo.medsim.util.medsim_enums import Actions
@@ -16,12 +16,15 @@ from domain.enum import ActionTypeEnum, SupplyTypeEnum, InjuryTypeEnum, InjuryLo
                         InjuryStatusEnum, ParamEnum, MentalStatusEnum, BreathingLevelEnum, \
                         AvpuLevelEnum
 
+from triage import TriageDomain
 
 SPECIAL_SUPPLIES = [SupplyTypeEnum.BLANKET, SupplyTypeEnum.BLOOD, SupplyTypeEnum.EPI_PEN, \
                     SupplyTypeEnum.FENTANYL_LOLLIPOP, SupplyTypeEnum.IV_BAG, \
                     SupplyTypeEnum.PAIN_MEDICATIONS, SupplyTypeEnum.PULSE_OXIMETER]
 
 ID_LABELS = ["id", "type", "threat_type", "location"]
+
+DOMAIN = TriageDomain()
 
 class TA3Elaborator(Elaborator):
 
@@ -506,7 +509,7 @@ class TA3Elaborator(Elaborator):
                     # Copy the casualty into the params dict
                     cas_params = action.params.copy()
                     cas_params[ParamEnum.CASUALTY] = cas.id
-                    dec_grounded.append(update_decision_parameters(decision, cas_params))
+                    dec_grounded.append(DOMAIN.update_decision_parameters(decision, cas_params))
         else:
             cas = get_casualty_by_id(action.params[ParamEnum.CASUALTY], casualties)
             if not cas.tag:
@@ -518,7 +521,7 @@ class TA3Elaborator(Elaborator):
                 for tag in TagCategory:
                     tag_params = cas_decision.value.params.copy()
                     tag_params[ParamEnum.CATEGORY] = tag
-                    tag_grounded.append(update_decision_parameters(cas_decision, tag_params)); 
+                    tag_grounded.append(DOMAIN.update_decision_parameters(cas_decision, tag_params));
             else:
                 tag_grounded.append(cas_decision)
         return tag_grounded
@@ -541,7 +544,7 @@ class TA3Elaborator(Elaborator):
                     sup_params = cas_decision.value.params.copy()
                     if supply.quantity > 0:
                         sup_params[ParamEnum.TREATMENT] = supply.type
-                        treat_grounded.append(update_decision_parameters(cas_decision, sup_params))
+                        treat_grounded.append(DOMAIN.update_decision_parameters(cas_decision, sup_params))
             else:
                 if TA3Elaborator._supply_available(state, cas_decision.value.params[ParamEnum.TREATMENT]):
                     treat_grounded.append(cas_decision)
@@ -567,11 +570,11 @@ class TA3Elaborator(Elaborator):
                     treat_params[ParamEnum.LOCATION] = injury.location
                     new_treat_action = Action(decision.value.name, treat_params)
                     if TA3Elaborator.medsim_allows_action(new_treat_action, injury.name):
-                        grounded.append(update_decision_parameters(treat_decision, new_treat_action.params))
+                        grounded.append(DOMAIN.update_decision_parameters(treat_decision, new_treat_action.params))
                     elif TA3Elaborator.medsim_allows_action(treat_decision.value, injury.name):
                         treat_params = treat_decision.value.params.copy()
                         treat_params[ParamEnum.LOCATION] = treat_params.get(ParamEnum.LOCATION, InjuryLocationEnum.UNSPECIFIED)
-                        grounded.append(update_decision_parameters(treat_decision, treat_params))
+                        grounded.append(DOMAIN.update_decision_parameters(treat_decision, treat_params))
             else:
                 grounded.append(treat_decision)
 
@@ -600,7 +603,7 @@ class TA3Elaborator(Elaborator):
                     # Copy the casualty into the params dict
                     cas_params = action.params.copy()
                     cas_params[ParamEnum.CASUALTY] = cas.id
-                    dec_grounded.append(update_decision_parameters(decision, cas_params))
+                    dec_grounded.append(DOMAIN.update_decision_parameters(decision, cas_params))
         else:
             dec_grounded.append(decision)
 
@@ -668,7 +671,7 @@ def get_injuries_by_location(loc_id: str, injuries: list[Injury]) -> Injury:
 
 def decision_copy_with_params(dec: Decision[Action], params: dict[str, Any]):
     pcopy = dec.value.params.copy() | params
-    return update_decision_parameters(dec, pcopy)
+    return DOMAIN.update_decision_parameters(dec, pcopy)
 
 def supply_filter(supplies: list[Supply]):
     return [s for s in supplies if s.type not in SPECIAL_SUPPLIES]
