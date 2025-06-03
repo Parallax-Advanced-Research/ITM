@@ -147,17 +147,6 @@ def isFloat(val: str):
     except ValueError:
         return False    
 
-def flatten(name, valueDict: dict[str, Any]):
-    ret = {}
-    for (key, value) in valueDict.items():
-        if type(value) is not dict:
-            ret[name + "." + key] = value
-        else:
-            for (subkey, subvalue) in flatten(key, value).items():
-                ret[name + "." + subkey] = subvalue
-
-    return ret
-    
 def first(seq : Sequence):
     return seq[0]
     

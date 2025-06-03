@@ -78,7 +78,7 @@ def main():
     for ob in obs_cases:
         if "context" in ob:
             context = ob.pop("context")
-            ob |= case_base_functions.flatten("context", context)
+            ob |= util.flatten("context", context)
         if ob["scene"].startswith("=DryRunEval"):
             ob["scene"] = ob["scene"][12:15] + ":" + ob["scene"].split("=")[2]
         if ob["scene"].startswith("=qol-") or ob["scene"].startswith("=vol-"):

@@ -208,3 +208,14 @@ def _is_different(obj1: Any, obj2: Any) -> bool:
     
     # n.b. casting because the possibility of operator overloading means it isn't guaranteed bool
     return bool(obj1 != obj2) 
+
+def flatten(name, valueDict: dict[str, Any]):
+    ret = {}
+    for (key, value) in valueDict.items():
+        if type(value) is not dict:
+            ret[name + "." + key] = value
+        else:
+            for (subkey, subvalue) in flatten(key, value).items():
+                ret[name + "." + subkey] = subvalue
+
+    return ret

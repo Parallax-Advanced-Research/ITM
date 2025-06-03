@@ -13,6 +13,7 @@ import argparse
 import os
 import glob
 import random
+import util
 
 
 
@@ -70,7 +71,7 @@ def read_pre_cases(case_file: str = exhaustive_selector.CASE_FILE) -> list[dict[
                     # case["context"][key] = case[key]
         if "context" in case:
             context = case.pop("context")
-            case |= flatten("context", context)
+            case |= util.flatten("context", context)
         if "questioning" in case:
             case.pop("questioning")
             case.pop("assessing")
@@ -247,17 +248,6 @@ def input_match(example_case: dict[str, Any], case: dict[str, Any]) -> bool:
         val_list.append(case[key])
     return hash(tuple(val_list))
 
-def flatten(name, valueDict: dict[str, Any]):
-    ret = {}
-    for (key, value) in valueDict.items():
-        if type(value) is not dict:
-            ret[name + "." + key] = value
-        else:
-            for (subkey, subvalue) in flatten(key, value).items():
-                ret[name + "." + subkey] = subvalue
-
-    return ret
-
 def write_kdma_cases_to_csv(fname: str, cases: list[dict[str, Any]], training_data: list[dict[str, Any]], scenario: str = None, target: str = None):
     write_case_base(fname, make_kdma_cases(cases, training_data, scenario, target))
 
@@ -312,7 +302,7 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
             after_feedback_dist = get_kdma_score_distributions(feedbacks)
             before_feedback_dist = get_kdma_score_distributions(before_feedbacks)
             after_feedback_dist.pop("score")
-            new_case = new_case | flatten("feedback", after_feedback_dist)
+            new_case = new_case | util.flatten("feedback", after_feedback_dist)
             if before_feedback_dist["count"] > after_feedback_dist["count"]:
                 dfeedback = {key:subtract_dict(value, before_feedback_dist[key]) 
                               for (key, value) in after_feedback_dist.items() 
@@ -321,7 +311,7 @@ def make_kdma_cases(cases: list[dict[str, Any]], training_data: list[dict[str, A
                               {"count":before_feedback_dist["count"] - after_feedback_dist["count"]}
                 if dfeedback["count"] == 0:
                     breakpoint()
-                new_case = new_case | flatten("feedback_delta", dfeedback)
+                new_case = new_case | util.flatten("feedback_delta", dfeedback)
         hint_names = get_hint_types(case_list)
         for hint_name in hint_names:
             vals = set([case.get("hint", {}).get(hint_name, None) for case in case_list]) - {None}
@@ -496,7 +486,7 @@ def write_alignment_target_cases_to_csv(fname: str, training_data: list[dict[str
         case["target"] = datum["feedback"]["target"]
         case["score"] = datum["feedback"]["score"]
         case["final"] = datum["final"]
-        case = case | flatten("kdma", datum["feedback"]["kdmas"])
+        case = case | util.flatten("kdma", datum["feedback"]["kdmas"])
         score_cases.append(case)
     write_case_base(fname, score_cases)
     
