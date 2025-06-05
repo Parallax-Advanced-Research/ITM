@@ -8,10 +8,15 @@ from typing import Any, Sequence, Callable
 from domain.internal import Scenario, TADProbe, KDMA, AlignmentTarget, AlignmentTargetType, \
                             Decision, Action, State, Explanation, Domain
 from components import DecisionSelector, DecisionAnalyzer, Assessor
-from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
-from components.decision_analyzer.event_based_diagnosis import EventBasedDiagnosisAnalyzer
-from components.decision_analyzer.bayesian_network import BayesNetDiagnosisAnalyzer
-from components.decision_analyzer.heuristic_rule_analysis import HeuristicRuleAnalyzer
+
+try:
+    from components.decision_analyzer.monte_carlo import MonteCarloAnalyzer
+    MONTE_CARLO_AVAILABLE = True
+except ImportError:
+    MonteCarloAnalyzer = None
+    MONTE_CARLO_AVAILABLE = False
+
+
 from .case_base_functions import *
 from alignment import kde_similarity
 from . import kdma_estimation

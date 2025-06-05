@@ -7,7 +7,7 @@ import sys
 import uuid
 from pydantic.tools import parse_obj_as
 from runner.ingestion import Ingestor, BBNIngestor, SOARIngestor
-from runner import MVPDriver, TA3Driver, TA3Client
+from runner import get_mvp_driver, get_ta3_driver, get_ta3_client
 from components.decision_selector.mvp_cbr import Case
 from domain import Scenario
 from domain.internal import AlignmentTarget, AlignmentTargetType
@@ -128,7 +128,9 @@ def api_test(args, driver = None):
         logger.setLevel(LogLevel.INFO)
     
     if driver is None:
+        TA3Driver = get_ta3_driver()
         driver = TA3Driver(args)
+    TA3Client = get_ta3_client()
     client = TA3Client(args.endpoint, parse_kdmas(args.kdmas), args.eval_targets, args.scenario, args.connect_to_ta1)
     if args.training:
         if args.connect_to_ta1:

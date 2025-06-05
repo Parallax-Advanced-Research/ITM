@@ -1,6 +1,12 @@
 from typing import Any
-import swagger_client as ta3
 from alignment import kde_similarity
+
+try:
+    import swagger_client as ta3
+    SWAGGER_CLIENT_AVAILABLE = True
+except ImportError:
+    ta3 = None
+    SWAGGER_CLIENT_AVAILABLE = False
 
 class AlignmentTargetType(object):
     SCALAR = 'scalar'
@@ -25,7 +31,10 @@ class AlignmentTarget:
 def make_empty_alignment_target() -> AlignmentTarget:
     return AlignmentTarget("Empty", [], {}, None)
 
-def from_ta3(at: ta3.AlignmentTarget):
+def from_ta3(at):
+    if not SWAGGER_CLIENT_AVAILABLE:
+        raise ImportError("swagger_client is not available. Cannot use from_ta3 function.")
+    
     values = {}
     type = None
     if at.kdma_values[0].kdes is not None:
@@ -35,7 +44,7 @@ def from_ta3(at: ta3.AlignmentTarget):
         values = {kv.kdma:kv.value for kv in at.kdma_values}
         type = AlignmentTargetType.SCALAR
     else:
-        raise Error("Did not understand AlignmentTarget.")
+        raise ValueError("Did not understand AlignmentTarget.")
     return AlignmentTarget(
         at.id, 
         [kv.kdma for kv in at.kdma_values], 
