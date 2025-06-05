@@ -4,6 +4,11 @@ from . import triage_constants
 
 from components import AlignmentTrainer
 from domain.internal import AlignmentFeedback, Scenario, TADProbe, KDMA, KDMAs, AlignmentTarget, Decision, Action, State
+# Import domain-specific probe types if available
+try:
+    from domain.ta3.ta3_state import TADTriageProbe
+except ImportError:
+    TADTriageProbe = None
 from typing import Any, Sequence, Callable
 import util
 import os
@@ -13,7 +18,9 @@ import random
 from scripts.shared import parse_default_arguments
 import argparse
 
-from .weight_trainer import WeightTrainer, CaseModeller, XGBModeller, KEDSModeller, KEDSWithXGBModeller
+from .weight_trainer import WeightTrainer, CaseModeller, XGBModeller, KEDSModeller, KEDSWithXGBModeller, make_approval_data_frame
+from .simple_weight_trainer import SimpleWeightTrainer
+from .triage_constants import BASIC_TRIAGE_CASE_TYPES
 
 KDMA_NAME = "approval"
 
@@ -41,6 +48,87 @@ class Critic:
             return -2, best_action
 
 
+class InsuranceCritic(Critic):
+    def __init__(self, name: str, kdma_type: str, target: float):
+        self.kdma_type = kdma_type.lower()  # "risk" or "choice"
+        # Store the continuous target value
+        super().__init__(name, target, kdma_type)
+    
+    def map_kdma_value(self, string_value):
+        """Convert string KDMA values to continuous scale (0.0 to 1.0)"""
+        if isinstance(string_value, (int, float)):
+            return float(string_value)
+        
+        mapping = {
+            "high": 0.8,    # High but not maximum
+            "low": 0.2,     # Low but not minimum  
+            "medium": 0.5,  # Middle value
+            "very_high": 1.0,
+            "very_low": 0.0
+        }
+        return mapping.get(str(string_value).lower(), 0.5)
+    
+    def can_evaluate(self, probe: TADProbe) -> bool:
+        """Check if this critic can evaluate the given probe"""
+        return (hasattr(probe, 'state') and 
+                hasattr(probe.state, 'kdma') and 
+                probe.state.kdma and
+                probe.state.kdma.lower() == self.kdma_type)
+    
+    def approval(self, probe: TADProbe, decision: Decision) -> (int, Decision):
+        if not self.can_evaluate(probe):
+            return None, None  # Skip this critic
+            
+        # Get the actual KDMA value from the decision
+        kdma_map = decision.kdmas.kdma_map if hasattr(decision, 'kdmas') and decision.kdmas else decision.kdma_map
+        if not kdma_map or self.kdma_type not in kdma_map:
+            return None, None
+            
+        actual_value = kdma_map[self.kdma_type]
+        
+        # Convert to continuous numeric values
+        actual_numeric = self.map_kdma_value(actual_value)
+        preferred_numeric = self.target
+        
+        # Find the best decision according to this critic
+        best_decision = None
+        best_dist = float('inf')
+        
+        for d in probe.decisions:
+            d_kdma_map = d.kdmas.kdma_map if hasattr(d, 'kdmas') and d.kdmas else d.kdma_map
+            if d_kdma_map and self.kdma_type in d_kdma_map:
+                d_value = d_kdma_map[self.kdma_type]
+                d_numeric = self.map_kdma_value(d_value)
+                dist = abs(preferred_numeric - d_numeric)
+                if dist < best_dist:
+                    best_dist = dist
+                    best_decision = d
+        
+        # Calculate continuous approval score
+        chosen_dist = abs(preferred_numeric - actual_numeric)
+        
+        # Convert distance to approval using continuous scale
+        approval_score = self.calculate_approval_score(chosen_dist)
+        
+        return approval_score, best_decision if approval_score < 1 else None
+    
+    def calculate_approval_score(self, distance: float) -> int:
+        """Convert continuous distance to discrete approval score [-2, -1, 1]"""
+        # Normalize distance (max possible distance is 1.0)
+        normalized_distance = min(distance, 1.0)
+        
+        # Calculate continuous approval (1.0 = perfect, 0.0 = worst)
+        continuous_approval = 1.0 - normalized_distance
+        
+        # Convert to discrete scale matching original system
+        if continuous_approval >= 0.8:
+            return 1    # Close to preference (within 20% of range)
+        elif continuous_approval >= 0.4:
+            return -1   # Somewhat off (20-60% of range)
+        else:
+            return -2   # Way off (>60% of range)
+
+
 class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
     def __init__(self, args = None):
         super().__init__(args)
@@ -49,11 +137,14 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.experiences: list[dict] = []
         self.approval_experiences: list[dict] = []
         self.last_feedbacks = []
+        self.last_approval = None
+        self.last_kdma_value = None
         self.error = 10000
         self.uniform_error = 10000
         self.basic_error = 10000
         self.best_model = None
         self.weight_source = None
+        self.weight_settings = {}
         # This sub random will be unaffected by other calls to the global, but still based on the 
         # same global random seed, and therefore repeatable.
         self.critic_random = random.Random(util.get_global_random_generator().random())
@@ -65,7 +156,9 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.estimate_with_discount = False
         self.dir_name = "local/default"
         self.arg_name = ""
+        self.kdma_values = {}
         self.all_fields = set()
+        self.is_training = False
 
         if args is not None: 
             self.init_with_args(args)
@@ -73,9 +166,35 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             self.initialize_critics()
         
     def init_with_args(self, args):
-        if len(args.kdmas) != 1:
-            raise Error("Expected exactly one KDMA.")
-        self.arg_name = args.kdmas[0].replace("-", "=").split("=")[0]
+        # Domain-agnostic KDMA parsing
+        if args.kdmas is None or len(args.kdmas) == 0:
+            # No KDMAs provided - use defaults
+            self.arg_name = ""
+            self.kdma_values = {}
+        elif len(args.kdmas) == 1:
+            # Single KDMA system (medical triage)
+            kdma_str = args.kdmas[0].replace("-", "=")
+            parts = kdma_str.split("=")
+            self.arg_name = parts[0]
+            self.kdma_values = {self.arg_name: float(parts[1]) if len(parts) > 1 else 1.0}
+        elif len(args.kdmas) == 2:
+            # Dual KDMA system (insurance)
+            self.kdma_values = {}
+            for kdma in args.kdmas:
+                parts = kdma.replace("-", "=").split("=")
+                kdma_name = parts[0]
+                kdma_value = float(parts[1]) if len(parts) > 1 else 0.0
+                self.kdma_values[kdma_name] = kdma_value
+            
+            # Create combined arg_name for insurance domain
+            if "risk" in self.kdma_values and "choice" in self.kdma_values:
+                self.arg_name = f"risk{int(self.kdma_values['risk'])}_choice{int(self.kdma_values['choice'])}"
+            else:
+                # Fallback: use first KDMA name
+                self.arg_name = list(self.kdma_values.keys())[0]
+        else:
+            raise Exception(f"Expected 0, 1, or 2 KDMAs, got {len(args.kdmas)}")
+            
         self.initialize_critics()
         if args.critic is not None:
             self.critics = [c for c in self.critics if c.name == args.critic]
@@ -88,10 +207,26 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.dir_name = "local/" + args.exp_name 
         
     def initialize_critics(self):
-        self.critics = [Critic("Alex", 1, self.arg_name), 
-                        Critic("Brie", 0.5, self.arg_name), 
-                        Critic("Chad", 0, self.arg_name)]
+        if self.is_insurance_domain():
+            # Insurance critics: 2 risk + 2 choice critics
+            self.critics = [
+                InsuranceCritic("RiskHigh", "risk", 0.8),      # Prefers high risk
+                InsuranceCritic("RiskLow", "risk", 0.2),       # Prefers low risk
+                InsuranceCritic("ChoiceHigh", "choice", 0.8),  # Prefers high choice
+                InsuranceCritic("ChoiceLow", "choice", 0.2),   # Prefers low choice
+            ]
+        else:
+            # Medical triage critics
+            self.critics = [Critic("Alex", 1, self.arg_name), 
+                            Critic("Brie", 0.5, self.arg_name), 
+                            Critic("Chad", 0, self.arg_name)]
         self.current_critic = self.critic_random.choice(self.critics)
+    
+    def is_insurance_domain(self) -> bool:
+        """Detect if we're in insurance domain based on KDMA values"""
+        return (hasattr(self, 'kdma_values') and 
+                self.kdma_values and 
+                ('risk' in self.kdma_values or 'choice' in self.kdma_values))
     
     def copy_from(self, other_seeker):
         super().copy_from(other_seeker)
@@ -99,7 +234,10 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.experiences = other_seeker.experiences
         self.approval_experiences = other_seeker.approval_experiences
         self.last_feedbacks = other_seeker.last_feedbacks
+        self.last_approval = other_seeker.last_approval
+        self.last_kdma_value = other_seeker.last_kdma_value
         self.arg_name = other_seeker.arg_name
+        self.kdma_values = other_seeker.kdma_values
         self.critics = other_seeker.critics
         self.train_weights = other_seeker.train_weights
         self.error = other_seeker.error
@@ -109,16 +247,19 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.learning_style = other_seeker.learning_style
         self.search_style = other_seeker.search_style
         self.best_model = other_seeker.best_model
+        self.weight_source = other_seeker.weight_source
+        self.weight_settings = other_seeker.weight_settings
         self.critic_random = other_seeker.critic_random
         self.current_critic = other_seeker.current_critic
         self.reveal_kdma = other_seeker.reveal_kdma
         self.estimate_with_discount = other_seeker.estimate_with_discount
         self.dir_name = other_seeker.dir_name
-        self.all_fields = all_fields
+        self.all_fields = other_seeker.all_fields
+        self.is_training = other_seeker.is_training
     
     
     def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
-        if len(self.experiences) == 0 and self.is_training:
+        if len(self.experiences) == 0 and self.is_training and (TADTriageProbe is None or isinstance(probe, TADTriageProbe)):
             self.current_critic = self.critic_random.choice(self.critics)
         
         if self.selection_style == 'xgboost' and self.best_model is not None:
@@ -145,7 +286,13 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             if self.reveal_kdma:
                 (decision, dist) = super().select(scenario, probe, self.current_critic.kdma_obj)
             else:
-                (decision, dist) = super().select(scenario, probe, self.kdma_obj)
+                # Use the alignment target passed from the driver if available
+                # This allows external control of the target (e.g., for insurance domain)
+                if target is not None and hasattr(target, 'values') and target.values:
+                    (decision, dist) = super().select(scenario, probe, target)
+                else:
+                    # Fallback to internal kdma_obj for backward compatibility
+                    (decision, dist) = super().select(scenario, probe, self.kdma_obj)
         else:
             (decision, dist) = (util.get_global_random_generator().choice(probe.decisions), 1)
 
@@ -156,9 +303,37 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
 
         if decision.kdmas is None or decision.kdmas.kdma_map is None:
             return (decision, dist)
+        # Handle insurance critics that might not be able to evaluate this probe
+        if hasattr(self.current_critic, 'can_evaluate') and not self.current_critic.can_evaluate(probe):
+            # Skip critics that can't evaluate this probe type
+            relevant_critics = [c for c in self.critics if hasattr(c, 'can_evaluate') and c.can_evaluate(probe)]
+            if relevant_critics:
+                self.current_critic = relevant_critics[0]  # Use first relevant critic
+            # If no relevant critics, fall back to current critic
+        
         (approval, best_decision) = self.current_critic.approval(probe, decision)
         self.last_approval = approval
-        self.last_kdma_value = decision.kdmas.kdma_map[self.arg_name]
+        
+        # Extract KDMA value flexibly
+        kdma_map = decision.kdmas.kdma_map
+        if self.arg_name in kdma_map:
+            # Direct match with arg_name
+            self.last_kdma_value = kdma_map[self.arg_name]
+        elif len(kdma_map) == 1:
+            # Single KDMA - use the only value
+            self.last_kdma_value = list(kdma_map.values())[0]
+        else:
+            # Multiple KDMAs - try to match based on probe state if available
+            if hasattr(probe, 'state') and hasattr(probe.state, 'kdma') and probe.state.kdma:
+                current_kdma_name = probe.state.kdma.lower()
+                if current_kdma_name in kdma_map:
+                    self.last_kdma_value = kdma_map[current_kdma_name]
+                else:
+                    # Fallback to first value
+                    self.last_kdma_value = list(kdma_map.values())[0]
+            else:
+                # Fallback to first value
+                self.last_kdma_value = list(kdma_map.values())[0]
 
         if self.selection_style == 'random':
             return (decision, dist)
@@ -313,5 +488,11 @@ def copy_seeker(old_seeker: OnlineApprovalSeeker) -> float:
 def get_ddist(decision: Decision, arg_name: str, target: float) -> float:
     if decision.kdmas is None or decision.kdmas.kdma_map is None:
         return 10000
-    return abs(target - list(decision.kdmas.kdma_map.values())[0])
+    kdma_map = decision.kdmas.kdma_map
+    # Try to find the specific KDMA by name, otherwise use the first value
+    if arg_name in kdma_map:
+        value = kdma_map[arg_name]
+    else:
+        value = list(kdma_map.values())[0]
+    return abs(target - value)
     

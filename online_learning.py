@@ -1,7 +1,20 @@
-from scripts.shared import get_default_parser
-from runner import TA3Driver
+from scripts.shared import get_default_parser, get_insurance_parser
 from components.decision_selector import OnlineApprovalSeeker
 from components.decision_selector.kdma_estimation import write_case_base, read_case_base
+from domain.internal import Domain
+
+# Import drivers with proper fallbacks
+try:
+    from runner.ta3_driver import TA3Driver
+except ImportError:
+    TA3Driver = None
+
+try:
+    from runner import InsuranceDriver
+    INSURANCE_SUPPORT = True
+except ImportError:
+    InsuranceDriver = None
+    INSURANCE_SUPPORT = False
 
 import tad
 
@@ -12,26 +25,39 @@ import os
 import sys
 import time
 import json
+import pandas as pd
+
+def create_insurance_scenario_ids(train_csv_path, test_csv_path, batch_size=1):
+    """Create scenario IDs from insurance CSV data with configurable batch size."""
+    train_scenario_ids = []
+    test_scenario_ids = []
+    
+    # Read CSV files if they exist
+    if os.path.exists(train_csv_path):
+        train_df = pd.read_csv(train_csv_path)
+        num_train_batches = (len(train_df) + batch_size - 1) // batch_size  # Ceiling division
+        train_scenario_ids = [f"insurance-train-batch-{i+1}" for i in range(num_train_batches)]
+    
+    if os.path.exists(test_csv_path):
+        test_df = pd.read_csv(test_csv_path)
+        num_test_batches = (len(test_df) + batch_size - 1) // batch_size  # Ceiling division
+        test_scenario_ids = [f"insurance-test-batch-{i+1}" for i in range(num_test_batches)]
+    
+    return train_scenario_ids, test_scenario_ids
 
 def main():
-    parser = get_default_parser()
-    parser.add_argument('--critic', type=str, help="Critic to learn on", default=None, choices=["Alex", "Brie", "Chad"])
-    parser.add_argument('--train_weights', action=argparse.BooleanOptionalAction, default=False, help="Train weights online.")
-    parser.add_argument('--selection_style', type=str, help="xgboost/case-based", default="case-based", choices=["case-based", "xgboost", "random"])
-    parser.add_argument('--search_style', type=str, help="Choices are xgboost/greedy/drop_only; applies if selection_style == case-based only", default="xgboost", choices=["greedy", "xgboost", "drop_only"])
-    parser.add_argument('--learning_style', type=str, help="Choices are classification and regression; applies if selection_style == xgboost or search_style == xgboost", default="classification", choices=["classification", "regression"])
-    parser.add_argument('--restart_entries', type=int, help="How many examples from the prior case base to use.", default=None)
-    parser.add_argument('--restart_pid', type=int, help="PID to restart work from", default=None)
-    parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
-    parser.add_argument('--estimate_with_discount', action=argparse.BooleanOptionalAction, default=False, help="Attempt to estimate discounted feedback as well as direct.")
-#    parser.add_argument('--exp_name', type=str, default="default", help="Name for experiment.")
-    parser.add_argument('--exp_file', type=str, default=None, help="File detailing training, testing scenarios.")
+    # Use the insurance parser which already includes all arguments from default parser
+    parser = get_insurance_parser()
     args = parser.parse_args()
     args.training = True
     args.keds = False
     args.verbose = False
     args.dump = False
     args.uniformweight = True
+    
+    # Add domain object for insurance
+    if args.session_type == "insurance":
+        args.domain = Domain()
     
     if args.seed is not None:
         util.set_global_random_seed(args.seed)
@@ -51,7 +77,8 @@ def main():
     adept_port = util.find_environment("ADEPT_PORT", 8081)
     soartech_port = util.find_environment("SOARTECH_PORT", 8084) 
     
-    if args.endpoint is None:
+    # Skip port checking for insurance domain
+    if args.endpoint is None and args.session_type != "insurance":
         if not util.is_port_open(ta3_port):
             print("TA3 server not listening. Shutting down.")
             sys.exit(-1)
@@ -64,9 +91,13 @@ def main():
             print("Soartech server not listening. Shutting down.")
             sys.exit(-1)
     print(f"PID = {os.getpid()}")
-    print(f"TA3_PORT = {ta3_port}")
-    print(f"ADEPT_PORT = {adept_port}")
-    print(f"SOARTECH_PORT = {soartech_port}")
+    
+    # Only print port info for medical triage domains that need server connections
+    if args.session_type != "insurance":
+        print(f"TA3_PORT = {ta3_port}")
+        print(f"ADEPT_PORT = {adept_port}")
+        print(f"SOARTECH_PORT = {soartech_port}")
+    
     for (key, value) in vars(args).items():
         print(f"Argument {key} = {value}")
         
@@ -96,14 +127,24 @@ def main():
         util.get_global_random_generator().shuffle(train_scenario_ids)
     
     if test_scenario_ids is None:
-        fnames = glob.glob(f".deprepos/itm-evaluation-server/swagger_server/itm/data/online/scenarios/online-{args.session_type}*.yaml")
-        if len(fnames) == 0:
-            print("No online scenarios found.")
-            sys.exit(-1)
-        scenario_ids = [f"{args.session_type}-{i}" for i in range(1, len(fnames) + 1)]
-        util.get_global_random_generator().shuffle(scenario_ids)
-        test_scenario_ids = scenario_ids[:10]
-        train_scenario_ids = scenario_ids[10:]
+        if args.session_type == "insurance":
+            # For insurance domain, create scenarios from CSV data
+            train_scenario_ids, test_scenario_ids = create_insurance_scenario_ids(
+                args.train_csv, args.test_csv, args.batch_size
+            )
+            if not train_scenario_ids and not test_scenario_ids:
+                print(f"No insurance CSV data found at {args.train_csv} or {args.test_csv}")
+                sys.exit(-1)
+        else:
+            # For medical triage domain, use YAML files
+            fnames = glob.glob(f".deprepos/itm-evaluation-server/swagger_server/itm/data/online/scenarios/online-{args.session_type}*.yaml")
+            if len(fnames) == 0:
+                print("No online scenarios found.")
+                sys.exit(-1)
+            scenario_ids = [f"{args.session_type}-{i}" for i in range(1, len(fnames) + 1)]
+            util.get_global_random_generator().shuffle(scenario_ids)
+            test_scenario_ids = scenario_ids[:10]
+            train_scenario_ids = scenario_ids[10:]
 
         
     # if args.restart_entries is not None:
@@ -115,11 +156,16 @@ def main():
     results = []
     do_output(args, [{},{}])
     examples = 0
-    driver = TA3Driver(args)
+    
+    # Select appropriate driver based on session type
+    if args.session_type == "insurance" and INSURANCE_SUPPORT:
+        driver = InsuranceDriver(args)
+    else:
+        driver = TA3Driver(args)
     driver.trainer = seeker
     seeker.start_testing()
     do_testing(test_scenario_ids, args, driver, seeker, results, examples)
-    for train_id in train_scenario_ids:
+    for i, train_id in enumerate(train_scenario_ids):
         seeker.start_training()
         args.scenario = train_id
         execution_time = run_tad(args, driver)
@@ -129,26 +175,57 @@ def main():
         weight_training_time = time.process_time() - start
         results.append(make_row("training", train_id, examples, seeker, execution_time, weight_training_time))
         do_output(args, results)
-        do_testing(test_scenario_ids, args, driver, seeker, results, examples)
+        
+        # Test periodically based on test_interval
+        test_interval = getattr(args, 'test_interval', 1)  # Default to testing after every example
+        if (examples % test_interval) == 0:
+            if test_interval > 1:
+                print(f"\n*** Running tests after {examples} training examples ***")
+            do_testing(test_scenario_ids, args, driver, seeker, results, examples)
     do_output(args, results)
 
 def do_output(args, results):
     write_case_base(f"local/{args.exp_name}/online_results-{args.seed}.csv", results, vars(args))
 
 def do_testing(test_scenario_ids, args, driver, seeker, results, examples):
-    for test_id in test_scenario_ids:
+    # Handle batch size for insurance domain
+    if args.session_type == "insurance" and hasattr(args, 'batch_size') and args.batch_size == 1 and test_scenario_ids:
+        # Just pick the first scenario ID for testing when batch size is 1
+        test_ids_to_use = [test_scenario_ids[0]]
+    else:
+        test_ids_to_use = test_scenario_ids
+    
+    for test_id in test_ids_to_use:
         args.scenario = test_id
         for critic in seeker.critics:
             seeker.set_critic(critic)
             execution_time = run_tad(args, driver)
-            results.append(make_row("testing", test_id, examples, seeker, execution_time, 0))
+            row = make_row("testing", test_id, examples, seeker, execution_time, 0)
+            results.append(row)
+            
+            # Optional detailed output for debugging
+            if args.verbose or args.session_type == "insurance":
+                print(f"\n{'='*60}")
+                print(f"TEST RESULTS - Examples trained: {examples}")
+                print(f"{'='*60}")
+                print(f"Scenario: {test_id}")
+                print(f"Critic: {critic.name} (target: {critic.target})")
+                print(f"Approval: {seeker.last_approval}")
+                print(f"Error: {seeker.error:.4f}")
+                print(f"Case base size: {len(seeker.cb)}")
+                print(f"Execution time: {execution_time:.3f}s")
+                print(f"{'='*60}\n")
 
 
 def run_tad(args, driver):
     driver.actions_performed = []
     driver.treatments = {}
     start = time.process_time()
-    tad.api_test(args, driver)
+    # Use the appropriate TAD function based on session type
+    if args.session_type == "insurance":
+        tad.insurance_test(args, driver)
+    else:
+        tad.api_test(args, driver)
     execution_time = time.process_time() - start
     return execution_time
 

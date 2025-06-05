@@ -5,6 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Test Unified Online Learning - Insurance Simple",
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "online_learning.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": [
+                "--session_type", "insurance",
+                "--train_csv", "data/insurance/train-50-50.csv",
+                "--test_csv", "data/insurance/test-50-50.csv",
+                "--batch_size", "1",
+                "--exp_name", "unified_insurance_test",
+                "--seed", "42",
+                "--no-train_weights",
+                "--selection_style", "random",
+                "--search_style", "xgboost", 
+                "--learning_style", "classification",
+                "--verbose"
+            ]
+        },
+        {
             "name": "Insurance Online Learning - Single Probe",
             "type": "debugpy", 
             "request": "launch",
@@ -22,6 +43,44 @@
                 "--selection_style", "random",
                 "--search_style", "xgboost", 
                 "--learning_style", "classification",
+                "--verbose"
+            ]
+        },
+        {
+            "name": "Test Unified - Medical Triage (Original)",
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "online_learning.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": [
+                "--session_type", "adept",
+                "--exp_name", "unified_medical_test",
+                "--seed", "42",
+                "--kdma", "MoralDesert=0.5",
+                "--no-train_weights",
+                "--selection_style", "random",
+                "--verbose"
+            ]
+        },
+        {
+            "name": "Test Unified - Insurance Critics Only",
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "online_learning.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": [
+                "--session_type", "insurance",
+                "--train_csv", "data/insurance/train-50-50.csv",
+                "--test_csv", "data/insurance/test-50-50.csv",
+                "--batch_size", "2",
+                "--exp_name", "unified_critics_test",
+                "--seed", "42",
+                "--kdma", "risk=0.5",
+                "--no-train_weights",
+                "--selection_style", "case-based",
+                "--test_interval", "2",
                 "--verbose"
             ]
         },
