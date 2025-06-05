@@ -81,6 +81,45 @@ class Decision(BaseModel):
             _dict['value'] = self.value.to_dict()
         return _dict
 
+    @property
+    def kdma_map(self) -> dict:
+        """Create a kdma_map interface compatible with internal Decision format"""
+        kdma_map = {}
+        if self.kdmas:
+            for kdma_dict in self.kdmas:
+                if isinstance(kdma_dict, dict):
+                    kdma_map.update(kdma_dict)
+        return kdma_map
+
+    def get_features(self) -> dict:
+        """Extract features from the decision for case-based reasoning"""
+        features = {}
+        
+        # Add basic decision info
+        if self.id_:
+            features['decision_id'] = self.id_
+        if self.favors_choice is not None:
+            features['favors_choice'] = self.favors_choice
+        if self.favors_risk is not None:
+            features['favors_risk'] = self.favors_risk
+            
+        # Add decision value info
+        if self.value:
+            if hasattr(self.value, 'name') and self.value.name:
+                features['action_type'] = self.value.name
+            else:
+                features['action_type'] = 'unknown'
+        else:
+            features['action_type'] = 'unknown'
+                
+        # Add metrics if available
+        if self.metrics:
+            for metric_name, metric in self.metrics.items():
+                if metric and hasattr(metric, 'value') and metric.value is not None:
+                    features[f'metric_{metric_name}'] = metric.value
+                    
+        return features
+
     @classmethod
     def from_dict(cls, obj: dict) -> Decision:
         """Create an instance of Decision from a dict"""

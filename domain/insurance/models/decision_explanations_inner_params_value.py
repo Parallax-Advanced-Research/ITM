@@ -41,7 +41,7 @@ class DecisionExplanationsInnerParamsValue(BaseModel):
         actual_instance: Union[Dict[str, object], bool, float, str]
     else:
         actual_instance: Any
-    one_of_schemas: List[str] = Field(DECISIONEXPLANATIONSINNERPARAMSVALUE_ONE_OF_SCHEMAS, const=True)
+    one_of_schemas: List[str] = Field(default=DECISIONEXPLANATIONSINNERPARAMSVALUE_ONE_OF_SCHEMAS)
 
     class Config:
         validate_assignment = True

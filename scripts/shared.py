@@ -161,3 +161,45 @@ def get_default_parser() -> argparse.ArgumentParser:
     
     return parser
 
+def get_insurance_parser():
+    """Get the default parser with insurance-specific defaults and additional arguments."""
+    parser = get_default_parser()
+    
+    # Override defaults for insurance use
+    parser.set_defaults(
+        bayes=False,  # Override from True
+        br=False,     # Override from True
+        bypass_server_check=True,  # Override from False
+        selector='keds',  # Override from 'random'
+        verbose=False,    # Override from True
+        dump=False,       # Override from True
+        exp_name='default',
+        session_type='insurance',
+        domain_package='domain.insurance.models',  # Set insurance domain
+        domain_class_name='Domain'  # Or whatever the insurance domain class is called
+    )
+    
+    # Modify session_type to include insurance
+    for action in parser._actions:
+        if action.dest == 'session_type':
+            action.choices = ["soartech", "adept", "eval", "insurance"]
+            break
+    
+    # Add insurance-specific arguments
+    parser.add_argument('--critic', type=str, help="Critic to learn on", default=None, choices=["Alex", "Brie", "Chad"])
+    parser.add_argument('--train_weights', action=argparse.BooleanOptionalAction, default=False, help="Train weights online.")
+    parser.add_argument('--selection_style', type=str, help="xgboost/case-based", default="case-based", choices=["case-based", "xgboost", "random"])
+    parser.add_argument('--search_style', type=str, help="Choices are xgboost/greedy/drop_only; applies if selection_style == case-based only", default="xgboost", choices=["greedy", "xgboost", "drop_only"])
+    parser.add_argument('--learning_style', type=str, help="Choices are classification and regression; applies if selection_style == xgboost or search_style == xgboost", default="classification", choices=["classification", "regression"])
+    parser.add_argument('--restart_entries', type=int, help="How many examples from the prior case base to use.", default=None)
+    parser.add_argument('--restart_pid', type=int, help="PID to restart work from", default=None)
+    parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
+    parser.add_argument('--estimate_with_discount', action=argparse.BooleanOptionalAction, default=False, help="Attempt to estimate discounted feedback as well as direct.")
+    parser.add_argument('--exp_file', type=str, default=None, help="File detailing training, testing scenarios.")
+    parser.add_argument('--batch_size', type=int, default=1, help="Number of insurance probes to group into each scenario batch (default 1)")
+    parser.add_argument('--train_csv', type=str, default="data/insurance/train_set.csv", help="Path to training CSV file for insurance domain")
+    parser.add_argument('--test_csv', type=str, default="data/insurance/test_set.csv", help="Path to test CSV file for insurance domain")
+    parser.add_argument('--test_interval', type=int, default=100, help="Number of training examples between test evaluations (default 100)")
+    
+    return parser
+

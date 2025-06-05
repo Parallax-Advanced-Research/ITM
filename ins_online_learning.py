@@ -1,7 +1,14 @@
-from scripts.shared import get_default_parser
-from runner import InsuranceDriver
+from scripts.shared import get_insurance_parser
+try:
+    from runner import InsuranceDriver
+except ImportError as e:
+    print(f"Import error with InsuranceDriver: {e}")
+    # Fall back to a basic driver if needed
+    InsuranceDriver = None
+    
 from components.decision_selector.kdma_estimation.insurance_online_approval_seeker import InsuranceOnlineApprovalSeeker
 from components.decision_selector.kdma_estimation.case_base_functions import write_case_base, read_case_base
+from domain.internal import Domain
 
 import tad
 
@@ -12,21 +19,33 @@ import os
 import sys
 import time
 import json
+import pandas as pd
+
+def create_insurance_scenario_ids(train_csv_path, test_csv_path, batch_size=1):
+    """Create scenario IDs from insurance CSV data with configurable batch size."""
+    train_scenario_ids = []
+    test_scenario_ids = []
+    
+    # Read CSV files if they exist
+    if os.path.exists(train_csv_path):
+        train_df = pd.read_csv(train_csv_path)
+        num_train_batches = (len(train_df) + batch_size - 1) // batch_size  # Ceiling division
+        train_scenario_ids = [f"insurance-train-batch-{i+1}" for i in range(num_train_batches)]
+    
+    if os.path.exists(test_csv_path):
+        test_df = pd.read_csv(test_csv_path)
+        num_test_batches = (len(test_df) + batch_size - 1) // batch_size  # Ceiling division
+        test_scenario_ids = [f"insurance-test-batch-{i+1}" for i in range(num_test_batches)]
+    
+    return train_scenario_ids, test_scenario_ids
 
 def main():
-    parser = get_default_parser()
-    parser.add_argument('--critic', type=str, help="Critic to learn on", default=None, choices=["Alex", "Brie", "Chad"])
-    parser.add_argument('--train_weights', action=argparse.BooleanOptionalAction, default=False, help="Train weights online.")
-    parser.add_argument('--selection_style', type=str, help="xgboost/case-based", default="case-based", choices=["case-based", "xgboost", "random"])
-    parser.add_argument('--search_style', type=str, help="Choices are xgboost/greedy/drop_only; applies if selection_style == case-based only", default="xgboost", choices=["greedy", "xgboost", "drop_only"])
-    parser.add_argument('--learning_style', type=str, help="Choices are classification and regression; applies if selection_style == xgboost or search_style == xgboost", default="classification", choices=["classification", "regression"])
-    parser.add_argument('--restart_entries', type=int, help="How many examples from the prior case base to use.", default=None)
-    parser.add_argument('--restart_pid', type=int, help="PID to restart work from", default=None)
-    parser.add_argument('--reveal_kdma', action=argparse.BooleanOptionalAction, default=False, help="Give KDMA as feedback.")
-    parser.add_argument('--estimate_with_discount', action=argparse.BooleanOptionalAction, default=False, help="Attempt to estimate discounted feedback as well as direct.")
-#    parser.add_argument('--exp_name', type=str, default="default", help="Name for experiment.")
-    parser.add_argument('--exp_file', type=str, default=None, help="File detailing training, testing scenarios.")
+    parser = get_insurance_parser()
     args = parser.parse_args()
+    
+    # Create domain object directly
+    args.domain = Domain()    
+    # Set specific values
     args.training = True
     args.keds = False
     args.verbose = False
@@ -39,51 +58,42 @@ def main():
         args.seed = util.get_global_random_seed()
 
     if args.restart_pid is not None:
-        prior_results = f"local/{args.exp_name}/online_results-{args.restart_pid}.csv"
-        args = read_args(args, prior_results)
+        #TODO: We don't have prior results yet
+        # prior_results = f"local/{args.exp_name}/online_results-{args.restart_pid}.csv"
+        # args = read_args(args, prior_results)
         args.case_file = f"online-experiences-{args.restart_pid}.csv"
-
-    if args.session_type == "eval":
-        print('You must specify one of "adept" or "soartech" as session type at command line.')
-        sys.exit(-1)
-        
-    ta3_port = util.find_environment("TA3_PORT", 8080)
-    adept_port = util.find_environment("ADEPT_PORT", 8081)
-    soartech_port = util.find_environment("SOARTECH_PORT", 8084) 
-    
-    if args.endpoint is None:
-        if not util.is_port_open(ta3_port):
-            print("TA3 server not listening. Shutting down.")
-            sys.exit(-1)
-            
-        if args.session_type in ["adept", "eval"] and not util.is_port_open(adept_port):
-            print("ADEPT server not listening. Shutting down.")
-            sys.exit(-1)
-            
-        if args.session_type in ["soartech", "eval"] and not util.is_port_open(soartech_port):
-            print("Soartech server not listening. Shutting down.")
-            sys.exit(-1)
-    print(f"PID = {os.getpid()}")
-    print(f"TA3_PORT = {ta3_port}")
-    print(f"ADEPT_PORT = {adept_port}")
-    print(f"SOARTECH_PORT = {soartech_port}")
-    for (key, value) in vars(args).items():
-        print(f"Argument {key} = {value}")
+           
         
     dir = f"local/{args.exp_name}"
     if not os.path.exists(dir):
         os.makedirs(dir)
-        
-        
-        
+                       
     seeker = InsuranceOnlineApprovalSeeker(args)
-    # if args.case_file is not None:
-        # seeker.cb = read_case_base(args.case_file)
-        # seeker.approval_experiences = [case for case in seeker.cb if integerish(case["approval"])]
-        # if args.restart_entries is not None:
-            # seeker.approval_experiences = seeker.approval_experiences[:entries]
-            # last_index = seeker.approval_experiences[-1]["index"]
-            # seeker.cb = [case for case in seeker.cb if case["index"] < last_index]
+    
+    # Load case base if case_file is specified or if in test mode (no training)
+    # Skip for insurance domain - we'll build it dynamically
+    if args.session_type != "insurance" and (args.case_file is not None or not args.training):
+        case_file_to_use = args.case_file if args.case_file is not None else args.train_csv
+        print(f"Loading case base from: {case_file_to_use}")
+        
+        try:
+            seeker.cb = read_case_base(case_file_to_use)
+            print(f"Loaded {len(seeker.cb)} cases from case base")
+            
+            # For insurance domain, we might need to adjust this filter
+            # seeker.approval_experiences = [case for case in seeker.cb if "approval" in case]
+            seeker.approval_experiences = seeker.cb  # Use all cases for now
+            
+            if args.restart_entries is not None:
+                seeker.approval_experiences = seeker.approval_experiences[:args.restart_entries]
+                print(f"Limited to {len(seeker.approval_experiences)} cases")
+                
+        except Exception as e:
+            print(f"Warning: Could not load case base from {case_file_to_use}: {e}")
+            print("Proceeding without case base")
+    elif args.session_type == "insurance":
+        print("Insurance domain: Will build case base dynamically from CSV data")
+    
     args.selector_object = seeker
 
     test_scenario_ids = None
@@ -96,59 +106,102 @@ def main():
         util.get_global_random_generator().shuffle(train_scenario_ids)
     
     if test_scenario_ids is None:
-        fnames = glob.glob(f".deprepos/itm-evaluation-server/swagger_server/itm/data/online/scenarios/online-{args.session_type}*.yaml")
-        if len(fnames) == 0:
-            print("No online scenarios found.")
-            sys.exit(-1)
-        scenario_ids = [f"{args.session_type}-{i}" for i in range(1, len(fnames) + 1)]
-        util.get_global_random_generator().shuffle(scenario_ids)
-        test_scenario_ids = scenario_ids[:10]
-        train_scenario_ids = scenario_ids[10:]
-
+        if args.session_type == "insurance":
+            # For insurance domain, create scenarios from CSV data
+            train_scenario_ids, test_scenario_ids = create_insurance_scenario_ids(
+                args.train_csv, args.test_csv, args.batch_size
+            )
+            
+            if not train_scenario_ids and not test_scenario_ids:
+                print(f"No insurance CSV data found at {args.train_csv} or {args.test_csv}")
+                sys.exit(-1)
+                
+            # Shuffle the scenario IDs
+            util.get_global_random_generator().shuffle(train_scenario_ids)
+            util.get_global_random_generator().shuffle(test_scenario_ids)
+            
+            print(f"Generated {len(train_scenario_ids)} training scenarios and {len(test_scenario_ids)} test scenarios with batch size {args.batch_size}")
+            
+        
         
     # if args.restart_entries is not None:
         # train_scenario_ids = train_scenario_ids[len(seeker.approval_experiences):]
     
-    args.ta3_port = ta3_port
     args.pid = os.getpid()
 
     results = []
     do_output(args, [{},{}])
     examples = 0
+             
     driver = InsuranceDriver(args)
     driver.trainer = seeker
     seeker.start_testing()
     do_testing(test_scenario_ids, args, driver, seeker, results, examples)
-    for train_id in train_scenario_ids:
-        seeker.start_training()
-        args.scenario = train_id
-        execution_time = run_tad(args, driver)
-        examples += 1
-        start = time.process_time()
-        seeker.start_testing()
-        weight_training_time = time.process_time() - start
-        results.append(make_row("training", train_id, examples, seeker, execution_time, weight_training_time))
-        do_output(args, results)
-        do_testing(test_scenario_ids, args, driver, seeker, results, examples)
+    
+    if not args.training:
+        print("Test mode: Skipping training, only running testing scenarios.")
+    else:
+        # Full training loop - process all training scenarios
+        for i, train_id in enumerate(train_scenario_ids):
+            seeker.start_training()
+            args.scenario = train_id
+            execution_time = run_tad(args, driver)
+            examples += 1
+            start = time.process_time()
+            seeker.start_testing()
+            weight_training_time = time.process_time() - start
+            results.append(make_row("training", train_id, examples, seeker, execution_time, weight_training_time))
+            do_output(args, results)
+            
+            # Test every test_interval examples
+            if (examples % args.test_interval) == 0:
+                print(f"\n*** Running tests after {examples} training examples ***")
+                do_testing(test_scenario_ids, args, driver, seeker, results, examples)
+    
     do_output(args, results)
 
 def do_output(args, results):
     write_case_base(f"local/{args.exp_name}/online_results-{args.seed}.csv", results, vars(args))
 
 def do_testing(test_scenario_ids, args, driver, seeker, results, examples):
-    for test_id in test_scenario_ids:
+    # If batch size is 1, only test with one scenario ID. Otherwise, use all.
+    if args.batch_size == 1 and test_scenario_ids:
+        # Just pick the first scenario ID for testing when batch size is 1
+        test_ids_to_use = [test_scenario_ids[0]]
+    else:
+        # Use all test scenario IDs for larger batch sizes
+        test_ids_to_use = test_scenario_ids
+    
+    for test_id in test_ids_to_use:
         args.scenario = test_id
         for critic in seeker.critics:
             seeker.set_critic(critic)
             execution_time = run_tad(args, driver)
-            results.append(make_row("testing", test_id, examples, seeker, execution_time, 0))
+            row = make_row("testing", test_id, examples, seeker, execution_time, 0)
+            results.append(row)
+            
+            # Print detailed test results
+            print(f"\n{'='*60}")
+            print(f"TEST RESULTS - Examples trained: {examples}")
+            print(f"{'='*60}")
+            print(f"Scenario: {test_id}")
+            print(f"Critic: {critic.name} (target: {critic.target})")
+            print(f"Approval: {seeker.last_approval}")
+            print(f"Error: {seeker.error:.4f}")
+            print(f"Uniform error: {seeker.uniform_error:.4f}")
+            print(f"Basic error: {seeker.basic_error:.4f}")
+            print(f"Case base size: {len(seeker.cb)}")
+            print(f"Approval experiences: {len(seeker.approval_experiences)}")
+            print(f"Weight source: {seeker.weight_source}")
+            print(f"Execution time: {execution_time:.3f}s")
+            print(f"{'='*60}\n")
 
 
 def run_tad(args, driver):
     driver.actions_performed = []
     driver.treatments = {}
     start = time.process_time()
-    tad.api_test(args, driver)
+    tad.insurance_test(args, driver)
     execution_time = time.process_time() - start
     return execution_time
 

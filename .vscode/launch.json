@@ -5,12 +5,71 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Insurance Online Learning",
+            "name": "Insurance Online Learning - Single Probe",
             "type": "debugpy", 
             "request": "launch",
             "program": "ins_online_learning.py",
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}/venv/bin/python"
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": [
+                "--session_type", "insurance",
+                "--train_csv", "data/insurance/train-50-50.csv",
+                "--test_csv", "data/insurance/test-50-50.csv",
+                "--batch_size", "1",
+                "--exp_name", "insurance_single_probe_test",
+                "--seed", "42",
+                "--no-train_weights",
+                "--selection_style", "random",
+                "--search_style", "xgboost", 
+                "--learning_style", "classification",
+                "--verbose"
+            ]
+        },
+        {
+            "name": "Insurance Test Mode Only",
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "ins_online_learning.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": [
+                "--session_type", "insurance",
+                "--train_csv", "data/insurance/train-50-50.csv", 
+                "--test_csv", "data/insurance/test-50-50.csv",
+                "--batch_size", "1",
+                "--exp_name", "insurance_test_only",
+                "--seed", "42",
+                "--no-training",
+                "--verbose"
+            ]
+        },
+        {
+            "name": "Insurance Quick Test - 2 Training + 1 Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "test_limited.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": []
+        },
+        {
+            "name": "Insurance Mini Training - 5 Examples",
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "ins_online_learning.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": [
+                "--session_type", "insurance",
+                "--train_csv", "data/insurance/train-50-50.csv",
+                "--test_csv", "data/insurance/test-50-50.csv",
+                "--batch_size", "1",
+                "--exp_name", "insurance_mini_test",
+                "--seed", "42",
+                "--no-train_weights",
+                "--selection_style", "random",
+                "--test_interval", "5"
+            ]
         },
         {
             "name": "Test Insurance",

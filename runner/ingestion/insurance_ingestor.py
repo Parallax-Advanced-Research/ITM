@@ -7,8 +7,8 @@ from domain.insurance.models.insurance_state import InsuranceState
 from domain.insurance.models.insurance_scenario import InsuranceScenario
 from domain.insurance.models.decision import Decision as InsuranceDecision
 from domain.insurance.models.decision_value import DecisionValue
+from domain.internal.kdmas import KDMA, KDMAs
 from pydantic.tools import parse_obj_as
-import numpy as np
 from .ingestor import Ingestor
 
 class InsuranceIngestor(Ingestor):  # Extend Ingestor
@@ -31,14 +31,8 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                     if network_status not in ['TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND']:
                         network_status = 'GENERIC'  # Default value if not valid
 
-                    # Convert kdma_value to float or int
-                    kdma_value = line.get('kdma_value')
-
-                    # no idea what this is doing since the kdma_value is low or high
-                    # try:
-                    #     kdma_value = float(kdma_value) if '.' in kdma_value else int(kdma_value)
-                    # except ValueError:
-                    #     kdma_value = None
+                    # Keep kdma_value as string for InsuranceState (it expects StrictStr)
+                    kdma_value = line.get('kdma_value', '').strip()
 
                     state = parse_obj_as(InsuranceState, {
                         "children_under_4": int(line.get('children_under_4', 0)),
@@ -68,19 +62,39 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         prompt=line.get('probe')
                     )
 
-                    # Check for the existence of the 'action' column and assign decision if it exists
-                    if 'action' in line:
+                    # Get the action from either 'action' or 'action_type' column
+                    action_value = line.get('action_type') or line.get('action', '')
+                    
+                    if action_value:
                         decision = InsuranceDecision(
                             id_=f'decision_{row_num}_{uuid.uuid4()}',
-                            value=DecisionValue(name=line.get('action'))
+                            value=DecisionValue(name=action_value)
                         )
                         probe.decisions = [decision]
                     else:
+                        # If no action column, create a default decision
                         decision = InsuranceDecision(
                             id_=str(uuid.uuid4()),
-                            value=DecisionValue(name=str(int(np.mean(
-                                [probe.state.val1, probe.state.val2, probe.state.val3, probe.state.val4])))))
+                            value=DecisionValue(name="unknown")
+                        )
                         probe.decisions = [decision]
+                    
+                    # Attach KDMA value to decision based on probe's target KDMA value
+                    if hasattr(probe.state, 'kdma') and probe.state.kdma and hasattr(probe.state, 'kdma_value'):
+                        kdma_name = probe.state.kdma.lower()  # 'RISK' -> 'risk'
+                        kdma_target = probe.state.kdma_value.lower()  # 'low' -> 'low'
+                        
+                        # Convert probe's target KDMA value to numeric
+                        # The decision should reflect the probe's target, not the action's characteristics
+                        if kdma_target == 'low':
+                            kdma_value = 0.0
+                        elif kdma_target == 'high':
+                            kdma_value = 1.0
+                        else:
+                            kdma_value = 0.5  # Default for unknown values
+                        
+                        # Attach KDMA to the insurance decision
+                        decision.kdmas = [{kdma_name: kdma_value}]
 
                     probes.append(probe)
 

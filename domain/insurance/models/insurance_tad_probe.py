@@ -85,6 +85,28 @@ class InsuranceTADProbe(BaseModel):
             _dict['state'] = self.state.to_dict()
         return _dict
 
+    def get_features(self) -> dict:
+        """Extract features from the probe for decision making"""
+        features = {}
+        
+        # Add basic probe info
+        if self.id_:
+            features['probe_id'] = self.id_
+        if self.prompt:
+            features['probe'] = self.prompt
+        if self.probe_type:
+            features['probe_type'] = self.probe_type
+            
+        # Add all state features if we have state
+        if self.state:
+            state_dict = self.state.to_dict()
+            # Include all the insurance state features
+            for key, value in state_dict.items():
+                if value is not None:
+                    features[key] = value
+                    
+        return features
+
     @classmethod
     def from_dict(cls, obj: dict) -> InsuranceTADProbe:
         """Create an instance of InsuranceTADProbe from a dict"""

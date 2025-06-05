@@ -25,9 +25,8 @@ from . import triage_constants
 _default_weight_file = os.path.join("data", "keds_weights.json")
 _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")
 _default_kdma_case_file = os.path.join("data", "kdma_cases.csv")
-_default_drexel_case_file = os.path.join(
-    "data", "sept", "extended_case_base.csv")
-
+_default_drexel_case_file = os.path.join("data", "sept", "extended_case_base.csv")
+_default_insurance_case_file = os.path.join("data","insurance", "data/insurance/train-50-50.csv")
 
 class KDMACountLikelihood:
     kdma_count: dict[float, int]
@@ -114,7 +113,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         self.record_considered_decisions = args.record_considered_decisions
         self.cb, self.fields = read_case_base_with_headers(args.case_file)
         for case in self.cb:
-            case["index"] = str(case["index"])
+            # Handle both "index" and "probe_id" column names
+            if "probe_id" in case and "index" not in case:
+                case["index"] = str(case["probe_id"])
+            elif "index" in case:
+                case["index"] = str(case["index"])
         self.variant: str = args.variant
         self.print_neighbors = args.decision_verbose
         self.insert_pauses = args.insert_pauses

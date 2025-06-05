@@ -13,7 +13,9 @@ import random
 from scripts.shared import parse_default_arguments
 import argparse
 
-from .weight_trainer import WeightTrainer, CaseModeller, XGBModeller, KEDSModeller, KEDSWithXGBModeller
+from .weight_trainer import WeightTrainer, CaseModeller, XGBModeller, KEDSModeller, KEDSWithXGBModeller, make_approval_data_frame
+from .simple_weight_trainer import SimpleWeightTrainer
+from .triage_constants import BASIC_TRIAGE_CASE_TYPES
 
 KDMA_NAME = "approval"
 
@@ -49,11 +51,14 @@ class InsuranceOnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTra
         self.experiences: list[dict] = []
         self.approval_experiences: list[dict] = []
         self.last_feedbacks = []
+        self.last_approval = None
+        self.last_kdma_value = None
         self.error = 10000
         self.uniform_error = 10000
         self.basic_error = 10000
         self.best_model = None
         self.weight_source = None
+        self.weight_settings = {}
         # This sub random will be unaffected by other calls to the global, but still based on the 
         # same global random seed, and therefore repeatable.
         self.critic_random = random.Random(util.get_global_random_generator().random())
@@ -66,16 +71,38 @@ class InsuranceOnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTra
         self.dir_name = "local/default"
         self.arg_name = ""
         self.all_fields = set()
+        self.is_training = False
 
         if args is not None: 
             self.init_with_args(args)
         else:
             self.initialize_critics()
+            
         
     def init_with_args(self, args):
-        if len(args.kdmas) != 1:
-            raise Error("Expected exactly one KDMA.")
-        self.arg_name = args.kdmas[0].replace("-", "=").split("=")[0]
+        if args.kdmas is None or len(args.kdmas) == 0:
+            # Default KDMAs if none provided
+            self.risk_value = 0
+            self.choice_value = 1
+        elif len(args.kdmas) == 2:
+            # Parse the two KDMAs for risk and choice
+            kdma_dict = {}
+            for kdma in args.kdmas:
+                parts = kdma.replace("-", "=").split("=")
+                kdma_name = parts[0]
+                kdma_value = int(parts[1]) if len(parts) > 1 else 0
+                kdma_dict[kdma_name] = kdma_value
+            
+            if "risk" not in kdma_dict or "choice" not in kdma_dict:
+                raise Exception("Expected KDMAs named 'risk' and 'choice'")
+            
+            self.risk_value = kdma_dict["risk"]
+            self.choice_value = kdma_dict["choice"]
+            # Create a combined representation
+            self.arg_name = f"risk{self.risk_value}_choice{self.choice_value}"
+        else:
+            raise Exception("Expected either no KDMAs or exactly two KDMAs (risk and choice)")
+            
         self.initialize_critics()
         if args.critic is not None:
             self.critics = [c for c in self.critics if c.name == args.critic]
@@ -145,7 +172,8 @@ class InsuranceOnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTra
             if self.reveal_kdma:
                 (decision, dist) = super().select(scenario, probe, self.current_critic.kdma_obj)
             else:
-                (decision, dist) = super().select(scenario, probe, self.kdma_obj)
+                # Use the alignment target passed from the driver, not the internal kdma_obj
+                (decision, dist) = super().select(scenario, probe, target)
         else:
             (decision, dist) = (util.get_global_random_generator().choice(probe.decisions), 1)
 
@@ -154,11 +182,22 @@ class InsuranceOnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTra
             self.experiences.append(cur_case)
             self.add_fields(cur_case.keys())
 
-        if decision.kdmas is None or decision.kdmas.kdma_map is None:
+        if decision.kdmas is None or decision.kdma_map is None:
             return (decision, dist)
         (approval, best_decision) = self.current_critic.approval(probe, decision)
         self.last_approval = approval
-        self.last_kdma_value = decision.kdmas.kdma_map[self.arg_name]
+        
+        # Get the KDMA name from the current probe instead of using self.arg_name
+        current_kdma_name = None
+        if hasattr(probe, 'state') and hasattr(probe.state, 'kdma') and probe.state.kdma:
+            current_kdma_name = probe.state.kdma.lower()
+        
+        # Extract the KDMA value for the current probe's KDMA type
+        if current_kdma_name and current_kdma_name in decision.kdma_map:
+            self.last_kdma_value = decision.kdma_map[current_kdma_name]
+        else:
+            # Fallback: use the first available KDMA value
+            self.last_kdma_value = list(decision.kdma_map.values())[0] if decision.kdma_map else None
 
         if self.selection_style == 'random':
             return (decision, dist)
@@ -311,7 +350,7 @@ def copy_seeker(old_seeker: InsuranceOnlineApprovalSeeker) -> float:
     return seeker
         
 def get_ddist(decision: Decision, arg_name: str, target: float) -> float:
-    if decision.kdmas is None or decision.kdmas.kdma_map is None:
+    if decision.kdmas is None or decision.kdma_map is None:
         return 10000
-    return abs(target - list(decision.kdmas.kdma_map.values())[0])
+    return abs(target - list(decision.kdma_map.values())[0])
     

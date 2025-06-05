@@ -120,6 +120,28 @@ def ltest(args):
     logger.info(f"Results file output to: {outf}")
 
 
+def insurance_test(args, driver):
+    """Simple test function for insurance domain that delegates to InsuranceDriver."""
+    if args.verbose:
+        logger.setLevel(VERBOSE_LEVEL)
+    else:
+        logger.setLevel(LogLevel.INFO)
+    
+    # Set up a minimal scenario for insurance
+    from domain.internal import Scenario
+    scenario = Scenario(id_=args.scenario or "insurance-scenario", state={})
+    
+    logger.info(f"Starting Insurance Test - Scenario: {scenario.id_}")
+    driver.set_scenario(scenario)
+    
+    # Delegate insurance-specific logic to the InsuranceDriver
+    if hasattr(driver, 'run_insurance_session'):
+        driver.run_insurance_session(args)
+    else:
+        logger.warning("Driver does not support insurance sessions")
+    
+    logger.info(f"Insurance Test Complete")
+
 def api_test(args, driver = None):
     args.domain = triage.TriageDomain()
     if args.verbose:
