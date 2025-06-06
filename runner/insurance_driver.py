@@ -50,11 +50,15 @@ class InsuranceDriver:
         from domain.insurance.conversion_utils import create_insurance_alignment_target
         from util import logger
         
-        # Determine which CSV file to use based on scenario and training mode
+        # Determine which CSV file to use based on arguments or defaults
         if args.training:
-            csv_file = "train_set.csv"  # Use the properly formatted training file
+            csv_file = getattr(args, 'train_csv', 'train_set.csv')  # Use custom or default training file
         else:
-            csv_file = "test_set.csv"   # Use the properly formatted test file
+            csv_file = getattr(args, 'test_csv', 'test_set.csv')   # Use custom or default test file
+            
+        # Extract just the filename from full path if provided
+        if '/' in csv_file:
+            csv_file = csv_file.split('/')[-1]
             
         # Create ingestor and generate probes
         ingestor = InsuranceIngestor("data/insurance")
@@ -103,13 +107,20 @@ class InsuranceDriver:
                 self.set_alignment_target(alignment_target)
                 
                 # This triggers the decision-making and sets last_approval/last_kdma_value
-                decision = self.decide(probe)
-                
-                if decision:
-                    decision_info = format_decision_info(decision)
-                    logger.info(f"{decision_info}")
-                else:
-                    logger.info("No decision made")
+                try:
+                    decision = self.decide(probe)
+                    
+                    if decision:
+                        decision_info = format_decision_info(decision)
+                        logger.info(f"{decision_info}")
+                    else:
+                        logger.info("No decision made")
+                except Exception as decision_error:
+                    import traceback
+                    logger.error(f"Error during decision-making for probe {probe.id_}: {decision_error}")
+                    logger.error(f"Probe state: kdma={getattr(probe.state, 'kdma', 'N/A')}, kdma_value={getattr(probe.state, 'kdma_value', 'N/A')}")
+                    logger.error(f"Full traceback:\n{traceback.format_exc()}")
+                    # Continue with other probes instead of failing entirely
                     
         except Exception as e:
             logger.warning(f"Could not generate probes from {csv_file}: {e}")

@@ -79,8 +79,8 @@ class InsuranceCritic(Critic):
         if not self.can_evaluate(probe):
             return None, None  # Skip this critic
             
-        # Get the actual KDMA value from the decision
-        kdma_map = decision.kdmas.kdma_map if hasattr(decision, 'kdmas') and decision.kdmas else decision.kdma_map
+        # Get the actual KDMA value from the decision using the kdma_map property
+        kdma_map = decision.kdma_map if hasattr(decision, 'kdma_map') else {}
         if not kdma_map or self.kdma_type not in kdma_map:
             return None, None
             
@@ -95,7 +95,7 @@ class InsuranceCritic(Critic):
         best_dist = float('inf')
         
         for d in probe.decisions:
-            d_kdma_map = d.kdmas.kdma_map if hasattr(d, 'kdmas') and d.kdmas else d.kdma_map
+            d_kdma_map = d.kdma_map if hasattr(d, 'kdma_map') else {}
             if d_kdma_map and self.kdma_type in d_kdma_map:
                 d_value = d_kdma_map[self.kdma_type]
                 d_numeric = self.map_kdma_value(d_value)
@@ -169,7 +169,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         # Store session type for domain detection
         self.session_type = getattr(args, 'session_type', None)
         
-        # Domain-agnostic KDMA parsing
+        # KDMA parsing (handles both single and dual KDMA systems)
         if args.kdmas is None or len(args.kdmas) == 0:
             # No KDMAs provided - use defaults
             self.arg_name = ""
@@ -189,12 +189,8 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                 kdma_value = float(parts[1]) if len(parts) > 1 else 0.0
                 self.kdma_values[kdma_name] = kdma_value
             
-            # Create combined arg_name for insurance domain
-            if "risk" in self.kdma_values and "choice" in self.kdma_values:
-                self.arg_name = f"risk{int(self.kdma_values['risk'])}_choice{int(self.kdma_values['choice'])}"
-            else:
-                # Fallback: use first KDMA name
-                self.arg_name = list(self.kdma_values.keys())[0]
+            # For dual KDMA, arg_name is flexible (will be set based on probe context)
+            self.arg_name = "risk"  # Default, but will be updated dynamically
         else:
             raise Exception(f"Expected 0, 1, or 2 KDMAs, got {len(args.kdmas)}")
             
@@ -238,6 +234,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         return (hasattr(self, 'session_type') and 
                 self.session_type == 'insurance')
     
+    
     def copy_from(self, other_seeker):
         super().copy_from(other_seeker)
         self.cb = other_seeker.cb
@@ -269,6 +266,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
     
     
     def select(self, scenario: Scenario, probe: TADProbe, target: AlignmentTarget) -> (Decision, float):
+        
         if len(self.experiences) == 0 and self.is_training and (TADTriageProbe is None or isinstance(probe, TADTriageProbe)):
             self.current_critic = self.critic_random.choice(self.critics)
         
@@ -304,6 +302,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                     # Fallback to internal kdma_obj for backward compatibility
                     (decision, dist) = super().select(scenario, probe, self.kdma_obj)
         else:
+            print(f"DEBUG: Using random selection")
             (decision, dist) = (util.get_global_random_generator().choice(probe.decisions), 1)
 
         if self.is_training and self.selection_style != 'random':
@@ -311,38 +310,69 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             self.experiences.append(cur_case)
             self.add_fields(cur_case.keys())
 
-        if decision.kdmas is None or decision.kdmas.kdma_map is None:
+        # Standard KDMA access (works for both domains now)
+        kdma_map = decision.kdmas.kdma_map if hasattr(decision, 'kdmas') and hasattr(decision.kdmas, 'kdma_map') else {}
+        if hasattr(decision, 'kdma_map') and not kdma_map:
+            kdma_map = decision.kdma_map
+                
+        if not kdma_map:
             return (decision, dist)
+        
         # Handle insurance critics that might not be able to evaluate this probe
-        if hasattr(self.current_critic, 'can_evaluate') and not self.current_critic.can_evaluate(probe):
-            # Skip critics that can't evaluate this probe type
+        if self.is_insurance_domain() and hasattr(self.current_critic, 'can_evaluate') and not self.current_critic.can_evaluate(probe):
+            # Find critics that can evaluate this probe type
             relevant_critics = [c for c in self.critics if hasattr(c, 'can_evaluate') and c.can_evaluate(probe)]
             if relevant_critics:
-                self.current_critic = relevant_critics[0]  # Use first relevant critic
-            # If no relevant critics, fall back to current critic
+                # For insurance domain, pick appropriate critic based on KDMA value
+                if hasattr(probe, 'state') and hasattr(probe.state, 'kdma_value'):
+                    kdma_value = probe.state.kdma_value.lower()
+                    if kdma_value == 'low':
+                        # Use low preference critic for this KDMA type
+                        low_critics = [c for c in relevant_critics if 'Low' in c.name]
+                        self.current_critic = low_critics[0] if low_critics else relevant_critics[0]
+                    elif kdma_value == 'high':
+                        # Use high preference critic for this KDMA type
+                        high_critics = [c for c in relevant_critics if 'High' in c.name]
+                        self.current_critic = high_critics[0] if high_critics else relevant_critics[0]
+                    else:
+                        self.current_critic = relevant_critics[0]
+                else:
+                    self.current_critic = relevant_critics[0]
         
         (approval, best_decision) = self.current_critic.approval(probe, decision)
+        
+        # Skip debug logging for approval evaluation in production runs
+            
         self.last_approval = approval
         
-        # Extract KDMA value flexibly
-        kdma_map = decision.kdmas.kdma_map
-        if self.arg_name in kdma_map:
-            # Direct match with arg_name
-            self.last_kdma_value = kdma_map[self.arg_name]
-        elif len(kdma_map) == 1:
-            # Single KDMA - use the only value
-            self.last_kdma_value = list(kdma_map.values())[0]
-        else:
-            # Multiple KDMAs - try to match based on probe state if available
-            if hasattr(probe, 'state') and hasattr(probe.state, 'kdma') and probe.state.kdma:
-                current_kdma_name = probe.state.kdma.lower()
-                if current_kdma_name in kdma_map:
-                    self.last_kdma_value = kdma_map[current_kdma_name]
-                else:
-                    # Fallback to first value
-                    self.last_kdma_value = list(kdma_map.values())[0]
+        # KDMA value extraction (handles both single and dual KDMA systems)
+        if len(self.kdma_values) == 2:
+            # Dual KDMA system (insurance) - extract based on what's in the decision
+            if len(kdma_map) == 1:
+                # Decision has one KDMA - use it and update arg_name for this probe
+                kdma_name = list(kdma_map.keys())[0]
+                self.last_kdma_value = kdma_map[kdma_name]
+                self.arg_name = kdma_name  # Update arg_name to match this probe's KDMA
             else:
-                # Fallback to first value
+                # Multiple KDMAs in decision - use probe state to determine which one
+                if hasattr(probe, 'state') and hasattr(probe.state, 'kdma') and probe.state.kdma:
+                    current_kdma_name = probe.state.kdma.lower()
+                    if current_kdma_name in kdma_map:
+                        self.last_kdma_value = kdma_map[current_kdma_name]
+                        self.arg_name = current_kdma_name
+                    else:
+                        self.last_kdma_value = list(kdma_map.values())[0]
+                        self.arg_name = list(kdma_map.keys())[0]
+                else:
+                    self.last_kdma_value = list(kdma_map.values())[0]
+                    self.arg_name = list(kdma_map.keys())[0]
+        else:
+            # Single KDMA system (medical) - use arg_name
+            if self.arg_name in kdma_map:
+                self.last_kdma_value = kdma_map[self.arg_name]
+            elif len(kdma_map) == 1:
+                self.last_kdma_value = list(kdma_map.values())[0]
+            else:
                 self.last_kdma_value = list(kdma_map.values())[0]
 
         if self.selection_style == 'random':
@@ -360,7 +390,8 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             if best_decision is not None:
                 self.experiences.append(self.make_case(probe, best_decision))
                 if self.reveal_kdma:
-                    self.experiences[-1][KDMA_NAME] = best_decision.kdmas.kdma_map[self.arg_name]
+                    best_kdma_map = best_decision.kdma_map if hasattr(best_decision, 'kdma_map') else {}
+                    self.experiences[-1][KDMA_NAME] = best_kdma_map.get(self.arg_name, 0)
                 else:
                     self.experiences[-1][KDMA_NAME] = 1
                 self.approval_experiences.append(self.experiences[-1])
@@ -496,9 +527,20 @@ def copy_seeker(old_seeker: OnlineApprovalSeeker) -> float:
     return seeker
         
 def get_ddist(decision: Decision, arg_name: str, target: float) -> float:
-    if decision.kdmas is None or decision.kdmas.kdma_map is None:
+    if decision.kdmas is None:
         return 10000
-    kdma_map = decision.kdmas.kdma_map
+    
+    # Handle both KDMAs object and direct kdma_map access
+    if hasattr(decision.kdmas, 'kdma_map'):
+        kdma_map = decision.kdmas.kdma_map
+    elif hasattr(decision, 'kdma_map'):
+        kdma_map = decision.kdma_map  
+    else:
+        return 10000
+        
+    if not kdma_map:
+        return 10000
+        
     # Try to find the specific KDMA by name, otherwise use the first value
     if arg_name in kdma_map:
         value = kdma_map[arg_name]

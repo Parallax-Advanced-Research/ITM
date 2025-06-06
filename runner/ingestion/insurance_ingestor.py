@@ -7,7 +7,8 @@ from domain.insurance.models.insurance_state import InsuranceState
 from domain.insurance.models.insurance_scenario import InsuranceScenario
 from domain.insurance.models.decision import Decision as InsuranceDecision
 from domain.insurance.models.decision_value import DecisionValue
-from domain.internal.kdmas import KDMA, KDMAs
+# Import KDMA classes to match medical domain structure
+from domain.internal import KDMA, KDMAs
 from pydantic.tools import parse_obj_as
 from .ingestor import Ingestor
 
@@ -22,8 +23,17 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
         scen = InsuranceScenario(id_=ext_scen.id_, state=state)
 
         probes = []
-        for raw_csv in [f for f in os.listdir(self.data_dir) if f == file_name]:
-            with open(f'{self.data_dir}/{raw_csv}', 'r') as data_file:
+        
+        # Check if file_name is a full path or just a filename
+        if os.path.isabs(file_name) or '/' in file_name:
+            # It's a full path, use it directly
+            csv_files = [file_name] if os.path.exists(file_name) else []
+        else:
+            # It's just a filename, look for it in data_dir
+            csv_files = [os.path.join(self.data_dir, f) for f in os.listdir(self.data_dir) if f == file_name]
+        
+        for csv_file_path in csv_files:
+            with open(csv_file_path, 'r') as data_file:
                 reader = csv.DictReader(data_file)
                 for row_num, line in enumerate(reader):
                     # Ensure network_status is in the proper format
@@ -93,7 +103,7 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         else:
                             kdma_value = 0.5  # Default for unknown values
                         
-                        # Create proper KDMAs object for the decision
+                        # Create KDMAs object to match medical domain structure
                         decision.kdmas = KDMAs([KDMA(id_=kdma_name, value=kdma_value)])
 
                     probes.append(probe)

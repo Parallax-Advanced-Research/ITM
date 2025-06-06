@@ -500,7 +500,16 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                         if cur_decision.kdmas is None:
                             truth = None
                         else:
-                            truth = cur_decision.kdmas.kdma_map.get(kdma_name, None)
+                            print(f"DEBUG: kdma_name={kdma_name}, cur_decision.kdmas type={type(cur_decision.kdmas)}")
+                            if hasattr(cur_decision.kdmas, 'kdma_map'):
+                                print(f"DEBUG: kdma_map keys={list(cur_decision.kdmas.kdma_map.keys())}")
+                                truth = cur_decision.kdmas.kdma_map.get(kdma_name, None)
+                            elif hasattr(cur_decision, 'kdma_map'):
+                                print(f"DEBUG: decision kdma_map keys={list(cur_decision.kdma_map.keys())}")
+                                truth = cur_decision.kdma_map.get(kdma_name, None)
+                            else:
+                                print(f"DEBUG: No kdma_map found on decision or kdmas")
+                                truth = None
                             if target.type == AlignmentTargetType.SCALAR:
                                 if kdma_val_probs == "irrelevant" or len(kdma_val_probs) == 0:
                                     if truth is None:
@@ -529,7 +538,13 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                                     else:
                                         error = 1
                                 else:
-                                    error = 1 - kdma_val_probs.get(cur_decision.kdmas.kdma_map.get(kdma_name, 0), 0)
+                                    if hasattr(cur_decision.kdmas, 'kdma_map'):
+                                        kdma_value = cur_decision.kdmas.kdma_map.get(kdma_name, 0)
+                                    elif hasattr(cur_decision, 'kdma_map'):
+                                        kdma_value = cur_decision.kdma_map.get(kdma_name, 0)
+                                    else:
+                                        kdma_value = 0
+                                    error = 1 - kdma_val_probs.get(kdma_value, 0)
                                 print(
                                     f"{kdma_name} Truth: {truth} Probabilities: {kdma_val_probs} Error: {error}")
                                 self.output_estimates(cur_case, target, cur_decision, kdma_name, truth, kdma_val_probs, error)
@@ -579,13 +594,21 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             write_case_base(fname, new_cases)
 
         if self.record_explanations:
-            explanation = Explanation("kdma_estimation",
-                                      {"best_case": best_case,
-                                       "weights": self.average_kdma_weights[kdma_name.lower()],
-                                       "similar_cases": topK,
-                                       })
+            # Skip explanations for insurance domain due to incompatible formats
+            # TODO: Convert internal Explanation to insurance DecisionExplanationsInner format
+            try:
+                # Get weights with fallback for missing KDMA weights (e.g., insurance domain)
+                weights = self.average_kdma_weights.get(kdma_name.lower(), {})
+                explanation = Explanation("kdma_estimation",
+                                          {"best_case": best_case,
+                                           "weights": weights,
+                                           "similar_cases": topK,
+                                           })
 
-            best_decision.explanations = [explanation]
+                best_decision.explanations = [explanation]
+            except Exception as explanation_error:
+                # Skip explanation recording if it fails (e.g., format incompatibility)
+                pass
 
         if target.type == AlignmentTargetType.KDE and not self.empty_probs(best_kdma_probs):
             self.kdma_choice_history.append(

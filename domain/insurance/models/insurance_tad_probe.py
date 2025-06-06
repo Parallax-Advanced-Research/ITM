@@ -97,6 +97,9 @@ class InsuranceTADProbe(BaseModel):
         if self.probe_type:
             features['probe_type'] = self.probe_type
             
+        # Add scene field for case-based reasoning compatibility
+        features['scene'] = 'insurance'  # All insurance probes belong to the 'insurance' scene
+        
         # Add all state features if we have state
         if self.state:
             state_dict = self.state.to_dict()

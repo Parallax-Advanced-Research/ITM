@@ -18,7 +18,7 @@ import re  # noqa: F401
 import json
 
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field, StrictBool, StrictStr, conlist
 from .decision_explanations_inner import DecisionExplanationsInner
 from .decision_metric import DecisionMetric
@@ -33,7 +33,7 @@ class Decision(BaseModel):
     favors_risk: Optional[StrictBool] = Field(default=None, description="Whether the decision favors risk")
     id_: Optional[StrictStr] = Field(default=None, description="Unique identifier for the decision")
     justifications: Optional[conlist(StrictStr)] = Field(default=None, description="List of justifications for the decision")
-    kdmas: Optional[conlist(Dict[str, Any])] = Field(default=None, description="List of KDMAs associated with the decision")
+    kdmas: Optional[Union[conlist(Dict[str, Any]), Any]] = Field(default=None, description="KDMAs associated with the decision (can be list of dicts or KDMAs object)")
     metrics: Optional[Dict[str, DecisionMetric]] = None
     value: Optional[DecisionValue] = None
     __properties = ["explanations", "favors_choice", "favors_risk", "id_", "justifications", "kdmas", "metrics", "value"]
@@ -86,9 +86,14 @@ class Decision(BaseModel):
         """Create a kdma_map interface compatible with internal Decision format"""
         kdma_map = {}
         if self.kdmas:
-            for kdma_dict in self.kdmas:
-                if isinstance(kdma_dict, dict):
-                    kdma_map.update(kdma_dict)
+            # Handle KDMAs object (medical domain style)
+            if hasattr(self.kdmas, 'kdma_map'):
+                kdma_map = self.kdmas.kdma_map
+            # Handle list of dicts (insurance domain style)
+            elif isinstance(self.kdmas, list):
+                for kdma_dict in self.kdmas:
+                    if isinstance(kdma_dict, dict):
+                        kdma_map.update(kdma_dict)
         return kdma_map
 
     def get_features(self) -> dict:

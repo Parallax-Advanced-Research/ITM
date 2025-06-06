@@ -1,0 +1,9 @@
+probe_id,probe,network_status,expense_type,children_under_4,children_under_12,children_under_18,children_under_26,employment_type,distance_dm_home_to_employer_hq,travel_location_known,owns_rents,no_of_medical_visits_previous_year,percent_family_members_with_chronic_condition,percent_family_members_that_play_sports,val1,val2,val3,val4,action_type,kdma,kdma_value
+1,DEDUCTIBLE,TIER 1 NETWORK,COST IN $,0,0,1,0,Salaried,1919,0,Owns,4,4,5,200,0,1600,600,,RISK,low
+2,DEDUCTIBLE,TIER 1 NETWORK,COST IN $,0,0,0,0,Salaried,4671,1,Rents,7,1,2,600,200,1600,0,,RISK,low
+3,DEDUCTIBLE,TIER 1 NETWORK,COST IN $,1,1,0,0,Bonus,1139,0,Owns,6,6,5,600,0,1600,200,,RISK,low
+1601,DEDUCTIBLE,OUT-OF-NETWORK,COST IN $,1,0,0,1,Salaried,13,0,Rents,4,9,1,500,2500,1000,5000,,CHOICE,low
+1602,DEDUCTIBLE,OUT-OF-NETWORK,COST IN $,0,0,1,0,Salaried,6,0,Owns,4,4,5,2500,5000,1000,500,,CHOICE,low
+401,DEDUCTIBLE,TIER 1 NETWORK,COST IN $,0,0,1,0,Salaried,1919,0,Owns,4,4,5,1600,600,200,0,,RISK,high
+402,DEDUCTIBLE,TIER 1 NETWORK,COST IN $,0,0,0,0,Salaried,4671,1,Rents,7,1,2,1600,600,200,0,,RISK,high
+1801,DEDUCTIBLE,OUT-OF-NETWORK,COST IN $,1,0,0,1,Salaried,13,0,Rents,4,9,1,2500,5000,500,1000,,CHOICE,high

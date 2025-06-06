@@ -55,9 +55,13 @@ def main():
     args.dump = False
     args.uniform_weight = True
     
-    # For insurance domain, don't load medical case file
+    # For insurance domain, don't load medical case file and set appropriate KDMAs
     if args.session_type == "insurance":
         args.case_file = None
+        # Set default KDMA arguments for insurance domain with dual KDMAs
+        if not args.kdmas:
+            # Insurance domain uses both risk and choice KDMAs
+            args.kdmas = ["risk=0.2", "choice=0.2"]  # Default to low preferences for both
     
     # Add domain object for insurance
     if args.session_type == "insurance":
