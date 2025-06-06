@@ -16,6 +16,38 @@
                 "--exp_name", "minimal_test",
                 "--seed", "42"
             ]
+        },
+        {
+            "name": "Test Data Loading - Insurance Batches",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--session_type", "insurance",
+                "--exp_name", "data_loading_test",
+                "--seed", "42",
+                "--batch_size", "5",
+                "--verbose"
+            ]
+        },
+        {
+            "name": "Train and Test Flow - Insurance",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--session_type", "insurance",
+                "--exp_name", "train_test_flow",
+                "--seed", "42",
+                "--batch_size", "3",
+                "--test_interval", "2",
+                "--verbose",
+                "--selection_style", "random"
+            ]
         }
     ]
 }

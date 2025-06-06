@@ -53,7 +53,7 @@ def main():
     args.keds = False
     args.verbose = False
     args.dump = False
-    args.uniformweight = True
+    args.uniform_weight = True
     
     # Add domain object for insurance
     if args.session_type == "insurance":
