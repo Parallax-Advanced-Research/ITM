@@ -55,6 +55,10 @@ def main():
     args.dump = False
     args.uniform_weight = True
     
+    # For insurance domain, don't load medical case file
+    if args.session_type == "insurance":
+        args.case_file = None
+    
     # Add domain object for insurance
     if args.session_type == "insurance":
         args.domain = Domain()
@@ -64,10 +68,11 @@ def main():
     else:
         args.seed = util.get_global_random_seed()
 
-    if args.restart_pid is not None:
-        prior_results = f"local/{args.exp_name}/online_results-{args.restart_pid}.csv"
-        args = read_args(args, prior_results)
-        args.case_file = f"online-experiences-{args.restart_pid}.csv"
+    # TODO: Implement restart functionality
+    # if args.restart_pid is not None:
+    #     prior_results = f"local/{args.exp_name}/online_results-{args.restart_pid}.csv"
+    #     args = read_args(args, prior_results)
+    #     args.case_file = f"online-experiences-{args.restart_pid}.csv"
 
     if args.session_type == "eval":
         print('You must specify one of "adept" or "soartech" as session type at command line.')
@@ -165,15 +170,33 @@ def main():
     driver.trainer = seeker
     seeker.start_testing()
     do_testing(test_scenario_ids, args, driver, seeker, results, examples)
-    for i, train_id in enumerate(train_scenario_ids):
+    for train_id in train_scenario_ids:
         seeker.start_training()
         args.scenario = train_id
-        execution_time = run_tad(args, driver)
+        
+        # Handle training mode based on critic selection
+        if getattr(args, 'critic', 'random') == 'all':
+            # Train on all critics for this scenario
+            total_execution_time = 0
+            for critic in seeker.critics:
+                seeker.set_critic(critic)
+                execution_time = run_tad(args, driver)
+                total_execution_time += execution_time
+                # Record result for each critic during training
+                start = time.process_time()
+                seeker.start_testing()
+                weight_training_time = time.process_time() - start
+                results.append(make_row("training", f"{train_id}-{critic.name}", examples, seeker, execution_time, weight_training_time))
+            execution_time = total_execution_time
+        else:
+            # Single critic training (random or specific)
+            execution_time = run_tad(args, driver)
+            start = time.process_time()
+            seeker.start_testing()
+            weight_training_time = time.process_time() - start
+            results.append(make_row("training", train_id, examples, seeker, execution_time, weight_training_time))
+        
         examples += 1
-        start = time.process_time()
-        seeker.start_testing()
-        weight_training_time = time.process_time() - start
-        results.append(make_row("training", train_id, examples, seeker, execution_time, weight_training_time))
         do_output(args, results)
         
         # Test periodically based on test_interval

@@ -93,8 +93,8 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         else:
                             kdma_value = 0.5  # Default for unknown values
                         
-                        # Attach KDMA to the insurance decision
-                        decision.kdmas = [{kdma_name: kdma_value}]
+                        # Create proper KDMAs object for the decision
+                        decision.kdmas = KDMAs([KDMA(id_=kdma_name, value=kdma_value)])
 
                     probes.append(probe)
 

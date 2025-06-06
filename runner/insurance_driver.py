@@ -52,9 +52,9 @@ class InsuranceDriver:
         
         # Determine which CSV file to use based on scenario and training mode
         if args.training:
-            csv_file = "train-50-50.csv"  # Use the properly formatted training file
+            csv_file = "train_set.csv"  # Use the properly formatted training file
         else:
-            csv_file = "test-50-50.csv"   # Use the properly formatted test file
+            csv_file = "test_set.csv"   # Use the properly formatted test file
             
         # Create ingestor and generate probes
         ingestor = InsuranceIngestor("data/insurance")

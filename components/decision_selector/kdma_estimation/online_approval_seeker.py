@@ -166,6 +166,9 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             self.initialize_critics()
         
     def init_with_args(self, args):
+        # Store session type for domain detection
+        self.session_type = getattr(args, 'session_type', None)
+        
         # Domain-agnostic KDMA parsing
         if args.kdmas is None or len(args.kdmas) == 0:
             # No KDMAs provided - use defaults
@@ -196,8 +199,16 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             raise Exception(f"Expected 0, 1, or 2 KDMAs, got {len(args.kdmas)}")
             
         self.initialize_critics()
-        if args.critic is not None:
-            self.critics = [c for c in self.critics if c.name == args.critic]
+        self.critic_mode = getattr(args, 'critic', 'random')
+        
+        if args.critic is not None and args.critic not in ["random", "all"]:
+            # Filter to specific critic
+            matching_critics = [c for c in self.critics if c.name == args.critic]
+            if matching_critics:
+                self.critics = matching_critics
+            else:
+                print(f"Warning: Critic '{args.critic}' not found. Available critics: {[c.name for c in self.critics]}")
+        # If args.critic is "random", "all", or None, keep all critics available
         self.train_weights = args.train_weights
         self.selection_style = args.selection_style
         self.learning_style = args.learning_style
@@ -223,10 +234,9 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.current_critic = self.critic_random.choice(self.critics)
     
     def is_insurance_domain(self) -> bool:
-        """Detect if we're in insurance domain based on KDMA values"""
-        return (hasattr(self, 'kdma_values') and 
-                self.kdma_values and 
-                ('risk' in self.kdma_values or 'choice' in self.kdma_values))
+        """Detect if we're in insurance domain based on session type"""
+        return (hasattr(self, 'session_type') and 
+                self.session_type == 'insurance')
     
     def copy_from(self, other_seeker):
         super().copy_from(other_seeker)

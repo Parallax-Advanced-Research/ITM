@@ -10,7 +10,7 @@ from domain.internal import AlignmentTarget, AlignmentTargetType
 from .models.insurance_state import InsuranceState
 
 
-def convert_kdma_value(kdma_value_str: str) -> int:
+def convert_kdma_value(kdma_value_str: str) -> float:
     """
     Convert insurance KDMA string value to numeric format.
     
@@ -18,23 +18,23 @@ def convert_kdma_value(kdma_value_str: str) -> int:
         kdma_value_str: String value ("low", "high", or numeric string)
         
     Returns:
-        int: Numeric value (0 for "low", 1 for "high", or parsed number)
+        float: Numeric value (0.0 for "low", 1.0 for "high", or parsed number)
     """
     if kdma_value_str is None:
-        return 0
+        return 0.0  # Default to low
         
     kdma_value_lower = kdma_value_str.lower().strip()
     
     if kdma_value_lower == 'low':
-        return 0
+        return 0.0
     elif kdma_value_lower == 'high':
-        return 1
+        return 1.0
     else:
         # Try to parse as number if it's not low/high
         try:
-            return int(float(kdma_value_str))
+            return float(kdma_value_str)
         except (ValueError, TypeError):
-            return 0  # Default to 0 if we can't parse
+            return 0.0  # Default to low if we can't parse
 
 
 def normalize_kdma_name(kdma_name: str) -> str:

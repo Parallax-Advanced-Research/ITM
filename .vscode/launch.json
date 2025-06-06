@@ -48,6 +48,62 @@
                 "--verbose",
                 "--selection_style", "random"
             ]
+        },
+        {
+            "name": "Test Single Critic - RiskHigh",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--session_type", "insurance",
+                "--exp_name", "single_critic_test",
+                "--seed", "42",
+                "--batch_size", "2",
+                "--test_interval", "1",
+                "--verbose",
+                "--critic", "RiskHigh",
+                "--selection_style", "case-based"
+            ]
+        },
+        {
+            "name": "Train on All Critics - Insurance",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--session_type", "insurance",
+                "--exp_name", "all_critics_test",
+                "--seed", "42",
+                "--batch_size", "2",
+                "--test_interval", "1",
+                "--verbose",
+                "--critic", "all",
+                "--selection_style", "case-based"
+            ]
+        },
+        {
+            "name": "Small Dataset Test - Insurance",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--session_type", "insurance",
+                "--exp_name", "small_test",
+                "--seed", "42",
+                "--batch_size", "2",
+                "--test_interval", "1",
+                "--verbose",
+                "--train_csv", "data/insurance/train_small.csv",
+                "--test_csv", "data/insurance/test_small.csv",
+                "--critic", "random",
+                "--selection_style", "case-based"
+            ]
         }
     ]
 }

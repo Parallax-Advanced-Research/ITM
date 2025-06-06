@@ -102,16 +102,27 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
 
     def initialize_with_args(self, args):
         self.use_drexel_format = args.selector == 'kedsd'
-        if args.case_file is None:
-            if self.use_drexel_format:
-                args.case_file = _default_drexel_case_file
-            else:
-                args.case_file = _default_kdma_case_file
-
-        self.case_file = args.case_file
-
         self.record_considered_decisions = args.record_considered_decisions
-        self.cb, self.fields = read_case_base_with_headers(args.case_file)
+        
+        # Handle case file initialization
+        if args.case_file is None:
+            # Check if this is insurance domain - if so, start with empty case base
+            if getattr(args, 'session_type', None) == 'insurance':
+                self.case_file = None
+                self.cb = []
+                self.fields = set()
+            else:
+                # Medical domain - use default case files
+                if self.use_drexel_format:
+                    args.case_file = _default_drexel_case_file
+                else:
+                    args.case_file = _default_kdma_case_file
+                self.case_file = args.case_file
+                self.cb, self.fields = read_case_base_with_headers(args.case_file)
+        else:
+            # Explicit case file provided
+            self.case_file = args.case_file
+            self.cb, self.fields = read_case_base_with_headers(args.case_file)
         for case in self.cb:
             # Handle both "index" and "probe_id" column names
             if "probe_id" in case and "index" not in case:
