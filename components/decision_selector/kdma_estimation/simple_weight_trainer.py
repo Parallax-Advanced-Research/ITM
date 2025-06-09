@@ -98,7 +98,7 @@ class SimpleWeightTrainer(WeightTrainer):
                 case["times_covered"] = 0
                 case["index"] = index
                 index += 1
-            for i in range(self.searches):
+            for search_count in range(self.searches):
                 record = greedy_weight_space_search_prob(weight_set, self.modeller, self.groups, case_count=len(self.data), addition_penalty=addition_penalty, initial_weights = self.initial_weights, keep_list = keep_list)
                 self.add_to_history(record["weights"], source = "derived " + name)
                 if promote_diversity:
@@ -110,7 +110,7 @@ class SimpleWeightTrainer(WeightTrainer):
                         case["error_total"] += error
                         case["best_error"] = min(case["best_error"], max(error_samples))
                         # Bounty is higher based on higher average of weight set errors, or higher lowest error found.
-                        case["bounty"] = ((case["error_total"] / (i+2)) + case["best_error"]) / 2
+                        case["bounty"] = ((case["error_total"] / (search_count+2)) + case["best_error"]) / 2
                         if max(error_samples) < 1:
                             case["times_covered"] += 1
                         
