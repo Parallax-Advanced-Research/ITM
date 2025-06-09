@@ -557,6 +557,8 @@ def main():
                         help="Value between 0 and 1, applied to error threshold as an incentive to keep weight count down."
                        )
 
+    parser.add_argument("--target_kdma", type=str, default=None, 
+                        help="Choose individual KDMA to estimate.")
 
     parser.add_argument("--use_xgb_start", action=argparse.BooleanOptionalAction, default=False, 
                         help="Use XGBoost weights as a starting point for searching for weights.")
@@ -582,7 +584,7 @@ def main():
         kdma_cases = analyze_pre_cases(args.case_file, args.feedback_file, args.kdma_case_file, 
                                        args.alignment_file)
     if not args.analyze_only:
-        do_weight_search(kdma_cases, args.weight_file, args.all_weight_file, args.error_type, 
+        do_weight_search(kdma_cases, args.target_kdma, args.weight_file, args.all_weight_file, args.error_type, 
                          source_file, args.use_xgb_start, 
                          args.use_no_weights_start, args.use_basic_weights_start, 
                          args.searches, args.weight_count_penalty)
@@ -608,10 +610,13 @@ def analyze_pre_cases(case_file, feedback_file, kdma_case_output_file, alignment
     write_case_base(kdma_case_output_file, kdma_cases)
     return kdma_cases
  
-def do_weight_search(kdma_cases, weight_file, all_weight_file, error_type, source_file, use_xgb = False, 
+def do_weight_search(kdma_cases, target_kdma, weight_file, all_weight_file, error_type, source_file, use_xgb = False, 
                      no_weights = True, basic_weights = False, searches = 10, addition_penalty = .95):
     new_weights = {}
-    hint_types = get_hint_types(kdma_cases)
+    if target_kdma is None:
+        hint_types = get_hint_types(kdma_cases)
+    else:
+        hint_types = [target_kdma]
     fields = set()
     patterns = list(triage_constants.IGNORE_PATTERNS)
     patterns.append("bprop.")
