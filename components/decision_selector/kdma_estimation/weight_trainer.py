@@ -73,7 +73,7 @@ class KEDSModeller(CaseModeller):
             for case in self.cases:
                 self.base_distance_cache[case["index"]] = [None]*len(self.cases)
                 for ocase in self.cases:
-                    compat = kdma_estimation.is_compatible(case, ocase, self.kdma_name, check_scenes = True)
+                    compat = kdma_estimation.is_compatible(case, ocase, check_scenes = True)
                     self.base_distance_cache[case["index"]][ocase["index"]] = 0 if compat else None
             dummy_node = dict(node)
             dummy_node["change"] = "added"
@@ -195,11 +195,14 @@ class KEDSModeller(CaseModeller):
         return self.last_error
         
     def case_error(self, case, weights) -> bool:
+        other_cases = self.cases.copy()
+        other_cases.remove(case)
         error = kdma_estimation.calculate_error( 
                                     case, weights, self.kdma_name,
-                                    self.cases, avg=self.use_average_error, 
+                                    other_cases, avg=self.use_average_error, 
                                     reject_same_scene=True, 
-                                    neighbor_count = triage_constants.DEFAULT_KDMA_NEIGHBOR_COUNT)
+                                    neighbor_count = triage_constants.DEFAULT_KDMA_NEIGHBOR_COUNT,
+                                    dist_fn = kdma_estimation.find_relevance_distance)
         return self.error_impact(error)
             
     

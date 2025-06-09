@@ -6,13 +6,6 @@ import util
 from . import triage_constants
 from .case_base_functions import *
 
-def estimate_KDMA(cur_case: dict[str, Any], weights: dict[str, float], kdma: str, cases: list[dict[str, Any]], print_neighbors: bool = False, reject_same_scene : bool = False, neighbor_count = -1, dist_fn = None) -> float:
-    kdmaProbs, _ = get_KDMA_probabilities(cur_case, weights, kdma, cases=cases, print_neighbors = print_neighbors, reject_same_scene=reject_same_scene, neighbor_count = neighbor_count, dist_fn = dist_fn)
-    kdmaVal = estimate_value_from_probability_dict(kdmaProbs)
-    if print_neighbors:
-        util.logger.info(f"kdma_val: {kdmaVal}")
-    return kdmaVal
-
 
 def estimate_KDMAs_from_probs(kdma_probs: dict[str, dict[float, float]]) -> dict[str, float]:
     kdma_estimates = {}
@@ -240,22 +233,30 @@ def find_error_values(weights: dict[str, float], kdma: str, cases: list[dict[str
     errors = []
     for case in cases:
         new_case_list.remove(case)
-        if case.get(kdma) is None:
-            continue
+        # if case.get(kdma) is None:
+            # continue
         error = calculate_error(case, weights, kdma, new_case_list, reject_same_scene = reject_same_scene, avg = avg, neighbor_count = neighbor_count, dist_fn = dist_fn)
         errors.append((case, error))
         new_case_list.append(case)
     return errors
 
 def calculate_error(case: dict, weights: dict, kdma: str, other_cases: list, reject_same_scene = True, avg = True, neighbor_count = -1, dist_fn = None):
+    truth = case.get(kdma, None)
+    kdmaProbs, _ = get_KDMA_probabilities(dict(case), weights, kdma, other_cases, reject_same_scene=reject_same_scene, neighbor_count = neighbor_count, dist_fn = dist_fn)
+    if kdmaProbs == "irrelevant":
+        if truth is None:
+            return 0
+        else:
+            return 1
+    elif truth is None:
+        return 1
     if avg:
-        estimate = estimate_KDMA(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count, dist_fn = dist_fn)
+        estimate = estimate_value_from_probability_dict(kdmaProbs)
         if estimate is None:
             return 1
-        return abs(case[kdma] - estimate)
+        return abs(truth - estimate)
     else:
-        kdma_probs, _ = get_KDMA_probabilities(dict(case), weights, kdma, other_cases, reject_same_scene = reject_same_scene, neighbor_count = neighbor_count, dist_fn = dist_fn)
-        return 1 - kdma_probs.get(case[kdma], 0)
+        return 1 - kdma_probs.get(truth, 0)
                 # if error > 0.9: error = error * 4
                 # elif error > 0.5: error = error * 2
 
