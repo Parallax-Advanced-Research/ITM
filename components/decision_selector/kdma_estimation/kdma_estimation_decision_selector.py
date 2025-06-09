@@ -578,6 +578,24 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
         if self.print_neighbors:
             best_kdma_estimates = kdma_estimation.estimate_KDMAs_from_probs(
                 best_kdma_probs)
+            
+            # Log case-based prediction vs actual for chosen decision (similar to XGBoost logging)
+            for kdma_name in target.kdma_names:
+                truth = None
+                if best_decision.kdmas is not None:
+                    if hasattr(best_decision.kdmas, 'kdma_map'):
+                        truth = best_decision.kdmas.kdma_map.get(kdma_name, None)
+                    elif hasattr(best_decision, 'kdma_map'):
+                        truth = best_decision.kdma_map.get(kdma_name, None)
+                
+                estimate = best_kdma_estimates.get(kdma_name, None)
+                if truth is not None and estimate is not None:
+                    error = truth - estimate
+                    print(f"Case-based {kdma_name} Truth: {truth} Estimate: {estimate} Error: {error}")
+                    # Store predicted approval for output (convert estimate to approval-like scale)
+                    if hasattr(self, 'last_predicted_approval'):
+                        self.last_predicted_approval = estimate
+            
             util.logger.info(
                 f"Chosen Decision: {best_decision.value} Estimates: {best_kdma_estimates} " + 
                 f"Mins: {min_kdma_probs} Maxes: {max_kdma_probs}")

@@ -200,7 +200,11 @@ def main():
             weight_training_time = time.process_time() - start
             results.append(make_row("training", train_id, examples, seeker, execution_time, weight_training_time))
         
-        examples += 1
+        # For insurance domain, increment by batch size since each scenario processes multiple examples
+        if args.session_type == "insurance" and hasattr(args, 'batch_size'):
+            examples += args.batch_size
+        else:
+            examples += 1
         do_output(args, results)
         
         # Test periodically based on test_interval
@@ -264,6 +268,7 @@ def make_row(mode, id, examples, seeker, execution_time, weight_training_time):
             "id": id, 
             "critic": seeker.current_critic.name,
             "approval": seeker.last_approval,
+            "predicted_approval": getattr(seeker, 'last_predicted_approval', None),
             "kdma": seeker.last_kdma_value,
             "error": seeker.error,
             "approval_experience_length": len(seeker.approval_experiences),

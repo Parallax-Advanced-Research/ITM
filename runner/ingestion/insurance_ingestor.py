@@ -41,8 +41,18 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                     if network_status not in ['TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND']:
                         network_status = 'GENERIC'  # Default value if not valid
 
-                    # Keep kdma_value as string for InsuranceState (it expects StrictStr)
-                    kdma_value = line.get('kdma_value', '').strip()
+                    # Handle the actual CSV format: extract kdma_value from risk_aversion/choice based on kdma_depends_on
+                    kdma_depends_on = line.get('kdma_depends_on', '').strip().upper()
+                    if kdma_depends_on == 'RISK':
+                        kdma_value = line.get('risk_aversion', '').strip()
+                        kdma_type = 'risk'
+                    elif kdma_depends_on == 'CHOICE':
+                        kdma_value = line.get('choice', '').strip()
+                        kdma_type = 'choice'
+                    else:
+                        # Fallback: try both kdma_value column and risk_aversion
+                        kdma_value = line.get('kdma_value', line.get('risk_aversion', '')).strip()
+                        kdma_type = 'risk'  # Default
 
                     state = parse_obj_as(InsuranceState, {
                         "children_under_4": int(line.get('children_under_4', 0)),
@@ -62,7 +72,7 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         "val2": float(line.get('val2', 0.0)),
                         "val3": float(line.get('val3', 0.0)),
                         "val4": float(line.get('val4', 0.0)),
-                        "kdma": line.get('kdma'),
+                        "kdma": kdma_type,
                         "kdma_value": kdma_value
                     })
 

@@ -104,6 +104,70 @@
                 "--critic", "random",
                 "--selection_style", "case-based"
             ]
+        },
+        {
+            "name": "Create Insurance Dataset Subset",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_utils/insurance/create_subset.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--sample-size", "1000",
+                "--random-state", "42"
+            ]
+        },
+        {
+            "name": "Test Subset Online Learning - Case Based",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_utils/insurance/test_subset_online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--exp-name", "subset_case_based_test",
+                "--batch-size", "10",
+                "--test-interval", "5",
+                "--critic", "RiskHigh",
+                "--selection-style", "case-based",
+                "--seed", "42",
+                "--verbose"
+            ]
+        },
+        {
+            "name": "Test Subset Online Learning - Single Critic",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_utils/insurance/test_subset_online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--exp-name", "subset_single_critic_test",
+                "--batch-size", "5",
+                "--test-interval", "3",
+                "--critic", "RiskHigh",
+                "--selection-style", "case-based",
+                "--seed", "42",
+                "--verbose"
+            ]
+        },
+        {
+            "name": "Test Subset Online Learning - Small Batches",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_utils/insurance/test_subset_online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--exp-name", "subset_small_batches",
+                "--batch-size", "3",
+                "--test-interval", "2",
+                "--critic", "all",
+                "--selection-style", "case-based",
+                "--seed", "42",
+                "--max-cases", "100",
+                "--verbose"
+            ]
         }
     ]
 }

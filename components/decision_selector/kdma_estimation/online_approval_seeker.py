@@ -290,6 +290,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                     best_dist = dist
                     decision = d
             print(f"Chosen Decision: {decision.value} Prediction: {best_pred}")
+            self.last_predicted_approval = best_pred
         elif self.selection_style == 'case-based':
             if self.reveal_kdma:
                 (decision, dist) = super().select(scenario, probe, self.current_critic.kdma_obj)
@@ -319,6 +320,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             return (decision, dist)
         
         # Handle insurance critics that might not be able to evaluate this probe
+        # IMPORTANT: Do this BEFORE calling approval() method
         if self.is_insurance_domain() and hasattr(self.current_critic, 'can_evaluate') and not self.current_critic.can_evaluate(probe):
             # Find critics that can evaluate this probe type
             relevant_critics = [c for c in self.critics if hasattr(c, 'can_evaluate') and c.can_evaluate(probe)]
@@ -341,9 +343,21 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         
         (approval, best_decision) = self.current_critic.approval(probe, decision)
         
-        # Skip debug logging for approval evaluation in production runs
+        # Debug: Log approval result
+        if approval is None:
+            print(f"DEBUG: Approval is None for critic {self.current_critic.name}")
+            if hasattr(self.current_critic, 'can_evaluate'):
+                print(f"DEBUG: Critic can_evaluate returned: {self.current_critic.can_evaluate(probe)}")
+            if hasattr(probe, 'state') and hasattr(probe.state, 'kdma'):
+                print(f"DEBUG: Probe KDMA: {probe.state.kdma}, Value: {getattr(probe.state, 'kdma_value', 'N/A')}")
+        else:
+            print(f"DEBUG: Approval={approval} from critic {self.current_critic.name}")
             
         self.last_approval = approval
+        
+        # Store predicted approval for debugging/output (will be set by selection methods)
+        if not hasattr(self, 'last_predicted_approval'):
+            self.last_predicted_approval = None
         
         # KDMA value extraction (handles both single and dual KDMA systems)
         if len(self.kdma_values) == 2:
@@ -382,24 +396,30 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         if self.reveal_kdma:
             approval = self.last_kdma_value
 
+        print(f"DEBUG: is_training={self.is_training}, approval={approval}, experiences={len(self.experiences)}")
         if self.is_training:
-            self.approval_experiences.append(self.experiences[-1])
-            for i in range(1,len(self.experiences)+1):
-                self.experiences[-i][KDMA_NAME] = approval
-                approval = approval * 0.99
-            if best_decision is not None:
-                self.experiences.append(self.make_case(probe, best_decision))
-                if self.reveal_kdma:
-                    best_kdma_map = best_decision.kdma_map if hasattr(best_decision, 'kdma_map') else {}
-                    self.experiences[-1][KDMA_NAME] = best_kdma_map.get(self.arg_name, 0)
-                else:
-                    self.experiences[-1][KDMA_NAME] = 1
+            print(f"DEBUG: Training mode active - approval={approval}, experiences count={len(self.experiences)}")
+            if approval is None:
+                print(f"DEBUG: Skipping case base update due to None approval")
+            else:
                 self.approval_experiences.append(self.experiences[-1])
+                for i in range(1,len(self.experiences)+1):
+                    self.experiences[-i][KDMA_NAME] = approval
+                    approval = approval * 0.99
+                if best_decision is not None:
+                    self.experiences.append(self.make_case(probe, best_decision))
+                    if self.reveal_kdma:
+                        best_kdma_map = best_decision.kdma_map if hasattr(best_decision, 'kdma_map') else {}
+                        self.experiences[-1][KDMA_NAME] = best_kdma_map.get(self.arg_name, 0)
+                    else:
+                        self.experiences[-1][KDMA_NAME] = 1
+                    self.approval_experiences.append(self.experiences[-1])
 
-            for memory in self.experiences:
-                memory["index"] = len(self.cb)
-                self.cb.append(memory)
-            write_case_base(f"{self.dir_name}/online_experiences-{util.get_global_random_seed()}.csv", self.cb)
+                for memory in self.experiences:
+                    memory["index"] = len(self.cb)
+                    self.cb.append(memory)
+                print(f"DEBUG: Added {len(self.experiences)} cases to case base. Total size: {len(self.cb)}")
+                write_case_base(f"{self.dir_name}/online_experiences-{util.get_global_random_seed()}.csv", self.cb)
 
         self.experiences = []
         self.last_feedbacks = []

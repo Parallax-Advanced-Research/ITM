@@ -2,6 +2,7 @@ from domain.internal import TADProbe, Decision, Action
 from util import logger
 import uuid
 import typing
+import os
 
 
 class InsuranceDriver:
@@ -56,16 +57,21 @@ class InsuranceDriver:
         else:
             csv_file = getattr(args, 'test_csv', 'test_set.csv')   # Use custom or default test file
             
-        # Extract just the filename from full path if provided
-        if '/' in csv_file:
-            csv_file = csv_file.split('/')[-1]
-            
-        # Create ingestor and generate probes
-        ingestor = InsuranceIngestor("data/insurance")
+        # If csv_file is a full path, use it directly; otherwise look in data/insurance
+        if os.path.isabs(csv_file) or csv_file.startswith('./') or csv_file.startswith('../'):
+            # It's a full or relative path, use the directory part for the ingestor
+            data_dir = os.path.dirname(csv_file)
+            file_name = os.path.basename(csv_file)
+            ingestor = InsuranceIngestor(data_dir)
+        else:
+            # Just a filename, use default directory
+            data_dir = "data/insurance"
+            file_name = csv_file
+            ingestor = InsuranceIngestor(data_dir)
         try:
             import time
             start_time = time.time()
-            _, probes = ingestor.ingest_as_internal(csv_file)
+            _, probes = ingestor.ingest_as_internal(file_name)
             logger.info(f"Generated {len(probes)} insurance probes in {time.time() - start_time:.2f}s")
             
             # Extract batch number from scenario ID (e.g., "insurance-train-batch-5193" -> 5193)
