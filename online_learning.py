@@ -53,15 +53,12 @@ def main():
     args.keds = False
     args.verbose = False
     args.dump = False
-    args.uniform_weight = True
+    args.uniform_weight = False  # Allow weight learning instead of forcing uniform weights
     
-    # For insurance domain, don't load medical case file and set appropriate KDMAs
+    # For insurance domain, don't load medical case file
     if args.session_type == "insurance":
         args.case_file = None
-        # Set default KDMA arguments for insurance domain with dual KDMAs
-        if not args.kdmas:
-            # Insurance domain uses both risk and choice KDMAs
-            args.kdmas = ["risk=0.2", "choice=0.2"]  # Default to low preferences for both
+        # No need to set default KDMAs - critics have their own target values
     
     # Add domain object for insurance
     if args.session_type == "insurance":
@@ -165,6 +162,7 @@ def main():
     results = []
     do_output(args, [{},{}])
     examples = 0
+    total_probes_trained = 0  # Track total probes across all scenarios
     
     # Select appropriate driver based on session type
     if args.session_type == "insurance" and INSURANCE_SUPPORT:
@@ -172,10 +170,17 @@ def main():
     else:
         driver = TA3Driver(args)
     driver.trainer = seeker
-    seeker.start_testing()
-    do_testing(test_scenario_ids, args, driver, seeker, results, examples)
-    for train_id in train_scenario_ids:
-        seeker.start_training()
+    # Go straight to training (no initial testing phase)
+    print(f"\n{'='*80}")
+    print(f"STARTING TRAINING: {len(train_scenario_ids)} scenarios to process")
+    print(f"XGBoost model will be built after collecting training data")
+    print(f"{'='*80}")
+    
+    # Set training mode once for all training scenarios
+    seeker.start_training()
+    
+    for i, train_id in enumerate(train_scenario_ids, 1):
+        print(f"\n--- TRAINING SCENARIO {i}/{len(train_scenario_ids)}: {train_id} ---")
         args.scenario = train_id
         
         # Handle training mode based on critic selection
@@ -186,33 +191,51 @@ def main():
                 seeker.set_critic(critic)
                 execution_time = run_tad(args, driver)
                 total_execution_time += execution_time
-                # Record result for each critic during training
-                start = time.process_time()
-                seeker.start_testing()
-                weight_training_time = time.process_time() - start
-                results.append(make_row("training", f"{train_id}-{critic.name}", examples, seeker, execution_time, weight_training_time))
+                # Record result for each critic during training (don't switch to testing yet)
+                results.append(make_row("training", f"{train_id}-{critic.name}", examples, seeker, execution_time, 0))
             execution_time = total_execution_time
         else:
             # Single critic training (random or specific)
             execution_time = run_tad(args, driver)
-            start = time.process_time()
-            seeker.start_testing()
-            weight_training_time = time.process_time() - start
-            results.append(make_row("training", train_id, examples, seeker, execution_time, weight_training_time))
+            # Record training result (don't switch to testing yet)
+            results.append(make_row("training", train_id, examples, seeker, execution_time, 0))
         
         # For insurance domain, increment by batch size since each scenario processes multiple examples
         if args.session_type == "insurance" and hasattr(args, 'batch_size'):
-            examples += args.batch_size
+            batch_probes = args.batch_size
+            examples += batch_probes
+            total_probes_trained += batch_probes
         else:
             examples += 1
+            total_probes_trained += 1
+        
+        print(f"PROGRESS: Trained on {total_probes_trained} total probes so far")
         do_output(args, results)
         
         # Test periodically based on test_interval
         test_interval = getattr(args, 'test_interval', 1)  # Default to testing after every example
         if (examples % test_interval) == 0:
-            if test_interval > 1:
-                print(f"\n*** Running tests after {examples} training examples ***")
+            print(f"\n{'='*80}")
+            print(f"TESTING AFTER {total_probes_trained} PROBES TRAINED")
+            print(f"Scenarios completed: {i}/{len(train_scenario_ids)}")
+            print(f"Case base size: {len(seeker.cb)}")
+            print(f"Approval experiences: {len(seeker.approval_experiences)}")
+            model_status = 'Yes - Predictions Available' if seeker.best_model is not None else 'No - Using Random/Case-based'
+            print(f"XGBoost model: {model_status}")
+            print(f"{'='*80}")
+            
+            # Switch to testing mode, train model, then test
+            start = time.process_time()
+            seeker.start_testing()
+            weight_training_time = time.process_time() - start
+            print(f"Weight training completed in {weight_training_time:.3f}s")
+            
             do_testing(test_scenario_ids, args, driver, seeker, results, examples)
+            print(f"TESTING COMPLETE")
+            
+            # Switch back to training mode for next scenarios
+            if i < len(train_scenario_ids):
+                seeker.start_training()
     do_output(args, results)
 
 def do_output(args, results):
@@ -227,6 +250,7 @@ def do_testing(test_scenario_ids, args, driver, seeker, results, examples):
         test_ids_to_use = test_scenario_ids
     
     for test_id in test_ids_to_use:
+        print(f"  Testing on: {test_id}")
         args.scenario = test_id
         for critic in seeker.critics:
             seeker.set_critic(critic)
@@ -244,6 +268,7 @@ def do_testing(test_scenario_ids, args, driver, seeker, results, examples):
                 print(f"Approval: {seeker.last_approval}")
                 print(f"Error: {seeker.error:.4f}")
                 print(f"Case base size: {len(seeker.cb)}")
+                print(f"Test scenario: {test_id}")
                 print(f"Execution time: {execution_time:.3f}s")
                 print(f"{'='*60}\n")
 

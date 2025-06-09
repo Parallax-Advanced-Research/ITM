@@ -135,6 +135,29 @@
             ]
         },
         {
+            "name": "Test Weight Learning - XGBoost Subset",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--session_type", "insurance",
+                "--train_csv", "${workspaceFolder}/data/insurance/subsets/train_set_20250608_124619_seed12345_subset.csv",
+                "--test_csv", "${workspaceFolder}/data/insurance/subsets/test_set_20250608_124619_seed12345_subset.csv",
+                "--batch_size", "5",
+                "--test_interval", "3",
+                "--critic", "risk-all",
+                "--selection_style", "xgboost",
+                "--train_weights",
+                "--learning_style", "classification",
+                "--search_style", "xgboost",
+                "--seed", "42",
+                "--exp_name", "weight_learning_test",
+                "--verbose"
+            ]
+        },
+        {
             "name": "Test Subset Online Learning - Single Critic",
             "type": "debugpy",
             "request": "launch",
@@ -167,6 +190,44 @@
                 "--seed", "42",
                 "--max-cases", "100",
                 "--verbose"
+            ]
+        },
+        {
+            "name": "Debug Test Subset Online Learning",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_utils/insurance/test_subset_online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "--exp-name", "debug_test",
+                "--batch-size", "2",
+                "--test-interval", "1",
+                "--critic", "RiskHigh",
+                "--selection-style", "case-based",
+                "--seed", "42",
+                "--verbose"
+            ]
+        },
+        {
+            "name": "Debug Case-Based Prediction (estimate_KDMAs)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "--session_type", "insurance",
+                "--train_csv", "${workspaceFolder}/data/insurance/subsets/train_set_20250608_124619_seed12345_subset.csv",
+                "--test_csv", "${workspaceFolder}/data/insurance/subsets/test_set_20250608_124619_seed12345_subset.csv",
+                "--batch_size", "1",
+                "--test_interval", "1",
+                "--critic", "RiskHigh",
+                "--selection_style", "case-based",
+                "--seed", "42",
+                "--exp_name", "debug_estimate_kdmas",
+                "--verbose",
+                "--decision_verbose"
             ]
         }
     ]

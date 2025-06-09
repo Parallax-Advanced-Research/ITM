@@ -1,0 +1,21 @@
+{
+  "weights": [
+    {
+      "kdma": "approval",
+      "time": "2025-01-09 00:00:00.000000",
+      "weights": {},
+      "error": 0.0,
+      "combined": 0.0,
+      "cases_covered": 0,
+      "new_cases_covered": 0,
+      "average_impact": 1.0,
+      "new_cases_error_avg": 0,
+      "covered_error_avg": 0,
+      "covered_impact_avg": 0,
+      "old_cases_error_avg": 0,
+      "name": "empty",
+      "source": "standard",
+      "id": 1
+    }
+  ]
+}

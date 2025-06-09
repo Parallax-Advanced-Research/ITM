@@ -26,7 +26,8 @@ _default_weight_file = os.path.join("data", "keds_weights.json")
 _default_drexel_weight_file = os.path.join("data", "drexel_keds_weights.json")
 _default_kdma_case_file = os.path.join("data", "kdma_cases.csv")
 _default_drexel_case_file = os.path.join("data", "sept", "extended_case_base.csv")
-_default_insurance_case_file = os.path.join("data","insurance", "data/insurance/train-50-50.csv")
+_default_insurance_case_file = os.path.join("data", "insurance", "subsets", "train_set_20250608_124619_seed12345_subset.csv")
+_default_insurance_weight_file = os.path.join("data", "insurance", "insurance_weights.json")
 
 class KDMACountLikelihood:
     kdma_count: dict[float, int]
@@ -140,8 +141,10 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
             self.estimate_file = os.path.join("local", args.exp_name, "estimates.csv")
 
         if args.weight_file is None:
-            global _default_weight_file
-            if self.use_drexel_format:
+            global _default_weight_file, _default_insurance_weight_file
+            if getattr(args, 'session_type', None) == 'insurance':
+                weight_filename = _default_insurance_weight_file
+            elif self.use_drexel_format:
                 weight_filename = _default_drexel_weight_file
             else:
                 weight_filename = _default_weight_file
@@ -175,10 +178,11 @@ class KDMAEstimationDecisionSelector(DecisionSelector):
                     self.error_data = json_obj["case_errors"]
                     if self.error_data == "blank":
                         self.error_data = None
-                    case_hash = util.hashing.hash_file(self.case_file)
-                    if "case_base" in json_obj and case_hash != json_obj["case_base"]:
-                        raise Exception(
-                            "Weight file is not tuned for this case file.")
+                    if self.case_file is not None:
+                        case_hash = util.hashing.hash_file(self.case_file)
+                        if "case_base" in json_obj and case_hash != json_obj["case_base"]:
+                            raise Exception(
+                                "Weight file is not tuned for this case file.")
                 elif isinstance(json_obj, dict):
                     weight_settings_list.append(json_obj)
                 else:

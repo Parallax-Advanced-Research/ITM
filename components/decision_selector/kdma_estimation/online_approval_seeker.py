@@ -131,6 +131,9 @@ class InsuranceCritic(Critic):
 
 class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
     def __init__(self, args = None):
+        # For insurance domain, force uniform weights to avoid weight file issues
+        if args is not None and getattr(args, 'session_type', None) == 'insurance':
+            args.uniform_weight = True
         super().__init__(args)
         self.kdma_obj: KDMAs = KDMAs([KDMA(id_=KDMA_NAME, value=1)])
         self.cb = []
@@ -197,13 +200,21 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.initialize_critics()
         self.critic_mode = getattr(args, 'critic', 'random')
         
-        if args.critic is not None and args.critic not in ["random", "all"]:
+        if args.critic is not None and args.critic not in ["random", "all", "risk-all"]:
             # Filter to specific critic
             matching_critics = [c for c in self.critics if c.name == args.critic]
             if matching_critics:
                 self.critics = matching_critics
             else:
                 print(f"Warning: Critic '{args.critic}' not found. Available critics: {[c.name for c in self.critics]}")
+        elif args.critic == "risk-all":
+            # Filter to only risk critics
+            risk_critics = [c for c in self.critics if hasattr(c, 'kdma_type') and c.kdma_type == 'risk']
+            if risk_critics:
+                self.critics = risk_critics
+                print(f"Using risk critics: {[c.name for c in self.critics]}")
+            else:
+                print(f"Warning: No risk critics found. Available critics: {[c.name for c in self.critics]}")
         # If args.critic is "random", "all", or None, keep all critics available
         self.train_weights = args.train_weights
         self.selection_style = args.selection_style
@@ -215,12 +226,10 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         
     def initialize_critics(self):
         if self.is_insurance_domain():
-            # Insurance critics: 2 risk + 2 choice critics
+            # Insurance critics: Only risk critics (we have data for these)
             self.critics = [
                 InsuranceCritic("RiskHigh", "risk", 0.8),      # Prefers high risk
                 InsuranceCritic("RiskLow", "risk", 0.2),       # Prefers low risk
-                InsuranceCritic("ChoiceHigh", "choice", 0.8),  # Prefers high choice
-                InsuranceCritic("ChoiceLow", "choice", 0.2),   # Prefers low choice
             ]
         else:
             # Medical triage critics
@@ -270,27 +279,43 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         if len(self.experiences) == 0 and self.is_training and (TADTriageProbe is None or isinstance(probe, TADTriageProbe)):
             self.current_critic = self.critic_random.choice(self.critics)
         
-        if self.selection_style == 'xgboost' and self.best_model is not None:
+        if self.selection_style == 'xgboost':
             decision = None
             best_pred = 10000
             best_dist = 10000
+            dist = 1  # Default distance for return value
             if self.reveal_kdma:
                 target = self.current_critic.target
             else:
                 target = 1
-            print("Weights:")
-            for (k, v) in self.best_model.get_booster().get_score(importance_type='gain').items():
-                print(f"{k}: {v:.3f}")
-            for d in probe.decisions:
-                pred = self.get_xgboost_prediction(self.make_case(probe, d))
-                dist = abs(target - pred)
-                print(f"Decision: {d.value} Prediction: {pred} Distance: {dist}")
-                if dist < best_dist:
-                    best_pred = pred
-                    best_dist = dist
-                    decision = d
-            print(f"Chosen Decision: {decision.value} Prediction: {best_pred}")
-            self.last_predicted_approval = best_pred
+            
+            print(f"Critic Target RISK: {target:.1f}")
+            
+            if self.best_model is not None:
+                print("XGBoost Feature Weights:")
+                for (k, v) in self.best_model.get_booster().get_score(importance_type='gain').items():
+                    print(f"  {k}: {v:.3f}")
+                print("RISK Predictions for each decision:")
+                for d in probe.decisions:
+                    pred = self.get_xgboost_prediction(self.make_case(probe, d))
+                    current_dist = abs(target - pred)
+                    print(f"  Decision: {d.value} → Predicted RISK: {pred:.3f}, Distance from target: {current_dist:.3f}")
+                    if current_dist < best_dist:
+                        best_pred = pred
+                        best_dist = current_dist
+                        decision = d
+                        dist = current_dist
+                print(f"→ CHOSEN: Decision {decision.value} (Predicted RISK: {best_pred:.3f}, closest to target {target:.1f})")
+                self.last_predicted_approval = best_pred
+            else:
+                print("XGBoost Feature Weights: No model trained yet")
+                print("RISK Predictions for each decision:")
+                for d in probe.decisions:
+                    print(f"  Decision: {d.value} → Predicted RISK: No prediction (model not trained)")
+                decision = util.get_global_random_generator().choice(probe.decisions)
+                print(f"→ CHOSEN: Decision {decision.value} (Random selection - no model available)")
+                self.last_predicted_approval = None
+                dist = 1  # Default distance when no model
         elif self.selection_style == 'case-based':
             if self.reveal_kdma:
                 (decision, dist) = super().select(scenario, probe, self.current_critic.kdma_obj)
@@ -342,6 +367,27 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                     self.current_critic = relevant_critics[0]
         
         (approval, best_decision) = self.current_critic.approval(probe, decision)
+        
+        # Debug: Log predicted RISK vs actual approval feedback
+        predicted_risk = getattr(self, 'last_predicted_approval', None)
+        actual_kdma = self.last_kdma_value if hasattr(self, 'last_kdma_value') else 'Unknown'
+        if predicted_risk is not None:
+            print(f"OUTCOME: Predicted RISK={predicted_risk:.3f}, Actual KDMA={actual_kdma}, Critic Approval={approval}")
+        else:
+            print(f"OUTCOME: No RISK prediction made, Actual KDMA={actual_kdma}, Critic Approval={approval}")
+            
+        # Also show prediction error if we have the actual KDMA value
+        if predicted_risk is not None and hasattr(self, 'last_kdma_value') and self.last_kdma_value is not None:
+            risk_error = abs(predicted_risk - self.last_kdma_value)
+            print(f"RISK PREDICTION ERROR: {risk_error:.3f} (|{predicted_risk:.3f} - {self.last_kdma_value:.3f}|)")
+        
+        # Debug: Log training state and experiences with progress indicators
+        experience_count = len(getattr(self, 'experiences', []))
+        approval_count = len(getattr(self, 'approval_experiences', []))
+        case_base_size = len(getattr(self, 'cb', []))
+        model_status = "Available" if getattr(self, 'best_model', None) is not None else "Not Available"
+        
+        print(f"DEBUG: is_training={self.is_training}, experiences={experience_count}, approval_experiences={approval_count}, case_base={case_base_size}, model={model_status}")
         
         # Debug: Log approval result
         if approval is None:
@@ -445,8 +491,15 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         self.is_training = True
         
     def start_testing(self):
+        approval_count = len(self.approval_experiences)
         if self.train_weights:
-            self.weight_train()
+            if approval_count >= 2:
+                print(f"→ TRAINING XGBOOST MODEL with {approval_count} approval experiences...")
+                self.weight_train()
+                model_status = "Successfully trained" if self.best_model is not None else "Training failed"
+                print(f"→ XGBOOST MODEL: {model_status}")
+            else:
+                print(f"→ INSUFFICIENT DATA: Only {approval_count} approval experiences (need ≥2 for XGBoost training)")
         self.is_training = False
         
     def set_critic(self, critic : Critic):
@@ -460,23 +513,31 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         
         # Can't estimate error with less than two examples, don't bother.
         if len(cases) < 2:
+            print(f"→ SKIPPING WEIGHT TRAINING: Only {len(cases)} cases available (need ≥2)")
             return
             
         
         if self.selection_style == 'xgboost':
-            trainer = WeightTrainer(XGBModeller(cases, KDMA_NAME, 
-                                                learning_style = self.learning_style, 
-                                                ignore_patterns = triage_constants.IGNORE_PATTERNS), 
-                                    self.all_fields)
+            modeller = XGBModeller(cases, KDMA_NAME, 
+                                   learning_style = self.learning_style, 
+                                   ignore_patterns = triage_constants.IGNORE_PATTERNS)
+            trainer = WeightTrainer(modeller, self.all_fields)
         elif self.search_style == 'xgboost':
-            trainer = WeightTrainer(KEDSWithXGBModeller(cases, KDMA_NAME,
-                                                        learning_style = self.learning_style, 
-                                                        ignore_patterns = triage_constants.IGNORE_PATTERNS), 
-                                    self.all_fields)
+            modeller = KEDSWithXGBModeller(cases, KDMA_NAME,
+                                           learning_style = self.learning_style, 
+                                           ignore_patterns = triage_constants.IGNORE_PATTERNS)
+            trainer = WeightTrainer(modeller, self.all_fields)
         elif self.search_style == 'drop_only':
             trainer = WeightTrainer(KEDSModeller(cases, KDMA_NAME), self.all_fields)
         elif self.search_style == 'greedy':
             trainer = SimpleWeightTrainer(KEDSModeller(cases, KDMA_NAME), self.all_fields, cases, KDMA_NAME)
+        
+        # Check if the modeller has valid data before proceeding
+        if hasattr(trainer, 'modeller'):
+            initial_state = trainer.modeller.get_state()
+            if not initial_state.get("weights") or len(initial_state["weights"]) == 0:
+                print(f"→ SKIPPING WEIGHT TRAINING: No features available after data processing")
+                return
         
         # add basic (non-analytics) weights to weight_error_hist
         
@@ -501,6 +562,7 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             self.basic_error = trainer.get_basic_error()
             self.uniform_error = trainer.get_uniform_error()
             self.weight_source = trainer.get_best_source()
+            print(f"→ MODEL TRAINING COMPLETE: Error={self.error:.3f}, Source={self.weight_source}, Features={len(self.best_model.get_booster().feature_names) if self.best_model else 0}")
 
         # Print out the weights and observed error found
         if type(best_weights) == str:

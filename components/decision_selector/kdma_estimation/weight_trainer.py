@@ -369,23 +369,31 @@ class WeightTrainer:
         return self.weight_error_hist
         
     def get_best_weights(self):
+        if self.best_error_index is None or len(self.weight_error_hist) == 0:
+            return {}
         best_record = self.weight_error_hist[self.best_error_index]
         return best_record.get("name", best_record["weights"])
     
     def get_best_source(self):
+        if self.best_error_index is None or len(self.weight_error_hist) == 0:
+            return "none"
         return self.weight_error_hist[self.best_error_index]["source"]
 
     def get_best_model(self):
+        if self.best_error_index is None or len(self.weight_error_hist) == 0:
+            return None
         return self.weight_error_hist[self.best_error_index].get("model", None)
 
     def get_best_error(self):
+        if self.best_error_index is None or len(self.weight_error_hist) == 0:
+            return float('inf')
         return self.weight_error_hist[self.best_error_index]["error"]
         
     def find_error(self, name: str):
         for record in self.weight_error_hist:
             if record.get("name", None) == name:
                 return record["error"]
-        raise Exception()
+        return float('inf')  # Return high error instead of exception when not found
         
     def get_uniform_error(self): 
         return self.find_error("uniform")
@@ -405,6 +413,12 @@ class WeightTrainer:
             self.add_to_history(last_weights, source = "last")
         
         last_weights = self.modeller.get_state()["weights"]
+        
+        # Check if we have any weights to work with
+        if not last_weights or len(last_weights) == 0:
+            print("→ NO FEATURES AVAILABLE: Cannot train weights without features")
+            return
+            
         queue = WeightQueue(last_weights)
         feature_to_remove = queue.top_feature()
         last_error = self.get_last_error()
@@ -451,9 +465,13 @@ class WeightTrainer:
         
 
     def get_last_error(self):
+        if len(self.weight_error_hist) == 0:
+            return float('inf')  # Return a high error value when no history exists
         return self.weight_error_hist[-1].get("error", None)
     
     def get_last_weights(self):
+        if len(self.weight_error_hist) == 0:
+            return {}  # Return empty weights when no history exists
         return self.weight_error_hist[-1].get("weights", None)
 
     def add_to_history(self, weights: dict[str, float], name: str = None, source: str = ""):
@@ -494,6 +512,7 @@ def make_approval_data_frame(cases: list[dict[str, Any]], kdma_name, cols=None, 
         cases = [case for case in cases if case_base_functions.integerish(10 * case[kdma_name])]
     if entries is not None:
         cases = cases[:entries]
+    
     cleaned_experiences, category_labels = data_processing.clean_data(dict(zip(range(len(cases)), cases)))
     table = pandas.DataFrame.from_dict(cleaned_experiences, orient='index')
     if cols is not None:
@@ -502,7 +521,15 @@ def make_approval_data_frame(cases: list[dict[str, Any]], kdma_name, cols=None, 
         table = table.drop(columns=["action"])
     for col in table.columns:
         if col in category_labels:
-            table[col] = table[col].astype('category')
+            try:
+                table[col] = table[col].astype('category')
+            except TypeError as e:
+                # Skip columns with unhashable types (like DecisionExplanationsInnerParamsValue)
+                if "unhashable type" in str(e):
+                    print(f"Skipping categorical conversion for column '{col}' due to unhashable type")
+                    continue
+                else:
+                    raise
     return table
 
 

@@ -69,12 +69,8 @@ components:
           description: Name of the decision metric
           type: string
         value:
-          oneOf:
-          - type: string
-          - type: number
-          - type: boolean
-          - additionalProperties: true
-            type: object
+          description: Simple value for the metric (number for insurance domain)
+          type: number
       type: object
     InsuranceScenario:
       allOf:

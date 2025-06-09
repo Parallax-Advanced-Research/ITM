@@ -2,7 +2,7 @@ import math
 from domain.insurance.models.insurance_tad_probe import InsuranceTADProbe
 from domain.insurance.models.decision import Decision as InsuranceDecision
 from domain.insurance.models.decision_metric import DecisionMetric as InsuranceDecisionMetric
-from domain.insurance.models.decision_explanations_inner_params_value import DecisionExplanationsInnerParamsValue
+# Removed DecisionExplanationsInnerParamsValue - using simple values now
 from domain.insurance.models.insurance_scenario import InsuranceScenario
 from domain.insurance.models.insurance_state import InsuranceState
 
@@ -56,22 +56,22 @@ class InsuranceDecisionAnalyzer:
         
         # Add metrics to each decision
         for decision in probe.decisions:
-            # Use the class methods to calculate metrics
+            # Use the class methods to calculate metrics with simple values
             metrics = {
                 "num_med_visits": InsuranceDecisionMetric(
                     name="num_med_visits",
                     description="Expected medical visits next year",
-                    value=DecisionExplanationsInnerParamsValue(num_med_visits)
+                    value=num_med_visits
                 ),
                 "family_change": InsuranceDecisionMetric(
                     name="family_change",
                     description="Expected family change (new baby)",
-                    value=DecisionExplanationsInnerParamsValue(family_change)
+                    value=family_change
                 ),
                 "chance_of_hospitalization": InsuranceDecisionMetric(
                     name="chance_of_hospitalization",
                     description="Chance of hospitalization",
-                    value=DecisionExplanationsInnerParamsValue(chance_of_hospitalization)
+                    value=chance_of_hospitalization
                 )
             }
             

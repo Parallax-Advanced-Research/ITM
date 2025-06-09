@@ -18,9 +18,8 @@ import re  # noqa: F401
 import json
 
 
-from typing import Optional
-from pydantic import BaseModel, Field, StrictStr
-from .decision_explanations_inner_params_value import DecisionExplanationsInnerParamsValue
+from typing import Optional, Union
+from pydantic import BaseModel, Field, StrictStr, StrictFloat, StrictInt
 
 class DecisionMetric(BaseModel):
     """
@@ -28,7 +27,7 @@ class DecisionMetric(BaseModel):
     """
     description: Optional[StrictStr] = Field(default=None, description="Description of the decision metric")
     name: Optional[StrictStr] = Field(default=None, description="Name of the decision metric")
-    value: Optional[DecisionExplanationsInnerParamsValue] = None
+    value: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="Simple numeric value for the metric")
     __properties = ["description", "name", "value"]
 
     class Config:
@@ -55,9 +54,7 @@ class DecisionMetric(BaseModel):
                           exclude={
                           },
                           exclude_none=True)
-        # override the default output from pydantic by calling `to_dict()` of value
-        if self.value:
-            _dict['value'] = self.value.to_dict()
+        # Simple value - no complex wrapper needed
         return _dict
 
     @classmethod
@@ -72,7 +69,7 @@ class DecisionMetric(BaseModel):
         _obj = DecisionMetric.parse_obj({
             "description": obj.get("description"),
             "name": obj.get("name"),
-            "value": DecisionExplanationsInnerParamsValue.from_dict(obj.get("value")) if obj.get("value") is not None else None
+            "value": obj.get("value")  # Simple numeric value
         })
         return _obj
 

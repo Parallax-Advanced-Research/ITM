@@ -130,9 +130,9 @@ class InsuranceSelector(DecisionSelector):
             X.append(InsuranceSelector.convert_kdma_value(state.kdma_value))
 
         if self.add_da_metrics:
-            X.append(case.decisions[0].metrics['num_med_visits'].to_dict()['value']['value'])
-            X.append(case.decisions[0].metrics['family_change'].to_dict()['value']['value'])
-            X.append(case.decisions[0].metrics['chance_of_hospitalization'].to_dict()['value']['value'])
+            X.append(case.decisions[0].metrics['num_med_visits'].value)
+            X.append(case.decisions[0].metrics['family_change'].value)
+            X.append(case.decisions[0].metrics['chance_of_hospitalization'].value)
 
         return X, y
 

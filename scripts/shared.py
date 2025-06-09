@@ -69,7 +69,7 @@ def validate_args(args: argparse.Namespace) -> None:
     args.weightfile = 0
     
     if args.uniformweight == True:
-        args.uniform_weight = args.uniform_weight
+        args.uniform_weight = True
     args.uniformweight = 0
     
     tempDomainClass = getattr(importlib.import_module(args.domain_package), args.domain_class_name)
@@ -186,7 +186,7 @@ def get_insurance_parser():
             break
     
     # Add insurance-specific arguments
-    parser.add_argument('--critic', type=str, help="Critic selection: specific critic name, 'random' for random selection, or 'all' to train on all critics", default="random", choices=["Alex", "Brie", "Chad", "RiskHigh", "RiskLow", "ChoiceHigh", "ChoiceLow", "random", "all"])
+    parser.add_argument('--critic', type=str, help="Critic selection: specific critic name, 'random' for random selection, 'all' to train on all critics, or 'risk-all' for all risk critics", default="random", choices=["Alex", "Brie", "Chad", "RiskHigh", "RiskLow", "ChoiceHigh", "ChoiceLow", "random", "all", "risk-all"])
     parser.add_argument('--train_weights', action=argparse.BooleanOptionalAction, default=False, help="Train weights online.")
     parser.add_argument('--selection_style', type=str, help="xgboost/case-based", default="case-based", choices=["case-based", "xgboost", "random"])
     parser.add_argument('--search_style', type=str, help="Choices are xgboost/greedy/drop_only; applies if selection_style == case-based only", default="xgboost", choices=["greedy", "xgboost", "drop_only"])

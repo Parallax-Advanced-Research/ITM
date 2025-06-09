@@ -15,7 +15,15 @@ def drop_columns_by_patterns(df, keys={}, patterns=[], label=""):
     df = df.drop(columns=columns_to_drop)
     return df
 def drop_columns_if_all_unique(df):
-    columns_to_drop = [col for col in df.columns if df[col].nunique() == 1]
+    columns_to_drop = []
+    for col in df.columns:
+        try:
+            if df[col].nunique() == 1:
+                columns_to_drop.append(col)
+        except TypeError:
+            # Skip columns with unhashable types (like DecisionExplanationsInnerParamsValue)
+            print(f"Skipping unique check for column '{col}' due to unhashable type")
+            continue
     df = df.drop(columns=columns_to_drop)
     return df
 
