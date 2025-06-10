@@ -236,6 +236,7 @@ class XGBModeller(CaseModeller):
         # drop columns from table that we don't use, and those that are uninformative (all data the same)
         experience_table = xgboost_train.drop_columns_by_patterns(experience_table, label=kdma_name, patterns=ignore_patterns)
         experience_table = xgboost_train.drop_columns_if_all_unique(experience_table)
+        
         if len(experience_table.columns) <= 1 or kdma_name not in experience_table.columns:
             print("Insufficient data to train weights.")
             self.experience_data = None
@@ -244,6 +245,11 @@ class XGBModeller(CaseModeller):
             return
 
         self.experience_data = experience_table.drop(columns=[kdma_name])
+        
+        # Initialize weights with uniform values for all available features
+        if self.experience_data is not None and len(self.experience_data.columns) > 0:
+            self.last_weights = {col: 1.0 for col in self.experience_data.columns}
+            
         if learning_style == 'classification':
             self.unique_values = sorted(list(set(self.response_array)))
             self.category_array = numpy.array([self.unique_values.index(val) for val in self.response_array])
@@ -280,7 +286,21 @@ class XGBModeller(CaseModeller):
         else:
             self.last_weights, self.last_error, model = \
                 xgboost_train.get_classification_feature_importance(X, self.category_array)
-            model.predict_right = lambda X: numpy.dot(self.unique_values, model.predict_proba(X)[0])
+            
+            # Create a safer prediction function
+            def safe_predict_right(X):
+                try:
+                    proba = model.predict_proba(X)
+                    if len(proba) == 0:
+                        print(f"ERROR: predict_proba returned empty array for input shape {X.shape}")
+                        return 0.5  # Default fallback value
+                    return numpy.dot(self.unique_values, proba[0])
+                except Exception as e:
+                    print(f"ERROR: Prediction failed: {e}")
+                    print(f"Input shape: {X.shape}, columns: {list(X.columns) if hasattr(X, 'columns') else 'No columns'}")
+                    return 0.5  # Default fallback value
+            
+            model.predict_right = safe_predict_right
             self.last_model = model
         self.last_fields = set(fields)
     
@@ -371,6 +391,8 @@ class WeightTrainer:
     def get_best_weights(self):
         if self.best_error_index is None or len(self.weight_error_hist) == 0:
             return {}
+        if self.best_error_index >= len(self.weight_error_hist):
+            return {}
         best_record = self.weight_error_hist[self.best_error_index]
         return best_record.get("name", best_record["weights"])
     
@@ -412,7 +434,8 @@ class WeightTrainer:
         if last_weights is not None and type(last_weights) != str and len(last_weights) > 0:
             self.add_to_history(last_weights, source = "last")
         
-        last_weights = self.modeller.get_state()["weights"]
+        modeller_state = self.modeller.get_state()
+        last_weights = modeller_state["weights"]
         
         # Check if we have any weights to work with
         if not last_weights or len(last_weights) == 0:
@@ -423,8 +446,27 @@ class WeightTrainer:
         feature_to_remove = queue.top_feature()
         last_error = self.get_last_error()
         
-        # Iteratively collect error data and drop another column, until the class column is all that's left.
-        while feature_to_remove is not None:
+        # Define important insurance features that should be preserved
+        important_insurance_features = {
+            'metric_chance_of_hospitalization', 'percent_family_members_with_chronic_condition',
+            'network_status', 'owns_rents', 'expense_type', 'no_of_medical_visits_previous_year',
+            'children_under_18', 'children_under_12', 'children_under_4', 'children_under_26',
+            'percent_family_members_that_play_sports', 'metric_num_med_visits', 'metric_family_change'
+        }
+        
+        # Minimum number of features to retain
+        min_feature_count = max(5, len([f for f in last_weights.keys() if f in important_insurance_features]))
+        
+        # Iteratively collect error data and drop another column, until we reach minimum features
+        while feature_to_remove is not None and len(last_weights) > min_feature_count:
+            # Don't remove important insurance features if we're getting close to minimum
+            if (feature_to_remove in important_insurance_features and 
+                len(last_weights) <= min_feature_count + 2):
+                print(f"Preserving important insurance feature {feature_to_remove}.")
+                queue.reinforce_feature(feature_to_remove)
+                feature_to_remove = queue.top_feature()
+                continue
+                
             new_weights = dict(last_weights)
             new_weights.pop(feature_to_remove)
             print(f"Testing removal of feature {feature_to_remove}.")
@@ -455,6 +497,9 @@ class WeightTrainer:
 
             # Pick a feature to try removing
             feature_to_remove = queue.top_feature()
+            
+        if len(last_weights) <= min_feature_count:
+            print(f"→ STOPPED FEATURE REMOVAL: Reached minimum of {min_feature_count} features to preserve model quality")
     
         
     def weight_search_regressing(self, prior_error):

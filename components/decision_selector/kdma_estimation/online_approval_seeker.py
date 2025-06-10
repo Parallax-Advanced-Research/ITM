@@ -131,7 +131,7 @@ class InsuranceCritic(Critic):
 
 class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
     def __init__(self, args = None):
-        # For insurance domain, force uniform weights to avoid weight file issues
+        # For insurance domain, use uniform weights initially since we learn dynamically
         if args is not None and getattr(args, 'session_type', None) == 'insurance':
             args.uniform_weight = True
         super().__init__(args)
@@ -517,15 +517,23 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
             return
             
         
+        # Use domain-specific ignore patterns
+        if self.is_insurance_domain():
+            # Insurance domain - minimal filtering to preserve insurance-specific features
+            ignore_patterns = ['index', 'hash', 'feedback', 'unnamed', 'nondeterminism']
+        else:
+            # Medical triage domain - use standard patterns
+            ignore_patterns = triage_constants.IGNORE_PATTERNS
+            
         if self.selection_style == 'xgboost':
             modeller = XGBModeller(cases, KDMA_NAME, 
                                    learning_style = self.learning_style, 
-                                   ignore_patterns = triage_constants.IGNORE_PATTERNS)
+                                   ignore_patterns = ignore_patterns)
             trainer = WeightTrainer(modeller, self.all_fields)
         elif self.search_style == 'xgboost':
             modeller = KEDSWithXGBModeller(cases, KDMA_NAME,
                                            learning_style = self.learning_style, 
-                                           ignore_patterns = triage_constants.IGNORE_PATTERNS)
+                                           ignore_patterns = ignore_patterns)
             trainer = WeightTrainer(modeller, self.all_fields)
         elif self.search_style == 'drop_only':
             trainer = WeightTrainer(KEDSModeller(cases, KDMA_NAME), self.all_fields)
@@ -579,7 +587,23 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
         for col in columns:
             if col not in case:
                 case[col] = None
-        return self.best_model.predict_right(make_approval_data_frame([case], cols=columns))
+        
+        # For prediction, we need to add a dummy approval value to pass the filtering
+        prediction_case = dict(case)
+        prediction_case[KDMA_NAME] = 0  # Dummy value - will be ignored during prediction
+        
+        # Create the data frame for prediction
+        prediction_df = make_approval_data_frame([prediction_case], KDMA_NAME, cols=columns)
+        
+        # Remove the approval column since we're predicting it
+        if KDMA_NAME in prediction_df.columns:
+            prediction_df = prediction_df.drop(columns=[KDMA_NAME])
+        
+        print(f"DEBUG: Prediction input shape: {prediction_df.shape}")
+        print(f"DEBUG: Prediction columns: {list(prediction_df.columns)}")
+        print(f"DEBUG: Expected columns: {columns}")
+        
+        return self.best_model.predict_right(prediction_df)
         
         
         

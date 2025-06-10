@@ -229,6 +229,29 @@
                 "--verbose",
                 "--decision_verbose"
             ]
+        },
+        {
+            "name": "Efficient XGBoost Training - Insurance",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/online_learning.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--session_type", "insurance",
+                "--train_csv", "${workspaceFolder}/data/insurance/subsets/train_set_20250608_124619_seed12345_subset.csv",
+                "--test_csv", "${workspaceFolder}/data/insurance/subsets/test_set_20250608_124619_seed12345_subset.csv",
+                "--batch_size", "5",
+                "--test_interval", "100",
+                "--critic", "risk-all",
+                "--selection_style", "xgboost",
+                "--train_weights",
+                "--learning_style", "classification",
+                "--search_style", "xgboost",
+                "--seed", "456",
+                "--exp_name", "large_test_interval",
+                "--verbose"
+            ]
         }
     ]
 }

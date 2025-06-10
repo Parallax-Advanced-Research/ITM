@@ -184,8 +184,8 @@ def main():
         args.scenario = train_id
         
         # Handle training mode based on critic selection
-        if getattr(args, 'critic', 'random') == 'all':
-            # Train on all critics for this scenario
+        if getattr(args, 'critic', 'random') in ['all', 'risk-all']:
+            # Train on all critics (or all risk critics) for this scenario
             total_execution_time = 0
             for critic in seeker.critics:
                 seeker.set_critic(critic)
