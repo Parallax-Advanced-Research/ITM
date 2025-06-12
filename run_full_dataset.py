@@ -265,7 +265,7 @@ def main():
         
     except KeyboardInterrupt:
         print(f"\n{'='*80}")
-        print("EXPERIMENT INTERRUPTED BY USER")
+        print("EXPERIMENT INTERRUPTED")
         print(f"{'='*80}")
         print(f"Partial results may be available in: local/{args.exp_name}/")
         sys.exit(1)

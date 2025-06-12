@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Test script that shuffles CSV data before creating batches to reduce temporal bias.
-This implements the user's suggestion to shuffle data before batch creation.
+This implements shuffling data before batch creation to reduce temporal bias.
 """
 
 import argparse
@@ -190,7 +190,7 @@ def main():
         print(f"  - Data was pre-shuffled to reduce temporal bias")
         
     except KeyboardInterrupt:
-        print("\nExperiment interrupted by user.")
+        print("\nExperiment interrupted.")
         sys.exit(1)
     except Exception as e:
         print(f"\nExperiment failed with error: {e}")
