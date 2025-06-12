@@ -14,9 +14,9 @@ def create_parser():
     
     # Required arguments
     parser.add_argument('--train_csv', default='data/insurance/train-50-50.csv',
-                       help='Path to training CSV file (default: data/insurance/train-50-50.csv)')
+                       help='Path to training CSV file (default: data/insurance/train_set.csv)')
     parser.add_argument('--test_csv', default='data/insurance/test-50-50.csv',
-                       help='Path to test CSV file (default: data/insurance/test-50-50.csv)')
+                       help='Path to test CSV file (default: data/insurance/test_set.csv)')
     
     # Common experiment parameters
     parser.add_argument('--exp_name', default='test_insurance_experiment',
