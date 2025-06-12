@@ -200,6 +200,7 @@ def get_insurance_parser():
     parser.add_argument('--train_csv', type=str, default="data/insurance/train_set.csv", help="Path to training CSV file for insurance domain")
     parser.add_argument('--test_csv', type=str, default="data/insurance/test_set.csv", help="Path to test CSV file for insurance domain")
     parser.add_argument('--test_interval', type=int, default=100, help="Number of training examples between test evaluations (default 100)")
+    parser.add_argument('--quiet', action='store_true', default=True, help="Suppress argument listing and other verbose output")
     
     return parser
 

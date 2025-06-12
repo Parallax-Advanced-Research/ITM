@@ -131,6 +131,8 @@ class InsuranceCritic(Critic):
 
 class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
     def __init__(self, args = None):
+        # Store args for later use (e.g., quiet flag)
+        self.args = args
         # For insurance domain, use uniform weights initially since we learn dynamically
         if args is not None and getattr(args, 'session_type', None) == 'insurance':
             args.uniform_weight = True
@@ -465,7 +467,8 @@ class OnlineApprovalSeeker(KDMAEstimationDecisionSelector, AlignmentTrainer):
                     memory["index"] = len(self.cb)
                     self.cb.append(memory)
                 print(f"DEBUG: Added {len(self.experiences)} cases to case base. Total size: {len(self.cb)}")
-                write_case_base(f"{self.dir_name}/online_experiences-{util.get_global_random_seed()}.csv", self.cb)
+                quiet = getattr(self.args, 'quiet', False) if self.args else False
+                write_case_base(f"{self.dir_name}/online_experiences-{util.get_global_random_seed()}.csv", self.cb, {}, quiet)
 
         self.experiences = []
         self.last_feedbacks = []

@@ -165,7 +165,8 @@ def main():
             '--search_style', 'xgboost',
             '--seed', str(args.seed),
             '--exp_name', args.exp_name,
-            '--train_weights'
+            '--train_weights',
+            '--quiet'  # Suppress parameter listing
         ]
         
         if args.verbose:

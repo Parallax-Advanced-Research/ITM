@@ -25,7 +25,7 @@ def read_case_base_with_headers(csv_filename: str):
 
     return case_base, headers
 
-def write_case_base(fname: str, cb: list[dict[str, Any]], params: dict[str, Any] = {}):
+def write_case_base(fname: str, cb: list[dict[str, Any]], params: dict[str, Any] = {}, quiet: bool = False):
     index : int = 0
     keys : list[str] = list(cb[0].keys())
     keyset : set[str] = set(keys)
@@ -37,8 +37,10 @@ def write_case_base(fname: str, cb: list[dict[str, Any]], params: dict[str, Any]
     if "index" in keys:
         keys.remove("index")
     csv_file = open(fname, "w")
-    for (param, value) in params.items():
-        csv_file.write(f"#Param {param}: {value}\n")
+    # Only write parameter headers if not in quiet mode
+    if not quiet:
+        for (param, value) in params.items():
+            csv_file.write(f"#Param {param}: {value}\n")
     csv_file.write("index," + ",".join([str(key) for key in keys]))
     csv_file.write("\n")
     for case in cb:

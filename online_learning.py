@@ -104,8 +104,10 @@ def main():
         print(f"ADEPT_PORT = {adept_port}")
         print(f"SOARTECH_PORT = {soartech_port}")
     
-    for (key, value) in vars(args).items():
-        print(f"Argument {key} = {value}")
+    # Only print arguments if not in quiet mode
+    if not getattr(args, 'quiet', False):
+        for (key, value) in vars(args).items():
+            print(f"Argument {key} = {value}")
         
     dir = f"local/{args.exp_name}"
     if not os.path.exists(dir):
@@ -239,7 +241,8 @@ def main():
     do_output(args, results)
 
 def do_output(args, results):
-    write_case_base(f"local/{args.exp_name}/online_results-{args.seed}.csv", results, vars(args))
+    quiet = getattr(args, 'quiet', False)
+    write_case_base(f"local/{args.exp_name}/online_results-{args.seed}.csv", results, vars(args), quiet)
 
 def do_testing(test_scenario_ids, args, driver, seeker, results, examples):
     # Handle batch size for insurance domain
