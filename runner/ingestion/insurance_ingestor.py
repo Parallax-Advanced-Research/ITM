@@ -13,9 +13,43 @@ from pydantic.tools import parse_obj_as
 from .ingestor import Ingestor
 
 class InsuranceIngestor(Ingestor):  # Extend Ingestor
-    def __init__(self, data_dir: str):
+    def __init__(self, data_dir: str, scale_kdma_values: bool = True):
         super().__init__(data_dir)  # Call the parent class constructor
         self.data_dir = data_dir
+        self.scale_kdma_values = scale_kdma_values
+
+    def _scale_kdma_to_risk_categories(self, kdma_value: float) -> float:
+        """
+        Scale small predicted_kdma values to meaningful risk categories:
+        - Low risk: 0.0 - 0.2 (values that should get positive approval)
+        - Neutral risk: 0.2 - 0.8 (middle ground)
+        - High risk: 0.8 - 1.0 (values that should get negative approval)
+        
+        Assumes input range is roughly [0.00004, 0.0001] based on current data.
+        """
+        # Define input range (from current data analysis)
+        min_input = 0.0000231572  # Actual minimum from data
+        max_input = 0.0000678498  # Actual maximum from data
+        
+        # Clamp input to expected range
+        kdma_value = max(min_input, min(max_input, kdma_value))
+        
+        # Scale to [0, 1] first
+        normalized = (kdma_value - min_input) / (max_input - min_input)
+        
+        # Map to risk categories with more meaningful distribution:
+        # Bottom 30% -> Low risk (0.0 - 0.2)
+        # Middle 40% -> Neutral risk (0.2 - 0.8) 
+        # Top 30% -> High risk (0.8 - 1.0)
+        if normalized <= 0.3:
+            # Low risk: map [0, 0.3] to [0.0, 0.2]
+            return normalized * (0.2 / 0.3)
+        elif normalized <= 0.7:
+            # Neutral risk: map [0.3, 0.7] to [0.2, 0.8]
+            return 0.2 + ((normalized - 0.3) / 0.4) * 0.6
+        else:
+            # High risk: map [0.7, 1.0] to [0.8, 1.0]
+            return 0.8 + ((normalized - 0.7) / 0.3) * 0.2
 
     def ingest_as_internal(self, file_name: str) -> Tuple[InsuranceScenario, List[InsuranceTADProbe]]:
         ext_scen = parse_obj_as(InsuranceScenario, {"id": "insurance_scenario", "state": {}})
@@ -41,18 +75,27 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                     if network_status not in ['TIER 1 NETWORK', 'IN-NETWORK', 'OUT-OF-NETWORK', 'GENERIC', 'ANY CHOICE BRAND']:
                         network_status = 'GENERIC'  # Default value if not valid
 
-                    # Handle the actual CSV format: extract kdma_value from risk_aversion/choice based on kdma_depends_on
-                    kdma_depends_on = line.get('kdma_depends_on', '').strip().upper()
-                    if kdma_depends_on == 'RISK':
-                        kdma_value = line.get('risk_aversion', '').strip()
-                        kdma_type = 'risk'
-                    elif kdma_depends_on == 'CHOICE':
-                        kdma_value = line.get('choice', '').strip()
-                        kdma_type = 'choice'
+                    # Use predicted_kdma directly if available
+                    kdma_value = line.get('predicted_kdma', '').strip()
+                    if not kdma_value:
+                        # Fallback to original logic if predicted_kdma is missing
+                        kdma_depends_on = line.get('kdma_depends_on', '').strip().upper()
+                        if kdma_depends_on == 'RISK':
+                            kdma_value = line.get('risk_aversion', '').strip()
+                            kdma_type = 'risk'
+                        elif kdma_depends_on == 'CHOICE':
+                            kdma_value = line.get('choice', '').strip()
+                            kdma_type = 'choice'
+                        else:
+                            kdma_value = '0.5'  # Default
+                            kdma_type = 'risk'  # Default
                     else:
-                        # Fallback: try both kdma_value column and risk_aversion
-                        kdma_value = line.get('kdma_value', line.get('risk_aversion', '')).strip()
-                        kdma_type = 'risk'  # Default
+                        # Determine kdma_type from kdma_depends_on when using predicted_kdma
+                        kdma_depends_on = line.get('kdma_depends_on', '').strip().upper()
+                        if kdma_depends_on == 'CHOICE':
+                            kdma_type = 'choice'
+                        else:
+                            kdma_type = 'risk'  # Default to risk
 
                     state = parse_obj_as(InsuranceState, {
                         "children_under_4": int(line.get('children_under_4', 0)),
@@ -61,7 +104,7 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                         "children_under_26": int(line.get('children_under_26', 0)),
                         "employment_type": line.get('employment_type'),
                         "distance_dm_home_to_employer_hq": int(line.get('distance_dm_home_to_employer_hq', 0)),
-                        "travel_location_known": line.get('travel_location_known') == '1',
+                        "travel_location_known": line.get('travel_location_known') == 'Yes',
                         "owns_rents": line.get('owns_rents'),
                         "no_of_medical_visits_previous_year": int(line.get('no_of_medical_visits_previous_year', 0)),
                         "percent_family_members_with_chronic_condition": float(line.get('percent_family_members_with_chronic_condition', 0.0)),
@@ -102,16 +145,24 @@ class InsuranceIngestor(Ingestor):  # Extend Ingestor
                     # Attach KDMA value to decision based on probe's target KDMA value
                     if hasattr(probe.state, 'kdma') and probe.state.kdma and hasattr(probe.state, 'kdma_value'):
                         kdma_name = probe.state.kdma.lower()  # 'RISK' -> 'risk'
-                        kdma_target = probe.state.kdma_value.lower()  # 'low' -> 'low'
+                        kdma_value_str = probe.state.kdma_value
                         
-                        # Convert probe's target KDMA value to numeric
-                        # The decision should reflect the probe's target, not the action's characteristics
-                        if kdma_target == 'low':
-                            kdma_value = 0.0
-                        elif kdma_target == 'high':
-                            kdma_value = 1.0
-                        else:
-                            kdma_value = 0.5  # Default for unknown values
+                        # Try to parse as float first (for predicted_kdma numeric values)
+                        try:
+                            kdma_value = float(kdma_value_str)
+                            
+                            # Apply KDMA scaling if enabled
+                            if self.scale_kdma_values and kdma_value < 0.5:  # Assume small values need scaling
+                                kdma_value = self._scale_kdma_to_risk_categories(kdma_value)
+                        except (ValueError, TypeError):
+                            # Fall back to string interpretation
+                            kdma_target = kdma_value_str.lower() if isinstance(kdma_value_str, str) else ''
+                            if kdma_target == 'low':
+                                kdma_value = 0.0
+                            elif kdma_target == 'high':
+                                kdma_value = 1.0
+                            else:
+                                kdma_value = 0.5  # Default for unknown values
                         
                         # Create KDMAs object to match medical domain structure
                         decision.kdmas = KDMAs([KDMA(id_=kdma_name, value=kdma_value)])
