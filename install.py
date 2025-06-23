@@ -83,8 +83,6 @@ def install_hems() -> None:
 
     # Make sure sbcl and quicklisp are set up properly, and get the path to
     # quicklisp's local projects directory
-    run_cmd_or_die([ "sbcl", "--version" ],
-        err_msg="sbcl must be installed before we run this command.")
     
     ql_local_projects_dir = run_cmd_or_die(
         argv=[ "sbcl", "--noinform", "--non-interactive", "--eval",
@@ -160,7 +158,18 @@ try:
 except:
     handle_git_missing()
 
-install_hems()
+sbcl_installed : bool = False
+try:
+    p = subprocess.run(["sbcl", "--version"], check=False)
+    if p.returncode == 0:
+        sbcl_installed = True
+except:
+    pass
+
+if sbcl_installed:
+    install_hems()
+else:
+   print("\x1b[91mFailed to install HEMS. Continuing anyway.\x1b[0m")
 
 print("Installing TA3 client")
 #install_repo("git@github.com:NextCenturyCorporation/itm-evaluation-client.git")
