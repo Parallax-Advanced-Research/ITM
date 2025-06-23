@@ -343,3 +343,4 @@ bkup
 components/decision_analyzer/event_based_diagnosis/eltm.txt
 docs/
 test_utils/
+*.pkl
