@@ -4,11 +4,7 @@ from . import triage_constants
 
 from components import AlignmentTrainer
 from domain.internal import AlignmentFeedback, Scenario, TADProbe, KDMA, KDMAs, AlignmentTarget, Decision, Action, State
-# Import domain-specific probe types if available
-try:
-    from domain.ta3.ta3_state import TADTriageProbe
-except ImportError:
-    TADTriageProbe = None
+from triage import TADTriageProbe
 from typing import Any, Sequence, Callable
 import util
 import os
