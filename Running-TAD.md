@@ -7,22 +7,22 @@ will need Python and Git installed and on your path. Python must be version 3.10
 that an evaluation server and any necessary characterization and alignment servers are ready. Then 
 to install:
 
-cd [TAD root]
-python install.py
+* cd [TAD root]
+* python install.py
 
 To run in training mode:
 
-cd [TAD root]
-[Linux] source venv/bin/activate
-[Windows] venv\Scripts\activate
-python tad_tester.py --training --session_type adept
+* cd [TAD root]
+* [Linux] source venv/bin/activate
+* [Windows] venv\Scripts\activate
+* python tad_tester.py --training --session_type adept
 
 To run in testing mode: 
 
-cd [TAD root]
-[Linux] source venv/bin/activate
-[Windows] venv\Scripts\activate
-python tad_tester.py --keds
+* cd [TAD root]
+* [Linux] source venv/bin/activate
+* [Windows] venv\Scripts\activate
+* python tad_tester.py --keds
 
 
 ## Running TAD with Human Selection process
